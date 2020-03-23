@@ -133,7 +133,7 @@ prepSeurat <- function (so){
 #'
 #'
 #' @param so Seurat object
-#' @param subset.df Data.frame specifying which field to subset on, and which field entires to retain.
+#' @param subset.df Data.frame specifying which field to subset on, and which field entries to retain.
 #' @name subsetSeurat
 #' @return Seurat object
 #' @examples

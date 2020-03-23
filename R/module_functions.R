@@ -80,6 +80,7 @@ m9.importMarkers <- function(query.format, input.file = NULL, markers.of.interes
 #'
 m23.binarizeExpression <- function(so, query.gene, quantile.threshold = 0.25, return.plt = F){
 
+
   which.match <- which(rownames(so@assays[[DefaultAssay(so)]]) %in% query.gene)
 
   df.exp <- data.frame(data = so@assays[[DefaultAssay(so)]]@data[which.match, ],
