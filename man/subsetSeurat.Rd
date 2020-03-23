@@ -4,7 +4,7 @@
 \alias{subsetSeurat}
 \title{Subset Seurat Object}
 \usage{
-subsetSeurat(so, subset.df = NULL)
+subsetSeurat(so, subset.df)
 }
 \arguments{
 \item{so}{Seurat object}
@@ -18,7 +18,11 @@ Seurat object
 Subset Seurat object according to specific metadata field. Only specified metadata entries are retained, while remaining of data is omitted.
 }
 \examples{
-subset.df <- data.frame(field = "seurat_clusters", subgroups = c(0,2,3,5,6,7,9,15)) # subset tumor population of Renca 4000ds T12 tumor
+
+# define subset parameters
+subset.df <- data.frame(field = "seurat_clusters", subgroups = c(0,2,3,5,6,7,9,15)) # tumor population from Renca 4000ds T12 sample
+
+# subset data
 so <- subsetSeurat(so, subset.df)
 
 }

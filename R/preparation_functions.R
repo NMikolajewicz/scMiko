@@ -1,17 +1,3 @@
-#' Uppercase first letter and lowercase rest
-#'
-#' Function used to naively convert gene list to mouse representation; i.e., Convert Hs to Mm gene symbols.
-#'
-#'
-#' @param x Character vector
-#' @name firstup
-#' @return Character vector
-#'
-firstup <- function(x) {
-  x <- tolower(x)
-  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
-  x
-}
 
 #' Fix barcode labels
 #'
@@ -167,6 +153,37 @@ subsetSeurat <- function (so, subset.df){
   }
 
   return(so)
+}
+
+
+#' Initiate analysis log
+#'
+#' Create analysis log data.frame template
+#'
+#' @param module.name Character specifying module name
+#' @name importSeurat
+#' @return data.frame
+#'
+inititateLog <- function (module.name = ""){
+
+  # Module
+  df.log <- data.frame()
+  df.log[nrow(df.log)+1, 1] <- as.character("Module")
+  df.log[nrow(df.log), 2] <- as.character("")
+  df.log[nrow(df.log), 3] <- as.character(module.name)
+  colnames(df.log) <- c("Description", "Variable Name", "Value")
+
+  # User
+  df.log[nrow(df.log)+1, 1] <- as.character("User")
+  df.log[nrow(df.log), 2] <- as.character("Sys.getenv('USERDOMAIN')")
+  df.log[nrow(df.log), 3] <- as.character(Sys.getenv("USERDOMAIN"))
+
+  # Date
+  df.log[nrow(df.log)+1, 1] <- as.character("Date")
+  df.log[nrow(df.log), 2] <- as.character("Sys.time()")
+  df.log[nrow(df.log), 3] <- as.character(Sys.time())
+
+  return(df.log)
 }
 
 

@@ -2,18 +2,27 @@
 % Please edit documentation in R/preparation_functions.R
 \name{importSeurat}
 \alias{importSeurat}
+\alias{inititateLog}
 \title{import Seurat}
 \usage{
 importSeurat(file, directory = NULL)
+
+inititateLog(module.name = "")
 }
 \arguments{
 \item{file}{Seurat object file name}
 
 \item{directory}{directory in which Seurat object is stored}
+
+\item{module.name}{Character specifying module name}
 }
 \value{
 Seurat object
+
+data.frame
 }
 \description{
 Import Seurat Object and preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+
+Create analysis log data.frame template
 }
