@@ -149,7 +149,7 @@ importSeurat <- function (file, directory = NULL){
 #'
 subsetSeurat <- function (so, subset.df){
 
-  # check if subset input is valid
+  # check if subset input is validd
   if (is.na(subset.df$field)){
     subset.flag <- FALSE
   } else if (subset.df$field %in% names(so.query@meta.data)) {
