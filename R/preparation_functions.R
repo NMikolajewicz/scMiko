@@ -50,15 +50,14 @@ setResolution <- function (so, cluster.resolution){
 }
 
 
-#' Set cluster resolution
+#' prep Gene List
 #'
-#' Set 'Seurat_Clusters' metadata entry to quiried cluster resolution
-#'
+#' Ensure is available and represented correctly.
 #'
 #' @param so Seurat Object
-#' @param cluster.resolution Seurat Object
+#' @param global.enviroment global.enviroment <- object()
 #' @name prepGeneList
-#' @return Seurat object
+#' @return Named vector of available genes
 #'
 #'
 prepGeneList <- function (so, global.enviroment){
@@ -95,21 +94,33 @@ prepGeneList <- function (so, global.enviroment){
 }
 
 
-#' import Seurat
+#' Return load path
 #'
-#' Import Seurat Object and preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+#' For specified file and directory, return a load path
 #'
 #'
-#' @param file Seurat object file name
-#' @param directory directory in which Seurat object is stored
-#' @name importSeurat
+#' @param file file name
+#' @param directory directory
+#' @name getLoadPath
+#' @return Character. Load path.
+#'
+getLoadPath <- function (file, directory = NULL){
+  if (is.null(directory)) directory <- ""
+  load.path <- paste(directory, file, sep = "")
+  return(load.path)
+}
+
+#' prep Seurat
+#'
+#' Preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+#'
+#' @param so Seurat objects
+#' @name prepSeurat
 #' @return Seurat object
 #'
-importSeurat <- function (file, directory = NULL){
+prepSeurat <- function (so){
 
-  if (is.null(directory)) directory <- ""
-  load(paste(directory, file, sep = ""))
-  so <- fix.barcode.label(so)
+  so <- fixBarcodeLabel(so)
   so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
 
   return(so)
@@ -161,7 +172,7 @@ subsetSeurat <- function (so, subset.df){
 #' Create analysis log data.frame template
 #'
 #' @param module.name Character specifying module name
-#' @name importSeurat
+#' @name inititateLog
 #' @return data.frame
 #'
 inititateLog <- function (module.name = ""){
@@ -186,4 +197,82 @@ inititateLog <- function (module.name = ""){
   return(df.log)
 }
 
+
+#' Load Module-Specific Packages
+#'
+#' Load packages required for each analysis module
+#'
+#' @param module.number Numeric.
+#' @param load.default Logical flag specifying wther to load default packages. If module.number is specified, load.default is ignored.
+#' @name modulePackages
+#' @return
+#'
+modulePackages <- function (module.number = NULL, load.default = T){
+
+  if (!is.null(module.number)){
+
+
+    if (module.number == 1){
+    } else if (module.number == 2){
+    } else if (module.number == 3){
+    } else if (module.number == 4){
+    } else if (module.number == 5){
+    } else if (module.number == 6){
+    } else if (module.number == 7){
+    } else if (module.number == 8){
+    } else if (module.number == 9){
+
+      load.default <- F
+
+      # List of packages to load
+      # packrat::disable(project = getwd(), restart = TRUE)
+      packages2load <- c("Seurat", "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "gridExtra",
+                         "DT", "flexdashboard", "ggpmisc", "ggExtra", "grid", "ggrepel", "ddpcr",
+                         "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "fgsea", "plotly", "ggplot2", "reactome.db")
+
+      # load packages
+      lapply(packages2load, library, character.only = TRUE)
+
+      # Note: ensure that Plotly version 4.8.0 is used only
+      #   require(devtools)
+      #   install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
+      session.info <- sessionInfo()
+      stopifnot(session.info[["otherPkgs"]][["plotly"]][["Version"]] == "4.8.0")
+
+    } else if (module.number == 10){
+    } else if (module.number == 11){
+    } else if (module.number == 12){
+    } else if (module.number == 13){
+    } else if (module.number == 14){
+    } else if (module.number == 15){
+    } else if (module.number == 16){
+    } else if (module.number == 17){
+    } else if (module.number == 18){
+    } else if (module.number == 19){
+    } else if (module.number == 20){
+    } else if (module.number == 21){
+    }
+
+  }
+
+  if (load.default){
+    # List of packages to load
+    # packrat::disable(project = getwd(), restart = TRUE)
+    packages2load <- c("Seurat", "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "gridExtra",
+                       "DT", "flexdashboard", "ggpmisc", "ggExtra", "grid", "ggrepel", "ddpcr",
+                       "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "fgsea", "plotly", "ggplot2", "reactome.db")
+
+    # load packages
+    lapply(packages2load, library, character.only = TRUE)
+
+    # Note: ensure that Plotly version 4.8.0 is used only
+    #   require(devtools)
+    #   install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
+    session.info <- sessionInfo()
+    stopifnot(session.info[["otherPkgs"]][["plotly"]][["Version"]] == "4.8.0")
+  }
+
+
+
+}
 

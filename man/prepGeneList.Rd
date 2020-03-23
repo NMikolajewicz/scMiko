@@ -2,18 +2,18 @@
 % Please edit documentation in R/preparation_functions.R
 \name{prepGeneList}
 \alias{prepGeneList}
-\title{Set cluster resolution}
+\title{prep Gene List}
 \usage{
 prepGeneList(so, global.enviroment)
 }
 \arguments{
 \item{so}{Seurat Object}
 
-\item{cluster.resolution}{Seurat Object}
+\item{global.enviroment}{global.enviroment <- object()}
 }
 \value{
-Seurat object
+Named vector of available genes
 }
 \description{
-Set 'Seurat_Clusters' metadata entry to quiried cluster resolution
+Ensure is available and represented correctly.
 }

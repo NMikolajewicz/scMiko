@@ -48,7 +48,7 @@ checkGeneRep <- function(reference.genes, query.genes){
 #' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
 #' @param query.genes vector of query genes to check representation
 #' @name ens2sym.so
-#' @return Character specifying ensembl or symbol
+#' @return Seurat object with specified gene representation.
 #'
 ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
@@ -131,7 +131,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 #' @param gene.list Character(s). Vector of all genes under consideration
 #' @param which.species Character. Species
 #' @name speciesConvert
-#' @return Character specifying ensembl or symbol
+#' @return Gene Symbol (character)
 #'
 speciesConvert <- function(query.gene, gene.list, which.species){
 
@@ -167,7 +167,7 @@ speciesConvert <- function(query.gene, gene.list, which.species){
 #' @name sym2entrez
 #' @return data.frame mapping gene Symbols to Entrez
 #'
-sym2entrez <- function(so, gNames.list, convert.RNA = TRUE){
+sym2entrez <- function(my.symbols, my.species){
 
   my.symbols <- as.vector(my.symbols)
   if (my.species == "Hs"){
@@ -192,8 +192,8 @@ sym2entrez <- function(so, gNames.list, convert.RNA = TRUE){
 #' @param mat Matrix. Input matrix for heatmap.
 #' @param hmcol Heatmap colors
 #' @param scale.limit Numeric. Color scale limit.
-#' @name sym2entrez
-#' @return data.frame mapping gene Symbols to Entrez
+#' @name getHeat
+#' @return Heatmap object
 #'
 getHeat <- function(mat, hmcol, scale.limit){
 
@@ -223,3 +223,113 @@ getHeat <- function(mat, hmcol, scale.limit){
 
   return(heat.object)
 }
+
+
+#' Get list of available files
+#'
+#' Get list of files in specified directory. Default directory is "Preprocessed Datasets/".
+#'
+#' @param directory Character. Directory name.
+#' @param scale.limit Numeric. Color scale limit.
+#' @name getAvailableFiles
+#' @return list of files
+#'
+getAvailableFiles <- function(directory = "Preprocessed Datasets/"){
+return(list.files(directory))
+}
+
+
+
+#' Cell-level gene expression projected on UMAP
+#'
+#' UMAP plot with cell-level gene expression for queried gene.
+#'
+#' @param so Seurat Object
+#' @param query.gene Character. Gene name to plot.
+#' @param x.label Character. X axis label.
+#' @param y.label Character. Y axis label.
+#' @param plot.name Character. Plot title.
+#' @name scExpression.UMAP
+#' @return ggplot handle
+#'
+scExpression.UMAP <- function(so, query.gene, x.label = "UMAP 1", y.label = "", plot.name = NULL){
+
+  if (is.null(plot.name)) plot.name <- query.gene
+
+  plt.handle <- FeaturePlot(object = so, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
+                            reduction = "umap",pt.size = TRUE, sort.cell = TRUE) +
+    xlab(x.label) +
+    ylab(y.label) +
+    ggtitle(plot.name)
+
+  return(plt.handle)
+
+}
+
+
+#' UMAP stratified by cluster ID
+#'
+#' UMAP plot with colors indicating cluster membership
+#'
+#' @param so Seurat Object
+#' @param group.by Character. Metadata feature to group data by. Default is 'seurat_clusters'.
+#' @param x.label Character. X axis label.
+#' @param y.label Character. Y axis label.
+#' @param plot.name Character. Plot title.
+#' @param include.labels Logical specifying wheter to plot group IDs on UMAP.
+#' @name cluster.UMAP
+#' @return ggplot handle
+#'
+cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, ...){
+
+  plt.handle <- DimPlot(so, reduction = "umap", group.by = group.by, label = include.labels, ...)  +
+    ggtitle(label = plot.name) +
+    xlab(x.label) + ylab(y.label)
+
+  return(plt.handle)
+
+}
+
+#' Normalize and scale data within appropriate assay
+#'
+#' Set correct assay and prep expression data for downstream analysis. This handles both intergrated and non-integrated datasets. If input is integrated dataset, set assay to RNA and normalized and resscale data. If input is non-integrated dataset, us scTransformed data for expression analysis.
+#'
+#' @param so Seurat Object
+#' @name prepExpression
+#' @return Seurat Object
+#'
+prepExpression <- function(so){
+
+  if (DefaultAssay(so) == "integrated"){
+    DefaultAssay(so) <- "RNA"
+    so <-NormalizeData(so, verbose = FALSE)
+    so <- ScaleData(so, verbose = FALSE)
+    so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 10000)
+  } else {
+    if ("SCT" %in% names(so@assays)) DefaultAssay(so) <- "SCT"
+  }
+
+  return(so)
+
+}
+
+
+#' Check if gene is avaialble in Seurat Object
+#'
+#' Return logical flag indicated whether query gene is present in seurat expression matrix.
+#'
+#' @param so Seurat Object
+#' @param query.gene Character. Gene of interest.
+#' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
+#' @name isGeneAvailable
+#' @return Logical
+#'
+isGeneAvailable <- function(so, query.gene, reference.genes){
+  all.genes <- rownames(so@assays[[DefaultAssay(so)]])
+  gene.rep <-  checkGeneRep(reference.genes, all.genes)
+  stopifnot(gene.rep == "symbol")
+  geneAvailable <- query.gene %in% all.genes
+
+  return(geneAvailable)
+}
+

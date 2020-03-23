@@ -2,27 +2,16 @@
 % Please edit documentation in R/utility_functions.R
 \name{firstup}
 \alias{firstup}
-\alias{check.gene_rep}
 \title{Uppercase first letter and lowercase rest}
 \usage{
 firstup(x)
-
-check.gene_rep(reference.genes, query.genes)
 }
 \arguments{
 \item{x}{Character vector}
-
-\item{reference.genes}{Named vector of genes; names are ENSEMBL, entries are SYMBOL.}
-
-\item{query.genes}{vector of query genes to check representation}
 }
 \value{
 Character vector
-
-Character specifying ensembl or symbol
 }
 \description{
 Function used to naively convert gene list to mouse representation; i.e., Convert Hs to Mm gene symbols.
-
-Check whether genes are represented as SYMBOL or ENSEMBL. This is accomplished by comparing query to reference, and using a majority vote.
 }
