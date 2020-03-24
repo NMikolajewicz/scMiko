@@ -184,6 +184,33 @@ sym2entrez <- function(my.symbols, my.species){
   return(my.entrez)
 }
 
+#' Convert gene symbol to ensembl
+#'
+#' Gene symbol is converted to ensembl id using org.Hs.eg.db or org.Mm.eg.db annotation databases.
+#'
+#' @param my.symbols Character. Vector of Gene symbols.
+#' @param my.species Character. Species.
+#' @name sym2ens
+#' @return data.frame mapping gene Symbols to Ensembl
+#'
+sym2ens <- function(my.symbols, my.species){
+
+  my.symbols <- as.vector(my.symbols)
+  if (my.species == "Hs"){
+    db <- org.Hs.eg.db
+  } else if (my.species == "Mm"){
+    db <- org.Mm.eg.db
+  }
+
+  my.ensembl <- select(db,
+                       keys = my.symbols,
+                       columns = c("ENSEMBL", "SYMBOL"),
+                       keytype = "SYMBOL",
+                       multiVals = first)
+
+  return(my.ensembl)
+}
+
 
 #' Create heatmap object
 #'
@@ -332,4 +359,20 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 
   return(geneAvailable)
 }
+
+
+
+#' reload scMiko
+#'
+#' Function that detachs and attached scMiko package.
+#'
+#' @name scMikoReload
+#'
+scMikoReload <- function(){
+
+  detach("package:scMiko", unload=TRUE)
+  library(scMiko)
+
+}
+
 

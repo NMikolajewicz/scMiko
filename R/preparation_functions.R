@@ -214,6 +214,17 @@ modulePackages <- function (module.number = NULL, load.default = T){
 
 
     if (module.number == 1){
+
+      load.default <- F
+
+      # List of packages to load
+      packages2load <- c("Seurat", "sctransform",
+                         "plyr", "dplyr", "tidyr", "reshape2", "Matrix", "RColorBrewer", "ggplot2", "gridExtra",
+                         "DT", "flexdashboard", "future")
+
+      # load packages
+      lapply(packages2load, library, character.only = TRUE)
+
     } else if (module.number == 2){
     } else if (module.number == 3){
     } else if (module.number == 4){

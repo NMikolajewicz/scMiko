@@ -9,7 +9,7 @@ subsetSeurat(so, subset.df)
 \arguments{
 \item{so}{Seurat object}
 
-\item{subset.df}{Data.frame specifying which field to subset on, and which field entires to retain.}
+\item{subset.df}{Data.frame specifying which field to subset on, and which field entries to retain.}
 }
 \value{
 Seurat object
