@@ -2,12 +2,7 @@
 
 Set of general and module-specific utility functions used for scRNAseq analysis. Builds upon Seurat Package. 
 
-
 ### Installation
-
-```
-devtools::install_github("NMikolajewicz/scMiko")
-```
 
 Firstly, please install or update the package devtools by running
 
@@ -17,7 +12,6 @@ install.packages("devtools")
 
 Then the scMiko can be installed via
 
-
 ```
 library(devtools)
 devtools::install_github("NMikolajewicz/scMiko")
@@ -26,10 +20,9 @@ devtools::install_github("NMikolajewicz/scMiko")
 
 * [Seurat](https://satijalab.org/seurat/) - Seurat R toolkit for single cell genomics
 
-
 ## Authors
 
-* **Nicholas Mikolajewicz** 
+* [Nicholas Mikolajewicz](https://scholar.google.ca/citations?user=LBWQMXsAAAAJ&hl=en&oi=ao)
 
 ## License
 
