@@ -267,56 +267,6 @@ return(list.files(directory))
 
 
 
-#' Cell-level gene expression projected on UMAP
-#'
-#' UMAP plot with cell-level gene expression for queried gene.
-#'
-#' @param so Seurat Object
-#' @param query.gene Character. Gene name to plot.
-#' @param x.label Character. X axis label.
-#' @param y.label Character. Y axis label.
-#' @param plot.name Character. Plot title.
-#' @name scExpression.UMAP
-#' @return ggplot handle
-#'
-scExpression.UMAP <- function(so, query.gene, x.label = "UMAP 1", y.label = "", plot.name = NULL){
-
-  if (is.null(plot.name)) plot.name <- query.gene
-
-  plt.handle <- FeaturePlot(object = so, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
-                            reduction = "umap",pt.size = TRUE, sort.cell = TRUE) +
-    xlab(x.label) +
-    ylab(y.label) +
-    ggtitle(plot.name)
-
-  return(plt.handle)
-
-}
-
-
-#' UMAP stratified by cluster ID
-#'
-#' UMAP plot with colors indicating cluster membership
-#'
-#' @param so Seurat Object
-#' @param group.by Character. Metadata feature to group data by. Default is 'seurat_clusters'.
-#' @param x.label Character. X axis label.
-#' @param y.label Character. Y axis label.
-#' @param plot.name Character. Plot title.
-#' @param include.labels Logical specifying wheter to plot group IDs on UMAP.
-#' @name cluster.UMAP
-#' @return ggplot handle
-#'
-cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, ...){
-
-  plt.handle <- DimPlot(so, reduction = "umap", group.by = group.by, label = include.labels, ...)  +
-    ggtitle(label = plot.name) +
-    xlab(x.label) + ylab(y.label)
-
-  return(plt.handle)
-
-}
-
 #' Normalize and scale data within appropriate assay
 #'
 #' Set correct assay and prep expression data for downstream analysis. This handles both intergrated and non-integrated datasets. If input is integrated dataset, set assay to RNA and normalized and resscale data. If input is non-integrated dataset, us scTransformed data for expression analysis.
@@ -339,6 +289,8 @@ prepExpression <- function(so){
   return(so)
 
 }
+
+
 
 
 #' Check if gene is avaialble in Seurat Object

@@ -426,5 +426,96 @@ m1.getMitoContent <- function(so, gNames, omit.na = T) {
 }
 
 
+#' Apply QC filters to Seurat Object
+#'
+#' Filter scRNAseq data by gene/cell, unmatch rate and mitochondrial content.
+#'
+#' @param so Seurat Object
+#' @param RNA.upperlimit Upper limit threshold for genes/cell
+#' @param RNA.lowerlimit Lower limit threshold for genes/cell
+#' @param mt.upperlimit Numeric [0, 100]. Upper limit threshold for microchondiral content.
+#' @param unmatch.low Numeric [0,1]. Lower limit threshold for unmatch rate. Default is 0. Ignored if data is not from sciRNA-seq3 pipeline.
+#' @param unmatch.high Numeric [0,1]. Upper limit threshold for unmatch rate. Default is 1. Ignored if data is not from sciRNA-seq3 pipeline.
+#' @name m1.filterSeurat
+#' @return List containing seurat object and filter summary statistics (as data.frame)
+#'
+m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1) {
 
+  # determine unfiltered UMI count
+  original_count = length(so@meta.data[["nCount_RNA"]])
+
+  # filter dataset
+  if ((unmatch.low == 0) & (unmatch.high == 1)){
+    so <- subset(so, subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA > RNA.lowerlimit) & (percent.mt < mt.upperlimit)))
+  } else {
+    so <- subset(so,
+                 subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA > RNA.lowerlimit) & (percent.mt < mt.upperlimit) & (unmatched.rate > unmatch.low) & (unmatched.rate < unmatch.high)))
+  }
+
+  # determine filtered UMI count
+  filtered_count = length(so@meta.data[["nCount_RNA"]])
+  percent_remaining <- 100*filtered_count/original_count
+
+  filter_summary <- data.frame(pre.filtering = original_count, post.filtering = filtered_count, per_remaining = percent_remaining)
+
+  output <- list(so, filter_summary)
+  return(output)
+
+}
+
+
+#' Normalize and Scale Data
+#'
+#' Applies one of two normalization/scaling approaches supported by Seurat.
+#'
+#' @param so Seurat Object
+#' @param gNames Named vector of genes. Names are ensemble, entries are Symbols.
+#' @param method Character specifying data normalization and scaling method. One of:
+#' \itemize{
+#' \item "NFS" - Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow. Parameters are set to use LogNormalization method with a scale.factor of 1000. Variable features are selceted using 'mvp' method, and var2regress is regressed out during data scaling.
+#' \item "SCT" - Default. SCTransform workflow; Uses regularized negative binomial regression to normalize UMI count data. All genes are returned (not only variable), and residual variace cutoff is set to 1.3; var2regress is included in model.
+#' }
+#' @param var2regress Character vector specifying which variables to regress out during data scaling.
+#' @param enable.parallelization Logical specifying whether to enable parallelization. Default is T.
+#' @param n.works Number of works to used during parallel processing. Default is 3.
+#' @param max.memory Max memory to use during parallel processing. Default is 20480 * 1024^2
+#' @name m1.scNormScale
+#' @return Seurat Object
+#'
+m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2)){
+
+
+  # enable parallelization
+  # plan(strategy = "multisession", workers = parallel::detectCores())
+
+  if (enable.parallelization){
+    plan(strategy = "multisession", workers = n.workers)
+    options(future.globals.maxSize = max.memory)
+  }
+
+
+  # Normalize and scale data
+  if (method == "NFS"){
+
+    # Normalize data
+    so <- NormalizeData(so, normalization.method = "LogNormalize", scale.factor = 10000)
+    # Find variable features
+    so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = c(0.0125, 3), dispersion.cutoff = c(0.5, Inf))
+    # Scale data
+    so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress)
+
+  } else if (method == "SCT"){
+
+    # apply sctransform (regularized negative binomial regression)
+    # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
+    so <- SCTransform(so,
+                      vars.to.regress = vars2regress,
+                      verbose = FALSE,
+                      return.only.var.genes = FALSE,
+                      variable.features.n = NULL,
+                      variable.features.rv.th = 1.3)
+  }
+
+  return(so)
+}
 
