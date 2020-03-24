@@ -87,3 +87,54 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10){
 
   return(plt.handle)
 }
+
+
+#' QC violin plots
+#'
+#' Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by barcode labels.
+#'
+#' @param so Seurat Object
+#' @param plt.log.flag Logical specifying whether data are plotted on log scale. Default is True.
+#' @name QC.violinPlot
+#' @return list of ggplot handles
+#'
+QC.violinPlot <- function(so, plt.log.flag = T){
+
+  # Overall and cell-type specific QC parameters
+  if (plt.log.flag){
+    # logarithmic scale
+    plt1 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, log = TRUE)
+    plt2 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = "subset_group", ncol = 3, log = TRUE)
+  } else{
+    # raw scale
+    plt1 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, log = FALSE)
+    plt2 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = "subset_group", ncol = 3, log = FALSE)
+  }
+
+  output <- list(plt1, plt2)
+  return(output)
+}
+
+#' QC scatter plots
+#'
+#' Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell.
+#'
+#' @param so Seurat Object
+#' @name QC.scatterPlot
+#' @return ggplot handle
+#'
+QC.scatterPlot <- function(so){
+
+  # Generate QC scatterplots
+
+  plt.handle1 <- FeatureScatter(so, feature1 = "nCount_RNA", feature2 = "percent.mt") +
+    xlab("UMI/cell") + ylab("Mitochondrial Content (%)")
+  plt.handle2 <- FeatureScatter(so, feature1 = "nFeature_RNA", feature2 = "percent.mt") +
+    xlab("Genes/cell") + ylab("Mitochondrial Content (%)")
+  plt.handle3 <- FeatureScatter(so, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", span = TRUE) +
+    xlab("UMI/cell") + ylab("Genes/cell")
+
+  plt.QC_scatter <- CombinePlots(plots = list(plt.handle1, plt.handle2,plt.handle3), ncol = 3, legend = 'none')
+  return(plt.QC_scatter)
+}
+

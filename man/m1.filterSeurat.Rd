@@ -10,7 +10,8 @@ m1.filterSeurat(
   RNA.lowerlimit = 200,
   mt.upperlimit = 60,
   unmatch.low = 0,
-  unmatch.high = 1
+  unmatch.high = 1,
+  set_names = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ m1.filterSeurat(
 \item{unmatch.low}{Numeric [0,1]. Lower limit threshold for unmatch rate. Default is 0. Ignored if data is not from sciRNA-seq3 pipeline.}
 
 \item{unmatch.high}{Numeric [0,1]. Upper limit threshold for unmatch rate. Default is 1. Ignored if data is not from sciRNA-seq3 pipeline.}
+
+\item{set_names}{Character specifying dataset name. Optional.}
 }
 \value{
 List containing seurat object and filter summary statistics (as data.frame)

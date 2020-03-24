@@ -436,10 +436,11 @@ m1.getMitoContent <- function(so, gNames, omit.na = T) {
 #' @param mt.upperlimit Numeric [0, 100]. Upper limit threshold for microchondiral content.
 #' @param unmatch.low Numeric [0,1]. Lower limit threshold for unmatch rate. Default is 0. Ignored if data is not from sciRNA-seq3 pipeline.
 #' @param unmatch.high Numeric [0,1]. Upper limit threshold for unmatch rate. Default is 1. Ignored if data is not from sciRNA-seq3 pipeline.
+#' @param set_names Character specifying dataset name. Optional.
 #' @name m1.filterSeurat
 #' @return List containing seurat object and filter summary statistics (as data.frame)
 #'
-m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1) {
+m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1, set_names = NULL) {
 
   # determine unfiltered UMI count
   original_count = length(so@meta.data[["nCount_RNA"]])
@@ -458,7 +459,21 @@ m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.
 
   filter_summary <- data.frame(pre.filtering = original_count, post.filtering = filtered_count, per_remaining = percent_remaining)
 
-  output <- list(so, filter_summary)
+  if (is.null(set_names)) set_names <- "scRNAseq"
+
+  # generate pre- post- filter statistics plot
+  filter_summary_list <- filter_summary
+  filter_summary_list$set <- replicate(dim(filter_summary_list)[1], (set_names))
+  filter_summary <- filter_summary_list[, c(4, 1, 2, 3)]
+  filter_summary_gathered <- gather(filter_summary, key = "filter", value = "count", c("pre.filtering", "post.filtering"))
+  filter_summary_gathered$filter <- factor(filter_summary_gathered$filter, levels = c("pre.filtering", "post.filtering"))
+  per.omitted <- signif((100 - as.numeric(unique(filter_summary_gathered$per_remaining))), 3)
+  plt.filter_pre_post <- ggplot(filter_summary_gathered, aes(x = set, y = count, fill = filter )) +
+    geom_bar(stat="identity", position=position_dodge()) +
+    ylab("Cell Count") +
+    ggtitle(paste(per.omitted, "% cells omitted", sep = ""))
+
+  output <- list(so, plt.filter_pre_post)
   return(output)
 
 }
