@@ -2,7 +2,7 @@
 % Please edit documentation in R/M23_functions.R, R/module_functions.R
 \name{m23.binarizeExpression}
 \alias{m23.binarizeExpression}
-\title{M23. Stratify gene expression into high and low expression groups}
+\title{Stratify gene expression into high and low expression groups}
 \usage{
 m23.binarizeExpression(
   so,

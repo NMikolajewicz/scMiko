@@ -1,4 +1,4 @@
-#' M9. Import Gene List
+#' Import gene list
 #'
 #' Import gene lists for subsequent analysis in Module 9.
 #'

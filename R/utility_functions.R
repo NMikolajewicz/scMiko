@@ -376,3 +376,203 @@ scMikoReload <- function(){
 }
 
 
+
+#' Merge list of seurat objects
+#'
+#' Merges list of seurat objects without any normalization of batch correction
+#'
+#' @param so.list List of seurat objects
+#' @name scMikoReload
+#' @return Seurat Object
+#'
+mergeSeuratList <- function(so.list){
+
+  # merge seurat objects if multiple present
+  if (length(so.list) > 1){
+    for (i in 1:length(so.list)){
+      if (i == 1){
+        so <- so.list[[i]]
+      } else {
+        so <- merge(so, so.list[[i]])
+      }
+    }
+  } else {
+    so <- so.list[[1]]
+  }
+
+  return(so)
+}
+
+
+
+
+#' Fix barcode labels
+#'
+#' Rename metadata entry 'CellTypes' to 'Barcode'. This is a fix implemented to correct an error from an earlier analysis pipeline. Analyses post January 2020 do not require this fix.
+#'
+#'
+#' @param so Seurat Object
+#' @name fixBarcodeLabel
+#' @return Seurat object
+#'
+fixBarcodeLabel <- function (so){
+  # merge CellType and Barcode, if necessary
+  meta.data.names <- names(so@meta.data)
+
+  if (("CellType" %in% meta.data.names) & ("Barcode" %in% meta.data.names)){
+    if (DefaultAssay(so) == "integrated"){
+      barcode <- so@meta.data[["Barcode"]]
+      celltype <- so@meta.data[["CellType"]]
+      barcode[is.na(barcode)] <- celltype[is.na(barcode)]
+    } else {
+      barcode <- so@meta.data[["CellType"]]
+    }
+  } else if (!("CellType" %in% meta.data.names) & ("Barcode" %in% meta.data.names)) {
+    barcode <- so@meta.data[["Barcode"]]
+  } else if (("CellType" %in% meta.data.names) & !("Barcode" %in% meta.data.names)) {
+    barcode <- so@meta.data[["CellType"]]
+
+  } else {stop("Problem with CellType/Barcode metadata detected. Troubleshooting required")}
+
+  so@meta.data[["Barcode"]] <- barcode
+
+  return(so)
+}
+
+#' Set cluster resolution
+#'
+#' Set 'Seurat_Clusters' metadata entry to quieried cluster resolution
+#'
+#'
+#' @param so Seurat Object
+#' @param cluster.resolution Seurat Object
+#' @name setResolution
+#' @return Seurat object
+#'
+setResolution <- function (so, cluster.resolution){
+
+  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1, modularity.fxn = 1)
+
+  return(so)
+}
+
+
+#' prep Gene List
+#'
+#' Ensure is available and represented correctly.
+#'
+#' @param so Seurat Object
+#' @param global.enviroment global.enviroment <- object()
+#' @name prepGeneList
+#' @return Named vector of available genes
+#'
+#'
+prepGeneList <- function (so, global.enviroment){
+
+  # global.enviroment <- object()
+
+
+  if (("gNames.list_master" %in% global.enviroment)){
+    gNames.list <- NULL
+    for (i in 1:length(gNames.list_master)){
+      gNames.list <- c(gNames.list, gNames.list_master[[i]] )
+    }
+
+    gNames.df <-  data.frame(n = gsub("\\..*","",as.vector(names(gNames.list))), g = as.vector(gNames.list))
+    gNames.df <- unique(gNames.df)
+    gNames.list <- as.vector(gNames.df$g)
+    names(gNames.list) <- as.vector(gNames.df$n)
+  }  else {
+
+    # check if gene-ensemble pair are present in meta-data
+    av.meta <- so@assays[["RNA"]]@meta.features
+
+    if (all(c("SYMBOL", "ENSEMBL") %in% colnames(av.meta))){
+      gNames.list <- as.vector(av.meta$SYMBOL)
+      names(gNames.list) <- as.vector(av.meta$ENSEMBL)
+    }
+
+  }
+
+  # ensure gene list is available
+  stopifnot(exists("gNames.list"))
+
+  return(gNames.list)
+}
+
+
+#' Return load path
+#'
+#' For specified file and directory, return a load path
+#'
+#'
+#' @param file file name
+#' @param directory directory
+#' @name getLoadPath
+#' @return Character. Load path.
+#'
+getLoadPath <- function (file, directory = NULL){
+  if (is.null(directory)) directory <- ""
+  load.path <- paste(directory, file, sep = "")
+  return(load.path)
+}
+
+#' prep Seurat
+#'
+#' Preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+#'
+#' @param so Seurat objects
+#' @name prepSeurat
+#' @return Seurat object
+#'
+prepSeurat <- function (so){
+
+  so <- fixBarcodeLabel(so)
+  so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+
+  return(so)
+}
+
+
+#' Subset Seurat Object
+#'
+#' Subset Seurat object according to specific metadata field. Only specified metadata entries are retained, while remaining of data is omitted.
+#'
+#'
+#' @param so Seurat object
+#' @param subset.df Data.frame specifying which field (subset.df$field) to subset on, and which field entries to retain (subset.df$subgroups).
+#' @name subsetSeurat
+#' @return Seurat object
+#' @examples
+#'
+#' # define subset parameters
+#' subset.df <- data.frame(field = "seurat_clusters", subgroups = c(0,2,3,5,6,7,9,15)) # tumor population from Renca 4000ds T12 sample
+#'
+#' # subset data
+#' so <- subsetSeurat(so, subset.df)
+#'
+subsetSeurat <- function (so, subset.df){
+
+  # check if subset input is validd
+  if (is.na(unique(subset.df$field))){
+    subset.flag <- FALSE
+  } else if ( unique(subset.df$field) %in% names(so@meta.data)) {
+    subset.flag <- TRUE
+  } else {
+    subset.flag <- FALSE
+  }
+
+
+  # subset data
+  if (subset.flag){
+    pattern <- paste( "^", as.vector(subset.df$subgroups), "$", collapse="|")
+    pattern <- gsub(" ", "", pattern)
+    cur.field <- as.vector(unique(subset.df$field))
+    so <- subset(x = so, cells = which(grepl(pattern, as.character(so@meta.data[[cur.field]]))))
+  }
+
+  return(so)
+}
+
+
+

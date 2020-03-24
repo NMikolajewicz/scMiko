@@ -2,7 +2,7 @@
 % Please edit documentation in R/M1_functions.R, R/module_functions.R
 \name{m1.analysisParameters}
 \alias{m1.analysisParameters}
-\title{M1 Load Module 1-Specific Parameter Specifications}
+\title{Load parameter specifications for Module 1}
 \usage{
 m1.analysisParameters(
   which.data,

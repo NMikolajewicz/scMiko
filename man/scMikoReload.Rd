@@ -2,10 +2,21 @@
 % Please edit documentation in R/utility_functions.R
 \name{scMikoReload}
 \alias{scMikoReload}
+\alias{mergeSeuratList}
 \title{reload scMiko}
 \usage{
 scMikoReload()
+
+mergeSeuratList(so.list)
+}
+\arguments{
+\item{so.list}{List of seurat objects}
+}
+\value{
+Seurat Object
 }
 \description{
 Function that detachs and attached scMiko package.
+
+Merges list of seurat objects without any normalization of batch correction
 }

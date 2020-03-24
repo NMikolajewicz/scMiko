@@ -1,4 +1,4 @@
-#' M1 Load Module 1-Specific Parameter Specifications
+#' Load parameter specifications for Module 1
 #'
 #' Load parameter specification list for Module 1 (preprocessing and QC). If not specified, default settings are applied.
 #'
@@ -365,6 +365,65 @@ m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
   return(output)
 }
 
+
+
+#' Assign barcodes labels to seurat metadata
+#'
+#' Assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.
+#'
+#' @param so Seurat Object
+#' @param which.strata Barcode labeling parameter. If NA, "subset_group" metadata field is set to "pooled".
+#' @name m1.barcodeLabels
+#' @return Seurat Object (with updated metadata)
+#'
+m1.barcodeLabels <- function(so, which.strata) {
+  # set Seurat subset labels for cells of interest
+  if (!is.na(which.strata)){
+    pattern <- paste(which.strata, collapse="|")
+    so <- Seurat::SubsetData(object = so, cells = (grepl(pattern, so@meta.data[["Barcode"]])))
+
+    for (i in 1:length(which.strata)){
+      so@meta.data[["subset_group"]][grepl(which.strata[i], so@meta.data[["Barcode"]])] <- which.strata[i]
+    }
+  } else {
+    so@meta.data[["subset_group"]] <- "pooled"
+  }
+
+  return(so)
+
+}
+
+
+#' Calculate mitochondrial content
+#'
+#' Calculate cell-level mitochondrial content based on mapped transcripts and store in Seurat "percent.mt' metadata field.
+#'
+#' @param so Seurat Object
+#' @param gNames Named gene list; entries are Symbols, names are Ensemble.
+#' @param omit.na Logical specifying whether to omit NA entries (present when unfiltered 10x dataset is used). Default is True.
+#' @name m1.getMitoContent
+#' @return Seurat Object (with updated metadata)
+#'
+m1.getMitoContent <- function(so, gNames, omit.na = T) {
+  hs <- grep("^ENSG",rownames(so[["RNA"]]),value=T)
+  mm <- grep("^ENSMUSG",rownames(so[["RNA"]]),value=T)
+  pctHS <- PercentageFeatureSet(so, features=hs)
+  pctMM <- PercentageFeatureSet(so, features=mm)
+
+  # find relevant entries (genes that were detected from master gene list)
+  f.mm <- intersect(names(gNames)[ grep("^mt-",gNames) ],rownames(so[["RNA"]]))
+  f.hs <- intersect(names(gNames)[ grep("^MT-",gNames) ],rownames(so[["RNA"]]))
+  f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[["RNA"]]))
+  so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
+
+  if (omit.na) {
+    # omit nan entries - they occur when cell ranger output data is unfiltered.
+    so <-so[ , !(is.nan(so@meta.data[["percent.mt"]]))]
+  }
+
+  return(so)
+
+}
 
 
 

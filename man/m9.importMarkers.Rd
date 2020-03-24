@@ -2,7 +2,7 @@
 % Please edit documentation in R/M9_functions.R, R/module_functions.R
 \name{m9.importMarkers}
 \alias{m9.importMarkers}
-\title{M9. Import Gene List}
+\title{Import gene list}
 \usage{
 m9.importMarkers(
   query.format,

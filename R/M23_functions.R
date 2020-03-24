@@ -1,5 +1,5 @@
 
-#' M23. Stratify gene expression into high and low expression groups
+#' Stratify gene expression into high and low expression groups
 #'
 #' Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned.
 #'
