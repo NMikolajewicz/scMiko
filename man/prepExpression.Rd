@@ -13,5 +13,5 @@ prepExpression(so)
 Seurat Object
 }
 \description{
-Set correct assay and prep expression data for downstream analysis. This handles both intergrated and non-integrated datasets. If input is integrated dataset, set assay to RNA and normalized and resscale data. If input is non-integrated dataset, us scTransformed data for expression analysis.
+Ensures data are properly normalized and scaled. If intergrated dataset provided, Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow is applied and default assay is set to 'RNA'. Otherwise, if  non-integrated dataset is provided, SCT transform is assumed and default assay is set to 'SCT'. If non-intergrated data have not been process with SCT workflow, see m1.scNormScale() function.
 }
