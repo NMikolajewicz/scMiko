@@ -30,4 +30,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Hong Han and Kevin Brown from the Moffat Lab
+* Hong Han and Kevin Brown from the [Moffat Lab](http://moffatlab.ccbr.utoronto.ca/)
