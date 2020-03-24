@@ -147,20 +147,21 @@ prepSeurat <- function (so){
 subsetSeurat <- function (so, subset.df){
 
   # check if subset input is validd
-  if (is.na(subset.df$field)){
+  if (is.na(unique(subset.df$field))){
     subset.flag <- FALSE
-  } else if (subset.df$field %in% names(so.query@meta.data)) {
+  } else if ( unique(subset.df$field) %in% names(so@meta.data)) {
     subset.flag <- TRUE
   } else {
     subset.flag <- FALSE
   }
+
 
   # subset data
   if (subset.flag){
     pattern <- paste( "^", as.vector(subset.df$subgroups), "$", collapse="|")
     pattern <- gsub(" ", "", pattern)
     cur.field <- as.vector(unique(subset.df$field))
-    so.query <- SubsetData(object = so.query, cells = (grepl(pattern, so.query@meta.data[[cur.field]])))
+    so <- subset(x = so, cells = which(grepl(pattern, as.character(so@meta.data[[cur.field]]))))
   }
 
   return(so)
