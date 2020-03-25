@@ -566,7 +566,7 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
     mapped_genes <- mappedkeys(go.e2g)
 
     # Convert to a list
-    entrez2go.list <- as.list(go.map[mapped_genes])
+    entrez2go.list <- as.list(go.e2g[mapped_genes])
 
     # get matching GO terms
     which.match <- names(entrez2go.list) %in% all.genes.entrez
@@ -575,7 +575,7 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
     entrez2go.subset <- unique(unlist(lapply(entrez2go.list[which.match], names)))
 
     # map GO id to term
-    annots <-  AnnotationDbi::select(GO.db, keys=entrez2go.subset, columns=c("GOID", "TERM", "ONTOLOGY"), keytype="GOID")
+    annots <-  AnnotationDbi::select(GO.db::GO.db, keys=entrez2go.subset, columns=c("GOID", "TERM", "ONTOLOGY"), keytype="GOID")
 
     keep.which <- c()
     for (i in 1:length(which.ontology)){
@@ -599,6 +599,95 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
   }
 
   return(pathways)
+}
+
+
+#' Map Reactome/GO term to ID
+#'
+#' Map Reactome/GO term to ID
+#'
+#' @param term Reactome/GO term
+#' @param db Database to use for mapping. One of:
+#' \itemize{
+#' \item "Reactome" - Default
+#' \item "GO"
+#' }
+#' @param species Character specifying species. If specified, one of:
+#' \itemize{
+#' \item "Hs"
+#' \item "Mm"
+#' }
+#' @name term2id
+#' @return Reactome/GO ID
+#'
+term2id <- function(term, db = "Reactome", species = NULL){
+
+  if (db == "GO"){
+
+    annots <-  AnnotationDbi::select(GO.db::GO.db, keys=term, columns=c("GOID", "TERM", "ONTOLOGY"), keytype="TERM")
+    id <- annots$GOID
+
+  } else if (db == "Reactome"){
+
+    if (is.null(species)) stop("Must specify species")
+
+    if (species == "Hs"){
+      term.Hs <- paste("Homo sapiens: ",term, sep = "")
+      annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Hs, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
+    } else if (species == "Mm"){
+      term.Mm <- paste("Mus musculus: ",term, sep = "")
+      annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Mm, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
+    }
+    id <- annots$PATHID
+  }
+
+  return(id)
+
+}
+
+#' Map Reactome/GO ID to term
+#'
+#' Map Reactome/GO ID to term
+#'
+#' @param term Reactome/GO ID
+#' @param db Database to use for mapping. One of:
+#' \itemize{
+#' \item "Reactome" - Default
+#' \item "GO"
+#' }
+#' @param species Character specifying species. If specified, one of:
+#' \itemize{
+#' \item "Hs"
+#' \item "Mm"
+#' }
+#' @name id2term
+#' @return Reactome/GO term
+#'
+id2term <- function(id, db = "Reactome", species = NULL){
+
+  if (db == "GO"){
+
+    annots <-  AnnotationDbi::select(GO.db::GO.db, keys=id, columns=c("GOID", "TERM", "ONTOLOGY"), keytype="GOID")
+    term <- annots$TERM
+
+  } else if (db == "Reactome"){
+
+    annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=id, columns=c("PATHID","PATHNAME"), keytype="PATHID")
+    term.out <- annots$PATHNAME
+
+    if (!is.null(species)){
+      if (species == "Hs"){
+        term <- strsplit(term.out, "Homo sapiens: ", fixed = FALSE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      } else if (species == "Mm"){
+        term <- strsplit(term.out, "Mus musculus: ", fixed = FALSE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      }
+    } else {
+      term <- term.out
+    }
+  }
+
+  return(term)
+
 }
 
 
