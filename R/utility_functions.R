@@ -171,9 +171,9 @@ sym2entrez <- function(my.symbols, my.species){
 
   my.symbols <- as.vector(my.symbols)
   if (my.species == "Hs"){
-    db <- org.Hs.eg.db
+    db <- org.Hs.eg.db::org.Hs.eg.db
   } else if (my.species == "Mm"){
-    db <- org.Mm.eg.db
+    db <- org.Mm.eg.db::org.Mm.eg.db
   }
 
   my.entrez <- AnnotationDbi::select(db,
@@ -197,12 +197,12 @@ sym2ens <- function(my.symbols, my.species){
 
   my.symbols <- as.vector(my.symbols)
   if (my.species == "Hs"){
-    db <- org.Hs.eg.db
+    db <- org.Hs.eg.db::org.Hs.eg.db
   } else if (my.species == "Mm"){
-    db <- org.Mm.eg.db
+    db <- org.Mm.eg.db::org.Mm.eg.db
   }
 
-  my.ensembl <- select(db,
+  my.ensembl <- AnnotationDbi::select(db,
                        keys = my.symbols,
                        columns = c("ENSEMBL", "SYMBOL"),
                        keytype = "SYMBOL",

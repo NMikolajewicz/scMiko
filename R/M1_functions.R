@@ -116,15 +116,17 @@ m1.loadCellRanger <- function(import_set, subsample_factor, all_input_organisms,
   rownames(expression_matrix2) <- names(gNames)
 
   # assign species
-  if (length(all_input_organisms) > 1) {
-    orgIDs <- rownames(expression_matrix2)[ apply( expression_matrix2,2,which.max )];
-    orgs <- rep("Hs",ncol(expression_matrix2));
-    orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
-    names(orgs) <- colnames(expression_matrix2);
-  } else {
-    orgs <- rep(all_input_organisms,ncol(expression_matrix2));
-    names(orgs) <- colnames(expression_matrix2);
-  }
+  orgs <- scMiko::m1.inferSpecies(expression_matrix2, all_input_organisms)
+  # if (length(all_input_organisms) > 1) {
+  #   orgIDs <- rownames(expression_matrix2)[ apply( expression_matrix2,2,which.max )];
+  #   orgs <- rep("Hs",ncol(expression_matrix2));
+  #   orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
+  #   names(orgs) <- colnames(expression_matrix2);
+  # } else {
+  #   orgs <- rep(all_input_organisms,ncol(expression_matrix2));
+  #   names(orgs) <- colnames(expression_matrix2);
+  # }
+
 
   # create seurat object
   # so = CreateSeuratObject(counts = expression_matrix2,project="cell_ranger",min.cells=3,min.features=200)
@@ -184,16 +186,18 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
   gene_count2 <- gene_count
 
   # Infer organism
-  if (length(all_input_organisms) > 1) {
-    orgIDs <- rownames(gene_count2)[ apply( gene_count2,2,which.max )];
-    orgs <- rep("Hs",ncol(gene_count2));
-    orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
-    names(orgs) <- colnames(gene_count2);
-  } else {
-    orgs <- rep(all_input_organisms,ncol(gene_count2));
-    names(orgs) <- colnames(gene_count2);
-  }
+  orgs <- scMiko::m1.inferSpecies(gene_count2, all_input_organisms)
   df_cell$orgs <- orgs
+  # if (length(all_input_organisms) > 1) {
+  #   orgIDs <- rownames(gene_count2)[ apply( gene_count2,2,which.max )];
+  #   orgs <- rep("Hs",ncol(gene_count2));
+  #   orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
+  #   names(orgs) <- colnames(gene_count2);
+  # } else {
+  #   orgs <- rep(all_input_organisms,ncol(gene_count2));
+  #   names(orgs) <- colnames(gene_count2);
+  # }
+
 
   # filter out incorrect species genes immediately.
   all.genes <- rownames(gene_count2)
@@ -312,6 +316,7 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
 #' @name m1.loadTPM
 #' @return list containing Seurat Object and named gene vector.
 #'
+
 m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
 
 
@@ -322,11 +327,25 @@ m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
 
   # if (!exists("expression_matrix")) expression_matrix<-read.table(file = import_set[1], sep = '\t')
 
-  # assign to secondary matrix
-  expression_matrix2 <- expression_matrix
-
   # get gene and ensembl names
+  feature.names <- as.vector(expression_matrix$GENE)
+
+  # average duplicate rows (i.e., duplicate genes)
+  if (length(unique(feature.names)) < length(feature.names)){
+    expression_matrix.col <- expression_matrix
+    expression_matrix.col <- dplyr::select(expression_matrix.col, -c("GENE"))
+    expression_matrix.col$rowID <- seq(1, nrow(expression_matrix.col))
+    expression_matrix.col.noDup <-  WGCNA::collapseRows(expression_matrix.col, rowGroup = expression_matrix$GENE, rowID = expression_matrix.col$rowID, method = "Average")
+    new.mat <- as.data.frame(expression_matrix.col.noDup[["datETcollapsed"]])
+    new.mat$GENE <- rownames(new.mat)
+    expression_matrix2 <- new.mat
+  } else {
+    # assign to secondary matrix
+    expression_matrix2 <- expression_matrix
+  }
+
   feature.names <- as.vector(expression_matrix2$GENE)
+
   expression_matrix2 <- dplyr::select(expression_matrix2, -c("GENE"))
   rownames(expression_matrix2) <- feature.names
   stopifnot(length(all_input_organisms) == 1)
@@ -533,4 +552,60 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
 
   return(so)
 }
+
+
+
+#' Infer species from list of Ensemble ids
+#'
+#' For list of Ensemble ids, deconvolute species based on specified expectations.
+#'
+#' @param exp.mat Expression matrix (genes x cell); row names are ensemble IDs, col names are cell IDs.
+#' @param expected.species Character vector specifying which species are expected in expression matrix.
+#' \itemize{
+#' \item "Mm" - Mouse
+#' \item "Hs" - Human
+#' \item c("Mm", "Hs") - Mouse and Human.
+#' }
+#' @param rep.ens.method Method used to sample representative Ensemble ID for each cell (i.e., column).
+#' \itemize{
+#' \item "orig" - Original method; computation slower than alternative.
+#' \item "alt" - Default. Alternative method;
+#' \item c("Mm", "Hs") - Mouse and Human.
+#' }
+#' @name m1.inferSpecies
+#' @return Seurat Object
+#'
+m1.inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
+
+  # Infer organism
+  if (length(expected.species) > 1) {
+
+    # get representative Ensemble for each cell
+    if (rep.ens.method == "orig"){
+      orgIDs <- rownames(exp.mat)[ apply( exp.mat,2,which.max )]
+    } else if (rep.ens.method == "alt"){
+      n <- 1000
+      nc <- ncol(expression_matrix2)
+      z <- split(colnames(expression_matrix2), rep(1:ceiling(nc/n), each=n, length.out=nc))
+      orgIDs <- character()
+      for (i in names(z)) {
+        chunk <- expression_matrix2[,z[[i]]]
+        b <- rownames(chunk)[apply(chunk,2,which.max)]
+        orgIDs <- c(orgIDs,b)
+        rm(list=c("chunk","b"))
+      }
+      rm(list=c("n","nc","z"))
+    }
+
+    orgs <- rep("Hs",ncol(exp.mat));
+    orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
+    names(orgs) <- colnames(exp.mat);
+  } else {
+    orgs <- rep(expected.species,ncol(exp.mat));
+    names(orgs) <- colnames(exp.mat);
+  }
+
+  return(orgs)
+
+  }
 
