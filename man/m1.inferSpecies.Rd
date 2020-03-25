@@ -20,12 +20,11 @@ m1.inferSpecies(exp.mat, expected.species, rep.ens.method = "alt")
 \itemize{
 \item "orig" - Original method; computation slower than alternative.
 \item "alt" - Default. Alternative method;
-\item c("Mm", "Hs") - Mouse and Human.
 }}
 }
 \value{
-Seurat Object
+Character vector specifying species of each cell in expression  matrix.
 }
 \description{
-For list of Ensemble ids, deconvolute species based on specified expectations.
+For given gene expression matrix, assign species to each cell (column) based on Ensemble IDs.
 }

@@ -557,7 +557,7 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
 
 #' Infer species from list of Ensemble ids
 #'
-#' For list of Ensemble ids, deconvolute species based on specified expectations.
+#' For given gene expression matrix, assign species to each cell (column) based on Ensemble IDs.
 #'
 #' @param exp.mat Expression matrix (genes x cell); row names are ensemble IDs, col names are cell IDs.
 #' @param expected.species Character vector specifying which species are expected in expression matrix.
@@ -570,10 +570,9 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
 #' \itemize{
 #' \item "orig" - Original method; computation slower than alternative.
 #' \item "alt" - Default. Alternative method;
-#' \item c("Mm", "Hs") - Mouse and Human.
 #' }
 #' @name m1.inferSpecies
-#' @return Seurat Object
+#' @return Character vector specifying species of each cell in expression  matrix.
 #'
 m1.inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
 

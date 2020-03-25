@@ -528,4 +528,78 @@ subsetSeurat <- function (so, subset.df){
 }
 
 
+#' Returns list of annotations for given Entrez gene IDs
+#'
+#' Returns list of Reactome or GO annotations for given Entrez gene IDs
+#'
+#' @param query.genes Entrez IDs of query genes
+#' @param db Database to retrieve annotations from. One of:
+#' \itemize{
+#' \item "Reactome" - Default
+#' \item "GO"
+#' }
+#' @param ontology GO ontologies to retrieve if GO db is selected. One of:
+#' \itemize{
+#' \item "BP" - Default. Biological processes
+#' \item "MF" - Molecular functions
+#' \item "CC" - Cellular components
+#' }
+#' @param species "Mm" or "Hs". Default is "Hs".
+#' @name getAnnotationPathways
+#' @return Named list of vectors with gene sets.
+#'
+getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c("BP"), species = c("Hs")){
+
+  if (db == "GO"){
+
+    which.ontology <- ontology
+
+    if (species == "Hs"){
+      go.e2g <- org.Hs.egGO
+      go.g2e <- as.list(org.Hs.egGO2EG)
+    } else if (species == "Mm"){
+      go.e2g <- org.Mm.egGO
+      go.g2e <- as.list(org.Mm.egGO2EG)
+    }
+
+    # Get the entrez gene identifiers that are mapped to a GO ID
+    mapped_genes <- mappedkeys(go.e2g)
+
+    # Convert to a list
+    entrez2go.list <- as.list(go.map[mapped_genes])
+
+    # get matching GO terms
+    which.match <- names(entrez2go.list) %in% all.genes.entrez
+
+    # get GO ids that overlap with geneset
+    entrez2go.subset <- unique(unlist(lapply(entrez2go.list[which.match], names)))
+
+    # map GO id to term
+    annots <-  AnnotationDbi::select(GO.db, keys=entrez2go.subset, columns=c("GOID", "TERM", "ONTOLOGY"), keytype="GOID")
+
+    keep.which <- c()
+    for (i in 1:length(which.ontology)){
+      stopifnot(which.ontology[i] %in% c("BP", "MF", "CC"))
+      keep.which <- c(keep.which, annots$ONTOLOGY %in% which.ontology[i])
+    }
+    annots.ontology <- annots[keep.which, ]
+
+
+    # filter genesets according to whats left
+    go.g2e.filtered <- go.g2e[names(go.g2e) %in% annots.ontology$GOID]
+    g2t.map <- annots.ontology$TERM
+    names(g2t.map) <- annots.ontology$GOID
+    names(go.g2e.filtered) <- g2t.map[names(go.g2e.filtered)]
+
+    pathways <- go.g2e.filtered
+
+  } else if (db == c("Reactome")){
+    pathways <- reactomePathways(all.genes.entrez)
+
+  }
+
+  return(pathways)
+}
+
+
 
