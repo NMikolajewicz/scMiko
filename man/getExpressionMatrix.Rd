@@ -2,9 +2,14 @@
 % Please edit documentation in R/utility_functions.R
 \name{getExpressionMatrix}
 \alias{getExpressionMatrix}
-\title{Get scaled expression matrix from Seurat Object}
+\title{Get expression matrix from Seurat Object}
 \usage{
-getExpressionMatrix(so, only.variable = F, which.assay = NULL)
+getExpressionMatrix(
+  so,
+  only.variable = F,
+  which.assay = NULL,
+  which.data = "scale"
+)
 }
 \arguments{
 \item{so}{Seurat Object}
@@ -12,10 +17,16 @@ getExpressionMatrix(so, only.variable = F, which.assay = NULL)
 \item{only.variable}{Logical indicating whether to include variable features only or not.}
 
 \item{which.assay}{Seurat assay to get data frome. Default is DefaultAssay(so).}
+
+\item{which.data}{Specify which data to use (refers to slots in Seurat object assay). One of:
+\itemize{
+\item "scale" - Default
+\item "data"
+}}
 }
 \value{
 gene x cell expression matrix
 }
 \description{
-Get scaled expression matrix from Seurat Object
+Get expression matrix from Seurat Object
 }
