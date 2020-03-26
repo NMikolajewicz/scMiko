@@ -51,3 +51,94 @@ flex.multiTabTables <- function(df.list, df.list.name) {
   return(out)
 
 }
+
+
+
+
+#' Generate multi-tab analysis log list for flexdashboard
+#'
+#' Prepares list of prior analysis logs for multi-tab table presentation in flexdashboards.
+#'
+#' @param module.logs Character vector specifying name of prior analysis logs available in global enviroment. Must have "df.log_Module_" stem.
+#' @name flex.multiTabLogs
+#' @return flexdashboard compatable list of analysis logs
+#' @examples
+#'
+#' '''{r multi tab log}
+#' out <- flex.multiTabLogs(module.logs)
+#' '''
+#'
+#' `r paste(knitr::knit(text = paste(out, collapse = '\n')))`
+#'
+flex.multiTabLogs <- function(module.logs) {
+
+  out <- lapply(seq_along(module.logs), function(i) {
+
+    module.n <- as.numeric(gsub("[^\\d]+", "", module.logs[i], perl=TRUE))
+
+    a1 <- knitr::knit_expand(text = sprintf("\nLog (Module %s)", paste(module.n)))
+    a2 <- knitr::knit_expand(text = "\n=====================================")
+    a3 <- knitr::knit_expand(text = sprintf("\n```{r %s}", paste("mod_", i, sep = ""))) # start r chunk
+    a4<- knitr::knit_expand(text = sprintf("\nknitr::kable(%s)",module.logs[i]))
+    a5 <- knitr::knit_expand(text = "\n```\n") # end r chunk
+
+    paste(a1, a2, a3, a4, a5, collapse = '\n') # collapse together all lines with newline separator
+  })
+
+  return(out)
+
+}
+
+
+#' Outputs datatable with print buttom options
+#'
+#' Outputs datatable with print buttom options
+#'
+#' @param df data.frame
+#' @name flex.asDT
+#' @return data.table
+#'
+flex.asDT <- function(df) {
+
+  if (class(df) == "data.frame"){
+    dt <-  datatable(df,
+                     filter = 'top',
+                     extensions = 'Buttons',
+                     options = list(pageLength = 50,
+                                    dom = 'Bfrtip',
+                                    buttons = c('copy', 'csv', 'pdf')))
+  } else {
+    dt <- NULL
+  }
+
+
+  return(dt)
+
+}
+
+
+#' Generate multi-tab ggplot handle list for flexdashboard
+#'
+#' Prepares list of ggplot handles for multi-tab plot presentation in flexdashboards.
+#'
+#' @param df data.frame
+#' @name flex.multiTabPlot
+#' @return data.table
+#'
+flex.asDT <- function(df) {
+
+  if (class(df) == "data.frame"){
+    dt <-  datatable(df,
+                     filter = 'top',
+                     extensions = 'Buttons',
+                     options = list(pageLength = 50,
+                                    dom = 'Bfrtip',
+                                    buttons = c('copy', 'csv', 'pdf')))
+  } else {
+    dt <- NULL
+  }
+
+
+  return(dt)
+
+}
