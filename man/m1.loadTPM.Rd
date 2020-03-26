@@ -23,5 +23,5 @@ m1.loadTPM(import_set, subsample_factor, all_input_organisms, dir)
 list containing Seurat Object and named gene vector.
 }
 \description{
-Load preprocessed TPM data (e.g., Neftel 2019 datasets)
+Load preprocessed TPM data (e.g., Neftel 2019 datasets). While originally developed for TPM matrices, this function extends to any expression matrix.
 }
