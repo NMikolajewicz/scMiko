@@ -639,14 +639,16 @@ term2id <- function(term, db = "Reactome", species = NULL){
       }
       annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Hs, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
     } else if (species == "Mm"){
-      term.Mm <- paste("Mus musculus: ",term, sep = "")
-    } else {
-      term.Mm <- term
+      if (!(grepl("Mus musculus: ", term))){
+        term.Mm <- paste("Mus musculus: ",term, sep = "")
+      } else {
+        term.Mm <- term
+      }
+      annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Mm, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
     }
-    annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Mm, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
     id <- annots$PATHID
+    return(id)
   }
-  return(id)
 }
 
 
@@ -722,11 +724,12 @@ id2term <- function(id, db = "Reactome", species = NULL){
 #'
 searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL){
 
+
   if (is.null(db)) db <- c("Reactome", "GO")
 
   if ( "Reactome" %in% db){
 
-    term.id.list <- as.list(reactomePATHNAME2ID)
+    term.id.list <- as.list(reactome.db::reactomePATHNAME2ID)
 
     # filter by query
     term.id.names <- names(term.id.list)
@@ -753,7 +756,7 @@ searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL)
 
   if ("GO" %in% db){
 
-    term.id.list <- as.list(GOTERM)
+    term.id.list <- as.list(GO.db::GOTERM)
 
     go.term.list <- lapply(term.id.list, function(x) x@Term)
     go.ontology.list <- lapply(term.id.list, function(x) x@Ontology)
@@ -787,5 +790,56 @@ searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL)
   return(q.final)
 }
 
+
+
+#' Get Reactome/GO geneset
+#'
+#' Retrieves Reactome/GO geneset using specified annotation ID
+#'
+#' @param id Reactome/GO identifier. Reactome has "R-" prefix; GO has "GO" prefix.
+#' @param my.species Specify species; ensures that correct gene symbols are retrieved.
+#' @name id2geneset
+#' @return Character vector of gene symbols belonging to Reactome/GO geneset.
+#'
+id2geneset <- function(id, my.species){
+
+  if (grepl("GO", id)){
+    db = "GO"
+  } else if (grepl("R-", id)){
+    db = "Reactome"
+  } else {
+    stop("ID is invalid. Check input.")
+  }
+
+  if (db == "GO"){
+
+    if (my.species == "Hs"){
+      my.entrez.Hs <- revmap(org.Hs.egGO)[[id]]
+      my.symbol <- entrez2sym(my.entrez = my.entrez.Hs, my.species = "Hs")
+    } else if (my.species == "Mm"){
+      my.entrez.Mm <- revmap(org.Mm.egGO)[[id]]
+      my.symbol <- entrez2sym(my.entrez = my.entrez.Mm, my.species = "Mm")
+    }
+
+  } else if (db == "Reactome"){
+
+    reactome.list <- as.list(reactomePATHID2EXTID)
+    reactome.query <- reactome.list[names(reactome.list) %in% id]
+    stopifnot(length(reactome.query) == 1)
+    my.entrez <- unlist(reactome.query)
+
+    if (my.species == "Hs"){
+      my.symbol <- entrez2sym(my.entrez = my.entrez, my.species = "Hs")
+    } else if (my.species == "Mm"){
+      my.symbol <- entrez2sym(my.entrez = my.entrez, my.species = "Mm")
+    }
+
+  }
+
+  gene.set <- my.symbol$SYMBOL
+
+  return(gene.set)
+
+}
 
 
