@@ -632,18 +632,23 @@ term2id <- function(term, db = "Reactome", species = NULL){
     if (is.null(species)) stop("Must specify species")
 
     if (species == "Hs"){
-      term.Hs <- paste("Homo sapiens: ",term, sep = "")
+      if (!(grepl("Homo sapiens: ", term))){
+        term.Hs <- paste("Homo sapiens: ",term, sep = "")
+      } else {
+        term.Hs <- term
+      }
       annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Hs, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
     } else if (species == "Mm"){
       term.Mm <- paste("Mus musculus: ",term, sep = "")
-      annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Mm, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
+    } else {
+      term.Mm <- term
     }
+    annots <- AnnotationDbi::select(reactome.db::reactome.db, keys=term.Mm, columns=c("PATHID","PATHNAME"), keytype="PATHNAME")
     id <- annots$PATHID
   }
-
   return(id)
-
 }
+
 
 #' Map Reactome/GO ID to term
 #'
@@ -688,6 +693,98 @@ id2term <- function(id, db = "Reactome", species = NULL){
 
   return(term)
 
+}
+
+
+#' Search Reactome/GO databases for terms that match query
+#'
+#' Searches Reactome/GO databases using query stem (i.e., incomplete term) and returns all matches.
+#'
+#' @param query Query term. A character.
+#' @param db Database to search, if specified. One of:
+#' \itemize{
+#' \item "Reactome"
+#' \item "GO"
+#' }
+#' @param species Character specifying species, if specified. One of:
+#' \itemize{
+#' \item "Hs"
+#' \item "Mm"
+#' }
+#' @param ontology Character specifying GO ontology to filter terms by. If unspecified, one or more of:
+#' \itemize{
+#' \item "BP" - biological processes
+#' \item "MF" - molecular functions
+#' \item "CC" - cellular compartment
+#' }
+#' @name searchAnnotations
+#' @return dataframe of terms that match query
+#'
+searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL){
+
+  if (is.null(db)) db <- c("Reactome", "GO")
+
+  if ( "Reactome" %in% db){
+
+    term.id.list <- as.list(reactomePATHNAME2ID)
+
+    # filter by query
+    term.id.names <- names(term.id.list)
+    which.match <- grepl(query, term.id.names)
+    term.id.list.match <- term.id.list[which.match]
+
+    # filter by species
+    term.id.names <- names(term.id.list.match)
+
+    if (is.null(species)){
+      term.id.list.match <- term.id.list.match
+    } else if (species == "Mm"){
+      which.match <- grepl("Mus musculus: ", term.id.names)
+      term.id.list.match <-  term.id.list.match[which.match]
+    } else if (species == "Hs"){
+      which.match <- grepl("Homo sapiens: ", term.id.names)
+      term.id.list.match <-  term.id.list.match[which.match]
+    }
+
+    query.match.reactome <- data.frame(id = unlist(term.id.list.match), term = names(term.id.list.match))
+    rownames(query.match.reactome) <- c()
+
+  }
+
+  if ("GO" %in% db){
+
+    term.id.list <- as.list(GOTERM)
+
+    go.term.list <- lapply(term.id.list, function(x) x@Term)
+    go.ontology.list <- lapply(term.id.list, function(x) x@Ontology)
+
+    go.df <- data.frame(id = names(go.term.list), term = unlist(go.term.list), ontology = unlist(go.ontology.list))
+    go.df$ontology <- as.character(go.df$ontology)
+
+    go.df.filter <- go.df[grepl(query, go.df$term), ]
+
+    if (!is.null(ontology)){
+      for(i in 1:length(ontology)){
+        go.df.filter <- go.df.filter[(go.df.filter$ontology %in% ontology[i]), ]
+      }
+    }
+
+    query.match.go <- go.df.filter
+    rownames(query.match.go) <- c()
+
+  }
+
+  if (exists("query.match.go") & exists("query.match.reactome") ){
+    q1 <- data.frame(db = "GO", id = query.match.go$id, term = query.match.go$term, ontology = query.match.go$ontology)
+    q2 <- data.frame(db = "Reactome", id = query.match.reactome$id, term = query.match.reactome$term, ontology = NA)
+    q.final <- bind_rows(q1, q2)
+  } else if (exists("query.match.go") & (!exists("query.match.reactome")) ){
+    q.final <- data.frame(db = "GO", id = query.match.go$id, term = query.match.go$term, ontology = query.match.go$ontology)
+  } else if ((!exists("query.match.go")) & exists("query.match.reactome") ){
+    q.final <- data.frame(db = "Reactome", id = query.match.reactome$id, term = query.match.reactome$term, ontology = NA)
+  }
+
+  return(q.final)
 }
 
 
