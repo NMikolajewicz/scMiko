@@ -843,3 +843,31 @@ id2geneset <- function(id, my.species){
 }
 
 
+
+#' Convert entrez id to gene symbol
+#'
+#' Entrez ID is converted to gene symbol using org.Hs.eg.db or org.Mm.eg.db annotation databases.
+#'
+#' @param my.symbols Character. Vector of Entrez IDs.
+#' @param my.species Character. Species.
+#' @name entrez2sym
+#' @return data.frame mapping Entrez IDs to gene Symbols.
+#'
+entrez2sym <- function(my.entrez, my.species){
+
+  my.entrez <- as.vector(my.entrez)
+  if (my.species == "Hs"){
+    db <- org.Hs.eg.db::org.Hs.eg.db
+  } else if (my.species == "Mm"){
+    db <- org.Mm.eg.db::org.Mm.eg.db
+  }
+
+  my.symbol <- AnnotationDbi::select(db,
+                                     keys = my.entrez,
+                                     columns = c("ENTREZID", "SYMBOL"),
+                                     keytype = "ENTREZID")
+
+  return(my.symbol)
+}
+
+
