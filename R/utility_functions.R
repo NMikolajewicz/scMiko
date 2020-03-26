@@ -871,27 +871,37 @@ entrez2sym <- function(my.entrez, my.species){
 }
 
 
-#' Get scaled expression matrix from Seurat Object
+#' Get expression matrix from Seurat Object
 #'
-#' Get scaled expression matrix from Seurat Object
+#' Get expression matrix from Seurat Object
 #'
 #' @param so Seurat Object
 #' @param only.variable Logical indicating whether to include variable features only or not.
 #' @param which.assay Seurat assay to get data frome. Default is DefaultAssay(so).
+#' @param which.data Specify which data to use (refers to slots in Seurat object assay). One of:
+#' \itemize{
+#' \item "scale" - Default
+#' \item "data"
+#' }
 #' @name getExpressionMatrix
 #' @return gene x cell expression matrix
 #'
-getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL){
+getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale"){
 
   # specify assay
   if (is.null(which.assay)) which.assay <- DefaultAssay(so)
 
   # get complete matrix
-  exp.mat.complete <- so@assays[[which.assay]]@scale.data
+  if (which.data == "scale"){
+    exp.mat.complete <- so@assays[[which.assay]]@scale.data
+  } else if (which.data == "data"){
+    exp.mat.complete <- as.matrix(so@assays[[which.assay]]@data)
+  }
+
 
   if (only.variable){
     var.feat <-  VariableFeatures(so)
-    exp.mat <- exp.mat[rownames(exp.mat) %in% var.feat, ]
+    exp.mat <- exp.mat.complete[rownames(exp.mat.complete) %in% var.feat, ]
   } else {
     exp.mat <- exp.mat.complete
   }

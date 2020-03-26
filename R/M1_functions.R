@@ -337,6 +337,7 @@ m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
     expression_matrix.col$rowID <- seq(1, nrow(expression_matrix.col))
     expression_matrix.col.noDup <-  WGCNA::collapseRows(expression_matrix.col, rowGroup = expression_matrix$GENE, rowID = expression_matrix.col$rowID, method = "Average")
     new.mat <- as.data.frame(expression_matrix.col.noDup[["datETcollapsed"]])
+    new.mat <- dplyr::select(new.mat, -c("rowID"))
     new.mat$GENE <- rownames(new.mat)
     expression_matrix2 <- new.mat
   } else {
