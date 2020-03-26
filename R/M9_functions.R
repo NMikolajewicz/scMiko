@@ -44,7 +44,7 @@ m9.importMarkers <- function(query.format, input.file = NULL, markers.of.interes
       spread_sheet_col <- 1
       marker_set_name <- marker_set_name[spread_sheet_col]
       markers.of.interest <- as.data.frame(as.vector(markers.of.interest[ , spread_sheet_col]))
-      colnames(markers_of_interest) <- marker_set_name
+      colnames(markers.of.interest) <- marker_set_name
     } else if (which.col == "all"){
       marker_set_name <- ""
     }

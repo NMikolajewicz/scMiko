@@ -900,11 +900,50 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
 
 
   if (only.variable){
-    var.feat <-  VariableFeatures(so)
+    if (which.assay == "SCT"){
+      var.feat <-  rownames(so@assays[[which.assay]]@scale.data)
+    } else {
+      var.feat <-  VariableFeatures(so)
+    }
+
     exp.mat <- exp.mat.complete[rownames(exp.mat.complete) %in% var.feat, ]
   } else {
     exp.mat <- exp.mat.complete
   }
 
   return(exp.mat)
+}
+
+
+#' Remove "ï.." prefix that is appended to csv header
+#'
+#' Remove "ï.." prefix that is appended to csv header
+#'
+#' @param x Character vector
+#' @name rmvCSVprefix
+#' @return gene x cell expression matrix
+#'
+rmvCSVprefix <- function(x){
+  pattern <- "ï.."
+  x <- stringr::str_replace(x, pattern, "")
+  return(x)
+}
+
+#' Get cells that express query gene
+#'
+#' Get cells that express query gene above specified threshold
+#'
+#' @param so Seurat Object
+#' @param query Query gene. A character.
+#' @param expression.threshold Numeric. Return cells that express query above threshold value. Default is 0.
+#' @param which.data Seurat data slot ("data", "scale")
+#' @name getExpressingCells
+#' @return Character vector of cell barcodes/ids
+#'
+getExpressingCells <- function(so, query, expression.threshold = 0, which.data = "data"){
+  exp.data.all<- getExpressionMatrix(so, which.data = which.data)
+  exp.data.query <- exp.data.all[rownames(exp.data.all) %in% query, ]
+  expressing.cells <- names(exp.data.query)[exp.data.query > expression.threshold]
+
+  return(expressing.cells)
 }

@@ -303,7 +303,7 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
 
 #' Load preprocessed TPM data (e.g., Neftel 2019 datasets)
 #'
-#' Load preprocessed TPM data (e.g., Neftel 2019 datasets)
+#' Load preprocessed TPM data (e.g., Neftel 2019 datasets). While originally developed for TPM matrices, this function extends to any expression matrix.
 #'
 #' @param import_set Character specifying TPM matrix file name.
 #' @param subsample_factor Numeric [0,1]. Subsampling factor
@@ -524,7 +524,7 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
   # plan(strategy = "multisession", workers = parallel::detectCores())
 
   if (enable.parallelization){
-    plan(strategy = "multisession", workers = n.workers)
+    future::plan(strategy = "multisession", workers = n.workers)
     options(future.globals.maxSize = max.memory)
   }
 
@@ -537,18 +537,33 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
     # Find variable features
     so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = c(0.0125, 3), dispersion.cutoff = c(0.5, Inf))
     # Scale data
-    so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress)
+    if (is.null(var2regress)){
+      so <- ScaleData(so, features = rownames(so))
+    } else {
+      so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress)
+    }
+
 
   } else if (method == "SCT"){
 
     # apply sctransform (regularized negative binomial regression)
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
-    so <- SCTransform(so,
-                      vars.to.regress = vars2regress,
-                      verbose = FALSE,
-                      return.only.var.genes = FALSE,
-                      variable.features.n = NULL,
-                      variable.features.rv.th = 1.3)
+    if (is.null(var2regress)){
+      so <- SCTransform(so,
+                        verbose = FALSE,
+                        return.only.var.genes = FALSE,
+                        variable.features.n = NULL,
+                        variable.features.rv.th = 1.3)
+    } else {
+      so <- SCTransform(so,
+                        vars.to.regress = vars2regress,
+                        verbose = FALSE,
+                        return.only.var.genes = FALSE,
+                        variable.features.n = NULL,
+                        variable.features.rv.th = 1.3)
+    }
+
+
   }
 
   return(so)
