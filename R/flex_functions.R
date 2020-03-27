@@ -121,24 +121,45 @@ flex.asDT <- function(df) {
 #'
 #' Prepares list of ggplot handles for multi-tab plot presentation in flexdashboards.
 #'
-#' @param df data.frame
+#' @param plt.list list of ggplot handles
+#' @param plt.list.name list name
+#' @param fig.width Numeric. Figure width. Default is 5.
+#' @param fig.height Numeric. Figure width. Default is 5.
 #' @name flex.multiTabPlot
+#' @return flexdashboard compatable list of plots
+#'
+flex.multiTabPlot <- function(plt.list, plt.list.name, fig.width = 5, fig.height = 5) {
+  out <- lapply(seq_along(plt.list), function(i) {
+    a1 <- knitr::knit_expand(text = sprintf("### %s\n", names(plt.list)[i])) # tab header
+    a2 <- knitr::knit_expand(text = sprintf("\n```{r %s, fig.width=%d, fig.height=%d}", paste(i, plt.list.name), fig.width, fig.height)) # start r chunk
+    a3 <- knitr::knit_expand(text = sprintf("\nprint(plt.list[[%d]])", i))
+    a4 <- knitr::knit_expand(text = "\n```\n") # end r chunk
+    paste(a1, a2, a3, a4, collapse = '\n') # collapse together all lines with newline separator
+  })
+  return(out)
+}
+
+
+
+#' Generate multi-tab list of plotly figures for flexdashboard
+#'
+#' Prepares list of ggplot handles as plotly figures for multi-tab presentation in flexdashboards.
+#'
+#' @param plt.list list of ggplot handles
+#' @param plt.list.name list name
+#' @param fig.width Numeric. Figure width. Default is 5.
+#' @param fig.height Numeric. Figure width. Default is 5.
+#' @name flex.multiTabPlotly
 #' @return data.table
 #'
-flex.asDT <- function(df) {
-
-  if (class(df) == "data.frame"){
-    dt <-  datatable(df,
-                     filter = 'top',
-                     extensions = 'Buttons',
-                     options = list(pageLength = 50,
-                                    dom = 'Bfrtip',
-                                    buttons = c('copy', 'csv', 'pdf')))
-  } else {
-    dt <- NULL
-  }
-
-
-  return(dt)
-
+flex.multiTabPlotly <- function(plt.list, plt.list.name, fig.width = 5, fig.height = 5) {
+  out <- lapply(seq_along(plt.list), function(i) {
+    s1 <- paste("plotly::config(ggplotly(plt.list[[", i, "]]), toImageButtonOptions = list(format = 'svg', filename = 'myplot', width = 600, height = 700))", sep = "")
+    a1 <- knitr::knit_expand(text = sprintf("### %s\n", names(plt.list)[i])) # tab header
+    a2 <- knitr::knit_expand(text = sprintf("\n```{r %s,  fig.width=%d, fig.height=%d}", paste(i, plt.list.name), fig.width, fig.height)) # start r chunk
+    a3 <- knitr::knit_expand(text = sprintf("\n %s", s1))
+    a4 <- knitr::knit_expand(text = "\n```\n") # end r chunk
+    paste(a1, a2, a3, a4, collapse = '\n') # collapse together all lines with newline separator
+  })
+  return(out)
 }
