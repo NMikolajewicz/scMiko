@@ -970,3 +970,36 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 }
 
 
+#' Create/update list of genessets
+#'
+#' Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
+#'
+#' @param input.file Excel file (input). Must have ".xlsx" suffix. A character.
+#' @param output.file Rdata file (output). Must have ".Rdata" suffix. A character.
+#' @param dir Directory of input and output file (same folder). A character.
+#' @name updateGeneSets
+#' @return List of data.frames saved as Rdata file.
+#'
+updateGeneSets <- function(input.file, output.file, dir = ""){
+
+  gene.set.list <- list()
+
+  sheetNames <- openxlsx::getSheetNames(getLoadPath(input.file, dir))
+
+  for (i in 1:length(sheetNames)){
+    current.sheet <-  sheetNames[i]
+    gene.set <- readxl::read_excel(getLoadPath(input.file, dir), sheet = current.sheet)
+
+    gene.set.list[[current.sheet]] <- gene.set
+  }
+
+
+  save(gene.set.list, file=getLoadPath(output.file, dir))
+
+  return(paste(length(gene.set.list), " genesets successfully saved to '", getLoadPath(output.file, dir), "'", sep= ""))
+
+}
+
+
+
+
