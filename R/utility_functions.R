@@ -975,11 +975,15 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
 #'
 #' @param input.file Excel file (input). Must have ".xlsx" suffix. A character.
-#' @param output.file Rdata file (output). Must have ".Rdata" suffix. A character.
+#' @param output.file Rdata file (output). Must have ".rda" suffix. A character.
 #' @param dir Directory of input and output file (same folder). A character.
 #' @param dev.directory.flag Logical indicating whether to use developer specific director. Default is False. If true dir is ignored.
 #' @name updateGeneSets
 #' @return List of data.frames saved as Rdata file.
+#' @examples
+#' \dontrun{
+#' updateGeneSets("geneSets_MASTER_270320update.xlsx", "geneSets.rda", dev.directory.flag = T)
+#' }
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
@@ -993,21 +997,74 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
     output.dir <- dir
   }
 
-  sheetNames <- openxlsx::getSheetNames(getLoadPath(input.file, dir))
+  sheetNames <- openxlsx::getSheetNames(getLoadPath(input.file, input.dir))
 
   for (i in 1:length(sheetNames)){
     current.sheet <-  sheetNames[i]
-    gene.set <- readxl::read_excel(getLoadPath(input.file, dir), sheet = current.sheet)
+    gene.set <- readxl::read_excel(getLoadPath(input.file, input.dir), sheet = current.sheet)
 
     gene.set.list[[current.sheet]] <- gene.set
   }
 
 
-  save(gene.set.list, file=getLoadPath(output.file, dir))
+  save(gene.set.list, file=getLoadPath(output.file, output.dir))
 
-  return(paste(length(gene.set.list), " genesets successfully saved to '", getLoadPath(output.file, dir), "'", sep= ""))
+  return(paste(length(gene.set.list), " genesets successfully saved to '", getLoadPath(output.file, output.dir), "'", sep= ""))
 
 }
+
+
+
+
+#' Clean and filter gene list
+#'
+#' Clean gene list (i.e., remove NAs), convert to appropraite species, and keep only those present in seurat object.
+#'
+#' @param genes Character vector of genes
+#' @param so Seurat Object
+#' @param which.species Species
+#' @name cleanFilterGenes
+#' @return Character vector of genes
+#'
+cleanFilterGenes <- function(genes, so, which.species){
+
+  # clean dataset and include only those available in seurat object
+  cur.features <- genes
+  cur.features <- cur.features[!is.na(cur.features)]
+  # n.input <- length(cur.features)
+  # cur.features <- lapply(cur.features,  gene.species.filter, rownames(so@assays[[DefaultAssay(so)]]@data), which.species)
+  cur.features <- lapply(cur.features,  speciesConvert, rownames(so@assays[[DefaultAssay(so)]]@data), which.species)
+  cur.features <-as.vector(unlist(cur.features))
+  cur.features <- cur.features[!is.na(cur.features)]
+  # n.output <- length(cur.features)
+
+  return(cur.features)
+
+}
+
+
+#' Downsample single cell data
+#'
+#' Downsample data in Seurat object by specified factor
+#'
+#' @param so Seurat Object
+#' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
+#' @name downsampleSeurat
+#' @return Seurat Object
+#'
+downsampleSeurat <- function(so, subsample.factor){
+
+  if (subsample.factor < 1){
+    if (subsample.factor<0) stop("subsample.factor must be numeric between 0 and 1")
+    n.subset <- round(subsample.factor *ncol(so))
+    cell.ind <- sample(x = seq(1, ncol(so)), size = n.subset, replace = FALSE, prob = NULL)
+    so <- SubsetData(so , cells = cell.ind)
+
+  }
+  return(so)
+
+}
+
 
 
 
