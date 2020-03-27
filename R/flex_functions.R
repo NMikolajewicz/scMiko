@@ -7,7 +7,7 @@
 #' @name flex.multiTabTables
 #' @return flexdashboard compatable list of tables.
 #' @examples
-#'
+#' \dontrun{
 #' Tab Header 1
 #' =====================================
 #'
@@ -19,6 +19,7 @@
 #' '''
 #'
 #' `r paste(knitr::knit(text = paste(out, collapse = '\n')))`
+#' }
 #'
 flex.multiTabTables <- function(df.list, df.list.name) {
 
@@ -63,13 +64,14 @@ flex.multiTabTables <- function(df.list, df.list.name) {
 #' @name flex.multiTabLogs
 #' @return flexdashboard compatable list of analysis logs
 #' @examples
+#' \dontrun{
 #'
 #' '''{r multi tab log}
 #' out <- flex.multiTabLogs(module.logs)
 #' '''
 #'
 #' `r paste(knitr::knit(text = paste(out, collapse = '\n')))`
-#'
+#' }
 flex.multiTabLogs <- function(module.logs) {
 
   out <- lapply(seq_along(module.logs), function(i) {

@@ -16,11 +16,12 @@ flexdashboard compatable list of analysis logs
 Prepares list of prior analysis logs for multi-tab table presentation in flexdashboards.
 }
 \examples{
+\dontrun{
 
 '''{r multi tab log}
 out <- flex.multiTabLogs(module.logs)
 '''
 
 `r paste(knitr::knit(text = paste(out, collapse = '\n')))`
-
+}
 }

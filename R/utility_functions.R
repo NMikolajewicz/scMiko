@@ -970,19 +970,28 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 }
 
 
-#' Create/update list of genessets
+#' Create/update list of gene sets for scMiko package.
 #'
 #' Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
 #'
 #' @param input.file Excel file (input). Must have ".xlsx" suffix. A character.
 #' @param output.file Rdata file (output). Must have ".Rdata" suffix. A character.
 #' @param dir Directory of input and output file (same folder). A character.
+#' @param dev.directory.flag Logical indicating whether to use developer specific director. Default is False. If true dir is ignored.
 #' @name updateGeneSets
 #' @return List of data.frames saved as Rdata file.
 #'
-updateGeneSets <- function(input.file, output.file, dir = ""){
+updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
   gene.set.list <- list()
+
+  if (dev.directory.flag){
+    input.dir <- "Reference Datasets/"
+    output.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/R Packages/scMiko/data/"
+  } else {
+    input.dir <- dir
+    output.dir <- dir
+  }
 
   sheetNames <- openxlsx::getSheetNames(getLoadPath(input.file, dir))
 

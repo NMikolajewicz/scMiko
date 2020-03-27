@@ -18,7 +18,7 @@ flexdashboard compatable list of tables.
 Prepares list of data.frames for multi-tab table presentation in flexdashboards.
 }
 \examples{
-
+\dontrun{
 Tab Header 1
 =====================================
 
@@ -30,5 +30,6 @@ out <- flex.multiTabTables(df.list, "df.list")
 '''
 
 `r paste(knitr::knit(text = paste(out, collapse = '\n')))`
+}
 
 }
