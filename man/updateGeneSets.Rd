@@ -2,9 +2,9 @@
 % Please edit documentation in R/utility_functions.R
 \name{updateGeneSets}
 \alias{updateGeneSets}
-\title{Create/update list of genessets}
+\title{Create/update list of gene sets for scMiko package.}
 \usage{
-updateGeneSets(input.file, output.file, dir = "")
+updateGeneSets(input.file, output.file, dir = "", dev.directory.flag = F)
 }
 \arguments{
 \item{input.file}{Excel file (input). Must have ".xlsx" suffix. A character.}
@@ -12,6 +12,8 @@ updateGeneSets(input.file, output.file, dir = "")
 \item{output.file}{Rdata file (output). Must have ".Rdata" suffix. A character.}
 
 \item{dir}{Directory of input and output file (same folder). A character.}
+
+\item{dev.directory.flag}{Logical indicating whether to use developer specific director. Default is False. If true dir is ignored.}
 }
 \value{
 List of data.frames saved as Rdata file.
