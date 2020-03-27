@@ -16,7 +16,7 @@ flex.multiTabPlotly(plt.list, plt.list.name, fig.width = 5, fig.height = 5)
 \item{fig.height}{Numeric. Figure width. Default is 5.}
 }
 \value{
-data.table
+flexdashboard compatable list of plots
 }
 \description{
 Prepares list of ggplot handles as plotly figures for multi-tab presentation in flexdashboards.

@@ -152,7 +152,7 @@ flex.multiTabPlot <- function(plt.list, plt.list.name, fig.width = 5, fig.height
 #' @param fig.width Numeric. Figure width. Default is 5.
 #' @param fig.height Numeric. Figure width. Default is 5.
 #' @name flex.multiTabPlotly
-#' @return data.table
+#' @return flexdashboard compatable list of plots
 #'
 flex.multiTabPlotly <- function(plt.list, plt.list.name, fig.width = 5, fig.height = 5) {
   out <- lapply(seq_along(plt.list), function(i) {
