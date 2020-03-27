@@ -9,7 +9,7 @@ updateGeneSets(input.file, output.file, dir = "", dev.directory.flag = F)
 \arguments{
 \item{input.file}{Excel file (input). Must have ".xlsx" suffix. A character.}
 
-\item{output.file}{Rdata file (output). Must have ".Rdata" suffix. A character.}
+\item{output.file}{Rdata file (output). Must have ".rda" suffix. A character.}
 
 \item{dir}{Directory of input and output file (same folder). A character.}
 
@@ -20,4 +20,10 @@ List of data.frames saved as Rdata file.
 }
 \description{
 Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
+}
+\examples{
+\dontrun{
+updateGeneSets("geneSets_MASTER_270320update.xlsx", "geneSets.rda", dev.directory.flag = T)
+}
+
 }
