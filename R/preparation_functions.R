@@ -51,6 +51,22 @@ modulePackages <- function (module.number = NULL, load.default = T){
       stopifnot(session.info[["otherPkgs"]][["plotly"]][["Version"]] == "4.8.0")
 
     } else if (module.number == 10){
+
+      load.default <- F
+
+      # List of packages to load
+      packages2load <- c("Seurat", "sctransform",
+                         "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "ggplot2", "gridExtra",
+                         "DT", "flexdashboard", "ggpmisc", "ggpmisc", "ggExtra", "grid", "ddpcr",  "future",
+                         "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "scales")
+
+
+      library("viridis")
+
+      # load packages
+      lapply(packages2load, library, character.only = TRUE)
+
+
     } else if (module.number == 11){
     } else if (module.number == 12){
     } else if (module.number == 13){
