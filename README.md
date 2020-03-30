@@ -15,6 +15,8 @@ Then the scMiko can be installed via
 ```
 library(devtools)
 devtools::install_github("NMikolajewicz/scMiko")
+
+private token: a3c1c9b15c496991c952d1fe3ccc52db770f22fa
 ```
 ## Built With
 
