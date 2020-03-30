@@ -777,6 +777,30 @@ searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL)
 
   }
 
+
+  if ("KEGG" %in% db){
+
+    term.id.list <- as.list(GO.db::GOTERM)
+
+    go.term.list <- lapply(term.id.list, function(x) x@Term)
+    go.ontology.list <- lapply(term.id.list, function(x) x@Ontology)
+
+    go.df <- data.frame(id = names(go.term.list), term = unlist(go.term.list), ontology = unlist(go.ontology.list))
+    go.df$ontology <- as.character(go.df$ontology)
+
+    go.df.filter <- go.df[grepl(query, go.df$term), ]
+
+    if (!is.null(ontology)){
+      for(i in 1:length(ontology)){
+        go.df.filter <- go.df.filter[(go.df.filter$ontology %in% ontology[i]), ]
+      }
+    }
+
+    query.match.go <- go.df.filter
+    rownames(query.match.go) <- c()
+
+  }
+
   if (exists("query.match.go") & exists("query.match.reactome") ){
     q1 <- data.frame(db = "GO", id = query.match.go$id, term = query.match.go$term, ontology = query.match.go$ontology)
     q2 <- data.frame(db = "Reactome", id = query.match.reactome$id, term = query.match.reactome$term, ontology = NA)
@@ -899,11 +923,19 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
   }
 
 
+
   if (only.variable){
-    if (which.assay == "SCT"){
-      var.feat <-  so.query@assays[["SCT"]]@var.features
-    } else {
-      var.feat <-  VariableFeatures(so)
+    var.feat <-  VariableFeatures(so)
+    if (length(var.feat) == 0){
+      if (which.assay == "SCT"){
+        if ("integrated" %in% names(so@assays)){
+          var.feat <-  so@assays[["integrated"]]@var.features
+        } else {
+          var.feat <-  so@assays[["SCT"]]@var.features
+        }
+      } else {
+        stop("Could not find variable features in Seurat Object. ")
+      }
     }
 
     exp.mat <- exp.mat.complete[rownames(exp.mat.complete) %in% var.feat, ]
@@ -1065,7 +1097,142 @@ downsampleSeurat <- function(so, subsample.factor){
 
 }
 
+#' Get vector of unique ordered group names from Seurat Object
+#'
+#' Get vector of unique ordered group names from Seurat Object
+#'
+#' @param so Seurat Object
+#' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
+#' @param is.number Logical specifying whether groups IDs are numeric. Default is True.
+#' @name getOrderedGroups
+#' @return Ordered vector
+#'
+getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T){
+
+  groups <- so@meta.data[[which.group]]
+
+  if (is.number){
+    u.groups <- as.numeric(as.character(unique(groups)))
+  } else {
+    u.groups <- as.character(unique(groups))
+  }
+
+  u.groups <- u.groups[order(u.groups)]
+
+  return(u.groups)
+
+}
+
+#' Get average group expression in Seurat object
+#'
+#' Get average group expression in Seurat object
+#'
+#' @param so Seurat Object
+#' @param which.data Character specfying which data slot. Default is "data".
+#' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
+#' @name getOrderedClusters
+#' @return Numeric vector, ordered
+#'
+avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_clusters"){
+
+  # entire matrix
+  exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
+
+  # group ID vector
+  cluster.membership <- so@meta.data[[which.group]]
+
+  # gene list
+  gene.list <- rownames(so)
+
+  # ordered vector of unique groups
+  u.clusters <- getOrderedGroups(so, which.group, is.number = F)
+
+  avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
+  for (i in 1:length(u.clusters)){
+    avg.mat[,i] <-  rowMeans(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]])
+  }
+
+  df.avg <- as.data.frame(avg.mat)
+
+  if (which.group == "seurat_clusters"){
+    colnames(df.avg) <- paste("c", u.clusters, sep = "")
+  } else {
+    colnames(df.avg) <- u.clusters
+  }
+
+  df.avg <- bind_cols(data.frame(genes = gene.list), df.avg)
+
+  return(df.avg)
+
+
+}
 
 
 
+#' Over-representation enrichment of GO terms using weighted fisher method
+#'
+#' Over-representation enrichment of GO terms using weighted fisher method
+#'
+#' @param gene.candidates Vector of candidate genes.
+#' @param gene.universe Vector of all genes.
+#' @param which.species Character specifying species. "Mm" or "Hs".
+#' @param which.ontology Character specifying ontology. "BP", "MF", or "CC".
+#' @name enrichGO.fisher
+#' @return list of 2 data.frames: unadjusted.results (p<0.001) and adjusted.results (padj < 0.05)
+#'
+enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , which.ontology = "BP"){
+
+
+  if (!(which.species %in% c("Hs", "Mm"))) stop("Species incorrectly specified. Must be either Hs or Mm")
+
+  if (which.species == "Hs"){
+    library(org.Hs.eg.db)
+    db <- "org.Hs.eg.db"
+  } else if (which.species == "Mm"){
+    library(org.Mm.eg.db)
+    db <- "org.Mm.eg.db"
+  }
+
+
+  allGO2genes <- annFUN.org(whichOnto=which.ontology, feasibleGenes=NULL, mapping=db, ID="symbol")
+  # all.genes <- colnames(datExpr)
+
+  # make named factor showing which genes are of interest
+  geneList=factor(as.integer(gene.universe %in% gene.candidates))
+  names(geneList)= gene.universe
+
+
+  GOdata <- new("topGOdata",
+                ontology="BP",
+                allGenes=geneList,
+                annot=annFUN.GO2genes,
+                GO2genes=allGO2genes,
+                nodeSize=10)
+
+  # define test using the classic algorithm with fisher (refer to [1] if you want to understand how the different algorithms work)
+  # res.fisher<-runTest(GOdata, algorithm='classic', statistic='fisher')
+
+  # define test using the weight01 algorithm (default) with fisher
+  res.wfisher <- runTest(GOdata, algorithm='weight01', statistic='fisher')
+
+  # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+  allGO <- usedGO(GOdata)
+  res.table <- GenTable(GOdata, weightFisher=res.wfisher, orderBy='weightFisher', topNodes=length(allGO))
+
+  #performing BH correction on our p values
+  p.adj <- round(p.adjust(res.table$weightFisher,method="BH"),digits = 4)
+
+  # create the file with all the statistics from GO analysis
+  res.table.adj <- cbind(res.table,p.adj)
+  res.table.adj=res.table.adj[order(res.table.adj$p.adj),]
+
+  #get list of significant GO before multiple testing correction
+  results.table.p <-  res.table.adj[which(res.table.adj$weightFisher<=0.001),]
+
+  #get list of significant GO after multiple testing correction
+  results.table.bh <- res.table.adj[which(res.table.adj$p.adj<=0.05),]
+
+
+  return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh))
+}
 
