@@ -9,6 +9,7 @@ A list of data.frames containing the following genesets:
 \describe{
 \item{CancerSEA_Hs (\href{http://biocc.hrbmu.edu.cn/CancerSEA/home.jsp}{link})}{Cancer single-cell state atlas}
 \item{CellMarker_Hs_Zhang2019 (\href{http://biocc.hrbmu.edu.cn/CellMarker/}{link})}{Cell marker atlas: Manually-curated celltype-specific gene sets from over 100,000 published papers. (Zhang et al. (2019) Nucleic Acids Res.)}
+\item{coreCTL}{Core cytotoxic T lymphocyte kill genes. (Lawson et al. (2020) in revision.)}
 \item{cyclingGenes_Hs_Seurat (\href{https://science.sciencemag.org/content/352/6282/189}{link})}{Cell-cycle markers (Tirosh et al. (2016) Science)}
 \item{GBM_Hs_Neftel2019 (\href{https://www.ncbi.nlm.nih.gov/pubmed/31327527}{link})}{Glioblastoma-subtype specific markers (Neftel et al. (2019) Cell)}
 \item{Immune_Hs_Nirmal2018 (\href{https://www.ncbi.nlm.nih.gov/pubmed/30266715}{link})}{Immune cell signatures for 7 immune cell types identified in tumors using scRNAseq (Nirmal et el. (2018) Cancer Immunol Res.)}

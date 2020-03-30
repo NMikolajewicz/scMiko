@@ -987,7 +987,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
-  gene.set.list <- list()
+  geneSets <- list()
 
   if (dev.directory.flag){
     input.dir <- "Reference Datasets/"
@@ -1003,13 +1003,13 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
     current.sheet <-  sheetNames[i]
     gene.set <- readxl::read_excel(getLoadPath(input.file, input.dir), sheet = current.sheet)
 
-    gene.set.list[[current.sheet]] <- gene.set
+    geneSets[[current.sheet]] <- gene.set
   }
 
 
-  save(gene.set.list, file=getLoadPath(output.file, output.dir))
+  save(geneSets, file=getLoadPath(output.file, output.dir))
 
-  return(paste(length(gene.set.list), " genesets successfully saved to '", getLoadPath(output.file, output.dir), "'", sep= ""))
+  return(paste(length(geneSets), " genesets successfully saved to '", getLoadPath(output.file, output.dir), "'", sep= ""))
 
 }
 
