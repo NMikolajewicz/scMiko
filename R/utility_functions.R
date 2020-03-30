@@ -901,7 +901,7 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
 
   if (only.variable){
     if (which.assay == "SCT"){
-      var.feat <-  rownames(so@assays[[which.assay]]@scale.data)
+      var.feat <-  so.query@assays[["SCT"]]@var.features
     } else {
       var.feat <-  VariableFeatures(so)
     }
