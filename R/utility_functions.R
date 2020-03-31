@@ -1130,7 +1130,7 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
-#' @name getOrderedClusters
+#' @name avgGroupExpression
 #' @return Numeric vector, ordered
 #'
 avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_clusters"){
@@ -1177,10 +1177,14 @@ avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_cl
 #' @param gene.universe Vector of all genes.
 #' @param which.species Character specifying species. "Mm" or "Hs".
 #' @param which.ontology Character specifying ontology. "BP", "MF", or "CC".
+#' @param p.threshold p value threshold. Default is 0.001.
+#' @param padj.threshold adjusted p value threhsold (BH). Default is 0.05.
+#' @param topGO.object topGO object (Optional). If unspecified, new topGO object is new created. If specified, gene list is used to updated existing object.
 #' @name enrichGO.fisher
-#' @return list of 2 data.frames: unadjusted.results (p<0.001) and adjusted.results (padj < 0.05)
+#' @return list of 2 data.frames (unadjusted.results (p<0.001) and adjusted.results (padj < 0.05)) and a topGO object.
 #'
-enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , which.ontology = "BP"){
+enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , which.ontology = "BP", p.threshold = 0.001,
+                            padj.threshold = 0.05, topGO.object = NULL){
 
 
   if (!(which.species %in% c("Hs", "Mm"))) stop("Species incorrectly specified. Must be either Hs or Mm")
@@ -1188,29 +1192,31 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   if (which.species == "Hs"){
     library(org.Hs.eg.db)
     db <- "org.Hs.eg.db"
-  } else if (which.species == "Mm"){
+  } else if (which.species == "Mm"){de
     library(org.Mm.eg.db)
     db <- "org.Mm.eg.db"
   }
 
 
-  allGO2genes <- annFUN.org(whichOnto=which.ontology, feasibleGenes=NULL, mapping=db, ID="symbol")
+  allGO2genes <- topGO::annFUN.org(whichOnto=which.ontology, feasibleGenes=NULL, mapping=db, ID="symbol")
   # all.genes <- colnames(datExpr)
 
   # make named factor showing which genes are of interest
   geneList=factor(as.integer(gene.universe %in% gene.candidates))
   names(geneList)= gene.universe
 
-
-  GOdata <- new("topGOdata",
-                ontology="BP",
-                allGenes=geneList,
-                annot=annFUN.GO2genes,
-                GO2genes=allGO2genes,
-                nodeSize=10)
-
-  # define test using the classic algorithm with fisher (refer to [1] if you want to understand how the different algorithms work)
-  # res.fisher<-runTest(GOdata, algorithm='classic', statistic='fisher')
+  if (is.null(topGO.object)){
+    # if no GO object provided, create new
+    GOdata <- new("topGOdata",
+                  ontology="BP",
+                  allGenes=geneList,
+                  annot=annFUN.GO2genes,
+                  GO2genes=allGO2genes,
+                  nodeSize=10)
+  } else {
+    # if GO object exists, update gene list
+    GOdata <- topGO::updateGenes(topGO.object, geneList)
+  }
 
   # define test using the weight01 algorithm (default) with fisher
   res.wfisher <- runTest(GOdata, algorithm='weight01', statistic='fisher')
@@ -1227,12 +1233,11 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   res.table.adj=res.table.adj[order(res.table.adj$p.adj),]
 
   #get list of significant GO before multiple testing correction
-  results.table.p <-  res.table.adj[which(res.table.adj$weightFisher<=0.001),]
+  results.table.p <-  res.table.adj[which(res.table.adj$weightFisher<=p.threshold),]
 
   #get list of significant GO after multiple testing correction
-  results.table.bh <- res.table.adj[which(res.table.adj$p.adj<=0.05),]
+  results.table.bh <- res.table.adj[which(res.table.adj$p.adj<=padj.threshold),]
 
 
-  return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh))
+  return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh, topGo.object = GOdata))
 }
-

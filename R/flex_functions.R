@@ -102,6 +102,8 @@ flex.multiTabLogs <- function(module.logs) {
 #'
 flex.asDT <- function(df) {
 
+  df <- as.data.frame(df)
+
   if (class(df) == "data.frame"){
     dt <-  datatable(df,
                      filter = 'top',
