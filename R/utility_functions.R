@@ -1192,7 +1192,7 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   if (which.species == "Hs"){
     library(org.Hs.eg.db)
     db <- "org.Hs.eg.db"
-  } else if (which.species == "Mm"){de
+  } else if (which.species == "Mm"){
     library(org.Mm.eg.db)
     db <- "org.Mm.eg.db"
   }
