@@ -1241,3 +1241,143 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
 
   return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh, topGo.object = GOdata))
 }
+
+
+
+
+
+#' Filter seurat object according to specified meta data entries
+#'
+#' Using a mapping.list, entries from an existing meta data field are relabeled and mapped to new meta data field, and cells which are not specified in this mapping are omitted from the seurat object.
+#'
+#' @param so Seurat object.
+#' @param old.field Existing seurat meta field that will be relabelled.
+#' @param new.field New seurat meta field that will be created with relablled entries from old.field.
+#' @param mapping.list Named list specifying how to relabel entries in old.field (mapping.list entries) to new.field (mapping.list names) in seurat meta data. Note that entries in mapping list do not have to match old.field entires exactly; entries are used as pattern arguemtn to grepl() function.
+#' @name mapSubsetSeurat
+#' @return Seurat object in which old field was mapped to new field, according to mapping specified in mapping.list. Any cells that are not mapped are omitted from seurat object.
+#' @examples
+#'
+#' # define mapping lists
+#' mapping.list.1 <- list(NSG = "NSG", BALBc = "BALB")
+#' mapping.list.2 <- list(Early = "Early", Mid = "Mid", Late = "Late")
+#'
+#' # Create new field called "Mouse" using relabled entries from "Condition" - relabelling based on mapping list
+#' so.query.2 <- mapSubsetSeurat(so.query, old.field = "Condition", new.field = "Mouse", mapping.list = mapping.list.1)
+#'
+#' # Create new field called "Time" using relabled entries from "Group" - relabelling based on mapping list
+#' so.query.2 <- mapSubsetSeurat(so.query.2, old.field = "Group", new.field = "Time", mapping.list = mapping.list.2)
+#'
+mapSubsetSeurat <- function(so, old.field, new.field, mapping.list){
+
+  keep.this <- NULL
+  for (i in 1:length(mapping.list)){
+
+    cur.group <- names(mapping.list)[order(names(mapping.list))][i]
+    cur.pattern <- (mapping.list)[order(names(mapping.list))][[i]]
+
+    if (is.null(keep.this)){
+      keep.this <- grepl(cur.pattern, so@meta.data[[old.field]])
+    } else {
+      keep.this <- (keep.this | grepl(cur.pattern, so@meta.data[[old.field]]))
+    }
+
+    so@meta.data[[new.field]][grepl(cur.pattern, so@meta.data[[old.field]])] <- cur.group
+
+  }
+
+
+  # ensure groups are ordered and that order is maintained throughout analysis.
+  u.groups <- as.character(unique(so@meta.data[[new.field]]))
+  u.groups <- u.groups[order(u.groups)]
+  so@meta.data[[new.field]] <- factor(so@meta.data[[new.field]], levels = u.groups)
+  so <-so[, keep.this]
+
+  return(so)
+}
+
+
+#' Perform differential expression analysis
+#'
+#' Give two existing fields within a Seurat Object, data are stratified by the first, and pairwise comparisons between groups in the second are performed to identify differential gene expression. Uses Seurat's FindMarkers() function.
+#'
+#' @param so Seurat object.
+#' @param ordered.levels Vector of one or two seurat meta fields. If one provided, the second is set to "seurat_clusters".
+#' @param which.assay Seurat assay to use. If unspecified, set to DefaultAssay(so).
+#' @param ... Additional arguments passed to Seurat's FindMarkers() function.
+#' @name multiLevel.FindMarkers
+#' @return list of data.frames where each data.fram contains results from an individual pairwise comparison.
+#' @examples
+#'
+#' # define mapping lists
+#' mapping.list.1 <- list(NSG = "NSG", BALBc = "BALB")
+#' mapping.list.2 <- list(Early = "Early", Mid = "Mid", Late = "Late")
+#'
+#' # Create new field called "Mouse" using relabled entries from "Condition" - relabelling based on mapping list
+#' so.query.2 <- mapSubsetSeurat(so.query, old.field = "Condition", new.field = "Mouse", mapping.list = mapping.list.1)
+#'
+#' # Create new field called "Time" using relabled entries from "Group" - relabelling based on mapping list
+#' so.query.2 <- mapSubsetSeurat(so.query.2, old.field = "Group", new.field = "Time", mapping.list = mapping.list.2)
+#'
+#' # Perform multilevel differential gene expression.
+#' # Data are stratified by time, and then pairwise comparison between "Mouse" groups are performed.
+#' # in this example, 3 total pairwise comparisons were made: BALBc vs NSG (Early), BALBc vs NSG (Mid) and BALBc vs NSG (Late)
+#' deg.list <- multiLevel.FindMarkers(so.query.2, ordered.levels = c("Time", "Mouse"),
+#'                                    logfc.threshold = 0,
+#'                                    min.pct = 0,
+#'                                    test.use = "wilcox")
+#'
+multiLevel.FindMarkers <- function(so, ordered.levels, which.assay = NULL, ...){
+
+  if (length(ordered.levels) == 1) ordered.levels <- c(ordered.levels, "seurat_clusters")
+  if (is.null(which.assay)) which.assay <- DefaultAssay(so)
+
+  # get unique level factors
+  level.1 <- unique(as.character(so@meta.data[[ordered.levels[1]]]))
+  level.2 <-  unique(as.character(so@meta.data[[ordered.levels[2]]]))
+
+  # set idents to level.2
+  Idents(so) <- ordered.levels[2]
+
+  # get all level 2 combinations
+  level.2.combinations <- t(combinat::combn(level.2, 2))
+
+  #N comparisons
+  n.comparisons <- ncol(level.2.combinations) * length(level.1)
+
+  #initiate results list
+  deg.list <- list()
+  for (i in 1:length(level.1)){
+
+    # get current level 1 strata
+    level.1.cur <- level.1[i]
+
+    # subset seurat according to level 1
+    keep.this <- as.character(so@meta.data[[ordered.levels[1]]]) %in% level.1.cur
+    so.cur <-so[, keep.this]
+
+    for (j in 1:nrow(level.2.combinations)){
+
+      # define comparison level 2 comparison group
+      group1 <- level.2.combinations[j, 1]
+      group2 <- level.2.combinations[j, 2]
+
+      comparison.label <- paste(level.1.cur, "|" , group1, ".vs.", group2, sep = "")
+
+      suppressWarnings({
+        deg.list[[comparison.label]] <- FindMarkers(so.cur,
+                                                    assay = which.assay,
+                                                    ident.1 = group1,
+                                                    ident.2 = group2,
+                                                    verbose = F,
+                                                    ...)
+
+      })
+
+    }
+
+  }
+
+  return(deg.list)
+
+}
