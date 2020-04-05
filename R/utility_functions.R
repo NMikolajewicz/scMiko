@@ -569,7 +569,7 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
     entrez2go.list <- as.list(go.e2g[mapped_genes])
 
     # get matching GO terms
-    which.match <- names(entrez2go.list) %in% all.genes.entrez
+    which.match <- names(entrez2go.list) %in% query.genes
 
     # get GO ids that overlap with geneset
     entrez2go.subset <- unique(unlist(lapply(entrez2go.list[which.match], names)))
@@ -594,7 +594,7 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
     pathways <- go.g2e.filtered
 
   } else if (db == c("Reactome")){
-    pathways <- reactomePathways(all.genes.entrez)
+    pathways <- reactomePathways(query.genes)
 
   }
 
