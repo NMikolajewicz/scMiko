@@ -8,7 +8,8 @@ getExpressionMatrix(
   so,
   only.variable = F,
   which.assay = NULL,
-  which.data = "scale"
+  which.data = "scale",
+  use.additional.genes = NA
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ getExpressionMatrix(
 \item "scale" - Default
 \item "data"
 }}
+
+\item{use.additional.genes}{Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.}
 }
 \value{
 gene x cell expression matrix
