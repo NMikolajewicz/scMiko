@@ -266,7 +266,6 @@ return(list.files(directory))
 }
 
 
-
 #' Normalize and scale data within appropriate assay
 #'
 #' Ensures data are properly normalized and scaled. If intergrated dataset provided, Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow is applied and default assay is set to 'RNA'. Otherwise, if  non-integrated dataset is provided, SCT transform is assumed and default assay is set to 'SCT'. If non-intergrated data have not been process with SCT workflow, see m1.scNormScale() function.
@@ -907,10 +906,11 @@ entrez2sym <- function(my.entrez, my.species){
 #' \item "scale" - Default
 #' \item "data"
 #' }
+#' @param use.additional.genes Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.
 #' @name getExpressionMatrix
 #' @return gene x cell expression matrix
 #'
-getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale"){
+getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale", use.additional.genes = NA){
 
   # specify assay
   if (is.null(which.assay)) which.assay <- DefaultAssay(so)
@@ -943,8 +943,17 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
     exp.mat <- exp.mat.complete
   }
 
+
+  if (!is.na(use.additional.genes)){
+    which.missing <- which(!(use.additional.genes %in% rownames(exp.mat)))
+    missing.additional.genes <- (use.additional.genes)[which.missing]
+    exp.mat.additional <- exp.mat.complete[rownames(exp.mat.complete) %in% missing.additional.genes, ]
+    exp.mat <- rbind(exp.mat, exp.mat.additional)
+  }
+
   return(exp.mat)
 }
+
 
 
 #' Remove "ï.." prefix that is appended to csv header
