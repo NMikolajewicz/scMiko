@@ -283,3 +283,49 @@ savePlot <- function(plt.handle, save.as, format = "png", ...){
 
 
 
+#' Plot relationship showing percentage of cells expressing atleast % of genes
+#'
+#' Plot relationship showing percentage of cells expressing atleast % of genes
+#'
+#' @param so Seurat object
+#' @param which.genes Specify geneset. If null, all gene are included (unless only.variable is set to True)
+#' @param only.variable Only used variable genes
+#' @param which.data specify which data slot to use (scale or data; data is default)
+#' @name geneRepCurve
+#' @return ggplot handle
+#'
+geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data = "data"){
+
+
+  # binarize expression
+  exp.mat <- getExpressionMatrix.dev(so, only.variable = only.variable, which.data = "data")
+
+  # get subset of genes if specified
+  if (!is.null(which.genes)){
+    exp.mat <- exp.mat[rownames(exp.mat) %in% which.genes, ]
+  }
+
+  exp.mat.bin <- exp.mat
+  exp.mat.bin[exp.mat.bin > 0] <-  1
+
+  per.vec <- seq(1:100) / 100
+  exp.mat.colsum <- apply(exp.mat.bin,2, function(x) sum(x)/length(x))
+
+  per.exp <- c()
+  for (i in 1:length(per.vec)){
+    per.exp[i] <- sum(exp.mat.colsum > per.vec[i]) / length(exp.mat.colsum)
+  }
+
+  df.per <- data.frame(x = per.vec, y = per.exp)
+
+  plt.per <- df.per %>%
+    ggplot(aes(x=x, y = y)) +
+    geom_point() +
+    theme_classic() +
+    xlab("% Genes Expressed Per Cell (minimum)") +
+    ylab("% of Cell") +
+    ggtitle("Genes Detected")
+
+  return(plt.per)
+
+}
