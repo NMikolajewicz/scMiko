@@ -4,7 +4,7 @@
 \alias{getHeat}
 \title{Create heatmap object}
 \usage{
-getHeat(mat, hmcol, scale.limit, ...)
+getHeat(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = NULL, ...)
 }
 \arguments{
 \item{mat}{Matrix. Input matrix for heatmap.}
@@ -12,6 +12,10 @@ getHeat(mat, hmcol, scale.limit, ...)
 \item{hmcol}{Heatmap colors}
 
 \item{scale.limit}{Numeric. Color scale limit.}
+
+\item{main}{Character. Name of plot.}
+
+\item{xlab}{Character. X axis label.}
 
 \item{...}{additional parameters passed to gplots::heatmap.2(...)}
 }

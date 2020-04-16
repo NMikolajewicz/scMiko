@@ -219,11 +219,25 @@ sym2ens <- function(my.symbols, my.species){
 #' @param mat Matrix. Input matrix for heatmap.
 #' @param hmcol Heatmap colors
 #' @param scale.limit Numeric. Color scale limit.
+#' @param main Character. Name of plot.
+#' @param xlab Character. X axis label.
 #' @param ... additional parameters passed to gplots::heatmap.2(...)
 #' @name getHeat
 #' @return Heatmap object
 #'
-getHeat <- function(mat, hmcol, scale.limit, ...){
+getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = NULL, ...){
+
+  # get color palette
+  if (is.null(hmcol)) hmcol <- colorRampPalette(RColorBrewer::brewer.pal(9, "RdBu"))(100)
+
+  # get scale limits
+  if (is.null(scale.limit)) scale.limit <- max(abs(mat))
+
+  # get plot title
+  if (is.null(main)) main <- "Gene Exp Matrix"
+
+  # get x label
+  if (is.null(xlab)) xlab <- "Cluster ID"
 
   #threw this into a function to suppress plot that is automatically generated
   heat.object <- NULL
@@ -234,8 +248,8 @@ getHeat <- function(mat, hmcol, scale.limit, ...){
                                       breaks =seq(-scale.limit, scale.limit, by = ((2*scale.limit/100))),
                                       distfun = function(x) as.dist(1-cor(t(x))),
                                       hclustfun = function(x) hclust(x, method="average"),
-                                      main = "Gene Exp Matrix",
-                                      xlab = "Cluster ID",
+                                      main = main,
+                                      xlab = xlab,
                                       ...)
 
   }, silent = T)
