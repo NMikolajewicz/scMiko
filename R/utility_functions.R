@@ -551,7 +551,8 @@ subsetSeurat <- function (so, subset.df){
 #' @param query.genes Entrez IDs of query genes
 #' @param db Database to retrieve annotations from. One of:
 #' \itemize{
-#' \item "Reactome" - Default
+#' \item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
+#' \item "Reactome"
 #' \item "GO"
 #' }
 #' @param ontology GO ontologies to retrieve if GO db is selected. One of:
@@ -562,9 +563,9 @@ subsetSeurat <- function (so, subset.df){
 #' }
 #' @param species "Mm" or "Hs". Default is "Hs".
 #' @name getAnnotationPathways
-#' @return Named list of vectors with gene sets.
+#' @return Named list of vectors with gene sets (Entrez format).
 #'
-getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c("BP"), species = c("Hs")){
+getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP"), species = c("Hs")){
 
   if (db == "GO"){
 
@@ -611,6 +612,18 @@ getAnnotationPathways <- function(query.genes, db = c("Reactome"), ontology = c(
 
   } else if (db == c("Reactome")){
     pathways <- reactomePathways(query.genes)
+
+  } else if (db == c("Bader")){
+    pathway.list <- scMiko::baderPathways
+
+    if (species == "Hs"){
+      pathways <- pathway.list[["Hs.entrez"]]
+    } else if (species == "Mm"){
+      pathways <- pathway.list[["Mm.entrez"]]
+    }
+
+    include.which <- lapply(pathways, function(x) sum(query.genes %in% unlist(x)) > 0 )
+    pathways <- pathways[as.vector(unlist(include.which))]
 
   }
 

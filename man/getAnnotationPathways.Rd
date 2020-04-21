@@ -6,7 +6,7 @@
 \usage{
 getAnnotationPathways(
   query.genes,
-  db = c("Reactome"),
+  db = c("Bader"),
   ontology = c("BP"),
   species = c("Hs")
 )
@@ -16,7 +16,8 @@ getAnnotationPathways(
 
 \item{db}{Database to retrieve annotations from. One of:
 \itemize{
-\item "Reactome" - Default
+\item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
+\item "Reactome"
 \item "GO"
 }}
 
@@ -30,7 +31,7 @@ getAnnotationPathways(
 \item{species}{"Mm" or "Hs". Default is "Hs".}
 }
 \value{
-Named list of vectors with gene sets.
+Named list of vectors with gene sets (Entrez format).
 }
 \description{
 Returns list of Reactome or GO annotations for given Entrez gene IDs
