@@ -1249,7 +1249,7 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
     GOdata <- new("topGOdata",
                   ontology="BP",
                   allGenes=geneList,
-                  annot=annFUN.GO2genes,
+                  annot=topGO::annFUN.GO2genes,
                   GO2genes=allGO2genes,
                   nodeSize=10)
   } else {
@@ -1471,7 +1471,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 
 #' run WGCNA analysis on scRNAseq expression matrix
 #'
-#' Run WGCNA analysis on scRNAseq expression matrix, usign WGCNA R package.
+#' Run WGCNA analysis on scRNAseq expression matrix, using WGCNA R package.
 #'
 #' @param mat Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.
 #' @param cor.metric Correction measure to use. Default is "rho_p." See "dismay" package for additional options.
