@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{geneRepCurve}
 \alias{geneRepCurve}
-\title{Plot relationship showing percentage of cells expressing atleast % of genes}
+\title{Plot relationship showing percentage of cells expressing atleast percentage of genes}
 \usage{
 geneRepCurve(so, which.genes = NULL, only.variable = F, which.data = "data")
 }
@@ -19,5 +19,5 @@ geneRepCurve(so, which.genes = NULL, only.variable = F, which.data = "data")
 ggplot handle
 }
 \description{
-Plot relationship showing percentage of cells expressing atleast % of genes
+Curve illustrating percentage of cells expressing atleast percentage of genes
 }
