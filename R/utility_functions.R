@@ -1477,7 +1477,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' @param cor.metric Correction measure to use. Default is "rho_p." See "dismay" package for additional options.
 #' @param soft.power Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)
 #' @param use.TOM Logical flag specifying whether to compute topoligical overlap matrix.
-#' @name runWCGNA
+#' @name runWGCNA
 #' @return List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
 #' @examples
 #'
@@ -1508,20 +1508,19 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #'   datExpr.noz <- datExpr
 #' }
 #'
-#' # run WCGNA
-#' output.all <- runWCGNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
+#' # run WGCNA
+#' output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 #'
-runWCGNA <- function(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T){
+runWGCNA <- function(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
-  s.mat <-  dismay::dismay(mat, metric = "rho_p")
+  s.mat <-  dismay::dismay(mat, metric = cor.metric)
 
   # adjacency matrix
-  softPower <- 2
+  softPower <- soft.power
   a.mat <- abs(s.mat^softPower)
 
   # compute topological overlap matix (TOM)
-  use.TOM <- T
   if (use.TOM){
     print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat))
   } else {
