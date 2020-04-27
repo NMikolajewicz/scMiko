@@ -281,11 +281,9 @@ savePlot <- function(plt.handle, save.as, format = "png", ...){
 
 }
 
-
-
-#' Plot relationship showing percentage of cells expressing atleast % of genes
+#' Plot relationship showing percentage of cells expressing atleast percentage of genes
 #'
-#' Plot relationship showing percentage of cells expressing atleast % of genes
+#' Curve illustrating percentage of cells expressing atleast percentage of genes
 #'
 #' @param so Seurat object
 #' @param which.genes Specify geneset. If null, all gene are included (unless only.variable is set to True)

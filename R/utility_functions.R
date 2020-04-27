@@ -1053,7 +1053,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @return List of data.frames saved as Rdata file.
 #' @examples
 #' \dontrun{
-#' updateGeneSets("geneSets_MASTER_270320update.xlsx", "geneSets.rda", dev.directory.flag = T)
+#' updateGeneSets("geneSets_MASTER_260420update.xlsx", "geneSets.rda", dev.directory.flag = T)
 #' }
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
@@ -1061,7 +1061,7 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
   geneSets <- list()
 
   if (dev.directory.flag){
-    input.dir <- "Reference Datasets/"
+    input.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/Data/scRNA-seq/01_sci-RNA-seq3_Hong_Kevin_Jason/Nick/scRNAseq/Reference Datasets/"
     output.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/R Packages/scMiko/data/"
   } else {
     input.dir <- dir
