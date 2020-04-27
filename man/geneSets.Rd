@@ -24,6 +24,7 @@ A list of data.frames containing the following genesets:
 \item{TRRUSTv2_regulation_Mm (\href{https://www.grnpedia.org/trrust/}{link})}{Murine-specific trancription factor genesets, with regulatory annotation (i.e., activating vs repressing); TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)}
 \item{TRRUSTv2_regulation_Hs (\href{https://www.grnpedia.org/trrust/}{link})}{Human-specific trancription factor genesets, with regulatory annotation (i.e., activating vs repressing); TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)}
 \item{VastDB_Mm (\href{http://vastdb.crg.eu/wiki/Main_Page}{link})}{Bulk RNAseq-derived cell-specific markers (Tapial et al. (2017) Genome Res.)}
+\item{immuneSubtypes (\href{https://gdc.cancer.gov/about-data/publications/panimmune}{link})}{Tumor immunesubtype markers (Thorsson et al. (2018) Immunity)}
 }
 }
 \usage{
