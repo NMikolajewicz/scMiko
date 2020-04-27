@@ -23,7 +23,7 @@ Takes genessets stored in Excel sheets, and converts them to dataframes stored i
 }
 \examples{
 \dontrun{
-updateGeneSets("geneSets_MASTER_270320update.xlsx", "geneSets.rda", dev.directory.flag = T)
+updateGeneSets("geneSets_MASTER_260420update.xlsx", "geneSets.rda", dev.directory.flag = T)
 }
 
 }
