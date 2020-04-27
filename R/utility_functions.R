@@ -1420,3 +1420,124 @@ multiLevel.FindMarkers <- function(so, ordered.levels, which.assay = NULL, ...){
   return(deg.list)
 
 }
+
+
+
+
+#' Gene connectivity within network.
+#'
+#' Computes gene connectivity from adjaceny/topological overlap matix. Part of WCGNA network analysis workflow.
+#'
+#' @param w.mat Adjaceny or toplogoical overlap matrix. Symmetrical matrix, with row and column-wise gene entries.
+#' @param gene.names Vector of gene names corresponding to genes in coloumns/rows of w.mat.
+#' @param flag.top.n Numerical specifying top N genes to flag (for subsequent plotting). Default is 20.
+#' @name getConnectivity
+#' @return Dataframe with gene connectivity, rank and label flag.
+#' @examples
+#'
+#' # run WCGNA
+#' output.all <- runWCGNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
+#'
+#' # unpack output
+#' s.mat <- output.all[["s.mat"]] # similar matrix
+#' a.mat <- output.all[["a.mat"]] # adjacency matrix
+#' w.mat <- output.all[["w.mat"]] # topological overlap matix
+#' d.mat <- output.all[["d.mat"]] # disimilarity matix
+#'
+#' # get connectivity
+#' df.con <- getConnectivity(w.mat, gene.names = colnames(a.mat))
+#'
+getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
+
+  # compute connectivity
+  # wi <- apply(w.mat, 1, function(x) sum(x))
+
+  # store in data.frame
+  df.con <- data.frame(genes = gene.names, wi = apply(w.mat, 1, function(x) sum(x)))
+
+  # rank
+  df.con$rank <- rank(df.con$wi)
+
+  # flag top n genes to label
+  df.con$label <- F
+  df.con$label[df.con$rank > nrow(df.con)-flag.top.n] <- T
+  df.con$label[df.con$rank < flag.top.n] <- T
+
+  return(df.con)
+
+}
+
+
+
+#' run WGCNA analysis on scRNAseq expression matrix
+#'
+#' Run WGCNA analysis on scRNAseq expression matrix, usign WGCNA R package.
+#'
+#' @param mat Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.
+#' @param cor.metric Correction measure to use. Default is "rho_p." See "dismay" package for additional options.
+#' @param soft.power Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)
+#' @param use.TOM Logical flag specifying whether to compute topoligical overlap matrix.
+#' @name runWCGNA
+#' @return List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
+#' @examples
+#'
+#' # Get expression matrix
+#' which.data <- "scale"
+#'
+#' # variable gene only matrix
+#' use.var <- T
+#' if (use.var){
+#'   exp.mat <- getExpressionMatrix(so.query, only.variable = use.var, which.data = which.data, use.additional.genes = NA)
+#' } else {
+#'   exp.mat <- exp.mat.complete
+#' }
+#'
+#'
+#' # transpose expressio matrix (genes are columns)
+#' t.exp.mat <- t(exp.mat)
+#' datExpr <- as.matrix(t.exp.mat)
+#' SubGeneNames=colnames(datExpr)
+#'
+#' # capture output used to hide undesired print statement
+#' print2hide <- capture.output(allowWGCNAThreads())
+#'
+#' # transform matrix if necessary
+#' if (min(datExpr) < 0) {
+#'   datExpr.noz <- datExpr + abs(min(datExpr))
+#' } else {
+#'   datExpr.noz <- datExpr
+#' }
+#'
+#' # run WCGNA
+#' output.all <- runWCGNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
+#'
+runWCGNA <- function(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T){
+
+  # similarity matrix - using proportionality metric for scRNAseq data.
+  s.mat <-  dismay::dismay(datExpr.noz, metric = "rho_p")
+  # s.1 <-  dismay::dismay(de.1, metric = "rho_p")
+
+  # adjacency matrix
+  softPower <- 2
+  a.mat <- abs(s.mat^softPower)
+
+  # compute topological overlap matix (TOM)
+  use.TOM <- T
+  if (use.TOM){
+    print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat))
+  } else {
+    w.mat <- a.mat
+  }
+
+  # dissimilarity measure
+  d.mat <- 1- w.mat
+
+  output <- list(
+    s.mat = s.mat,
+    a.mat = a.mat,
+    w.mat = w.mat,
+    d.mat = d.mat
+  )
+
+  return(output)
+}
