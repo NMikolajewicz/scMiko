@@ -1514,8 +1514,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 runWCGNA <- function(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
-  s.mat <-  dismay::dismay(datExpr.noz, metric = "rho_p")
-  # s.1 <-  dismay::dismay(de.1, metric = "rho_p")
+  s.mat <-  dismay::dismay(mat, metric = "rho_p")
 
   # adjacency matrix
   softPower <- 2
