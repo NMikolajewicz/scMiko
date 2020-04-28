@@ -24,4 +24,6 @@ WGCNA::cutreeHybrid is run for varying levels of deepSplit parameter (0:4), and 
 geneTree <- dist2hclust(d.mat)
 mColorh <- optimalDS(tree = geneTree, d.mat = d.mat, pamStage = F,cutHeight = 0.99)
 
+plotDendroAndColors(geneTree, mColorh, paste("dpSplt =", 0:4), main = "Group 1", dendroLabels = F)
+
 }

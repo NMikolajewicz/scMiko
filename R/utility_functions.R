@@ -1669,3 +1669,197 @@ getModulePreservation <- function(ref.mat, query.mat, ref.module, networkType = 
 
   return(stats)
 }
+
+
+
+#' Analysis of scale free topology for soft-threshold
+#'
+#' Analysis of scale free topology for multiple soft thresholding powers. The aim is to help the user pick an appropriate soft-thresholding power for network construction. This is an adaptation of the WGCNA::pickSoftThreshold function which has been customized for scRNAseq applications.
+#'
+#' @param s.mat similarity matrix
+#' @param RsquaredCut Rsq cutoff. Default is 0.85.
+#' @param networkType Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.
+#' @param ... Additional arguments passessed to pickSoftThreshold {pickSoftThreshold}
+#' @name getSoftThreshold
+#' @return list of soft threshold picks
+#' @import doParallel
+#' @examples
+#'
+#' # determine optimal soft threshold
+#' sft <- getSoftThreshold(s.mat)
+#'
+#' # Plot the results
+#' sizeGrWindow(9, 5)
+#' par(mfrow = c(1,2));
+#' cex1 = 0.9;
+#'
+#' # Scale-free topology fit index as a function of the soft-thresholding power
+#' plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit, signed R^2",type="n", main = paste("Scale independence"));
+#' text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],labels=powers,cex=cex1,col="red");
+#'
+#' # Red line corresponds to using an R^2 cut-off
+#' abline(h=0.80,col="red")
+#'
+#' # Mean connectivity as a function of the soft-thresholding power
+#' plot(sft$fitIndices[,1], sft$fitIndices[,5],xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",main = paste("Mean connectivity"))
+#' text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
+#'
+getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut = 0.85,
+                              powerVector = c(seq(1, 10, by = 1), seq(12, 20, by = 2)),
+                              removeFirst = FALSE, nBreaks = 10, blockSize = 1000, corFnc = cor,
+                              corOptions = list(use = "p"), networkType = "signed",
+                              moreNetworkConcepts = FALSE, gcInterval = NULL, verbose = 0,
+                              indent = 0)
+{
+  powerVector = sort(powerVector)
+  networkTypes <- c("unsigned", "signed", "signed hybrid")
+  intType = charmatch(networkType, networkTypes)
+  if (is.na(intType))
+    stop(paste("Unrecognized 'networkType'. Recognized values are",
+               paste(.networkTypes, collapse = ", ")))
+  nGenes = ncol(data)
+  if (nGenes < 3) {
+    stop("The input data data contain fewer than 3 rows (nodes).",
+         "\nThis would result in a trivial correlation network.")
+  }
+  if (!dataIsExpr) {
+    checkSimilarity(data)
+    if (any(diag(data) != 1))
+      diag(data) = 1
+  }
+  if (is.null(blockSize)) {
+    blockSize = blockSize(nGenes, rectangularBlocks = TRUE,
+                          maxMemoryAllocation = 2^30)
+    if (verbose > 0)
+      printFlush(spaste("pickSoftThreshold: will use block size ",
+                        blockSize, "."))
+  }
+  if (length(gcInterval) == 0)
+    gcInterval = 4 * blockSize
+  colname1 = c("Power", "SFT.R.sq", "slope", "truncated R.sq",
+               "mean(k)", "median(k)", "max(k)")
+  if (moreNetworkConcepts) {
+    colname1 = c(colname1, "Density", "Centralization",
+                 "Heterogeneity")
+  }
+  datout = data.frame(matrix(666, nrow = length(powerVector),
+                             ncol = length(colname1)))
+  names(datout) = colname1
+  datout[, 1] = powerVector
+  spaces = indentSpaces(indent)
+  if (verbose > 0) {
+    cat(paste(spaces, "pickSoftThreshold: calculating connectivity for given powers..."))
+    if (verbose == 1)
+      pind = initProgInd()
+    else cat("\n")
+  }
+  corFnc = match.fun(corFnc)
+  corFormals = formals(corFnc)
+  if ("nThreads" %in% names(corFormals))
+    corOptions$nThreads = 1
+  datk = matrix(0, nrow = nGenes, ncol = length(powerVector))
+  nThreads = WGCNAnThreads()
+  nPowers = length(powerVector)
+  startG = 1
+  lastGC = 0
+  corOptions$x = data
+  if (!is.null(weights)) {
+    if (!dataIsExpr)
+      stop("Weights can only be used when 'data' represents expression data ('dataIsExpr' must be TRUE).")
+    if (!isTRUE(all.equal(dim(data), dim(weights))))
+      stop("When 'weights' are given, dimensions of 'data' and 'weights' must be the same.")
+    corOptions$weights.x = weights
+  }
+  while (startG <= nGenes) {
+    endG = min(startG + blockSize - 1, nGenes)
+    if (verbose > 1)
+      printFlush(paste(spaces, "  ..working on genes",
+                       startG, "through", endG, "of", nGenes))
+    nBlockGenes = endG - startG + 1
+    jobs = allocateJobs(nBlockGenes, nThreads)
+    actualThreads = which(sapply(jobs, length) > 0)
+    datk[c(startG:endG), ] = foreach(t = actualThreads,
+                                     .combine = rbind) %dopar% {
+                                       useGenes = c(startG:endG)[jobs[[t]]]
+                                       nGenes1 = length(useGenes)
+                                       if (dataIsExpr) {
+                                         corOptions$y = data[, useGenes]
+                                         if (!is.null(weights))
+                                           corOptions$weights.y = weights[, useGenes]
+                                         corx = do.call(corFnc, corOptions)
+                                         if (intType == 1) {
+                                           corx = abs(corx)
+                                         }
+                                         else if (intType == 2) {
+                                           corx = (1 + corx)/2
+                                         }
+                                         else if (intType == 3) {
+                                           corx[corx < 0] = 0
+                                         }
+                                         if (sum(is.na(corx)) != 0)
+                                           warning(paste("Some correlations are NA in block",
+                                                         startG, ":", endG, "."))
+                                       }
+                                       else {
+                                         corx = data[, useGenes]
+                                       }
+                                       ind = cbind(useGenes, 1:length(useGenes))
+                                       corx[ind] = 1
+                                       datk.local = matrix(NA, nGenes1, nPowers)
+                                       corxPrev = matrix(1, nrow = nrow(corx), ncol = ncol(corx))
+                                       powerVector1 <- c(0, head(powerVector, -1))
+                                       powerSteps <- powerVector - powerVector1
+                                       uniquePowerSteps <- unique(powerSteps)
+                                       corxPowers <- lapply(uniquePowerSteps, function(p) corx^p)
+                                       names(corxPowers) <- uniquePowerSteps
+                                       for (j in 1:nPowers) {
+                                         corxCur <- corxPrev * corxPowers[[as.character(powerSteps[j])]]
+                                         datk.local[, j] = colSums(corxCur, na.rm = TRUE) -
+                                           1
+                                         corxPrev <- corxCur
+                                       }
+                                       datk.local
+                                     }
+    startG = endG + 1
+    if ((gcInterval > 0) && (startG - lastGC > gcInterval)) {
+      gc()
+      lastGC = startG
+    }
+    if (verbose == 1)
+      pind = updateProgInd(endG/nGenes, pind)
+  }
+  if (verbose == 1)
+    printFlush("")
+  for (i in c(1:length(powerVector))) {
+    khelp = datk[, i]
+    if (any(khelp < 0))
+      # browser()
+      SFT1 = scaleFreeFitIndex(k = khelp, nBreaks = nBreaks,
+                               removeFirst = removeFirst)
+    datout[i, 2] = SFT1$Rsquared.SFT
+    datout[i, 3] = SFT1$slope.SFT
+    datout[i, 4] = SFT1$truncatedExponentialAdjRsquared
+    datout[i, 5] = mean(khelp, na.rm = TRUE)
+    datout[i, 6] = median(khelp, na.rm = TRUE)
+    datout[i, 7] = max(khelp, na.rm = TRUE)
+    if (moreNetworkConcepts) {
+      Density = sum(khelp)/(nGenes * (nGenes - 1))
+      datout[i, 8] = Density
+      Centralization = nGenes * (max(khelp) - mean(khelp))/((nGenes -
+                                                               1) * (nGenes - 2))
+      datout[i, 9] = Centralization
+      Heterogeneity = sqrt(nGenes * sum(khelp^2)/sum(khelp)^2 -
+                             1)
+      datout[i, 10] = Heterogeneity
+    }
+  }
+  print(signif(data.frame(datout), 3))
+  ind1 = datout[, 2] > RsquaredCut
+  indcut = NA
+  indcut = if (sum(ind1) > 0)
+    min(c(1:length(ind1))[ind1])
+  else indcut
+  powerEstimate = powerVector[indcut][[1]]
+  gc()
+  list(powerEstimate = powerEstimate, fitIndices = data.frame(datout))
+}
