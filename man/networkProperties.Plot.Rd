@@ -17,3 +17,10 @@ plot
 \description{
 Plot network properties for different soft thresholds
 }
+\examples{
+
+sft <- getSoftThreshold(s.mat, networkType = "unsigned")
+networkProperties.Plot(sft)
+
+
+}

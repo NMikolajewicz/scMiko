@@ -5,7 +5,8 @@
 \title{run WGCNA analysis on scRNAseq expression matrix}
 \usage{
 runWGCNA(
-  mat,
+  e.mat,
+  s.mat = NULL,
   cor.metric = "rho_p",
   soft.power = 2,
   use.TOM = T,
@@ -14,7 +15,9 @@ runWGCNA(
 )
 }
 \arguments{
-\item{mat}{Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.}
+\item{e.mat}{Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.}
+
+\item{s.mat}{Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric.}
 
 \item{cor.metric}{Correction measure to use. Default is "rho_p." See "dismay" package for additional options.}
 

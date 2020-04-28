@@ -1472,7 +1472,8 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #'
 #' Run WGCNA analysis on scRNAseq expression matrix, using WGCNA R package.
 #'
-#' @param mat Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.
+#' @param e.mat Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.
+#' @param s.mat Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric.
 #' @param cor.metric Correction measure to use. Default is "rho_p." See "dismay" package for additional options.
 #' @param soft.power Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)
 #' @param use.TOM Logical flag specifying whether to compute topoligical overlap matrix.
@@ -1512,10 +1513,12 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' # run WGCNA
 #' output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 #'
-runWGCNA <- function(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T, use.absolute = T, ...){
+runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, use.absolute = T, ...){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
-  s.mat <-  dismay::dismay(mat, metric = cor.metric)
+  if (is.null(s.mat)){
+    s.mat <-  dismay::dismay(e.mat, metric = cor.metric)
+  }
 
   # adjacency matrix
   softPower <- soft.power
@@ -1629,7 +1632,7 @@ optimalDS <- function(tree, d.mat, ...){
 
   mColorh = NULL
   for (ds in 0:4){
-    cut.tree <- cutreeHybrid(dendro = tree, pminClusterSize = (30-3*ds), deepSplit = ds, distM = d.mat, ...)
+    cut.tree <- cutreeHybrid(dendro = tree, minClusterSize = (30-3*ds), deepSplit = ds, distM = d.mat, ...)
     mColorh <- cbind(mColorh, labels2colors(cut.tree$labels))
   }
 
@@ -1853,7 +1856,7 @@ getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut 
       datout[i, 10] = Heterogeneity
     }
   }
-  print(signif(data.frame(datout), 3))
+  # print(signif(data.frame(datout), 3))
   ind1 = datout[, 2] > RsquaredCut
   indcut = NA
   indcut = if (sum(ind1) > 0)
@@ -1861,5 +1864,128 @@ getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut 
   else indcut
   powerEstimate = powerVector[indcut][[1]]
   gc()
-  return(list(powerEstimate = powerEstimate, fitIndices = data.frame(datout)))
+
+  output <- list(powerEstimate = powerEstimate, fitIndices = data.frame(datout))
+  return(output)
+}
+
+
+
+#' Wrapper to run  GO enrichment, using fisher enrichment method
+#'
+#' Wrapper to run  GO enrichment, using fisher enrichment method. Builds on TopGo functionality.
+#'
+#' @param gene.list named list of gene sets to query, where name specify name of gene set, and entry is vector of gene symbols.
+#' @param gene.universe background genes
+#' @param species Species: Hs or Mm
+#' @name runEnrichment
+#' @return list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
+#' @import topGO
+#' @examples
+#'
+#' enrichment.list <- runEnrichment(module.list, gene.universe = all.genes, species = "Hs")
+#' results.p <- enrichment.list$results.table.p
+#' results.bh <- enrichment.list$results.table.bh
+#'
+runEnrichment <- function(gene.list, gene.universe, species){
+
+
+  #get list of significant GO before multiple testing correction
+  results.table.p <- NULL
+
+  #get list of significant GO after multiple testing correction
+  results.table.bh <- NULL
+
+  # enrich each module
+  topGO.data <- NULL
+  for (i in 1:length(gene.list)){
+
+    if (species == "Hs"){
+
+      enrich.list <- enrichGO.fisher(gene.candidates = toupper(gene.list[[i]]),
+                                     gene.universe = toupper(gene.universe),
+                                     which.species = species,
+                                     p.threshold = 0.01,
+                                     padj.threshold = 0.05,
+                                     topGO.object = topGO.data)
+
+    } else if (species == "Mm"){
+
+      enrich.list <- enrichGO.fisher(gene.candidates = gene.list[[i]],
+                                     gene.universe = gene.universe,
+                                     which.species = species,
+                                     p.threshold = 0.01,
+                                     padj.threshold = 0.05,
+                                     topGO.object = topGO.data)
+
+    }
+
+    # get results
+    results.table.p.cur <- enrich.list$unadjusted.results
+    results.table.bh.cur <- enrich.list$adjusted.results
+
+    # get and reuse topGo object by updating gene list.
+    topGO.data <- enrich.list$topGo.object
+
+
+    if (nrow(results.table.p.cur) > 0) {
+      results.table.p.cur$module <- names(gene.list)[i]
+      results.table.p <- bind_rows(results.table.p, results.table.p.cur)
+    }
+
+    if (nrow(results.table.bh.cur) > 0) {
+      results.table.bh.cur$module <-  names(gene.list)[i]
+      results.table.bh <- bind_rows(results.table.bh, results.table.bh.cur)
+    }
+  }
+
+  output <- list(
+    results.table.p = results.table.p,
+    results.table.bh = results.table.bh
+  )
+
+  return(output)
+}
+
+
+#' Get list of module genes
+#'
+#' Map module membership to gene list and return module gene list.
+#'
+#' @param module.colors Vector of module membership (usually colors). Must be same length as gene list.
+#' @param genes Vector of genes.
+#' @param add.prefix Logical specifying whether to add "M#." prefix to each module name.
+#' @name runEnrichment
+#' @return Named list, where names are module names and entries are module genes.
+#' @examples
+#'
+#' module.list.1 <- getModuleGenes(modules.1, SubGeneNames, add.prefix = F)
+#' module.list.2 <- getModuleGenes(modules.2_new, SubGeneNames, add.prefix = F)
+#'
+#' # get genes that are common to both network modules
+#' module.union.list <- list()
+#' common.modules <- intersect(modules.1, modules.2_new)
+#' for (i in 1:length(common.modules)){
+#'   common.genes <- intersect(module.list.1[[common.modules[i]]], module.list.2[[common.modules[i]]])
+#'   module.union.list[[common.modules[i]]] <- common.genes
+#' }
+#'
+#'
+getModuleGenes <- function(module.colors, genes, add.prefix = T){
+
+  module_colors= setdiff(unique(module.colors), "grey")
+  module.list <- list()
+  for (i in 1:length(module_colors) ){
+    color <- module_colors[i]
+
+    if (add.prefix){
+      module.name <- paste("M", i, ".", color, sep = "")
+    } else {
+      module.name <- color
+    }
+
+    module.list[[module.name]]=genes[which(module.colors==color)]
+  }
+
+  return(module.list)
 }
