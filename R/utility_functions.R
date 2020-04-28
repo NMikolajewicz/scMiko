@@ -1716,7 +1716,7 @@ getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut 
   intType = charmatch(networkType, networkTypes)
   if (is.na(intType))
     stop(paste("Unrecognized 'networkType'. Recognized values are",
-               paste(.networkTypes, collapse = ", ")))
+               paste(networkTypes, collapse = ", ")))
   nGenes = ncol(data)
   if (nGenes < 3) {
     stop("The input data data contain fewer than 3 rows (nodes).",
@@ -1861,5 +1861,5 @@ getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut 
   else indcut
   powerEstimate = powerVector[indcut][[1]]
   gc()
-  list(powerEstimate = powerEstimate, fitIndices = data.frame(datout))
+  return(list(powerEstimate = powerEstimate, fitIndices = data.frame(datout)))
 }
