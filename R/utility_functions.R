@@ -1225,6 +1225,7 @@ avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_cl
 enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , which.ontology = "BP", p.threshold = 0.001,
                             padj.threshold = 0.05, topGO.object = NULL){
 
+  library(topGO)
 
   if (!(which.species %in% c("Hs", "Mm"))) stop("Species incorrectly specified. Must be either Hs or Mm")
 
@@ -1247,7 +1248,7 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   if (is.null(topGO.object)){
     # if no GO object provided, create new
     GOdata <- new("topGOdata",
-                  ontology="BP",
+                  ontology=which.ontology,
                   allGenes=geneList,
                   annot=topGO::annFUN.GO2genes,
                   GO2genes=allGO2genes,
@@ -1280,7 +1281,6 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
 
   return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh, topGo.object = GOdata))
 }
-
 
 
 
