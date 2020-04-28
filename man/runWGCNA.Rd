@@ -4,7 +4,14 @@
 \alias{runWGCNA}
 \title{run WGCNA analysis on scRNAseq expression matrix}
 \usage{
-runWGCNA(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
+runWGCNA(
+  mat,
+  cor.metric = "rho_p",
+  soft.power = 2,
+  use.TOM = T,
+  use.absolute = T,
+  ...
+)
 }
 \arguments{
 \item{mat}{Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.}
@@ -14,12 +21,16 @@ runWGCNA(mat, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 \item{soft.power}{Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)}
 
 \item{use.TOM}{Logical flag specifying whether to compute topoligical overlap matrix.}
+
+\item{use.absolute}{Logical flag specifying whether to take absolute value of adjacency matrix (a.mat)}
+
+\item{...}{Additional arguments passessed to TOMsimilarity {WGCNA package}}
 }
 \value{
 List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
 }
 \description{
-Run WGCNA analysis on scRNAseq expression matrix, usign WGCNA R package.
+Run WGCNA analysis on scRNAseq expression matrix, using WGCNA R package.
 }
 \examples{
 
@@ -51,6 +62,6 @@ if (min(datExpr) < 0) {
 }
 
 # run WGCNA
-output.all <- runWCGNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
+output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 
 }
