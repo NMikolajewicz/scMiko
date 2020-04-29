@@ -8,7 +8,9 @@ getModulePreservation(
   ref.mat,
   query.mat,
   ref.module,
+  query.modules = NULL,
   networkType = "unsigned",
+  referenceNetworks = 1,
   ...
 )
 }
@@ -17,17 +19,21 @@ getModulePreservation(
 
 \item{query.mat}{query data (expression matrix, cols are genes and rows and samples)}
 
-\item{ref.module}{reference module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.}
+\item{query.modules}{query module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.}
 
 \item{networkType}{Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.}
 
+\item{referenceNetworks}{a vector giving the indices of expression data to be used as reference networks. Reference networks must have their module labels given in multiColor.}
+
 \item{...}{Additional arguments passessed to modulePreservation {WGCNA package}}
+
+\item{ref.modules}{reference module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.}
 }
 \value{
 data.frame of module preservation statistics
 }
 \description{
-Determine module preservation between reference and query network using expression matrices from two scRNAseq comparison groups. Uses WGCNA::modulePreservation() to assess how well a module in one sample is preserved in another. 5<Z<10 indicates moderate presevation, while Z>10 indicates high preservation. Grey module contains uncharacterized genes while gold module contains random genes (these are used as controls).
+Determine module preservation between reference and query network using expression matrices from two scRNAseq comparison groups. Uses WGCNA::modulePreservation() to assess how well a module in one sample is preserved in another. 5<Z<10 indicates moderate presevation, while Z>10 indicates high preservation. Grey module contains uncharacterized genes while gold module contains random genes (these are used as controls). Note that future updates will extend the functionality to accomodate >2 networks.
 }
 \examples{
 

@@ -5,7 +5,7 @@
 \title{Analysis of scale free topology for soft-threshold}
 \usage{
 getSoftThreshold(
-  data,
+  s.mat,
   dataIsExpr = F,
   weights = NULL,
   RsquaredCut = 0.85,
@@ -23,11 +23,11 @@ getSoftThreshold(
 )
 }
 \arguments{
+\item{s.mat}{similarity matrix}
+
 \item{RsquaredCut}{Rsq cutoff. Default is 0.85.}
 
 \item{networkType}{Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.}
-
-\item{s.mat}{similarity matrix}
 
 \item{...}{Additional arguments passessed to pickSoftThreshold {pickSoftThreshold}}
 }

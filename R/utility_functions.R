@@ -1645,12 +1645,15 @@ optimalDS <- function(tree, d.mat, ...){
 
 #' Determine module preservation between reference and query network
 #'
-#' Determine module preservation between reference and query network using expression matrices from two scRNAseq comparison groups. Uses WGCNA::modulePreservation() to assess how well a module in one sample is preserved in another. 5<Z<10 indicates moderate presevation, while Z>10 indicates high preservation. Grey module contains uncharacterized genes while gold module contains random genes (these are used as controls).
+#' Determine module preservation between reference and query network using expression matrices from two scRNAseq comparison groups. Uses WGCNA::modulePreservation() to assess how well a module in one sample is preserved in another. 5<Z<10 indicates moderate presevation, while Z>10 indicates high preservation. Grey module contains uncharacterized genes while gold module contains random genes (these are used as controls). Note that future updates will extend the functionality to accomodate >2 networks.
 #'
 #' @param ref.mat reference data (expression matrix, cols are genes and rows and samples)
 #' @param query.mat query data (expression matrix, cols are genes and rows and samples)
-#' @param ref.module reference module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.
+#' @param ref.modules reference module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.
+#' @param query.modules query module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.
 #' @param networkType Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.
+#' @param referenceNetworks a vector giving the indices of expression data to be used as reference networks. Reference networks must have their module labels given in multiColor.
+#' @param
 #' @param ... Additional arguments passessed to modulePreservation {WGCNA package}
 #' @name getModulePreservation
 #' @return data.frame of module preservation statistics
@@ -1662,17 +1665,22 @@ optimalDS <- function(tree, d.mat, ...){
 #'
 #' stats <- getModulePreservation(ref.mat = de.1, query.mat = de.2, modules.1, nPermutations=30,maxGoldModuleSize=100,maxModuleSize=400, verbose=3)
 #'
-getModulePreservation <- function(ref.mat, query.mat, ref.module, networkType = "unsigned", ...){
+getModulePreservation <- function(ref.mat, query.mat, ref.module, query.modules = NULL, networkType = "unsigned", referenceNetworks = 1, ...){
 
-  multiExpr <- list(A1=list(data=de.1),A2=list(data=de.2))
-  multiColor <- list(A1 = modules.1)
-  mp <- modulePreservation(multiExpr,multiColor,referenceNetworks=1,networkType=networkType, ...)
+  multiExpr <- list(A1=list(data=ref.mat),A2=list(data=query.mat))
+
+  if (is.null(query.modules)){
+    multiColor <- list(A1 = ref.module)
+  } else {
+    multiColor <- list(A1 = ref.module, A2 = query.modules)
+  }
+
+  mp <- modulePreservation(multiExpr,multiColor,referenceNetworks=referenceNetworks,networkType=networkType, ...)
   stats <- mp$preservation$Z$ref.A1$inColumnsAlsoPresentIn.A2
 
 
   return(stats)
 }
-
 
 
 #' Analysis of scale free topology for soft-threshold
@@ -1707,13 +1715,14 @@ getModulePreservation <- function(ref.mat, query.mat, ref.module, networkType = 
 #' plot(sft$fitIndices[,1], sft$fitIndices[,5],xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",main = paste("Mean connectivity"))
 #' text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
 #'
-getSoftThreshold <- function (data, dataIsExpr = F, weights = NULL, RsquaredCut = 0.85,
+getSoftThreshold <- function (s.mat, dataIsExpr = F, weights = NULL, RsquaredCut = 0.85,
                               powerVector = c(seq(1, 10, by = 1), seq(12, 20, by = 2)),
                               removeFirst = FALSE, nBreaks = 10, blockSize = 1000, corFnc = cor,
                               corOptions = list(use = "p"), networkType = "signed",
                               moreNetworkConcepts = FALSE, gcInterval = NULL, verbose = 0,
                               indent = 0)
 {
+  data <- s.mat
   powerVector = sort(powerVector)
   networkTypes <- c("unsigned", "signed", "signed hybrid")
   intType = charmatch(networkType, networkTypes)
