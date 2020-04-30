@@ -10,7 +10,7 @@ runWGCNA(
   cor.metric = "rho_p",
   soft.power = 2,
   use.TOM = T,
-  use.absolute = T,
+  network.type = "signed",
   ...
 )
 }
@@ -23,9 +23,9 @@ runWGCNA(
 
 \item{soft.power}{Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)}
 
-\item{use.TOM}{Logical flag specifying whether to compute topoligical overlap matrix.}
+\item{use.TOM}{Logical flag specifying whether to compute topoligical overlap matrix. If false, w.mat = a.mat.}
 
-\item{use.absolute}{Logical flag specifying whether to take absolute value of adjacency matrix (a.mat)}
+\item{network.type}{Network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid"}
 
 \item{...}{Additional arguments passessed to TOMsimilarity {WGCNA package}}
 }
