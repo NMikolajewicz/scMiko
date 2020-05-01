@@ -27,3 +27,12 @@ Reactome/GO ID
 \description{
 Map Reactome/GO term to ID
 }
+\examples{
+
+# map GO term to GO id
+id <- term2id(term, db = "GO", species = "Hs")
+
+# get geneset for specified GO id (returns character of genes)
+gene.set <- id2geneset(id, "Hs")
+
+}

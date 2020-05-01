@@ -11,6 +11,7 @@ runWGCNA(
   soft.power = 2,
   use.TOM = T,
   network.type = "signed",
+  TOM.type = "signed",
   ...
 )
 }
@@ -26,6 +27,8 @@ runWGCNA(
 \item{use.TOM}{Logical flag specifying whether to compute topoligical overlap matrix. If false, w.mat = a.mat.}
 
 \item{network.type}{Network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid"}
+
+\item{TOM.type}{TOM type. Allowed values are "unsigned" or "signed"}
 
 \item{...}{Additional arguments passessed to TOMsimilarity {WGCNA package}}
 }

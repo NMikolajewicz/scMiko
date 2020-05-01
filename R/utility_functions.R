@@ -648,6 +648,13 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
 #' }
 #' @name term2id
 #' @return Reactome/GO ID
+#' @examples
+#'
+#' # map GO term to GO id
+#' id <- term2id(term, db = "GO", species = "Hs")
+#'
+#' # get geneset for specified GO id (returns character of genes)
+#' gene.set <- id2geneset(id, "Hs")
 #'
 term2id <- function(term, db = "Reactome", species = NULL){
 
@@ -1264,6 +1271,9 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   allGO <- usedGO(GOdata)
   res.table <- GenTable(GOdata, weightFisher=res.wfisher, orderBy='weightFisher', topNodes=length(allGO))
 
+  # ensure p values are numeric
+  res.table$weightFisher <- as.numeric(res.table$weightFisher)
+
   #performing BH correction on our p values
   p.adj <- round(p.adjust(res.table$weightFisher,method="BH"),digits = 4)
 
@@ -1478,6 +1488,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' @param soft.power Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)
 #' @param use.TOM Logical flag specifying whether to compute topoligical overlap matrix. If false, w.mat = a.mat.
 #' @param network.type Network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid"
+#' @param TOM.type TOM type. Allowed values are "unsigned" or "signed"
 #' @param ... Additional arguments passessed to TOMsimilarity {WGCNA package}
 #' @name runWGCNA
 #' @return List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
@@ -1513,7 +1524,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' # run WGCNA
 #' output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 #'
-runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", ...){
+runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", TOM.type = "signed", ...){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
   if (is.null(s.mat)){
@@ -1536,10 +1547,21 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 
   # compute topological overlap matix (TOM)
   if (use.TOM){
-    print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat, ...))
+
+    if ((TOM.type) == "signed") {
+      a.mat.tom <- a.mat * sign(s.mat)
+    } else {
+      a.mat.tom <- a.mat
+    }
+
+    print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat.tom, TOMType = TOM.type, ...))
   } else {
     w.mat <- a.mat
   }
+
+  # assign row and col names
+  rownames(w.mat) <- rownames(a.mat)
+  colnames(w.mat) <- colnames(a.mat)
 
   # dissimilarity measure
   d.mat <- 1- w.mat
@@ -1664,7 +1686,6 @@ optimalDS <- function(tree, d.mat, genes = NULL, ...){
 #' @param query.modules query module membership. Vector of colors (length is equal to number of samples), specfiying sample membership to each module.
 #' @param networkType Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.
 #' @param referenceNetworks a vector giving the indices of expression data to be used as reference networks. Reference networks must have their module labels given in multiColor.
-#' @param
 #' @param ... Additional arguments passessed to modulePreservation {WGCNA package}
 #' @name getModulePreservation
 #' @return data.frame of module preservation statistics
@@ -1975,7 +1996,7 @@ runEnrichment <- function(gene.list, gene.universe, species){
 #' @param module.colors Vector of module membership (usually colors). Must be same length as gene list.
 #' @param genes Vector of genes.
 #' @param add.prefix Logical specifying whether to add "M#." prefix to each module name.
-#' @name runEnrichment
+#' @name getModuleGenes
 #' @return Named list, where names are module names and entries are module genes.
 #' @examples
 #'
@@ -2008,4 +2029,121 @@ getModuleGenes <- function(module.colors, genes, add.prefix = T){
   }
 
   return(module.list)
+}
+
+
+#' Convert adjacency or TOM matrix to igraph data.frame
+#'
+#' Convert TOM matrix (from WGCNA analysis) to igraph data.frame and filter top connections. Uses igraph::graph_from_adjacency_matrix to convert matrix to data.frame.
+#'
+#' @param w.mat TOM or adjacency matrix.
+#' @param top.n Numeric specifying N top connections to return (N < number of connections). If top.n and top.percentile are NULL, all connections retained.
+#' @param top.percentile Numeric [0,1] specifying Nth percetile of top connections to return. If top.n and top.percentile are NULL, all connections retained.
+#' @param graph.type Type of graph. Default is "undirected"
+#' @name wgcna2graphDF
+#' @return igraph data.frame
+#' @examples
+#'
+#' # get connectivity for specified module
+#' module.name <- names(module.list.all)[names(module.list.all) %in% which.modules]
+#' module.gene.cur <- module.list.all[[module.name]]
+#' w.cur <- w.mat[rownames(w.mat) %in% module.gene.cur, colnames(w.mat) %in% module.gene.cur]
+#'
+#' # get igraph data.frame for subset of connections
+#' w.df.top <- wgcna2graphDF(w.cur, top.n = top.n.interactions)
+#' w.df.top$module.membership <- module.name
+#'
+#'
+wgcna2graphDF <- function(w.mat, top.n = NULL, top.percentile = NULL, graph.type = "undirected"){
+
+  # matrix to graph
+  w.graph <- igraph::graph_from_adjacency_matrix(w.mat, mode = c( graph.type), diag = F, weighted = T)
+
+  # graph to data.frame
+  w.df <- igraph::as_data_frame(w.graph)
+
+  # return top connections
+  if (is.null(top.n) & is.null(top.percentile)){
+    return(w.df)
+  } else if (!is.null(top.n)) {
+    w.df.top <- w.df[rank(w.df$weight) > (nrow(w.df) - top.n), ]
+    return(w.df.top)
+  } else if (!is.null(top.percentile)){
+    w.df.top <- w.df[rank(w.df$weight)/nrow(w.df) > (1-top.percentile), ]
+    return(w.df.top)
+  }
+
+}
+
+
+
+#' Get nodes and edges from igraph data.frame for visNetwork
+#'
+#' Convert igraph data.frame to dataframe of nodes and edges (used as input to visNetwork). Only applicable for undirected networks.
+#'
+#' @param df.data igraph data.frame (output from scMiko::wgcna2graphDF)
+#' @name getNodesEdges
+#' @return named list of nodes and edges, where each entry is a data.frame.
+#' @examples
+#'
+#' # get connectivity for specified module
+#' module.name <- names(module.list.all)[names(module.list.all) %in% which.modules]
+#' module.gene.cur <- module.list.all[[module.name]]
+#' w.cur <- w.mat[rownames(w.mat) %in% module.gene.cur, colnames(w.mat) %in% module.gene.cur]
+#'
+#' # get igraph data.frame for subset of connections
+#' w.df.top <- wgcna2graphDF(w.cur, top.n = top.n.interactions)
+#' w.df.top$module.membership <- module.name
+#'
+#' # get nodes and edges
+#' node.edge.output <- getNodesEdges(w.df.top)
+#' vis.nodes <- node.edge.output$nodes
+#' vis.links <- node.edge.output$edges
+#'
+getNodesEdges <- function(df.data){
+  # w.graph.top <- igraph::graph_from_data_frame(df.data, directed = F, vertices = NULL)
+  gD.cur <- igraph::simplify(igraph::graph.data.frame(df.data, directed=FALSE))
+
+  # convert to VisNet representation
+  visNet.data <- toVisNetworkData(gD.cur)
+
+  # get node and link components
+  vis.nodes <- visNet.data$nodes
+  vis.links <- visNet.data$edges
+
+  output <- list(nodes = vis.nodes, edges = vis.links)
+
+  return(output)
+}
+
+
+#' Convert values to color gradient
+#'
+#' Converts ranges of values to corresponding color along color gradient, specified by 3 colors (low color, middle color and high color)
+#'
+#' @param Values vector of numerical values to convert to colors
+#' @param limit numeric specifying limit to of color range. If unspecified, limit <- max(c(abs(min(Values)), abs(max(Values))))
+#' @param gradient.length Numeric specifying number of bins to split gradient into. Default is 100.
+#' @param low.col Color representing low values. Default is "skyblue"
+#' @param mid.col Color representing mid values. Default is "grey"
+#' @param high.col Color representing high values. Default is "tomato"
+#' @name value2col
+#' @return vector of colors.
+#' @examples
+#'
+#' # get edge colors
+#' col.lim <- max(c(abs(min(vis.links$value)), abs(max(vis.links$value))))
+#' edge.colors <- value2col(vis.links$value, limit = col.lim)
+#'
+value2col <- function(values, limit = NULL, gradient.length = 100, low.col = "skyblue", mid.col = "grey", high.col = "tomato"){
+
+  # truncate values if necessary
+  values[values > limit] <- limit
+  values[values < -limit] <- -limit
+
+  jj <- cut(values, breaks = seq(-limit, limit, len = gradient.length),
+            include.lowest = TRUE)
+  cols <- colorRampPalette(c(low.col, mid.col, high.col))(gradient.length-1)[jj]
+
+  return(cols)
 }

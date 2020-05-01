@@ -2,12 +2,9 @@
 % Please edit documentation in R/utility_functions.R
 \name{runEnrichment}
 \alias{runEnrichment}
-\alias{getModuleGenes}
 \title{Wrapper to run  GO enrichment, using fisher enrichment method}
 \usage{
 runEnrichment(gene.list, gene.universe, species)
-
-getModuleGenes(module.colors, genes, add.prefix = T)
 }
 \arguments{
 \item{gene.list}{named list of gene sets to query, where name specify name of gene set, and entry is vector of gene symbols.}
@@ -15,40 +12,17 @@ getModuleGenes(module.colors, genes, add.prefix = T)
 \item{gene.universe}{background genes}
 
 \item{species}{Species: Hs or Mm}
-
-\item{module.colors}{Vector of module membership (usually colors). Must be same length as gene list.}
-
-\item{genes}{Vector of genes.}
-
-\item{add.prefix}{Logical specifying whether to add "M#." prefix to each module name.}
 }
 \value{
 list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
-
-Named list, where names are module names and entries are module genes.
 }
 \description{
 Wrapper to run  GO enrichment, using fisher enrichment method. Builds on TopGo functionality.
-
-Map module membership to gene list and return module gene list.
 }
 \examples{
 
 enrichment.list <- runEnrichment(module.list, gene.universe = all.genes, species = "Hs")
 results.p <- enrichment.list$results.table.p
 results.bh <- enrichment.list$results.table.bh
-
-
-module.list.1 <- getModuleGenes(modules.1, SubGeneNames, add.prefix = F)
-module.list.2 <- getModuleGenes(modules.2_new, SubGeneNames, add.prefix = F)
-
-# get genes that are common to both network modules
-module.union.list <- list()
-common.modules <- intersect(modules.1, modules.2_new)
-for (i in 1:length(common.modules)){
-  common.genes <- intersect(module.list.1[[common.modules[i]]], module.list.2[[common.modules[i]]])
-  module.union.list[[common.modules[i]]] <- common.genes
-}
-
 
 }
