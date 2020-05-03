@@ -1659,7 +1659,7 @@ optimalDS <- function(tree, d.mat, genes = NULL, ...){
 
   mColorh = NULL
   for (ds in 0:4){
-    cut.tree <- cutreeHybrid(dendro = tree, minClusterSize = (30-3*ds), deepSplit = ds, distM = d.mat, ...)
+    cut.tree <- cutreeHybrid(dendro = tree, deepSplit = ds, distM = d.mat, ...)
     mColorh <- cbind(mColorh, labels2colors(cut.tree$labels))
   }
 
@@ -2122,7 +2122,7 @@ getNodesEdges <- function(df.data){
 #' Converts ranges of values to corresponding color along color gradient, specified by 3 colors (low color, middle color and high color)
 #'
 #' @param Values vector of numerical values to convert to colors
-#' @param limit numeric specifying limit to of color range. If unspecified, limit <- max(c(abs(min(Values)), abs(max(Values))))
+#' @param limit numeric specifying limit of color range. If unspecified, limit <- max(c(abs(min(Values)), abs(max(Values))))
 #' @param gradient.length Numeric specifying number of bins to split gradient into. Default is 100.
 #' @param low.col Color representing low values. Default is "skyblue"
 #' @param mid.col Color representing mid values. Default is "grey"
@@ -2146,4 +2146,125 @@ value2col <- function(values, limit = NULL, gradient.length = 100, low.col = "sk
   cols <- colorRampPalette(c(low.col, mid.col, high.col))(gradient.length-1)[jj]
 
   return(cols)
+}
+
+
+#' Convert named list to long data.frame
+#'
+#' Convert named list to long data.frame. Resulting dataframe will have two columns, the first corresponding to the names within the list, and the second to the corersponding list entries.
+#'
+#' @param my.list named list
+#' @param name.header character specifying header name that will be assigned to name column. If unspecified, defaults to "name".
+#' @param value.header character specifying header name that will be assigned to value column. If unspecified, defaults to "value".
+#' @name namedList2longDF
+#' @return long data.frame
+#' @examples
+#'
+#' # specify named list
+#' my.list <- list(group.1 = c("a", "b", "c"), group.2 = c("d", "e", "f"))
+#'
+#' # convert named list to long data.frame
+#' my.df <- namedList2longDF(my.list)
+#'
+namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
+
+  # unlist and assign values to data.frame
+  my.vector <- unlist(my.list)
+  my.df <- data.frame(as.vector(my.vector))
+
+  # get data.frame column names
+  if (is.null(value.header)) value.header <- "value"
+  if (is.null(name.header)) name.header <- "name"
+  colnames(my.df) <- value.header
+
+  # assign names to corresponding values
+  my.df[ ,name.header] <- NA
+  for (i in 1:length(my.list)){
+    my.df[  my.df[ ,value.header] %in% my.list[[i]] ,name.header] <- names(my.list)[i]
+  }
+
+  # rearrange column order
+  my.df <- my.df[ , c(name.header, value.header)]
+
+  # return long data.frame
+  return(my.df)
+}
+
+
+
+#' Compute adjaceny matrix from similary (correlation) matrix
+#'
+#' Compute adjaceny matrix from similary (correlation) matrix for different network types.
+#'
+#' @param s.mat Similarity matrix. Symmetric matrix with rows and columns corresponding to genes, and diagonal = 1.
+#' @param soft.power Numeric specifying soft power used to calculate adjacency matrix.
+#' @param network.type character specifying network type. Must be one of "unsigned", "signed", or "signed hybrid".
+#' @name sim2adj
+#' @return adjaceny matrix (a.mat)
+#' @examples
+#'
+#' # Convert similary to adjacency
+#' a.mat <- sim2adj(s.mat, soft.power = 2, network.type = "signed")
+#'
+sim2adj <- function(s.mat, soft.power, network.type){
+
+  # adjacency matrix
+  softPower <- soft.power
+  if ( network.type == "unsigned"){
+    a.mat <- abs(s.mat)^softPower
+  } else if ( network.type == "signed"){
+    a.mat <-  (0.5 * (1+s.mat) )^softPower
+  } else if ( network.type == "signed hybrid"){
+    a.mat <- s.mat
+    a.mat[a.mat <= 0] <- 0
+    a.mat <- (a.mat)^softPower
+  } else {
+    stop("Network type incorrectly specified. Must be one of 'signed', 'unsighed', or 'signed hybrid'")
+  }
+
+  return(a.mat)
+
+}
+
+
+
+#' Rescale values to specified range.
+#'
+#' Rescales vector of values to span between specified range [new.min, new.max]
+#'
+#' @param values Numeric vector of values to rescale.
+#' @param new.min Numeric specfiying new minimum. If unspecified, default is 0.
+#' @param new.max Numeric specfiying new maximum. If unspecified, default is 1.
+#' @name recaleValues
+#' @return Numeric vector of rescaled values
+#' @examples
+#'
+#' # rescale values
+#' values <- recaleValues(values)
+#'
+recaleValues <- function(values, new.min = 0, new.max = 1){
+
+  # set lower bound to zero
+  old.min <- min(values)
+  if (old.min < 0) {
+    values <- values + abs(old.min)
+  } else if (old.min > 0) {
+    values <- values - abs(old.min)
+  }
+  stopifnot( min(values) == 0)
+
+  # set upper bound to one
+  old.max <- (max(values))
+  values <- values/old.max
+  stopifnot( max(values) == 1)
+
+  new.range <- new.max - new.min
+  values <- values * new.range
+  values <- values + new.min
+
+  stopifnot(min(values) == new.min)
+  stopifnot(max(values) == new.max)
+
+  return(values)
+
 }

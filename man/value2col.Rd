@@ -14,7 +14,7 @@ value2col(
 )
 }
 \arguments{
-\item{limit}{numeric specifying limit to of color range. If unspecified, limit <- max(c(abs(min(Values)), abs(max(Values))))}
+\item{limit}{numeric specifying limit of color range. If unspecified, limit <- max(c(abs(min(Values)), abs(max(Values))))}
 
 \item{gradient.length}{Numeric specifying number of bins to split gradient into. Default is 100.}
 
