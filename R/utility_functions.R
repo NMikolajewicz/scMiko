@@ -1169,17 +1169,20 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 
 }
 
-#' Get average group expression in Seurat object
+#' Get summary of group expression in Seurat object
 #'
-#' Get average group expression in Seurat object
+#' Get summary group expression in Seurat object. Can include mean, median, sd, or cv.
 #'
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
+#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @name avgGroupExpression
 #' @return Numeric vector, ordered
 #'
-avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_clusters"){
+avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters"){
+  # which.center options: "mean", "median", "sd", "cv"
+
 
   # entire matrix
   exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
@@ -1188,14 +1191,27 @@ avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_cl
   cluster.membership <- so@meta.data[[which.group]]
 
   # gene list
-  gene.list <- rownames(so)
+  gene.list <- rownames(exp.mat.complete)
 
   # ordered vector of unique groups
   u.clusters <- getOrderedGroups(so, which.group, is.number = F)
 
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
   for (i in 1:length(u.clusters)){
-    avg.mat[,i] <-  rowMeans(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]])
+    if (which.center == "mean"){
+      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+    } else if (which.center == "median"){
+      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+    } else if (which.center == "sd"){
+      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+    } else if (which.center == "cv"){
+      sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+      av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      avg.mat[,i] <- sd.cur / abs(av.cur)
+    } else {
+      stop("which.center must be specified as 'mean', 'median', 'sd', or 'cv'")
+    }
+
   }
 
   df.avg <- as.data.frame(avg.mat)
@@ -1212,6 +1228,7 @@ avgGroupExpression <- function(so, which.data = "data", which.group = "seurat_cl
 
 
 }
+
 
 
 

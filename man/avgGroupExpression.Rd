@@ -2,14 +2,21 @@
 % Please edit documentation in R/utility_functions.R
 \name{avgGroupExpression}
 \alias{avgGroupExpression}
-\title{Get average group expression in Seurat object}
+\title{Get summary of group expression in Seurat object}
 \usage{
-avgGroupExpression(so, which.data = "data", which.group = "seurat_clusters")
+avgGroupExpression(
+  so,
+  which.data = "data",
+  which.center = "mean",
+  which.group = "seurat_clusters"
+)
 }
 \arguments{
 \item{so}{Seurat Object}
 
 \item{which.data}{Character specfying which data slot. Default is "data".}
+
+\item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "sd", or "cv". If unspecified, default is "mean".}
 
 \item{which.group}{Character specfying group field in Seurat metadata. Default is "seurat_clusters".}
 }
@@ -17,5 +24,5 @@ avgGroupExpression(so, which.data = "data", which.group = "seurat_clusters")
 Numeric vector, ordered
 }
 \description{
-Get average group expression in Seurat object
+Get summary group expression in Seurat object. Can include mean, median, sd, or cv.
 }
