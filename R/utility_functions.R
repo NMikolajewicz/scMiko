@@ -2252,14 +2252,14 @@ sim2adj <- function(s.mat, soft.power, network.type){
 #' @param values Numeric vector of values to rescale.
 #' @param new.min Numeric specfiying new minimum. If unspecified, default is 0.
 #' @param new.max Numeric specfiying new maximum. If unspecified, default is 1.
-#' @name recaleValues
+#' @name rescaleValues
 #' @return Numeric vector of rescaled values
 #' @examples
 #'
 #' # rescale values
-#' values <- recaleValues(values)
+#' values <- rescaleValues(values)
 #'
-recaleValues <- function(values, new.min = 0, new.max = 1){
+rescaleValues <- function(values, new.min = 0, new.max = 1){
 
   # set lower bound to zero
   old.min <- min(values)
@@ -2285,3 +2285,41 @@ recaleValues <- function(values, new.min = 0, new.max = 1){
   return(values)
 
 }
+
+
+
+#' Bayesian Correlation algorithm
+#'
+#' Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible tahn Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
+#'
+#' @param X Expression matrix
+#' @name recaleValues
+#' @return Correlation matrix
+#' @examples
+#'
+#' #create a matrix (or load your own)
+#' X <- matrix(1:1000, ncol=20)
+#'
+#' #compute the Bayesian correlation matrix
+#' B <- BaCo(X)
+#'
+BaCo <- function(X){
+
+  alpha0 <- rep(1/nrow(X),ncol(X))
+  beta0=1-alpha0
+  nrowsX <- nrow(X)
+  k <- ncol(X)
+  cs <- colSums(X)
+  alphas <- alpha0 + X
+  betas  <- matrix(rep(beta0,nrowsX), nrow=nrowsX, byrow=TRUE) + matrix(rep(cs,nrowsX), nrow=nrowsX, byrow=TRUE) - X
+  alphasPLUSbetas <- alphas + betas
+  Psi <- alphas/alphasPLUSbetas - matrix(rep(rowSums(alphas/alphasPLUSbetas)/k, k), ncol=k, byrow=FALSE)
+  var_vec <- as.matrix( ( rowSums( (alphas*betas)/( (alphasPLUSbetas^2)*(alphasPLUSbetas+1) ) ) + rowSums(Psi^2) )/k )
+  cov_mtrx <- (Psi %*% t(Psi))/k
+  Bcorrvals <- cov_mtrx / sqrt( var_vec %*% t(var_vec) )
+  diag(Bcorrvals) <- 1
+  Bcorrvals
+}
+
+
+

@@ -2,26 +2,26 @@
 % Please edit documentation in R/utility_functions.R
 \name{recaleValues}
 \alias{recaleValues}
-\title{Rescale values to specified range.}
+\alias{BaCo}
+\title{Bayesian Correlation algorithm}
 \usage{
-recaleValues(values, new.min = 0, new.max = 1)
+BaCo(X)
 }
 \arguments{
-\item{values}{Numeric vector of values to rescale.}
-
-\item{new.min}{Numeric specfiying new minimum. If unspecified, default is 0.}
-
-\item{new.max}{Numeric specfiying new maximum. If unspecified, default is 1.}
+\item{X}{Expression matrix}
 }
 \value{
-Numeric vector of rescaled values
+Correlation matrix
 }
 \description{
-Rescales vector of values to span between specified range [new.min, new.max]
+Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible tahn Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
 }
 \examples{
 
-# rescale values
-values <- recaleValues(values)
+#create a matrix (or load your own)
+X <- matrix(1:1000, ncol=20)
+
+#compute the Bayesian correlation matrix
+B <- BaCo(X)
 
 }
