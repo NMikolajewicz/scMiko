@@ -16,7 +16,7 @@ avgGroupExpression(
 
 \item{which.data}{Character specfying which data slot. Default is "data".}
 
-\item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "sd", or "cv". If unspecified, default is "mean".}
+\item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".}
 
 \item{which.group}{Character specfying group field in Seurat metadata. Default is "seurat_clusters".}
 }
@@ -24,5 +24,5 @@ avgGroupExpression(
 Numeric vector, ordered
 }
 \description{
-Get summary group expression in Seurat object. Can include mean, median, sd, or cv.
+Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
 }
