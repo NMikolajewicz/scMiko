@@ -362,3 +362,119 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
   plot(sft$fitIndices[,1], sft$fitIndices[,5],xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",main = paste("Mean connectivity"))
   text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
 }
+
+
+
+#' Violin plot of single cell gene expression
+#'
+#' Draws violin plot of single cell data, stratified by specified group. Hierarchially-clustered dendrogram is overlaid to illustrate relationships between groups.
+#'
+#' @param so Seurat object
+#' @param which.gene query gene. Must be available in Seurat object.
+#' @param which.group Group to cluster gene expression by. Must be column header in so meta data. Default is "seurat_clusters".
+#' @param which.data Specifies which data to use for plot. Must be either "data" (default) or "scale".
+#' @name expression.Plot
+#' @return ggplot object
+#' @examples
+#'
+#' # get expression plot of GPNMB stratified by cluster group.
+#' plt.sgExp.clust <- expression.Plot.dev(so.query, which.gene = "GPNMB", which.group = "seurat_clusters", which.data = "data")
+#' print(plt.sgExp.clust)
+#'
+#'
+expression.Plot <- function(so, which.gene, which.group = "seurat_clusters", which.data = "data"){
+  # which.group <- "Barcode"
+  # which.dataslot <- "data"
+  # which.gene <- available_markers
+
+  # get expression data
+  em <- getExpressionMatrix(
+    so,
+    only.variable = F,
+    which.assay = NULL,
+    which.data = which.data,
+    use.additional.genes = NA
+  )
+
+  # get fraction of expressing cells
+  em.frac <- avgGroupExpression(
+    so,
+    which.data = "data",
+    which.center = "fraction",
+    which.group = which.group
+  )
+
+  # get meta data
+  so.meta <- so@meta.data
+
+  # ensure grouping variable exists
+  if (!(which.group) %in% colnames(so.meta)) stop("Grouping variable does not exist.")
+
+  # merge datasets
+  if (sum(rownames(em) %in% (which.gene)) != 1) stop("More than one gene matched query. Cannot continue.")
+  df.meta <- data.frame(id = rownames(so.meta), group = so.meta[,which.group])
+  em.mark <- as.data.frame(em[(rownames(em)) %in% (which.gene), ])
+  em.df <- data.frame(id = rownames(em.mark), query = em.mark[,1])
+  em.merge <- merge(em.df, df.meta, by = "id")
+
+  # get summary statistics (for clustering)
+  em.sum <- em.merge %>%
+    group_by(group) %>%
+    summarize(x.mean = mean(query, na.rm = T),
+              x.sd = sd(query, na.rm = T))
+  em.frac.mark <- as.data.frame(em.frac[(em.frac$genes) %in% (which.gene), ])
+  em.frac.mark <- t(em.frac.mark %>% select(-c("genes")))
+  em.frac.mark.df <- data.frame(group = rownames(em.frac.mark), frac = em.frac.mark[,1])
+
+  if (which.group == "seurat_clusters") em.frac.mark.df$group <- gsub("c", "", em.frac.mark.df$group)
+  em.sum <- merge(em.sum, em.frac.mark.df, by = "group")
+
+  # hierarchial clustering
+  row.names.df <- em.sum$group
+  em.sum <- em.sum %>% select(-c("group"))
+  clust.var <- as.matrix(em.sum)
+  rownames(clust.var) <- row.names.df
+  d <- dist(as.matrix(clust.var))   # find distance matrix
+  hc <- hclust(d)                # apply hirarchical clustering
+  # plot(hc)
+
+
+  # helper function for creating dendograms
+  ggdend.v2 <- function(df) {
+    ggplot() +
+      geom_segment(data = df, aes(x=x, y=y, xend=xend, yend=yend)) +
+      ggdendro::theme_dendro()
+  }
+
+  # get dendromgram data from heat object
+  d.query.clust <- ggdendro::dendro_data(hc)
+
+  # ggplot dendograms
+  p.query.clust <- ggdend.v2(d.query.clust$segments) +
+    ggtitle(paste0(which.gene, " Expression")) +
+    theme(axis.title.x=element_blank(),
+          axis.text=element_blank(),
+          axis.line=element_blank(),
+          axis.ticks=element_blank(),
+          legend.position = "none")
+
+  # reorder data according to clusters
+  em.merge$group <- factor(em.merge$group, levels = levels(d.query.clust[["labels"]][["label"]]))
+
+  # violin plots
+  plt.em <- em.merge %>%
+    group_by(group) %>%
+    ggplot(aes(x = group, y = query, fill = group)) +
+    geom_violin() + theme_bw() +
+    ylab("Expression") +
+    xlab(which.group)  +
+    theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
+          legend.position = "none")
+
+  # combine plots
+  plt.sgExp <-  cowplot::plot_grid(p.query.clust, plt.em, ncol = 1, align = "v", rel_heights = c(1,2))
+
+  return(plt.sgExp)
+}
+
+
