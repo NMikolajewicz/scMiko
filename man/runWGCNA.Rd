@@ -11,24 +11,27 @@ runWGCNA(
   soft.power = 2,
   use.TOM = T,
   network.type = "signed",
-  TOM.type = "signed",
+  TOM.type = "unsigned",
+  rescale.adjacency = F,
   ...
 )
 }
 \arguments{
 \item{e.mat}{Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.}
 
-\item{s.mat}{Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric.}
+\item{s.mat}{Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric. If provided, s.mat is not recomputed.}
 
 \item{cor.metric}{Correction measure to use. Default is "rho_p." See "dismay" package for additional options.}
 
-\item{soft.power}{Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)}
+\item{soft.power}{Soft power used to scale s.mat to a.mat (e.g., a.mat = s.mat ^ soft.power)}
 
 \item{use.TOM}{Logical flag specifying whether to compute topoligical overlap matrix. If false, w.mat = a.mat.}
 
-\item{network.type}{Network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid"}
+\item{network.type}{Network type. Allowed values are (unique abbreviations of) "unsigned", "signed" (default), "signed hybrid"}
 
-\item{TOM.type}{TOM type. Allowed values are "unsigned" or "signed"}
+\item{TOM.type}{TOM type. Allowed values are "unsigned" (default) or "signed"}
+
+\item{rescale.adjacency}{Logical indicate whether adjacency matrix is rescaled to [0,1]. Default is False.}
 
 \item{...}{Additional arguments passessed to TOMsimilarity {WGCNA package}}
 }
