@@ -9,11 +9,11 @@ setResolution(so, cluster.resolution)
 \arguments{
 \item{so}{Seurat Object}
 
-\item{cluster.resolution}{Seurat Object}
+\item{cluster.resolution}{Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.}
 }
 \value{
 Seurat object
 }
 \description{
-Set 'Seurat_Clusters' metadata entry to quieried cluster resolution
+Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
 }

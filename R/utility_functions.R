@@ -410,17 +410,17 @@ fixBarcodeLabel <- function (so){
 
 #' Set cluster resolution
 #'
-#' Set 'Seurat_Clusters' metadata entry to quieried cluster resolution
+#' Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
 #'
 #'
 #' @param so Seurat Object
-#' @param cluster.resolution Seurat Object
+#' @param cluster.resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
 #' @name setResolution
 #' @return Seurat object
 #'
 setResolution <- function (so, cluster.resolution){
 
-  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1, modularity.fxn = 1)
+  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1, modularilustty.fxn = 1)
 
   return(so)
 }
@@ -1171,17 +1171,17 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 
 #' Get summary of group expression in Seurat object
 #'
-#' Get summary group expression in Seurat object. Can include mean, median, sd, or cv.
+#' Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
 #'
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
-#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "sd", or "cv". If unspecified, default is "mean".
+#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @name avgGroupExpression
 #' @return Numeric vector, ordered
 #'
 avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters"){
-  # which.center options: "mean", "median", "sd", "cv"
+  # which.center options: "mean", "fraction", "median", "sd", "cv"
 
 
   # entire matrix
@@ -1196,6 +1196,13 @@ avgGroupExpression <- function(so, which.data = "data", which.center = "mean", w
   # ordered vector of unique groups
   u.clusters <- getOrderedGroups(so, which.group, is.number = F)
 
+  if ((which.center == "fraction") & (which.data != "data")){
+    warning("Data from 'data' slot used to compute expressing fraction")
+    which.data <- "data"
+    exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
+    gene.list <- rownames(exp.mat.complete)
+  }
+
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
   for (i in 1:length(u.clusters)){
     if (which.center == "mean"){
@@ -1208,8 +1215,10 @@ avgGroupExpression <- function(so, which.data = "data", which.center = "mean", w
       sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
       av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
       avg.mat[,i] <- sd.cur / abs(av.cur)
+    } else if (which.center == "fraction"){
+      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
     } else {
-      stop("which.center must be specified as 'mean', 'median', 'sd', or 'cv'")
+      stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
     }
 
   }
@@ -1500,12 +1509,13 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' Run WGCNA analysis on scRNAseq expression matrix, using WGCNA R package.
 #'
 #' @param e.mat Expression matrix. Row entries are cells, column entries are genes. Colnames and rownames are expected.
-#' @param s.mat Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric.
+#' @param s.mat Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric. If provided, s.mat is not recomputed.
 #' @param cor.metric Correction measure to use. Default is "rho_p." See "dismay" package for additional options.
-#' @param soft.power Soft power used to scale s.mat to a.mat (i.e., a.mat = s.mat ^ soft.power)
+#' @param soft.power Soft power used to scale s.mat to a.mat (e.g., a.mat = s.mat ^ soft.power)
 #' @param use.TOM Logical flag specifying whether to compute topoligical overlap matrix. If false, w.mat = a.mat.
-#' @param network.type Network type. Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid"
-#' @param TOM.type TOM type. Allowed values are "unsigned" or "signed"
+#' @param network.type Network type. Allowed values are (unique abbreviations of) "unsigned", "signed" (default), "signed hybrid"
+#' @param TOM.type TOM type. Allowed values are "unsigned" (default) or "signed"
+#' @param rescale.adjacency Logical indicate whether adjacency matrix is rescaled to [0,1]. Default is False.
 #' @param ... Additional arguments passessed to TOMsimilarity {WGCNA package}
 #' @name runWGCNA
 #' @return List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
@@ -1541,7 +1551,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' # run WGCNA
 #' output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 #'
-runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", TOM.type = "signed", ...){
+runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", TOM.type = "unsigned", rescale.adjacency = F, ...){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
   if (is.null(s.mat)){
@@ -1549,23 +1559,15 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
   }
 
   # adjacency matrix
-  softPower <- soft.power
-  if ( network.type == "unsigned"){
-    a.mat <- abs(s.mat)^softPower
-  } else if ( network.type == "signed"){
-    a.mat <-  (0.5 * (1+s.mat) )^softPower
-  } else if ( network.type == "signed hybrid"){
-    a.mat <- s.mat
-    a.mat[a.mat <= 0] <- 0
-    a.mat <- (a.mat)^softPower
-  } else {
-    stop("Network type incorrectly specified. Must be one of 'signed', 'unsighed', or 'signed hybrid'")
-  }
+  a.mat <-  sim2adj(s.mat, soft.power, network.type)
+
+  # rescale value if needed
+  if (rescale.adjacency) a.mat <- recaleValues(a.mat, new.min = 0, new.max = 1)
 
   # compute topological overlap matix (TOM)
   if (use.TOM){
 
-    if ((TOM.type) == "signed") {
+    if ((TOM.type) == "signed" & (network.type == "unsigned")) {
       a.mat.tom <- a.mat * sign(s.mat)
     } else {
       a.mat.tom <- a.mat
@@ -1656,28 +1658,25 @@ dist2hclust <- function(d.mat, method = "average", ...){
 
 #' Cut clustered tree at varying heights and overlay with dendrogram to find optimal parameter set.
 #'
-#' WGCNA::cutreeHybrid is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set.
+#' WGCNA::cutreeDynamic is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set.
 #'
 #' @param tree h.clust object generated by dist2hclust.
 #' @param d.mat distance matrix used to generate tree.
 #' @param genes vector of gene names corresponding rows/col of distance matrix (d.mat). If specified, additional "genes" column is provided in output.
-#' @param ... Additional arguments passessed to cutreeHybrid {WGCNA package}
 #' @name optimalDS
 #' @return mColorh, matrix specfying module membership at varying deep split parameter specifications (0:4)
-#' @import WGCNA
 #' @examples
 #'
 #' geneTree <- dist2hclust(d.mat)
-#' mColorh <- optimalDS(tree = geneTree, d.mat = d.mat, pamStage = F,cutHeight = 0.99)
+#' # determine number of modules based on refrence dataset
+#' print2hide <- capture.output(mColorh <- optimalDS(tree = geneTree, d.mat = d.mat, genes  = rownames(a.mat)))
 #'
-#' plotDendroAndColors(geneTree, mColorh, paste("dpSplt =", 0:4), main = "Group 1", dendroLabels = F)
-#'
-optimalDS <- function(tree, d.mat, genes = NULL, ...){
+optimalDS <- function(tree, d.mat, genes = NULL){
 
   mColorh = NULL
   for (ds in 0:4){
-    cut.tree <- cutreeHybrid(dendro = tree, deepSplit = ds, distM = d.mat, ...)
-    mColorh <- cbind(mColorh, labels2colors(cut.tree$labels))
+    cut.tree <- cutreeDynamic(dendro = tree,distM= d.mat, cutHeight = 0.998, deepSplit=ds, pamRespectsDendro = FALSE)
+    mColorh <- cbind(mColorh, labels2colors(cut.tree))
   }
 
   colnames(mColorh) <- paste0("ds.", seq(0,4))
@@ -2208,6 +2207,37 @@ namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
 }
 
 
+#' Convert named list to wide data.frame
+#'
+#' Convert named list to wide data.frame. Resulting dataframe will have the same number of columns as there are names in the list.
+#'
+#' @param my.list named list
+#' @name namedList2wideDF
+#' @return wide data.frame
+#' @examples
+#'
+#' # specify named list
+#' my.list <- list(group.1 = c("a", "b", "c"), group.2 = c("d", "e", "f"))
+#'
+#' # convert named list to wide data.frame
+#' my.df <- namedList2wideDF(my.list)
+#'
+namedList2wideDF <- function(my.list){
+
+  df.long <- scMiko::namedList2longDF(my.list, name.header = "name", value.header = "value")
+  df.long$name <- as.character(df.long$name)
+  df.long$value <- as.character(df.long$value)
+  df.wide <- df.long %>%
+    dplyr::group_by(name) %>%
+    dplyr::mutate(row = row_number()) %>%
+    tidyr::pivot_wider(names_from = name, values_from = value) %>%
+    dplyr::select(-row)
+
+  # return wide data.frame
+  return(df.wide)
+}
+
+
 
 #' Compute adjaceny matrix from similary (correlation) matrix
 #'
@@ -2322,4 +2352,365 @@ BaCo <- function(X){
 }
 
 
+
+
+#' Analysis of scale free topology for soft-threshold. Modified from getSoftThreshold.
+#'
+#' Analysis of scale free topology for multiple soft thresholding powers. The aim is to help the user pick an appropriate soft-thresholding power for network construction. Inspired by WGCNA::pickSoftThreshold and updated from first version (scMiko::getSoftThreshold)
+#'
+#' @param s.mat similarity matrix
+#' @param power Numeric vector of powers to evaluate. Default is c(seq(0.5,5, by = 0.5), seq(6,10))
+#' @param networkType Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.
+#' @param nBreaks Number of bins in connectivity histograms. Default is 20.
+#' @param removeFirst Logical specifying whether the first bin should be removed from the connectivity histogram. Default is True.
+#' @param rescale.adjacency Logical indicating if s.mat should be rescaled to [0,1]
+#' @name getSoftThreshold.v2
+#' @return named list containing power estimates, r2 estimates, distribution plots, optimiation plot and results data.frame.
+#' @examples
+#'
+#' # determine optimal soft threshold
+#' sft <- getSoftThreshold.v2(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)),
+#' network.type = "signed", rescale.adjacency = F)
+#'
+#' # visualize optimization plot
+#' print(sft$optimization.plot)
+#'
+#' # visualize node-linkage density plots
+#' cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5)
+
+getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), network.type = "signed", nBreaks = 20, removeFirst = T, rescale.adjacency = F){
+
+
+  powers <- c(seq(0.5,5, by = 0.5), seq(6,10))
+  plt.sf.list <- list()
+
+  r2.sf <- c()
+
+  for (i in 1:length(powers)){
+
+    power.cur <- powers[i]
+    a.cur <-  sim2adj(s.mat, soft.power = power.cur, network.type = network.type)
+
+    if (rescale.adjacency)  a.cur <- recaleValues(a.cur, new.min = 0, new.max = 1)
+
+
+    # get connectivity for specified power
+    net.connectivity.df <- getConnectivity(a.cur, rownames(a.cur), flag.top.n = 20)
+
+    # nBreaks <- 20
+    # removeFirst <- T
+    k <- net.connectivity.df$wi
+    discretized.k <- cut(k, nBreaks)
+    dk <- tapply(k, discretized.k, mean)
+    p.dk <- as.vector(tapply(k, discretized.k, length)/length(k))
+    breaks1 <- seq(from = min(k), to = max(k), length = nBreaks + 1)
+    hist1 <- suppressWarnings(hist(k, breaks = breaks1, equidist = FALSE,
+                                   plot = FALSE, right = TRUE))
+    dk2 <- hist1$mids
+    dk <- ifelse(is.na(dk), dk2, dk)
+    dk = ifelse(dk == 0, dk2, dk)
+    p.dk <- ifelse(is.na(p.dk), 0, p.dk)
+    log.dk <- as.vector(log10(dk))
+    if (removeFirst) {
+      p.dk = p.dk[-1]
+      log.dk = log.dk[-1]
+    }
+    log.p.dk <- as.numeric(log10(p.dk + 1e-09))
+    lm1 <- lm(log.p.dk ~ log.dk)
+    # lm.summary <- summary(lm1)
+
+    r2.sf[i] <- summary(lm1)[["r.squared"]]
+
+    df.sf <- data.frame(x = log.dk, y = log.p.dk)
+
+    # store node linkage distribution plot
+    plt.sf.list[[as.character(power.cur)]] <- df.sf %>%
+      ggplot(aes(x=x, y=y)) +
+      geom_smooth(method = "lm", color = "tomato", fill = "tomato") +
+      geom_point(size = 3) +
+      xlab("N Links (Log)") +
+      ylab("N Nodes (Log)") +
+      ggtitle(paste0("Node Linkages\nSoft Power = ", power.cur)) +
+      theme_classic() +
+      stat_fit_glance(method = "lm",
+                      label.y = "bottom",
+                      method.args = list(formula = y ~ x),
+                      mapping = aes(label = sprintf('r^2~"="~%.3f~~italic(P)~"="~%.2g',
+                                                    stat(r.squared), stat(p.value))),
+                      parse = TRUE)
+
+  }
+
+  # store powers and r2
+  df.r2.sf <- data.frame(sf = powers, r2 = r2.sf)
+
+  # optimizatio plot
+  plt.opt.sf <- df.r2.sf %>%
+    ggplot(aes(x = sf, y = r2)) +
+    geom_smooth(color = "tomato", fill = "tomato") +
+    geom_point(size = 3) +
+    geom_hline(yintercept = df.r2.sf$r2[which.max(df.r2.sf$r2)]) +
+    geom_vline(xintercept = df.r2.sf$sf[which.max(df.r2.sf$r2)]) +
+    xlab("Soft Power") +
+    ylab("R2 (Scale Free Topology)") +
+    theme_classic() +
+    ggtitle(paste0("Soft Power Optimization\nbest power = ", df.r2.sf$sf[which.max(df.r2.sf$r2)], ", r2 = ", signif(df.r2.sf$r2[which.max(df.r2.sf$r2)], 3)))
+
+  # store results
+  output <- list(
+    powerEstimate = df.r2.sf$sf[which.max(df.r2.sf$r2)],
+    r2Estimate = df.r2.sf$r2[which.max(df.r2.sf$r2)],
+    distribution.plot = plt.sf.list,
+    optimization.plot = plt.opt.sf,
+    results = df.r2.sf
+  )
+
+  return(output)
+
+
+}
+
+
+
+#' Balance matrix dimensions
+#'
+#' Resamples two matrices to match number of rows in each. Number of rows is matched to minimum or maximum, as specified.
+#'
+#' @param s.mat similarity matrix
+#' @param mat.1 First input matrix.
+#' @param mat.2 Second input matrix.
+#' @param method Character specifying which matching method to use. Must be one of "match.max" (default) or "match.min". For either option, matrix with min/max number of rows is resamples to match the other matrix.
+#' @name balanceMatrixSize
+#' @return list of resampled matrices.
+#' @examples
+#'
+#' # ensure sample sizes are balanced across groups
+#' output.mat <- balanceMatrixSize(de.orig.1, de.orig.2, method = "match.max")
+#' de.1 <- output.mat[["de.1"]] # resampled mat.1
+#' de.2 <- output.mat[["de.2"]] # resampled mat.2
+#' datExpr.noz <- output.mat[["de.all"]] # concatenated matrices
+#'
+balanceMatrixSize <- function(mat.1, mat.2, method = "match.max"){
+
+  # ensure sample sizes are balanced across groups
+  match.sample.size <- method #option: "match.max", match to max sample size; "match.min", match to min sample size; "none", no matcing
+
+  size.1 <- nrow(mat.1)
+  size.2 <- nrow(mat.2)
+
+  if (match.sample.size == "match.max"){
+
+    target.size <- max(c(size.1, size.2))
+
+    fill.1 <- target.size - size.1
+    fill.2 <- target.size - size.2
+
+    sample.ind.1 <- sample(seq(1,size.1), fill.1, replace = T)
+    sample.ind.2 <- sample(seq(1,size.2), fill.2, replace = T)
+
+    if (fill.1 > 0){
+      de.1 <- rbind(mat.1, mat.1[sample.ind.1 , ])
+    } else {
+      de.1 <- mat.1
+    }
+
+    if (fill.2 > 0){
+      de.2 <- rbind(mat.2, mat.2[sample.ind.2 , ])
+    } else {
+      de.2 <- mat.2
+    }
+
+    de.all <- rbind(de.1, de.2)
+
+
+  } else if (match.sample.size == "match.min"){
+
+    target.size <- min(c(size.1, size.2))
+
+    fill.1 <- size.1 - target.size
+    fill.2 <- size.2 - target.size
+
+    sample.ind.1 <- sample(seq(1,size.1), target.size, replace = F)
+    sample.ind.2 <- sample(seq(1,size.2), target.size, replace = F)
+
+    de.1 <- mat.1[sample.ind.1, ]
+    de.2 <- mat.2[sample.ind.2, ]
+
+    de.all <- rbind(de.1, de.2)
+
+
+  } else if (match.sample.size == "none"){
+
+    de.1 <- mat.1
+    de.2 <- mat.2
+
+    de.all <- rbind(de.1, de.2)
+  }
+
+
+  output <- list(
+    de.1 = de.1,
+    de.2 = de.2,
+    de.all = de.all
+  )
+
+  return(output)
+
+}
+
+
+
+#' TOM matrix rescaling prior to computing consensus topological overlap.
+#'
+#' Query TOM matrix is rescaled to match nth percentile of reference TOM matrix. Since consensus is defined as component-wise minimum of two TOMS, a bias may result without scaling. This is mitigated by scaling the matrices.
+#'
+#' @param query.TOM Query topological overlap matrix. This is the matrix that will be scaled. Corresponds to w.mat output from scMiko::runWGCNA() function.
+#' @param reference.TOM Reference topological overlap matrix. This is the matrix that will be used as the reference and will not be scaled. Corresponds to w.mat output from scMiko::runWGCNA() function.
+#' @param reference.percentile Numerical. Matrix is scaled so that reference.percentile is matched across both matrices. Default is 0.95.
+#' @name scaleTOM
+#' @return scaled query.TOM
+#' @examples
+#'
+#' # scale TOM matrices
+#' w.1 <- scaleTOM(query.TOM = w.1, reference.TOM = w.mat, reference.percentile = 0.95)
+#' w.2 <- scaleTOM(query.TOM = w.2, reference.TOM = w.mat, reference.percentile = 0.95)
+#'
+#' # recompute the distance matrix
+#' d.mat <- 1-w.mat
+#' d.1 <- 1-w.1
+#' d.2 <- 1-w.2
+#'
+#' # compute consensus topological overlap
+#' w.co <- pmin(w.1, w.2) # component-wise parallel minimum of TOMs
+#' d.co <- 1-w.co
+#'
+scaleTOM <- function(query.TOM, reference.TOM, reference.percentile = 0.95){
+
+  # TOM matrices of different datasets may have different statistical properties. Since consensus is defined as teh component-wise minimum of two-TOMs, a bias may results. Simple scaling can mitigate the effects of different statistical properties to some degree. TOM are scales such that 95th percentile equals the 95th percentile of the female TOM.
+
+  # reference: https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/Consensus-NetworkConstruction-man.pdf
+
+  # Define the reference percentile
+  scaleP <- reference.percentile
+
+  # Set RNG seed for reproducibility of sampling
+  set.seed(12345)
+
+  # Sample sufficiently large number of TOM entries
+  nSamples <- as.integer(1/(1-scaleP) * 1000);
+
+  # Choose the sampled TOM entries
+  nGenes <- ncol(reference.TOM)
+  scaleSample <- sample(nGenes*(nGenes-1)/2, size = nSamples)
+
+  # Select the sampled TOM entries
+  TOMScalingSample.ref <- as.dist(reference.TOM)[scaleSample]
+  TOMScalingSample.query <- as.dist(query.TOM)[scaleSample]
+
+  # Calculate the 95th percentile
+  scaleQuant.ref <- quantile(TOMScalingSample.ref, probs = scaleP, type = 8)
+  scaleQuant.query <- quantile(TOMScalingSample.query, probs = scaleP, type = 8)
+
+  # Get scaling power
+  scalePowers <- log(scaleQuant.ref)/log(scaleQuant.query);
+
+  # scale TOM matrices
+  scaled.TOM <- query.TOM^scalePowers
+
+  return(scaled.TOM)
+}
+
+
+
+#' Remove duplicate genes from Seurat Object
+#'
+#' Remove duplicate genes from Seurat Object
+#'
+#' @param so Seurat Object
+#' @name rmDuplicateGenes
+#' @return seurat object
+#' @examples
+#'
+#' so.query <- rmDuplicateGenes(so.query)
+#'
+rmDuplicateGenes <- function(so){
+
+  # get gene names
+  all.genes <- rownames(so)
+
+  # if duplicates exist, subset seurat object
+  if (sum(duplicated(all.genes)) > 0){
+    # which.dup <- all.genes[duplicated(all.genes)]
+    which.unique <- all.genes[!duplicated(all.genes)]
+    so <- subset(so, features = which.unique)
+  }
+
+  return(so)
+
+}
+
+
+#' Quantile Normalization of 2 Vectors
+#'
+#' Performs quantile normalization of 2 vectors (Hicks 2014).
+#'
+#' @param x Numeric vector.
+#' @param y Numeric vector.
+#' @param genes Character vector of gene names. Used to label entries in data.frame output.
+#' @param flag.top.n Numeric indicating top n genes to flag in data.frame output. Default is 15.
+#' @name qNorm
+#' @return data.frame of quantile normalized values.
+#' @examples
+#'
+#' # quantile normalization
+#' x.s1 <- getConnectivity(s.1, gene.names = colnames(a.1))$wi
+#' y.s2 <- getConnectivity(s.2, gene.names = colnames(a.2))$wi
+#' df.xy.s <- qNorm(x.s1, y.s2, genes = colnames(a.1))
+#'
+qNorm <- function(x, y, genes = NULL, flag.top.n = 15){
+
+  # check input
+  stopifnot(length(x) == length(y))
+
+  # get original vector orders
+  x.orig.order <- seq(1,length(x))
+  y.orig.order <- seq(1,length(y))
+
+  # get new vector orders
+  x.new.order <-order(x)
+  y.new.order <-order(y)
+
+  # sort vector
+  x.sort <- x[x.new.order]
+  y.sort <- y[y.new.order]
+
+  # get average
+  xy.mean <- (x.sort + y.sort)/2
+
+  # restore original order
+  x.new <- xy.mean[x.orig.order[x.new.order]]
+  y.new <- xy.mean[y.orig.order[y.new.order]]
+
+
+  if (!is.null(genes)){
+    stopifnot(length(genes) == length(x))
+    df.xy <- data.frame(genes = genes, x.old = x, y.old = y, x.new = x.new, y.new = y.new)
+  } else {
+    df.xy <- data.frame(x.old = x, y.old = y, x.new = x.new, y.new = y.new)
+  }
+
+  # flag.top.n <- 10
+  df.xy$top.old <- F
+  df.xy$top.old[rank(df.xy$x.old) >  nrow(df.xy)-flag.top.n] <- T
+  df.xy$top.old[rank(df.xy$y.old) >  nrow(df.xy)-flag.top.n] <- T
+  df.xy$top.old[rank((df.xy$x.old + df.xy$y.old)/2) >  nrow(df.xy)-flag.top.n] <- T
+
+  df.xy$top.new <- F
+  df.xy$top.new[rank(df.xy$x.new) >  nrow(df.xy)-flag.top.n] <- T
+  df.xy$top.new[rank(df.xy$y.new) >  nrow(df.xy)-flag.top.n] <- T
+  df.xy$top.new[rank((df.xy$x.new + df.xy$y.new)/2) >  nrow(df.xy)-flag.top.n] <- T
+
+  return(df.xy)
+
+}
 
