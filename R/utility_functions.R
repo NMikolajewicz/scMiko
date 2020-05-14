@@ -1573,6 +1573,13 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
       a.mat.tom <- a.mat
     }
 
+    # ensure matrix is symmetric (override symmetry checking performed by TOMsimiliary())
+    if (isSymmetric(a.mat)){
+      a.mat <- (a.mat + t(a.mat)) / 2
+    } else {
+      stop("Adjacency matrix is not symmetric")
+    }
+
     print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat.tom, TOMType = TOM.type, ...))
   } else {
     w.mat <- a.mat
