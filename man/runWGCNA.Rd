@@ -21,7 +21,7 @@ runWGCNA(
 
 \item{s.mat}{Similarity matrix (optional). If not provided, will be computed using method specfiied by cor.metric. If provided, s.mat is not recomputed.}
 
-\item{cor.metric}{Correction measure to use. Default is "rho_p." See "dismay" package for additional options.}
+\item{cor.metric}{Correction measure to use. Default is "rho_p". See "dismay" package for additional options.}
 
 \item{soft.power}{Soft power used to scale s.mat to a.mat (e.g., a.mat = s.mat ^ soft.power)}
 
