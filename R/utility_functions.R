@@ -420,7 +420,7 @@ fixBarcodeLabel <- function (so){
 #'
 setResolution <- function (so, cluster.resolution){
 
-  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1, modularilustty.fxn = 1)
+  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
 
   return(so)
 }
