@@ -274,7 +274,6 @@ getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = N
 #' Get list of files in specified directory. Default directory is "Preprocessed Datasets/".
 #'
 #' @param directory Character. Directory name.
-#' @param scale.limit Numeric. Color scale limit.
 #' @name getAvailableFiles
 #' @return list of files
 #'
@@ -999,7 +998,7 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
 #'
 #' @param x Character vector
 #' @name rmvCSVprefix
-#' @return gene x cell expression matrix
+#' @return Character vector
 #'
 rmvCSVprefix <- function(x){
   pattern <- "ï.."
@@ -1177,12 +1176,18 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #' @param which.data Character specfying which data slot. Default is "data".
 #' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
+#' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
 #' @name avgGroupExpression
-#' @return Numeric vector, ordered
+#' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters"){
+avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
   # which.center options: "mean", "fraction", "median", "sd", "cv"
 
+  # inititate parallel processes
+  if (do.parallel){
+    library(future.apply)
+    plan(multisession) ## Run in parallel on local computer
+  }
 
   # entire matrix
   exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
@@ -1203,24 +1208,49 @@ avgGroupExpression <- function(so, which.data = "data", which.center = "mean", w
     gene.list <- rownames(exp.mat.complete)
   }
 
+  # clear some memory
+  rm(so)
+  gc()
+
+  # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
   for (i in 1:length(u.clusters)){
     if (which.center == "mean"){
-      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      }
     } else if (which.center == "median"){
-      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+      }
     } else if (which.center == "sd"){
-      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+      }
     } else if (which.center == "cv"){
-      sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
-      av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      if (do.parallel){
+        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      } else {
+        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+      }
       avg.mat[,i] <- sd.cur / abs(av.cur)
     } else if (which.center == "fraction"){
-      avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      }
     } else {
       stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
     }
-
   }
 
   df.avg <- as.data.frame(avg.mat)

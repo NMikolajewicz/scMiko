@@ -8,8 +8,6 @@ getAvailableFiles(directory = "Preprocessed Datasets/")
 }
 \arguments{
 \item{directory}{Character. Directory name.}
-
-\item{scale.limit}{Numeric. Color scale limit.}
 }
 \value{
 list of files

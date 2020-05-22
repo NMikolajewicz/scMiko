@@ -10,7 +10,7 @@ rmvCSVprefix(x)
 \item{x}{Character vector}
 }
 \value{
-gene x cell expression matrix
+Character vector
 }
 \description{
 Remove "ï.." prefix that is appended to csv header

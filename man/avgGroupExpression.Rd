@@ -8,7 +8,8 @@ avgGroupExpression(
   so,
   which.data = "data",
   which.center = "mean",
-  which.group = "seurat_clusters"
+  which.group = "seurat_clusters",
+  do.parallel = F
 )
 }
 \arguments{
@@ -19,9 +20,11 @@ avgGroupExpression(
 \item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".}
 
 \item{which.group}{Character specfying group field in Seurat metadata. Default is "seurat_clusters".}
+
+\item{do.parallel}{Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.}
 }
 \value{
-Numeric vector, ordered
+data.frame (gene rows, group columns)
 }
 \description{
 Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.

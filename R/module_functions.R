@@ -5,7 +5,7 @@
 #' @param query.format Numerical code specifying gene list imput format. One of:
 #' \itemize{
 #' \item 1 - Character vector of genes. E.g., tnf.signalling = c("Tnfrsf1a", "Tnfrsf1b", "Tnfaip3")
-#' \item 2- csv file input.
+#' \item 2 - csv file input.
 #' }
 #' @param input.file Character specifying module name. Required if query.format = 2.
 #' @param markers.of.interest Character vector specifying list of gene(s). Required if query.format = 1.
@@ -44,7 +44,7 @@ m9.importMarkers <- function(query.format, input.file = NULL, markers.of.interes
       spread_sheet_col <- 1
       marker_set_name <- marker_set_name[spread_sheet_col]
       markers.of.interest <- as.data.frame(as.vector(markers.of.interest[ , spread_sheet_col]))
-      colnames(markers_of_interest) <- marker_set_name
+      colnames(markers.of.interest) <- marker_set_name
     } else if (which.col == "all"){
       marker_set_name <- ""
     }
