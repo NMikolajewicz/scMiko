@@ -2,6 +2,9 @@
 
 Set of general and module-specific utility functions used for scRNAseq analysis. Builds upon Seurat Package. 
 
+Visit [scMiko site](https://nmikolajewicz.github.io/scMiko/) for documentation. 
+
+
 ## Installation
 
 Firstly, please install or update the package devtools by running
