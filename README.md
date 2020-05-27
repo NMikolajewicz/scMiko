@@ -1,8 +1,8 @@
 ### scMiko
 
-Set of general and module-specific utility functions used for scRNAseq analysis. Builds upon Seurat Package. 
+Set of general and module-specific utility functions used for scRNAseq analysis. Builds upon [Seurat](https://satijalab.org/seurat/) Package. 
 
-Visit [scMiko site](https://nmikolajewicz.github.io/scMiko/) for documentation. 
+Visit [scMiko](https://nmikolajewicz.github.io/scMiko/) site for documentation. 
 
 
 ## Installation
@@ -13,7 +13,7 @@ Firstly, please install or update the package devtools by running
 install.packages("devtools")
 ```
 
-Then the scMiko can be installed via
+Then the [scMiko](https://nmikolajewicz.github.io/scMiko/) package can be installed via
 
 ```
 library(devtools)
@@ -24,10 +24,6 @@ devtools::install_github(
 
 private token: a3c1c9b15c496991c952d1fe3ccc52db770f22fa
 ```
-## Built With
-
-* [Seurat](https://satijalab.org/seurat/) - Seurat R toolkit for single cell genomics
-* [flexdashboard](https://rmarkdown.rstudio.com/flexdashboard/) - Interactive dashboards for R
 
 ## Authors
 
