@@ -11,7 +11,10 @@ m1.scNormScale(
   var2regress = NULL,
   enable.parallelization = T,
   n.workers = 3,
-  max.memory = (20480 * 1024^2)
+  max.memory = (20480 * 1024^2),
+  variable.features.n = NULL,
+  variable.features.rv.th = 1.3,
+  return.only.var.genes = F
 )
 }
 \arguments{
@@ -30,6 +33,12 @@ m1.scNormScale(
 \item{enable.parallelization}{Logical specifying whether to enable parallelization. Default is T.}
 
 \item{max.memory}{Max memory to use during parallel processing. Default is 20480 * 1024^2}
+
+\item{variable.features.n}{If method = SCT, integer that specifies number of variable features to retrieve. If specified, overides variable feature threshold specified by variable.features.rv.th.}
+
+\item{variable.features.rv.th}{If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.}
+
+\item{return.only.var.genes}{If method = SCT, logical that specifies whether only variable genes are retrieved.}
 
 \item{n.works}{Number of works to used during parallel processing. Default is 3.}
 }

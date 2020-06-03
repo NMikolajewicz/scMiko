@@ -514,10 +514,13 @@ m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.
 #' @param enable.parallelization Logical specifying whether to enable parallelization. Default is T.
 #' @param n.works Number of works to used during parallel processing. Default is 3.
 #' @param max.memory Max memory to use during parallel processing. Default is 20480 * 1024^2
+#' @param variable.features.n If method = SCT, integer that specifies number of variable features to retrieve. If specified, overides variable feature threshold specified by variable.features.rv.th.
+#' @param variable.features.rv.th If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.
+#' @param return.only.var.genes If method = SCT, logical that specifies whether only variable genes are retrieved.
 #' @name m1.scNormScale
 #' @return Seurat Object
 #'
-m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2)){
+m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL, variable.features.rv.th = 1.3, return.only.var.genes = F){
 
 
   # enable parallelization
@@ -551,16 +554,16 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
     if (is.null(var2regress)){
       so <- SCTransform(so,
                         verbose = FALSE,
-                        return.only.var.genes = FALSE,
-                        variable.features.n = NULL,
-                        variable.features.rv.th = 1.3)
+                        return.only.var.genes = return.only.var.genes,
+                        variable.features.n = variable.features.n,
+                        variable.features.rv.th = variable.features.rv.th)
     } else {
       so <- SCTransform(so,
                         vars.to.regress = vars2regress,
                         verbose = FALSE,
-                        return.only.var.genes = FALSE,
-                        variable.features.n = NULL,
-                        variable.features.rv.th = 1.3)
+                        return.only.var.genes = return.only.var.genes,
+                        variable.features.n = variable.features.n,
+                        variable.features.rv.th = variable.features.rv.th)
     }
 
 
