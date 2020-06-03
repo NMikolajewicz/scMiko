@@ -539,3 +539,38 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 
 
 
+#' Upset plot
+#'
+#' Generate upset plot, comparing intersection between different (gene)sets. Uses ComplexHeatmap Package.
+#'
+#' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
+#' @param row.title Row title.
+#' @name upset.Plot
+#' @return plot handle
+#' @examples
+#'
+#' Generate upset plot for list of genesets
+#' plt.upset <- upset.Plot(gene.sets, row.title = "Genesets")
+#'
+#' # print plot
+#' print(plt.upset)
+#'
+upset.Plot <- function(gene.sets, row.title = ""){
+  # gene.mat <- list_to_matrix(gene.sets)
+
+  m = ComplexHeatmap::make_comb_mat(gene.sets)
+
+  plt.upset <- ComplexHeatmap::UpSet(m, top_annotation = HeatmapAnnotation(
+    degree = as.character(comb_degree(m)),
+    "Intersection\nsize" = anno_barplot(comb_size(m),
+                                        border = FALSE,
+                                        gp = gpar(fill = "black"),
+                                        height = unit(2, "cm")
+    ),
+    annotation_name_side = "left",
+    annotation_name_rot = 0),
+    row_title = row.title,
+    column_title = sample.name)
+
+  return(plt.upset)
+}
