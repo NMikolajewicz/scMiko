@@ -2752,3 +2752,70 @@ qNorm <- function(x, y, genes = NULL, flag.top.n = 15){
 
 }
 
+
+#' Jaccard Similarity
+#'
+#' Computes Jaccard Similarity between two sets, x1 and x2.
+#'
+#' @param x1 set 1
+#' @param x2 set 2
+#' @name getJaccard
+#' @return Jaccard similarity score (numeric)
+#' @examples
+#'
+#' # compute jaccard similarity matrix for (named) list of genesets.
+#' n.sets <- length(gene.sets)
+#' j.mat <- matrix(nrow = n.sets, ncol = n.sets)
+#'for (i in 1:n.sets){
+#'   for (j in 1:n.sets){
+#'     i.name <- names(gene.sets)[i]
+#'     j.name <- names(gene.sets)[j]
+#'     j.mat[i, j] <- getJaccard(gene.sets[[i.name]], gene.sets[[j.name]])
+#'   }
+#' }
+#'
+#' # assign row and col names
+#' rownames(j.mat) <- names(gene.sets)
+#' colnames(j.mat) <- names(gene.sets)
+#'
+#' # generate heatmap
+#' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
+#'
+getJaccard <- function(x1, x2){
+  I <- length(intersect(x1, x2))
+  S <- I/(length(x1) + length(x2) - I)
+  return(S)
+}
+
+#' Jaccard Similarity Matrix
+#'
+#' Computes Jaccard similarity mtrix for list of genesets
+#'
+#' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
+#' @name jaccardSimilarityMatrix
+#' @return Jaccard similarity matrix
+#' @examples
+#'
+#' # compute jaccard similarity matrix for (named) list of genesets.
+#' j.mat <- jaccardSimilarityMatrix(gene.sets)
+#'
+#' # generate heatmap
+#' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
+#'
+jaccardSimilarityMatrix <- function(gene.sets){
+  n.sets <- length(gene.sets)
+  j.mat <- matrix(nrow = n.sets, ncol = n.sets)
+  for (i in 1:n.sets){
+    for (j in 1:n.sets){
+      i.name <- names(gene.sets)[i]
+      j.name <- names(gene.sets)[j]
+      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]])
+    }
+  }
+
+  rownames(j.mat) <- names(gene.sets)
+  colnames(j.mat) <- names(gene.sets)
+
+  return(j.mat)
+}
+
