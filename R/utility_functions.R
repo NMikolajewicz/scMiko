@@ -332,9 +332,13 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 
 #' reload scMiko
 #'
-#' Function that detachs and attached scMiko package.
+#' Function that detachs and attaches scMiko package.
 #'
 #' @name scMikoReload
+#' @examples
+#'
+#' # reload scMiko package
+#' scMikoReload()
 #'
 scMikoReload <- function(){
 
@@ -2818,4 +2822,6 @@ jaccardSimilarityMatrix <- function(gene.sets){
 
   return(j.mat)
 }
+
+
 

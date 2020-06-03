@@ -7,5 +7,11 @@
 scMikoReload()
 }
 \description{
-Function that detachs and attached scMiko package.
+Function that detachs and attaches scMiko package.
+}
+\examples{
+
+# reload scMiko package
+scMikoReload()
+
 }
