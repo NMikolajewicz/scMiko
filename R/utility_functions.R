@@ -1126,22 +1126,41 @@ cleanFilterGenes <- function(genes, so, which.species){
 
 #' Downsample single cell data
 #'
-#' Downsample data in Seurat object by specified factor
+#' Downsample number of cells in Seurat object by specified factor
 #'
 #' @param so Seurat Object
 #' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
+#' @param subsample.n Numeric [1,ncol(so)]. Number of cells to subsample. If specified, overides subsample.factor.
 #' @name downsampleSeurat
 #' @return Seurat Object
 #'
-downsampleSeurat <- function(so, subsample.factor){
+downsampleSeurat <- function(so, subsample.factor = 1, subsample.n = NULL){
+
 
   if (subsample.factor < 1){
     if (subsample.factor<0) stop("subsample.factor must be numeric between 0 and 1")
-    n.subset <- round(subsample.factor *ncol(so))
-    cell.ind <- sample(x = seq(1, ncol(so)), size = n.subset, replace = FALSE, prob = NULL)
-    so <- SubsetData(so , cells = cell.ind)
+
+    so <-  tryCatch({
+
+      if (is.null(subsample.n)){
+        n.subset <- round(subsample.factor *ncol(so))
+      } else {
+        if (subsample.n > ncol(so)) {
+          warning(paste("subsample.n exceeded number of cells in seurat object. Data was not subsampled"))
+          subsample.n <- ncol(so)
+        }
+        n.subset <- subsample.n
+      }
+
+      cell.ind <- sample(x = seq(1, ncol(so)), size = n.subset, replace = FALSE, prob = NULL)
+      so <- subset(so , cells = cell.ind)
+    }, error = function(e){
+      warning("Failed to downsample seurat object")
+      return(so)
+    })
 
   }
+
   return(so)
 
 }
@@ -2763,6 +2782,7 @@ qNorm <- function(x, y, genes = NULL, flag.top.n = 15){
 #'
 #' @param x1 set 1
 #' @param x2 set 2
+#' @param assert.unique Logical flag specifying whether to ensure that x1 and x2 are unique. Default is TRUE.
 #' @name getJaccard
 #' @return Jaccard similarity score (numeric)
 #' @examples
@@ -2785,10 +2805,22 @@ qNorm <- function(x, y, genes = NULL, flag.top.n = 15){
 #' # generate heatmap
 #' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
 #'
-getJaccard <- function(x1, x2){
-  I <- length(intersect(x1, x2))
-  S <- I/(length(x1) + length(x2) - I)
-  return(S)
+getJaccard <- function(x1, x2, assert.unique = T){
+
+  # ensure each set has unique entries
+  if (assert.unique){
+    x1 <- unique(x1)
+    x2 <- unique(x2)
+  }
+
+  # compute intersection
+  x.I <- length(intersect(x1, x2))
+
+  # compute similarity
+  x.S <- x.I/(length(x1) + length(x2) - x.I)
+
+  # return result
+  return(x.S)
 }
 
 #' Jaccard Similarity Matrix
@@ -2796,6 +2828,7 @@ getJaccard <- function(x1, x2){
 #' Computes Jaccard similarity mtrix for list of genesets
 #'
 #' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
+#' @param assert.unique Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.
 #' @name jaccardSimilarityMatrix
 #' @return Jaccard similarity matrix
 #' @examples
@@ -2806,14 +2839,49 @@ getJaccard <- function(x1, x2){
 #' # generate heatmap
 #' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
 #'
-jaccardSimilarityMatrix <- function(gene.sets){
+jaccardSimilarityMatrix <- function(gene.sets, assert.unique = T){
   n.sets <- length(gene.sets)
   j.mat <- matrix(nrow = n.sets, ncol = n.sets)
   for (i in 1:n.sets){
     for (j in 1:n.sets){
       i.name <- names(gene.sets)[i]
       j.name <- names(gene.sets)[j]
-      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]])
+      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
+    }
+  }
+
+  rownames(j.mat) <- names(gene.sets)
+  colnames(j.mat) <- names(gene.sets)
+
+  return(j.mat)
+}
+
+
+
+#' Aggregate rows from duplicate entries
+#'
+#' For a given expression matrix (row = genes, col = cells), rows with duplicate gene names ()
+#'
+#' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
+#' @param assert.unique Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.
+#' @name aggregateDuplicateRows
+#' @return matrix
+#' @examples
+#'
+#' # compute jaccard similarity matrix for (named) list of genesets.
+#' j.mat <- jaccardSimilarityMatrix(gene.sets)
+#'
+#' # generate heatmap
+#' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
+#'
+aggregateDuplicateRows <- function(gene.sets, assert.unique = T){
+  n.sets <- length(gene.sets)
+  j.mat <- matrix(nrow = n.sets, ncol = n.sets)
+  for (i in 1:n.sets){
+    for (j in 1:n.sets){
+      i.name <- names(gene.sets)[i]
+      j.name <- names(gene.sets)[j]
+      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
     }
   }
 
