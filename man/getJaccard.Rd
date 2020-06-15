@@ -4,12 +4,14 @@
 \alias{getJaccard}
 \title{Jaccard Similarity}
 \usage{
-getJaccard(x1, x2)
+getJaccard(x1, x2, assert.unique = T)
 }
 \arguments{
 \item{x1}{set 1}
 
 \item{x2}{set 2}
+
+\item{assert.unique}{Logical flag specifying whether to ensure that x1 and x2 are unique. Default is TRUE.}
 }
 \value{
 Jaccard similarity score (numeric)

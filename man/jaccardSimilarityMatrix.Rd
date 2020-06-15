@@ -4,10 +4,12 @@
 \alias{jaccardSimilarityMatrix}
 \title{Jaccard Similarity Matrix}
 \usage{
-jaccardSimilarityMatrix(gene.sets)
+jaccardSimilarityMatrix(gene.sets, assert.unique = T)
 }
 \arguments{
 \item{gene.sets}{named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.}
+
+\item{assert.unique}{Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.}
 }
 \value{
 Jaccard similarity matrix
