@@ -517,10 +517,14 @@ m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.
 #' @param variable.features.n If method = SCT, integer that specifies number of variable features to retrieve. If specified, overides variable feature threshold specified by variable.features.rv.th.
 #' @param variable.features.rv.th If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.
 #' @param return.only.var.genes If method = SCT, logical that specifies whether only variable genes are retrieved.
+#' @param mean.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature means.
+#' @param dispersion.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.
+#' @param assay Name of assay to pull the count data from; default is 'RNA'
 #' @name m1.scNormScale
 #' @return Seurat Object
 #'
-m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL, variable.features.rv.th = 1.3, return.only.var.genes = F){
+m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
+                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), assay = "RNA"){
 
 
   # enable parallelization
@@ -535,15 +539,18 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
   # Normalize and scale data
   if (method == "NFS"){
 
+    stopifnot(length(mean.cutoff) == 2)
+    stopifnot(length(dispersion.cutoff) == 2)
+
     # Normalize data
-    so <- NormalizeData(so, normalization.method = "LogNormalize", scale.factor = 10000)
+    so <- NormalizeData(so, normalization.method = "LogNormalize", scale.factor = 10000, assay = assay)
     # Find variable features
-    so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = c(0.0125, 3), dispersion.cutoff = c(0.5, Inf))
+    so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = mean.cutoff, dispersion.cutoff = dispersion.cutoff, assay = assay)
     # Scale data
     if (is.null(var2regress)){
-      so <- ScaleData(so, features = rownames(so))
+      so <- ScaleData(so, features = rownames(so), assay = assay)
     } else {
-      so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress)
+      so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress, assay = assay)
     }
 
 
@@ -556,14 +563,16 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
-                        variable.features.rv.th = variable.features.rv.th)
+                        variable.features.rv.th = variable.features.rv.th,
+                        assay = assay)
     } else {
       so <- SCTransform(so,
                         vars.to.regress = vars2regress,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
-                        variable.features.rv.th = variable.features.rv.th)
+                        variable.features.rv.th = variable.features.rv.th,
+                        assay = assay)
     }
 
 

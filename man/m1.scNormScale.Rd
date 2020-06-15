@@ -14,7 +14,10 @@ m1.scNormScale(
   max.memory = (20480 * 1024^2),
   variable.features.n = NULL,
   variable.features.rv.th = 1.3,
-  return.only.var.genes = F
+  return.only.var.genes = F,
+  mean.cutoff = c(0.1, 8),
+  dispersion.cutoff = c(1, Inf),
+  assay = "RNA"
 )
 }
 \arguments{
@@ -39,6 +42,12 @@ m1.scNormScale(
 \item{variable.features.rv.th}{If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.}
 
 \item{return.only.var.genes}{If method = SCT, logical that specifies whether only variable genes are retrieved.}
+
+\item{mean.cutoff}{If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature means.}
+
+\item{dispersion.cutoff}{If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.}
+
+\item{assay}{Name of assay to pull the count data from; default is 'RNA'}
 
 \item{n.works}{Number of works to used during parallel processing. Default is 3.}
 }

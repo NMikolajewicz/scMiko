@@ -4,16 +4,18 @@
 \alias{downsampleSeurat}
 \title{Downsample single cell data}
 \usage{
-downsampleSeurat(so, subsample.factor)
+downsampleSeurat(so, subsample.factor = 1, subsample.n = NULL)
 }
 \arguments{
 \item{so}{Seurat Object}
 
 \item{subsample.factor}{Numeric [0,1]. Factor to downsample data by.}
+
+\item{subsample.n}{Numeric [1,ncol(so)]. Number of cells to subsample. If specified, overides subsample.factor.}
 }
 \value{
 Seurat Object
 }
 \description{
-Downsample data in Seurat object by specified factor
+Downsample number of cells in Seurat object by specified factor
 }
