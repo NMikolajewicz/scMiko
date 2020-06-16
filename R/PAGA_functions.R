@@ -61,51 +61,89 @@
 #' @importFrom Seurat DietSeurat Idents<-
 #'
 #' @examples
+#'
+#' library(sceasy)
+#' library(reticulate)
+#'
+#' py.path <- py_config()
+#' use_python(py.path[["python"]])
+#' sc <- import("scanpy", convert = FALSE)
+#'
+#' # run PAGA analysis
+#' pr <- PAGA(so.query,assay = "RNA", seurat_grouping = NULL, edge_filter_weight = 0.1)
+#'
+#' # get PAGA results
+#' pr.list <- pr@misc[["paga"]]
+#'
+#' # generate PAGA plots
+#' paga.plot <- ggplot(pr.list[["position"]], aes(x, y)) +
+#'   geom_segment(
+#'    data = pr.list[["edges"]],
+#'    aes(x = x1, y = y1, xend = x2, yend = y2),
+#'    size = pr.list[["edges"]]$weight*3,
+#'    colour = "black",
+#'    show.legend = FALSE
+#'  ) +
+#'  geom_point(aes(color = group), size = 7, alpha = 1, show.legend = FALSE) +
+#'  geom_text(aes(label = group), color = "black", fontface = "bold") +
+#'  labs(x = "UMAP_1", y = "UMAP_2") +
+#'  theme_bw() +
+#' theme(
+#'    axis.title = element_blank(),
+#'    axis.text = element_blank(),
+#'    axis.ticks = element_blank(),
+#'    axis.line = element_blank(),
+#'    panel.grid.major = element_blank(),
+#'    panel.grid.minor = element_blank(),
+#'    panel.border = element_blank()
+#'  )
+#'
+#'
 PAGA <- function(object,
-                 assay = "RNA",
-                 slim = FALSE,
-                 seurat_grouping = NULL,
-                 set_ident = TRUE,
-                 clustering_algorithm = "leiden",
-                 reduction_name = "umap",
-                 reduction_key = "umap_",
-                 edge_filter_weight = 0.10,
+                     assay = "RNA",
+                     slim = FALSE,
+                     seurat_grouping = "seurat_clusters",
+                     set_ident = FALSE,
+                     clustering_algorithm = "leiden",
+                     reduction_name = "umap",
+                     reduction_key = "umap_",
+                     edge_filter_weight = 0.10,
 
-                 neighbors_n_neighbors = 15,
-                 neighbors_n_pcs = NULL,
-                 neighbors_use_rep = "pca",
-                 neighbors_knn = TRUE,
-                 neighbors_random_state = 0,
-                 neighbors_method = 'umap',
-                 neighbors_metric = 'euclidean',
+                     neighbors_n_neighbors = 15,
+                     neighbors_n_pcs = NULL,
+                     neighbors_use_rep = "pca",
+                     neighbors_knn = TRUE,
+                     neighbors_random_state = 0,
+                     neighbors_method = 'umap',
+                     neighbors_metric = 'euclidean',
 
-                 clustering_resolution = 1.0,
-                 clustering_restrict_to=NULL,
-                 clustering_random_state=0,
-                 clustering_key_added=NULL,
-                 clustering_adjacency=NULL,
-                 clustering_directed=TRUE,
-                 clustering_use_weights=TRUE,
-                 clustering_n_iterations=-1,
-                 clustering_partition_type=NULL,
+                     clustering_resolution = 1.0,
+                     clustering_restrict_to=NULL,
+                     clustering_random_state=0,
+                     clustering_key_added=NULL,
+                     clustering_adjacency=NULL,
+                     clustering_directed=TRUE,
+                     clustering_use_weights=TRUE,
+                     clustering_n_iterations=-1,
+                     clustering_partition_type=NULL,
 
-                 paga_show = FALSE,
-                 paga_plot = FALSE,
-                 paga_add_pos = TRUE,
-                 paga_threshold=0.01,
-                 paga_layout=NULL,
-                 paga_init_pos=NULL,
-                 paga_root=0.0,
-                 paga_single_component=NULL,
-                 paga_random_state=0.0,
+                     paga_show = FALSE,
+                     paga_plot = FALSE,
+                     paga_add_pos = TRUE,
+                     paga_threshold=0.01,
+                     paga_layout=NULL,
+                     paga_init_pos=NULL,
+                     paga_root=0.0,
+                     paga_single_component=NULL,
+                     paga_random_state=0.0,
 
-                 umap_min_dist=0.5,
-                 umap_spread=1.0,
-                 umap_n_components=3,
-                 umap_alpha=1.0,
-                 umap_gamma=1.0,
-                 umap_negative_sample_rate=5,
-                 umap_init_pos='spectral'){
+                     umap_min_dist=0.5,
+                     umap_spread=1.0,
+                     umap_n_components=3,
+                     umap_alpha=1.0,
+                     umap_gamma=1.0,
+                     umap_negative_sample_rate=5,
+                     umap_init_pos='spectral'){
 
   if (isTRUE(slim)){
     DefaultAssay(object) <- assay
@@ -113,11 +151,9 @@ PAGA <- function(object,
                               assay = assay,
                               dimreducs = neighbors_use_rep,
                               counts = FALSE)
-    alpha <- convert_to_anndata(object = slimmed_obj,
-                                assay = assay)
+    alpha <- sceasy::convertFormat(slimmed_obj, from="seurat", to="anndata")
   } else {
-    alpha <- convert_to_anndata(object = object,
-                                assay = assay)
+    alpha <- sceasy::convertFormat(object, from="seurat", to="anndata")
   }
 
   sc <- import("scanpy",
@@ -133,7 +169,8 @@ PAGA <- function(object,
   matplotlib <- import("matplotlib", delay_load = TRUE)
   matplotlib$use("Agg", force = TRUE)
 
-  if (glue("X_{neighbors_use_rep}") %in% alpha$obsm_keys()){
+  library(glue)
+  if (glue("X_{neighbors_use_rep}") %in% py_to_r(alpha$obsm_keys())){
     sc$pp$neighbors(adata = alpha,
                     n_neighbors = as.integer(neighbors_n_neighbors),
                     n_pcs = neighbors_n_pcs,
@@ -181,6 +218,7 @@ PAGA <- function(object,
 
   utils = import("scanpy.tools._utils", delay_load = TRUE)
 
+  # PAGA
   sc$pl$paga(adata = alpha,
              show = paga_show,
              threshold=as.numeric(paga_threshold),
@@ -189,9 +227,10 @@ PAGA <- function(object,
              root=paga_root,
              single_component=paga_single_component,
              random_state=as.integer(paga_random_state,
-                                     plot=FALSE,
+                                     plot=F,
                                      add_pos=TRUE))
 
+  # UMAP
   sc$tl$umap(adata = alpha,
              init_pos = utils$get_init_pos_from_paga(alpha),
              min_dist=as.numeric(umap_min_dist),
@@ -201,29 +240,45 @@ PAGA <- function(object,
              gamma=as.numeric(umap_gamma),
              negative_sample_rate=as.integer(umap_negative_sample_rate))
 
+
+  # get data
+  paga.obj.py <-  py_get_item(alpha$uns, "paga")
+  paga.obj.r <-  py_to_r(paga.obj.py)
+  connectivities <- as.matrix(py_to_r(paga.obj.r[["connectivities"]]))
+  paga.meta.obs <- py_to_r(alpha$obs)
+  c.colnames <- levels(paga.meta.obs[, paga.obj.r[["groups"]] ])
+  c.rownames <- levels(paga.meta.obs[, paga.obj.r[["groups"]] ])
+  colnames(connectivities) <- c.colnames
+  rownames(connectivities) <- c.rownames
+
+  connectivities_tree <- as.matrix(py_to_r(paga.obj.r[["connectivities"]]))
+
+  position <- as_tibble(
+    cbind(
+      levels(paga.meta.obs[ ,paga.obj.r[["groups"]]]),
+      paga.obj.r[["pos"]]),
+    .name_repair = ~make.names(c("group","x", "y"))
+  ) %>% mutate_at(.vars = vars(x, y),
+                  .fun = as.numeric)
+
+  paga.umap <- py_to_r(alpha$obsm['X_umap'])
+  umap <- as_tibble(paga.umap,
+                    .name_repair = ~make.names(names = paste0("UMAP_",
+                                                              1:ncol(paga.umap)),
+                                               unique = TRUE))
+
+  # store results
   paga <- list(
-    connectivities = alpha$uns$paga$connectivities$todense() %>%
-      `rownames<-`(levels(alpha$obs[[alpha$uns$paga$groups]])) %>%
-      `colnames<-`(levels(alpha$obs[[alpha$uns$paga$groups]])),
-    connectivities_tree = alpha$uns$paga$connectivities$todense(),
-    group_name = alpha$uns$paga$groups,
-    groups = levels(alpha$obs[[alpha$uns$paga$groups]]),
-    group_colors = setNames(alpha$uns[[glue("{alpha$uns$paga$groups}_colors")]],
-                            0:(nrow(alpha$uns$paga$pos)-1) + 1),
-    position = as_tibble(
-      cbind(
-        levels(alpha$obs[[alpha$uns$paga$groups]]),
-        alpha$uns$paga$pos),
-      .name_repair = ~make.names(c("group","x", "y"))
-    ) %>% mutate_at(.vars = vars(x, y),
-                    .fun = as.numeric),
-    umap = as_tibble(alpha$obsm['X_umap'],
-                     .name_repair = ~make.names(names = paste0("UMAP_",
-                                                               1:ncol(alpha$obsm['X_umap'])),
-                                                unique = TRUE))
+    connectivities = connectivities,
+    connectivities_tree = connectivities_tree,
+    group_name = paga.obj.r[["groups"]],
+    group_colors = setNames(py_to_r(alpha$uns['leiden_colors']), c(0:(nrow(paga.obj.r[["pos"]])-1))),
+    groups = levels(paga.meta.obs[, paga.obj.r[["groups"]] ]),
+    position = position,
+    umap = umap
   )
 
-  paga$edges <- tibble(
+  paga$edges.all <- tibble(
     group1 = paga$groups[row(paga$connectivities)[upper.tri(paga$connectivities)]],
     group2 = paga$groups[col(paga$connectivities)[upper.tri(paga$connectivities)]],
     weight = paga$connectivities[upper.tri(paga$connectivities)] %>% as.numeric()
@@ -233,13 +288,15 @@ PAGA <- function(object,
       y1 = paga$position$y[match(.$group1, rownames(paga$position))] %>% as.numeric(),
       x2 = paga$position$x[match(.$group2, rownames(paga$position))] %>% as.numeric(),
       y2 = paga$position$y[match(.$group2, rownames(paga$position))] %>% as.numeric()
-    ) %>%
+    )
+
+  paga$edges <- paga$edges.all %>%
     filter(weight >= edge_filter_weight)
 
-  paga_umap <- CreateDimReducObject(embeddings = alpha$obsm[['X_umap']] %>%
+  paga_umap <- CreateDimReducObject(embeddings = paga.umap %>%
                                       `rownames<-`(colnames(object[[assay]])) %>%
                                       `colnames<-`(paste0("UMAP_",
-                                                          1:ncol(alpha$obsm['X_umap']))),
+                                                          1:ncol(paga.umap))),
                                     assay = assay,
                                     key = reduction_key)
 
@@ -253,7 +310,6 @@ PAGA <- function(object,
 
   return(object)
 }
-
 
 #' @title PAGAplot
 #'
