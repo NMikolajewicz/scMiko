@@ -8,8 +8,8 @@ PAGA(
   object,
   assay = "RNA",
   slim = FALSE,
-  seurat_grouping = NULL,
-  set_ident = TRUE,
+  seurat_grouping = "seurat_clusters",
+  set_ident = FALSE,
   clustering_algorithm = "leiden",
   reduction_name = "umap",
   reduction_key = "umap_",
@@ -84,4 +84,44 @@ Parameters are prefixed by the step to which they correspond (i.e. "neighbors_" 
 passed to scanpy.pp.neighbors())
 
 Heavily based on the fantastic walk through found at https://romanhaa.github.io/blog/paga_to_r/
+}
+\examples{
+
+library(sceasy)
+library(reticulate)
+
+py.path <- py_config()
+use_python(py.path[["python"]])
+sc <- import("scanpy", convert = FALSE)
+
+# run PAGA analysis
+pr <- PAGA(so.query,assay = "RNA", seurat_grouping = NULL, edge_filter_weight = 0.1)
+
+# get PAGA results
+pr.list <- pr@misc[["paga"]]
+
+# generate PAGA plots
+paga.plot <- ggplot(pr.list[["position"]], aes(x, y)) +
+  geom_segment(
+   data = pr.list[["edges"]],
+   aes(x = x1, y = y1, xend = x2, yend = y2),
+   size = pr.list[["edges"]]$weight*3,
+   colour = "black",
+   show.legend = FALSE
+ ) +
+ geom_point(aes(color = group), size = 7, alpha = 1, show.legend = FALSE) +
+ geom_text(aes(label = group), color = "black", fontface = "bold") +
+ labs(x = "UMAP_1", y = "UMAP_2") +
+ theme_bw() +
+theme(
+   axis.title = element_blank(),
+   axis.text = element_blank(),
+   axis.ticks = element_blank(),
+   axis.line = element_blank(),
+   panel.grid.major = element_blank(),
+   panel.grid.minor = element_blank(),
+   panel.border = element_blank()
+ )
+
+
 }
