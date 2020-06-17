@@ -266,13 +266,15 @@ PAGA <- function(object,
                     .name_repair = ~make.names(names = paste0("UMAP_",
                                                               1:ncol(paga.umap)),
                                                unique = TRUE))
+  umap$cluster <- object@meta.data[["seurat_clusters"]]
+  umap$cells <- colnames(object)
 
   # store results
   paga <- list(
     connectivities = connectivities,
     connectivities_tree = connectivities_tree,
     group_name = paga.obj.r[["groups"]],
-    group_colors = setNames(py_to_r(alpha$uns['leiden_colors']), c(0:(nrow(paga.obj.r[["pos"]])-1))),
+    group_colors = setNames(py_to_r(alpha$uns[paste0(grouping, "_colors")]), c(0:(nrow(paga.obj.r[["pos"]])-1))),
     groups = levels(paga.meta.obs[, paga.obj.r[["groups"]] ]),
     position = position,
     umap = umap
@@ -299,6 +301,8 @@ PAGA <- function(object,
                                                           1:ncol(paga.umap))),
                                     assay = assay,
                                     key = reduction_key)
+  umap$cluster <- object@meta.data[["seurat_clusters"]]
+  umap$cells <- colnames(object)
 
   object[[reduction_name]] <- paga_umap
 
