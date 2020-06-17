@@ -2857,39 +2857,106 @@ jaccardSimilarityMatrix <- function(gene.sets, assert.unique = T){
 }
 
 
-
-#' Aggregate rows from duplicate entries
+#' Get cluster centers
 #'
-#' For a given expression matrix (row = genes, col = cells), rows with duplicate gene names ()
+#' For given dimensional reduction (e.g., UMAP), return cluster center coordinates.
 #'
-#' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
-#' @param assert.unique Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.
-#' @name aggregateDuplicateRows
-#' @return matrix
+#' @param df data.frame with columns 'x' and 'y' specifying dimensional reduction coordinates, and column 'cluster' or 'clusters' specifying cluster membership.
+#' @param which.mean Specify which central values to use. One of 'mean' or 'median'. Default is 'mean'.
+#' @return df.centers
+#' @name getClusterCenters
 #' @examples
 #'
-#' # compute jaccard similarity matrix for (named) list of genesets.
-#' j.mat <- jaccardSimilarityMatrix(gene.sets)
+#' # compute cluster centers
+#' which.center <- "mean"
+#' df.red.centers <- get.cluster.centers(df.red, which.center)
 #'
-#' # generate heatmap
-#' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
-#'
-aggregateDuplicateRows <- function(gene.sets, assert.unique = T){
-  n.sets <- length(gene.sets)
-  j.mat <- matrix(nrow = n.sets, ncol = n.sets)
-  for (i in 1:n.sets){
-    for (j in 1:n.sets){
-      i.name <- names(gene.sets)[i]
-      j.name <- names(gene.sets)[j]
-      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
-    }
+getClusterCenters <- function(df, which.center = "mean"){
+
+  if (!("x" %in% colnames(df))) stop("x column is not specified")
+  if (!("y" %in% colnames(df))) stop("y column is not specified")
+  if (!(("cluster" %in% colnames(df)) | ("clusters" %in% colnames(df)))) stop("cluster column is not specified")
+
+  # helper function for computing central value
+  get.center <- function(x, which.center = "mean"){
+    if (which.center == "mean" ) return(mean(x))
+    if (which.center == "median" ) return(median(x))
   }
 
-  rownames(j.mat) <- names(gene.sets)
-  colnames(j.mat) <- names(gene.sets)
+  # compute cluster centers
+  df.centers <- df %>%
+    group_by(cluster) %>%
+    summarize(x.center = get.center(x, which.center),
+              y.center = get.center(y, which.center))
 
-  return(j.mat)
+  return(df.centers)
 }
 
 
+#' Identify pseudotime-dependent genes using Random Forest (RF) Model
+#'
+#' Identify pseudotime-dependent genes using Random Forest (RF) Model. Given Seurat object and highly variable genes (hvg), expression data are split into training and test set, and random forest model is trained to identify genes that vary with pseudotime. Model performance is evaluated on test set. Random forest model is fit using R 'parsnip' package.
+#'
+#' @param so Seurat Object
+#' @param hvg Genes used to fit model (character vector; must be available in rows of seurat object). It is suggested to keep number of genes low (~200) for optimal performance.
+#' @param pseudotimes Numeric vector of pseudotimes. Length must be equal to number of cells in seurat object (ncol(so)).
+#' @param slot A character specifying which slot to pull data from; default is 'Data'
+#' @param assay A character specifying which assay to use (e.g., 'RNA' or 'SCT'). If unspecified, set to DefaultAssay(so)
+#' @param mtry An integer for the number of predictors that will be randomly sampled at each split when creating the tree models.
+#' @param trees An integer for the number of trees contained in the ensemble.
+#' @param min_n An integer for the minimum number of data points in a node that are required for the node to be split further.
+#' @param mode Specfiy type of RF to fit: 'regression' or 'classification'. Regression is default and it is not recommended to change this argument.
+#' @param importance Type of importance. Default is 'impurity'.
+#' @param num.threads An integer for the number of threads to use when fitting RF model
+#' @return List of results
+#' @name pseudotimeRF
+#' @examples
+#'
+pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assay = DefaultAssay(so),
+                             mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
+
+  # get data for highly variable genes (hvg)
+  cur.data <- GetAssayData(so, slot = slot, assay = assay)
+  match.ind <- which(rownames(cur.data) %in% top_hvg)
+  dat_use <- as.data.frame(t(GetAssayData(so, slot = slot, assay = assay)[match.ind,]))
+
+  # merge expression data and pseudotime
+  dat_use_df <- cbind(pseudotimes, dat_use)
+  colnames(dat_use_df)[1] <- "pseudotime"
+  dat_use_df <- as.data.frame(dat_use_df[!is.na(dat_use_df[,1]),])
+
+  # Define training, testing and validation sets
+  colnames(dat_use_df) <- make.names(colnames(dat_use_df) , unique = TRUE, allow_ = TRUE)
+  dat_split <- initial_split(dat_use_df)
+  dat_train <- training(dat_split)
+  dat_val <- testing(dat_split)
+
+  # Train Model
+  model <- rand_forest(mtry =mtry, trees = trees, min_n = min_n, mode = mode) %>%
+    set_engine("ranger", importance =importance, num.threads = num.threads) %>%
+    fit(pseudotime ~ ., data = dat_train)
+
+  # Evaluate Model
+  val_results <- dat_val %>%
+    mutate(estimate = predict(model, .[,-1]) %>% pull()) %>%
+    select(truth = pseudotime, estimate)
+  model.metrics <- metrics(data = val_results, truth, estimate)
+
+  # store results
+  model.list[[lineage.name]] <- model
+  results.list[[lineage.name]] <- val_results
+  df.metrics <- data.frame(lineage = lineage.name,
+                           rmse = signif(model.metrics[[".estimate"]][1],3),
+                           rsq = signif(model.metrics[[".estimate"]][2],3),
+                           mae = signif(model.metrics[[".estimate"]][3],3))
+
+  output <- list(
+    model = model,
+    prediction = val_results,
+    performance = df.metrics
+  )
+
+  return(output)
+
+}
 
