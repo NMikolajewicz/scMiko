@@ -9,12 +9,14 @@
 #' @param y.label Character. Y axis label.
 #' @param plot.name Character. Plot title.
 #' @param include.labels Logical specifying wheter to plot group IDs on UMAP.
+#' @param reduction Character specifying which dimensional reduction to use (e.g., umap, pca). Default is 'umap'.
+#' @param ... additional arguments passed to Seurat::DimPlot().
 #' @name cluster.UMAP
 #' @return ggplot handle
 #'
-cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, ...){
+cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap", ...){
 
-  plt.handle <- DimPlot(so, reduction = "umap", group.by = group.by, label = include.labels, ...)  +
+  plt.handle <- DimPlot(so, group.by = group.by, label = include.labels,reduction = reduction, ...)  +
     ggtitle(label = plot.name) +
     xlab(x.label) + ylab(y.label)
 
@@ -574,3 +576,5 @@ upset.Plot <- function(gene.sets, row.title = ""){
 
   return(plt.upset)
 }
+
+

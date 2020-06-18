@@ -2900,6 +2900,7 @@ getClusterCenters <- function(df, which.center = "mean"){
 #' @param so Seurat Object
 #' @param hvg Genes used to fit model (character vector; must be available in rows of seurat object). It is suggested to keep number of genes low (~200) for optimal performance.
 #' @param pseudotimes Numeric vector of pseudotimes. Length must be equal to number of cells in seurat object (ncol(so)).
+#' @param lineage.name Name of pseudotime lineage; used to label results.
 #' @param slot A character specifying which slot to pull data from; default is 'Data'
 #' @param assay A character specifying which assay to use (e.g., 'RNA' or 'SCT'). If unspecified, set to DefaultAssay(so)
 #' @param mtry An integer for the number of predictors that will be randomly sampled at each split when creating the tree models.
@@ -2943,8 +2944,8 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
   model.metrics <- metrics(data = val_results, truth, estimate)
 
   # store results
-  model.list[[lineage.name]] <- model
-  results.list[[lineage.name]] <- val_results
+  # model.list[[lineage.name]] <- model
+  # results.list[[lineage.name]] <- val_results
   df.metrics <- data.frame(lineage = lineage.name,
                            rmse = signif(model.metrics[[".estimate"]][1],3),
                            rsq = signif(model.metrics[[".estimate"]][2],3),
@@ -2960,3 +2961,214 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
 
 }
 
+
+#' Infer initial trajectory through space
+#'
+#' `inferInitialTrajectory` infers an initial trajectory for  `princurve::principal_curve` by clustering the points and calculating the shortest path through cluster centers. The shortest path takes into account the euclidean distance between cluster centers, and the density between those two points. Based on `infer_initial_trajectory` function from `SCORPIUS` package
+#'
+#' @param space A numeric matrix or a data frame containing the coordinates of samples.
+#' @param k The number of clusters
+#' @return the initial trajectory obtained by this method
+#' @name inferInitialTrajectory
+#' @examples
+#'
+#' # specify features (i.e., clusters of interest)
+#' which.clusters <- c(0,4,5)
+#'
+#' # get dimensional reduction for specified clusters
+#' dimSubset <- subsetDimRed(so.query, which.features = which.clusters)
+#'
+inferInitialTrajectory <- function (space, k) {
+  # check_numeric_matrix(space, "space", finite = TRUE)
+  # check_numeric_vector(k, "k", whole = TRUE, finite = TRUE,
+  # range = c(1, nrow(space) - 1), length = 1)
+  fit <- stats::kmeans(space, k)
+  centers <- fit$centers
+  eucl_dist <- as.matrix(stats::dist(centers))
+  i <- j <- NULL
+  pts <- crossing(i = seq_len(k), j = seq_len(k), pct = seq(0,
+                                                            1, length.out = 21)) %>% filter(i < j)
+  pts_space <- (1 - pts$pct) * centers[pts$i, ] + pts$pct *
+    centers[pts$j, ]
+  pts$dist <- rowMeans(RANN::nn2(space, pts_space, k = 10)$nn.dist)
+  dendis <- pts %>% group_by(i, j) %>% summarise(dist = mean(dist)) %>%
+    ungroup()
+  density_dist <- matrix(0, nrow = k, ncol = k)
+  density_dist[cbind(dendis$i, dendis$j)] <- dendis$dist
+  density_dist[cbind(dendis$j, dendis$i)] <- dendis$dist
+  cluster_distances <- eucl_dist * density_dist
+  tsp <- TSP::insert_dummy(TSP::TSP(cluster_distances))
+  tour <- as.vector(TSP::solve_TSP(tsp))
+  tour2 <- c(tour, tour)
+  start <- min(which(tour2 == k + 1))
+  stop <- max(which(tour2 == k + 1))
+  best_ord <- tour2[(start + 1):(stop - 1)]
+  init_traj <- centers[best_ord, , drop = FALSE]
+  init_traj
+}
+
+
+#' Get dimensional reduction from Seurat Object for subset of data
+#'
+#' Get dimensional reduction from Seurat Object for subset of data.
+#'
+#' @param so Seurat Object
+#' @param which.features Character vector of features to subset on.
+#' @param groups A character specifying metadata column name (in Seurat object) that contains features of interest. \
+#' @param reduction A character specifying which reduction to retrieve from Seurat Object. Default is 'umap'.
+#' @return list of results
+#' @name subsetDimRed
+subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reduction = "umap"){
+
+  if (!(tolower(reduction) %in% tolower(names(so@reductions)) )) stop(paste0(reduction, " does not exist"))
+  df.meta <- so@meta.data
+  if (!(groups %in% colnames(df.meta) )) stop(paste0(groups, " does not exist"))
+
+  match.ind <- which(df.meta[ ,groups] %in% which.features)
+  u.group <- as.character(unique(df.meta[match.ind ,groups]))
+
+  # order groups
+  if (is.factor(unique(df.meta[match.ind ,groups]))){
+    u.group <-  levels(unique(df.meta[match.ind ,groups]))[levels(unique(df.meta[match.ind ,groups])) %in% u.group]
+  }
+
+  df.reduction <- data.frame(so@reductions[[reduction]]@cell.embeddings)
+
+  df.red.cc <- data.frame(df.reduction[ ,c(1,2)])
+  colnames(df.red.cc) <- c("x", "y")
+  df.red.cc$cluster <- df.meta[ ,groups]
+  df.red.cc <- df.red.cc[ match.ind,]
+
+  df.centers <- getClusterCenters(df.red.cc, which.center = "mean")
+  df.reduction <- df.reduction[ match.ind,]
+
+  output <- list(
+    groups = groups,
+    features = df.meta[match.ind ,groups],
+    reduction = df.reduction,
+    centers = df.centers
+  )
+
+  return(output)
+
+}
+
+
+
+#' Get lineage trajectories using principal curves and compute pseudotimes
+#'
+#' For given space (e.g., UMAP, PCA, etc.), lineage trajectories are fit using prinicpal curves, and these are then used to derive pseudotimes.
+#'
+#' @param space A numeric matrix or a data frame containing the coordinates of samples.
+#' @param start either a previously fit principal curve, or else a matrix of points that in row order define a starting curve. If missing or NULL, then the first principal component is used. If the smoother is "periodic_lowess", then a circle is used as the start.
+#' @param group.labels Character vector (same length as number of rows in space) specifying group membership. Optional.
+#' @param thresh convergence threshold on shortest distances to the curve. Default is 0.001.
+#' @param maxit maximum number of iterations.
+#' @param stretch A stretch factor for the endpoints of the curve, allowing the curve to grow to avoid bunching at the end. Must be a numeric value between 0 and 2.
+#' @param smoother choice of smoother. The default is "smooth_spline", and other choices are "lowess" and "periodic_lowess". The latter allows one to fit closed curves. Beware, you may want to use iter = 0 with lowess().
+#' @param approx_points Approximate curve after smoothing to reduce computational time. If FALSE, no approximation of the curve occurs. Otherwise, approx_points must be equal to the number of points the curve gets approximated to; preferably about 100.
+#' @param trace If TRUE, the iteration information is printed
+#' @param plot_iteractions If TRUE the iterations are plotted.
+#' @return list of results containing principal curve fits and coordinates, pseutimes, plots
+#' @name lineageTrajectory
+#' @examples
+#'
+#' # get lineage name
+#' lineage.name <- names(ss.lineages)[1]
+#'
+#' # get dimnesional reduction for subset of clusters belonging to lineage
+#' dimSubset <- subsetDimRed(so.query, which.features = ss.lineages[[lineage.name]])
+#'
+#' # get initial trajectory
+#' start.traj <- inferInitialTrajectory(as.matrix(dimSubset[["reduction"]]), k = length(unique(dimSubset[["features"]])))
+#'
+#' # get lineage trajectories
+#' LT.results <- lineageTrajectory(space = as.matrix(dimSubset[["reduction"]]),
+#'               start = start.traj,
+#'               group.labels = dimSubset[["features"]]
+#'
+#'
+#'
+lineageTrajectory <- function(space, start = NULL, group.labels = NULL, thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline", approx_points = 100, trace = FALSE, plot_iterations = FALSE){
+
+
+  # fit prinicpal curves
+  fit <- princurve::principal_curve(as.matrix(space), start = start,
+                                    thresh = thresh, maxit = maxit, stretch = stretch, smoother = smoother,
+                                    approx_points = approx_points, trace = trace, plot_iterations = plot_iterations)
+  traj.path <- fit$s[fit$ord, , drop = FALSE]
+
+  # get trajectories
+  df.traj <- data.frame(traj.path)
+
+  # get pseudotimes
+  ps <- dynutils::scale_minmax(fit$lambda)
+
+  # generate plots
+  orig.names <- colnames(space)
+  colnames(space)[c(1,2)] <- c("x", "y")
+  colnames(df.traj)[c(1,2)] <- c("x", "y")
+
+  if (!is.null(group.labels)){
+    df.space <- data.frame(space, group = group.labels)
+    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = group))
+  } else {
+    df.space <- data.frame(space)
+    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y))
+  }
+
+  plt.trajectory <- plt.space +
+    geom_path(data = df.traj, aes(x, y), size = 1) +
+    theme_bw() +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+    ) +
+    xlab(orig.names[1]) +
+    ylab(orig.names[2])
+
+
+  output <- list(
+    principal.curve.fit = fit,
+    principal.curve.coordinates = df.traj,
+    pseudotime = ps,
+    plt.trajectory = plt.trajectory,
+    space = space,
+    groups = group.labels
+  )
+
+  return(output)
+
+
+}
+
+
+
+
+#' Variance explained by each principal component.
+#'
+#' For given Seurat Object, retrieve principal components and compute proportion of explained variance.
+#'
+#' @param so
+#' @return data.frame summarize proportion of variance explained by each principal component
+#' @name propVarPCA
+propVarPCA <- function(so){
+
+  # get pca reduction
+  pc.std <- so.query@reductions[["pca"]]@stdev
+
+  # variance explained
+  pc.var <- pc.std^2
+
+  # proportion
+  pc.prop_var <- pc.var/sum(pc.var)
+
+  # cumulative
+  pc.cum_sum <- cumsum(pc.prop_var)
+
+  # store results
+  pc.id <- c(1:length(pc.std))
+  df.pca <- data.frame(pc.id, pc.prop_var, pc.cum_sum)
+
+  return(df.pca)
+}
