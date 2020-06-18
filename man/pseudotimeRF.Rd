@@ -26,6 +26,8 @@ pseudotimeRF(
 
 \item{pseudotimes}{Numeric vector of pseudotimes. Length must be equal to number of cells in seurat object (ncol(so)).}
 
+\item{lineage.name}{Name of pseudotime lineage; used to label results.}
+
 \item{slot}{A character specifying which slot to pull data from; default is 'Data'}
 
 \item{assay}{A character specifying which assay to use (e.g., 'RNA' or 'SCT'). If unspecified, set to DefaultAssay(so)}
