@@ -11,6 +11,7 @@ cluster.UMAP(
   y.label = "UMAP 2",
   plot.name = "UMAP",
   include.labels = T,
+  reduction = "umap",
   ...
 )
 }
@@ -26,6 +27,10 @@ cluster.UMAP(
 \item{plot.name}{Character. Plot title.}
 
 \item{include.labels}{Logical specifying wheter to plot group IDs on UMAP.}
+
+\item{reduction}{Character specifying which dimensional reduction to use (e.g., umap, pca). Default is 'umap'.}
+
+\item{...}{additional arguments passed to Seurat::DimPlot().}
 }
 \value{
 ggplot handle
