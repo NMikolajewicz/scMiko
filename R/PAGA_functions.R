@@ -51,6 +51,10 @@
 #' @param umap_gamma
 #' @param umap_negative_sample_rate
 #' @param umap_init_pos
+#' @param dpt_root_cell Index of root cell. If unspecified, defaults to dpt_auto methods.
+#' @param dpt_root_cluster ID of cluster used to identify root cell. If unspecified, defaults to dpt_auto methods.
+#' @param dpt_auto_root Method used to auto detect route. one of 'min' or 'max'. Finds correspodning index from specified reduction.
+#' @param dpt_auto_reduction Dimensional reduction used to identify root cell (using min or max method). Default is diffusion map 'dm'
 #'
 #' @return
 #' @export
@@ -100,50 +104,55 @@
 #'
 #'
 PAGA <- function(object,
-                     assay = "RNA",
-                     slim = FALSE,
-                     seurat_grouping = "seurat_clusters",
-                     set_ident = FALSE,
-                     clustering_algorithm = "leiden",
-                     reduction_name = "umap",
-                     reduction_key = "umap_",
-                     edge_filter_weight = 0.10,
+                 assay = "RNA",
+                 slim = FALSE,
+                 seurat_grouping = "seurat_clusters",
+                 set_ident = FALSE,
+                 clustering_algorithm = "leiden",
+                 reduction_name = "umap",
+                 reduction_key = "umap_",
+                 edge_filter_weight = 0.10,
 
-                     neighbors_n_neighbors = 15,
-                     neighbors_n_pcs = NULL,
-                     neighbors_use_rep = "pca",
-                     neighbors_knn = TRUE,
-                     neighbors_random_state = 0,
-                     neighbors_method = 'umap',
-                     neighbors_metric = 'euclidean',
+                 neighbors_n_neighbors = 15,
+                 neighbors_n_pcs = NULL,
+                 neighbors_use_rep = "pca",
+                 neighbors_knn = TRUE,
+                 neighbors_random_state = 0,
+                 neighbors_method = 'umap',
+                 neighbors_metric = 'euclidean',
 
-                     clustering_resolution = 1.0,
-                     clustering_restrict_to=NULL,
-                     clustering_random_state=0,
-                     clustering_key_added=NULL,
-                     clustering_adjacency=NULL,
-                     clustering_directed=TRUE,
-                     clustering_use_weights=TRUE,
-                     clustering_n_iterations=-1,
-                     clustering_partition_type=NULL,
+                 clustering_resolution = 1.0,
+                 clustering_restrict_to=NULL,
+                 clustering_random_state=0,
+                 clustering_key_added=NULL,
+                 clustering_adjacency=NULL,
+                 clustering_directed=TRUE,
+                 clustering_use_weights=TRUE,
+                 clustering_n_iterations=-1,
+                 clustering_partition_type=NULL,
 
-                     paga_show = FALSE,
-                     paga_plot = FALSE,
-                     paga_add_pos = TRUE,
-                     paga_threshold=0.01,
-                     paga_layout=NULL,
-                     paga_init_pos=NULL,
-                     paga_root=0.0,
-                     paga_single_component=NULL,
-                     paga_random_state=0.0,
+                 paga_show = FALSE,
+                 paga_plot = FALSE,
+                 paga_add_pos = TRUE,
+                 paga_threshold=0.01,
+                 paga_layout=NULL,
+                 paga_init_pos=NULL,
+                 paga_root=0.0,
+                 paga_single_component=NULL,
+                 paga_random_state=0.0,
 
-                     umap_min_dist=0.5,
-                     umap_spread=1.0,
-                     umap_n_components=3,
-                     umap_alpha=1.0,
-                     umap_gamma=1.0,
-                     umap_negative_sample_rate=5,
-                     umap_init_pos='spectral'){
+                 umap_min_dist=0.5,
+                 umap_spread=1.0,
+                 umap_n_components=3,
+                 umap_alpha=1.0,
+                 umap_gamma=1.0,
+                 umap_negative_sample_rate=5,
+                 umap_init_pos='spectral',
+
+                 dpt_root_cell = NULL,
+                 dpt_root_cluster = NULL,
+                 dpt_auto_root = "min",
+                 dpt_auto_reduction = "dm"){
 
   if (isTRUE(slim)){
     DefaultAssay(object) <- assay
@@ -156,8 +165,7 @@ PAGA <- function(object,
     alpha <- sceasy::convertFormat(object, from="seurat", to="anndata")
   }
 
-  sc <- import("scanpy",
-               delay_load = TRUE)
+  sc <- import("scanpy", delay_load = TRUE)
 
   # To initialize the PAGA positions, we HAVE to run scanpy.pl.paga()
   # This unfortunately invokes matplotlib, regardless of whether we tell
@@ -218,7 +226,8 @@ PAGA <- function(object,
 
   utils = import("scanpy.tools._utils", delay_load = TRUE)
 
-  # PAGA
+
+  # PAGA ######################
   sc$pl$paga(adata = alpha,
              show = paga_show,
              threshold=as.numeric(paga_threshold),
@@ -230,7 +239,7 @@ PAGA <- function(object,
                                      plot=F,
                                      add_pos=TRUE))
 
-  # UMAP
+  # UMAP ######################
   sc$tl$umap(adata = alpha,
              init_pos = utils$get_init_pos_from_paga(alpha),
              min_dist=as.numeric(umap_min_dist),
@@ -240,11 +249,49 @@ PAGA <- function(object,
              gamma=as.numeric(umap_gamma),
              negative_sample_rate=as.integer(umap_negative_sample_rate))
 
+  # Fruchterman & Reingold algorithm visualization  ######################
+  sc$tl$draw_graph(alpha)
 
-  # get data
+  paga.fr <- data.frame(py_to_r(alpha$obsm['X_draw_graph_fr']))
+  # paga.fr %>% ggplot(aes(X1, X2)) + geom_point()
+
+  # DPT ######################
+  sc$tl$diffmap(adata = alpha)
+  paga.dm <- data.frame(py_to_r(alpha$obsm['X_umap']))
+
+  if (is.null(dpt_root_cell) & is.null(dpt_root_cluster)){
+
+    if (dpt_auto_reduction == "fr"){
+      if (dpt_auto_root == "min"){
+        root_cell <- which.min(paga.fr$X1)
+      } else if (dpt_auto_root == "max"){
+        root_cell <- which.max(paga.fr$X1)
+      }
+    } else if (dpt_auto_reduction == "dm"){
+      if (dpt_auto_root == "min"){
+        root_cell <- which.min(paga.dm$X1)
+      } else if (dpt_auto_root == "max"){
+        root_cell <- which.max(paga.dm$X1)
+      }
+    }
+  } else if (!is.null(dpt_root_cell) & is.null(dpt_root_cluster)) {
+    root_cell <- dpt_root_cell
+  } else if (is.null(dpt_root_cell) & !is.null(dpt_root_cluster)) {
+
+    root.index <- getClusterRoot(object@reductions[["umap"]]@cell.embeddings[,1],
+                                 object@reductions[["umap"]]@cell.embeddings[,2],
+                                 so.query@meta.data$seurat_clusters,
+                                 dpt_root_cluster)
+
+    root_cell <- root.index
+  }
+
+  # get data ############
   paga.obj.py <-  py_get_item(alpha$uns, "paga")
   paga.obj.r <-  py_to_r(paga.obj.py)
   connectivities <- as.matrix(py_to_r(paga.obj.r[["connectivities"]]))
+
+  distances <- ( py_to_r(py_get_item(alpha$obsp, "distances")))
   paga.meta.obs <- py_to_r(alpha$obs)
   c.colnames <- levels(paga.meta.obs[, paga.obj.r[["groups"]] ])
   c.rownames <- levels(paga.meta.obs[, paga.obj.r[["groups"]] ])
@@ -277,7 +324,13 @@ PAGA <- function(object,
     group_colors = setNames(py_to_r(alpha$uns[paste0(grouping, "_colors")]), c(0:(nrow(paga.obj.r[["pos"]])-1))),
     groups = levels(paga.meta.obs[, paga.obj.r[["groups"]] ]),
     position = position,
-    umap = umap
+    umap = umap,
+    root.cell = root_cell,
+    pseudotime = NA,
+    diffusion.map = paga.dm,
+    fr.map = paga.fr,
+    distance =  py_to_r(py_get_item(alpha$obsp, "distances")),
+    AnnData = alpha
   )
 
   paga$edges.all <- tibble(

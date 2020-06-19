@@ -3172,3 +3172,80 @@ propVarPCA <- function(so){
 
   return(df.pca)
 }
+
+
+#' Get branch-specific pseudotimes from diffusion map
+#'
+#' Get branch-specific pseudotimes from diffusion map. Adopted from destiny package.
+#'
+#' @param dpt
+#' @param branch_id
+#' @return numeric vector; pseudotimes
+#' @name dpt_for_branch
+#' @examples
+#'
+#' # PCA embedding
+#' so.pca <- so.query@reductions[["pca"]]@cell.embeddings
+#'
+#' # diffusion map
+#' dm <- DiffusionMap(so.pca, n_eigs = 50)
+#'
+#' # diffusion pseudotime
+#' dpt <- DPT(dm, tips =tip.cluster)
+#'
+#' # flatten
+#' dpt_flat <- branch_divide(dpt, divide = 1)
+#'
+#' # get branch specific pseudotime
+#' pt_vec <- dpt_for_branch(dpt_flat, branch_id = paths_to)
+#'
+dpt_for_branch <- function(dpt, branch_id) {
+  branch_idx <- dpt@branch[, 1L] == branch_id
+  stopifnot(any(branch_idx))
+  tip_cells <- which(branch_idx & dpt@tips[, 1L])
+  if (length(tip_cells) == 0L) tip_cells <- which(branch_idx)
+  dpt[tip_cells[[1L]], ]
+}
+
+
+#' Infer initial trajectory through space, using pseudotime priors
+#'
+#' Infer initial trajectory through space, using pseudotime priors. Adopted from destiny package, uses smth.gaussian function; The specific function for smoothing using the gaussian window function.
+#'
+#' @param pt pseudotimes. Numeric vector.
+#' @param space A numeric matrix or a data frame containing the coordinates of samples.
+#' @param w.width the length of the smoothing window, if an integer, represents number of items, else, if a value between 0 and 1, represents the proportion of the input vector
+#' @return the initial trajectory
+#' @name inferInitialTrajectory.v2
+#' @importFrom smoother smth.gaussian
+#' @importFrom graphics plot
+#' @examples
+#'
+#'  # lineage-specific pseudotime
+#'  pt_vec <- dpt_for_branch(dpt_flat, branch_id = paths_to)
+#'
+#' # get indices
+#' idx <- dpt_flat@branch[, 1] %in% c(root, paths_to)
+#'
+#' # get initial trajectory path
+#' umap.path <- inferInitialTrajectory.v2(pt_vec[idx], so.query@reductions[["umap"]]@cell.embeddings[idx, ], w_width = 0.15)
+#'
+#'    # get umap coordinates
+#' df.umap.all <- data.frame(x = so.query@reductions[["umap"]]@cell.embeddings[ ,1],
+#'                           y = so.query@reductions[["umap"]]@cell.embeddings[ ,2])
+#' df.umap.all$col <- "grey"
+#'
+#' df.umap.sub <- df.umap.all[idx, ]
+#' df.umap.sub$pt <- pt_vec[idx]
+#'
+#' # compute prinicpal curves
+#' pc.fit <- princurve::principal_curve(as.matrix(df.umap.sub[,c("x", "y")]), start = as.matrix(umap.path[ ,c(1,2)]),
+#'                                      thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline",
+#'                                      approx_points = 100, trace = FALSE, plot_iterations = FALSE)
+#' traj.path <- pc.fit$s[pc.fit$ord, , drop = FALSE]
+#' df.tp <- data.frame(traj.path)
+#'
+inferInitialTrajectory.v2 <- function(pt, x, w_width = .1) {
+  stopifnot(identical(nrow(x), length(pt)))
+  as.data.frame(apply(x[order(pt), ], 2, function(col) smoother::smth.gaussian(col, w_width, tails = TRUE)))
+}

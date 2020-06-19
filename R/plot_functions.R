@@ -578,3 +578,70 @@ upset.Plot <- function(gene.sets, row.title = ""){
 }
 
 
+#' scMiko Theme
+#'
+#' Custom themes applied to ggplot2-based plots.
+#'
+#' @param style Choise of 'theme_classic' or 'theme_bw' called using 'classic' or 'bw', respectively. Default is 'bw'
+#' @param legend Logical to include legend. Default is F.
+#' @param grid Logical to include grid. Default is F.
+#' @param bold.title Logical to bold title. Default is T.
+#' @param viridis.color Logical to use virdis color pallete for 'color'. Default is F.
+#' @param viridis.fill Logical to use virdis fill pallete for 'fill'. Default is F.
+#' @name theme_miko
+#' @return ggplot2 theme object
+#' @examples
+#'
+#'
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T){
+
+  if (style == "bw"){
+    tm <- theme_bw()
+  } else if (style == "classic"){
+    tm <- theme_classic()
+  }
+
+  if (!legend) tm <- tm + theme(legend.position = "none")
+
+  if (!grid) tm <- tm + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+  if (bold.title) tm <- tm + theme( plot.title = element_text(face = "bold"))
+
+  return(tm)
+
+}
+
+
+#' UMAP projection of pseudotimes
+#'
+#' Visualize pseudotimes using UMAP coordinates.
+#'
+#' @param x x coordinates (e.g., UMAP 1)
+#' @param y y coordinates (e.g., UMAP 2)
+#' @param pseudotime pseudotimes. Numerical vector, same length as x and y.
+#' @param pt.size Point size. Numeric [0,inf]
+#' @param pt.alpha Point alpha. Numeric [0,1]
+#' @param x.lab x axis label. Default is 'UMAP 1'.
+#' @param y.lab y axis label. Default is 'UMAP 2'.
+#' @name pseudotime.UMAP
+#' @return ggplot2 handle
+#' @examples
+#'
+#'
+pseudotime.UMAP <- function(x, y, pseudotime, pt.size = 1, pt.alpha = 1, x.lab = "UMAP 1", y.lab = "UMAP 2"){
+
+  df <- data.frame(x,y,pseudotime)
+
+  plt.pt <- df %>%
+    ggplot(aes(x, y, color = pseudotime)) +
+    geom_point(size = pt.size, alpha = pt.alpha) +
+    theme_classic() +
+    xlab(x.lab) +
+    ylab(y.lab) +
+    scale_color_viridis()
+
+  return(plt.pt)
+
+}
+
+
