@@ -3245,7 +3245,46 @@ dpt_for_branch <- function(dpt, branch_id) {
 #' traj.path <- pc.fit$s[pc.fit$ord, , drop = FALSE]
 #' df.tp <- data.frame(traj.path)
 #'
-inferInitialTrajectory.v2 <- function(pt, x, w_width = .1) {
-  stopifnot(identical(nrow(x), length(pt)))
-  as.data.frame(apply(x[order(pt), ], 2, function(col) smoother::smth.gaussian(col, w_width, tails = TRUE)))
+inferInitialTrajectory.v2 <- function(pt, space, w_width = .1) {
+  stopifnot(identical(nrow(space), length(pt)))
+  as.data.frame(apply(space[order(pt), ], 2, function(col) smoother::smth.gaussian(col, w_width, tails = TRUE)))
 }
+
+
+#' Get cell index corresponding to center of specified root cluster.
+#'
+#' Get cell index corresponding to center of specified root cluster. For specified cluster, cluster center is computed and index of nearest cell to cluster center is returned.
+#'
+#' @param x x coordinates (e.g., UMAP 1)
+#' @param y y coordinates (e.g., UMAP 2)
+#' @param cluster.membership group id's corrorespodning to cluster membership (e.g., seurat_cluster entries). Must be same length as x and y.
+#' @param which.cluster specify which cluster to get root cell fot.
+#' @return root cell index
+#' @name getClusterRoot
+#' @examples
+#'
+getClusterRoot <- function(x, y, cluster.membership, which.cluster){
+
+  # assertions
+  stopifnot(length(which.cluster) == 1)
+  stopifnot(length(cluster.membership) == length(y))
+  stopifnot(length(cluster.membership) == length(x))
+
+  # data.frame
+  df.cc <- data.frame(x, y, cluster = cluster.membership)
+
+  # get centers
+  df.centers <- getClusterCenters(df.cc, which.center = "mean")
+
+  # filter
+  df.coi <- df.centers[df.centers$cluster %in% which.cluster, ]
+
+  # get nearest cell to center
+  df.cc$x.dif <- (df.cc[,1] - df.coi$x.center)^2
+  df.cc$y.dif <- (df.cc[,2] - df.coi$y.center)^2
+  df.cc$xtDist <- sqrt(df.cc$x.dif + df.cc$y.dif)
+  root_cell <- which.min( df.cc$xtDist)
+
+  return(root_cell)
+}
+

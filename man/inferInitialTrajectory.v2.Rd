@@ -4,7 +4,7 @@
 \alias{inferInitialTrajectory.v2}
 \title{Infer initial trajectory through space, using pseudotime priors}
 \usage{
-inferInitialTrajectory.v2(pt, x, w_width = 0.1)
+inferInitialTrajectory.v2(pt, space, w_width = 0.1)
 }
 \arguments{
 \item{pt}{pseudotimes. Numeric vector.}

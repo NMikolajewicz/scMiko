@@ -586,8 +586,6 @@ upset.Plot <- function(gene.sets, row.title = ""){
 #' @param legend Logical to include legend. Default is F.
 #' @param grid Logical to include grid. Default is F.
 #' @param bold.title Logical to bold title. Default is T.
-#' @param viridis.color Logical to use virdis color pallete for 'color'. Default is F.
-#' @param viridis.fill Logical to use virdis fill pallete for 'fill'. Default is F.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples

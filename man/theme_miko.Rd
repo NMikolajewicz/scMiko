@@ -14,10 +14,6 @@ theme_miko(style = "bw", legend = F, grid = F, bold.title = T)
 \item{grid}{Logical to include grid. Default is F.}
 
 \item{bold.title}{Logical to bold title. Default is T.}
-
-\item{viridis.color}{Logical to use virdis color pallete for 'color'. Default is F.}
-
-\item{viridis.fill}{Logical to use virdis fill pallete for 'fill'. Default is F.}
 }
 \value{
 ggplot2 theme object
