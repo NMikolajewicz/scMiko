@@ -612,11 +612,11 @@ m1.inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
       orgIDs <- rownames(exp.mat)[ apply( exp.mat,2,which.max )]
     } else if (rep.ens.method == "alt"){
       n <- 1000
-      nc <- ncol(expression_matrix2)
-      z <- split(colnames(expression_matrix2), rep(1:ceiling(nc/n), each=n, length.out=nc))
+      nc <- ncol(exp.mat)
+      z <- split(colnames(exp.mat), rep(1:ceiling(nc/n), each=n, length.out=nc))
       orgIDs <- character()
       for (i in names(z)) {
-        chunk <- expression_matrix2[,z[[i]]]
+        chunk <- exp.mat[,z[[i]]]
         b <- rownames(chunk)[apply(chunk,2,which.max)]
         orgIDs <- c(orgIDs,b)
         rm(list=c("chunk","b"))
