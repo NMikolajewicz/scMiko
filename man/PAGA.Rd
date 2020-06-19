@@ -45,7 +45,11 @@ PAGA(
   umap_alpha = 1,
   umap_gamma = 1,
   umap_negative_sample_rate = 5,
-  umap_init_pos = "spectral"
+  umap_init_pos = "spectral",
+  dpt_root_cell = NULL,
+  dpt_root_cluster = NULL,
+  dpt_auto_root = "min",
+  dpt_auto_reduction = "dm"
 )
 }
 \arguments{
@@ -67,7 +71,13 @@ PAGA(
 
 \item{clustering_resolution}{Resolution to pass to the clustering algorith (Default: 1.0)}
 
-\item{umap_init_pos}{}
+\item{dpt_root_cell}{Index of root cell. If unspecified, defaults to dpt_auto methods.}
+
+\item{dpt_root_cluster}{ID of cluster used to identify root cell. If unspecified, defaults to dpt_auto methods.}
+
+\item{dpt_auto_root}{Method used to auto detect route. one of 'min' or 'max'. Finds correspodning index from specified reduction.}
+
+\item{dpt_auto_reduction}{Dimensional reduction used to identify root cell (using min or max method). Default is diffusion map 'dm'}
 }
 \value{
 
