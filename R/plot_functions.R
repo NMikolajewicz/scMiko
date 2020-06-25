@@ -643,3 +643,32 @@ pseudotime.UMAP <- function(x, y, pseudotime, pt.size = 1, pt.alpha = 1, x.lab =
 }
 
 
+#' Apply discrete color palette to ggplot object
+#'
+#' Apply discrete color palette to ggplot object
+#'
+#' @param gg ggplot handle
+#' @param fc character specifying whether to apply color palette to 'fill', 'color', or 'both'
+#' @param n.groups numeric specifying number of groups
+#' @name discretePalette
+#' @return ggplot2 handle
+#' @examples
+#'
+#' gg.plot <- discretePalette(gg.plot, fc = "color", n.groups = 4)
+#'
+discretePalette <- function(gg, fc, n.groups){
+
+  if (n.groups <= 10){
+
+    if (fc == "color"){
+      gg <- gg + ggsci::scale_color_npg()
+    } else if (fc == "fill"){
+      gg <- gg + ggsci::scale_fill_npg()
+    } else if (fc == "both"){
+      gg <- gg + ggsci::scale_color_npg() + ggsci::scale_fill_npg()
+    }
+  }
+  return(gg)
+}
+
+
