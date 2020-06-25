@@ -39,3 +39,6 @@ w.df.top$module.membership <- module.name
 
 
 }
+\author{
+Nicholas Mikolajewicz
+}

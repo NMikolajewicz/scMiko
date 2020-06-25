@@ -27,3 +27,6 @@ updateGeneSets("geneSets_MASTER_260420update.xlsx", "geneSets.rda", dev.director
 }
 
 }
+\author{
+Nicholas Mikolajewicz
+}

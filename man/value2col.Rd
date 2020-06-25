@@ -39,3 +39,6 @@ col.lim <- max(c(abs(min(vis.links$value)), abs(max(vis.links$value))))
 edge.colors <- value2col(vis.links$value, limit = col.lim)
 
 }
+\seealso{
+\code{\link{colorRampPalette}}
+}
