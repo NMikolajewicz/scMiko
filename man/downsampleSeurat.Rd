@@ -19,3 +19,6 @@ Seurat Object
 \description{
 Downsample number of cells in Seurat object by specified factor
 }
+\author{
+Nicholas Mikolajewicz
+}

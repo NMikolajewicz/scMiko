@@ -17,3 +17,6 @@ Character specifying ensembl or symbol
 \description{
 Check whether genes are represented as SYMBOL or ENSEMBL. This is accomplished by comparing query to reference, and using a majority vote.
 }
+\author{
+Nicholas Mikolajewicz
+}

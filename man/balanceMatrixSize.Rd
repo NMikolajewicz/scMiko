@@ -30,3 +30,6 @@ de.2 <- output.mat[["de.2"]] # resampled mat.2
 datExpr.noz <- output.mat[["de.all"]] # concatenated matrices
 
 }
+\author{
+Nicholas Mikolajewicz
+}

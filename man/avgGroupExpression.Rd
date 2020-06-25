@@ -29,3 +29,6 @@ data.frame (gene rows, group columns)
 \description{
 Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
 }
+\author{
+Nicholas Mikolajewicz
+}

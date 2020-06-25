@@ -60,3 +60,6 @@ d.mat <- output.all[["d.mat"]] # disimilarity matix
 geneTree <- dist2hclust(d.mat)
 
 }
+\author{
+Nicholas Mikolajewicz
+}
