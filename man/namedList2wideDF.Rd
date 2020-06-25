@@ -24,3 +24,9 @@ my.list <- list(group.1 = c("a", "b", "c"), group.2 = c("d", "e", "f"))
 my.df <- namedList2wideDF(my.list)
 
 }
+\seealso{
+\code{\link{namedList2longDF}}
+}
+\author{
+Nicholas Mikolajewicz
+}

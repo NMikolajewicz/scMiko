@@ -2,7 +2,7 @@
 % Please edit documentation in R/flex_functions.R
 \name{flex.asDT}
 \alias{flex.asDT}
-\title{Outputs datatable with print buttom options}
+\title{Outputs datatable with print button options}
 \usage{
 flex.asDT(df)
 }
@@ -13,5 +13,5 @@ flex.asDT(df)
 data.table
 }
 \description{
-Outputs datatable with print buttom options
+Outputs datatable with print button options
 }

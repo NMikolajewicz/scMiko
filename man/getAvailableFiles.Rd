@@ -15,3 +15,6 @@ list of files
 \description{
 Get list of files in specified directory. Default directory is "Preprocessed Datasets/".
 }
+\author{
+Nicholas Mikolajewicz
+}

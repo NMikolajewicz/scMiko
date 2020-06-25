@@ -24,3 +24,6 @@ which.center <- "mean"
 df.red.centers <- get.cluster.centers(df.red, which.center)
 
 }
+\author{
+Nicholas Mikolajewicz
+}

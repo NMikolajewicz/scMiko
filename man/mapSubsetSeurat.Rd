@@ -34,3 +34,6 @@ so.query.2 <- mapSubsetSeurat(so.query, old.field = "Condition", new.field = "Mo
 so.query.2 <- mapSubsetSeurat(so.query.2, old.field = "Group", new.field = "Time", mapping.list = mapping.list.2)
 
 }
+\author{
+Nicholas Mikolajewicz
+}

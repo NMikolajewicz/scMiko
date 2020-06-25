@@ -34,3 +34,6 @@ for (i in 1:length(common.modules)){
 
 
 }
+\author{
+Nicholas Mikolajewicz
+}

@@ -34,3 +34,6 @@ d.mat <- output.all[["d.mat"]] # disimilarity matix
 df.con <- getConnectivity(w.mat, gene.names = colnames(a.mat))
 
 }
+\author{
+Nicholas Mikolajewicz
+}

@@ -15,3 +15,6 @@ Seurat Object
 \description{
 Merges list of seurat objects without any normalization of batch correction
 }
+\author{
+Nicholas Mikolajewicz
+}

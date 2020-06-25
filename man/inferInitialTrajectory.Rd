@@ -25,4 +25,10 @@ which.clusters <- c(0,4,5)
 # get dimensional reduction for specified clusters
 dimSubset <- subsetDimRed(so.query, which.features = which.clusters)
 
+# get initial trajectory
+start.traj <- inferInitialTrajectory(as.matrix(dimSubset[["reduction"]]), k = length(unique(dimSubset[["features"]])))
+
+}
+\seealso{
+\code{\link{subsetDimRed}}
 }

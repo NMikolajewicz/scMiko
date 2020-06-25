@@ -17,3 +17,6 @@ Character vector of gene symbols belonging to Reactome/GO geneset.
 \description{
 Retrieves Reactome/GO geneset using specified annotation ID
 }
+\author{
+Nicholas Mikolajewicz
+}

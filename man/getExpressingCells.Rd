@@ -21,3 +21,6 @@ Character vector of cell barcodes/ids
 \description{
 Get cells that express query gene above specified threshold
 }
+\author{
+Nicholas Mikolajewicz
+}

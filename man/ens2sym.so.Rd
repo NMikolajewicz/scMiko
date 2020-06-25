@@ -17,3 +17,6 @@ Seurat object with specified gene representation.
 \description{
 Process Seurat object so that genes in Ensemble format are converted to Symbol representation.
 }
+\author{
+Nicholas Mikolajewicz
+}

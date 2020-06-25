@@ -24,3 +24,6 @@ Get cell index corresponding to center of specified root cluster. For specified 
 \examples{
 
 }
+\author{
+Nicholas Mikolajewicz
+}

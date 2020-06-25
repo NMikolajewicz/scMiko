@@ -19,3 +19,6 @@ Logical
 \description{
 Return logical flag indicated whether query gene is present in seurat expression matrix.
 }
+\author{
+Nicholas Mikolajewicz
+}

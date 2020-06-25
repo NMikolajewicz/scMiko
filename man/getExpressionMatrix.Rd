@@ -33,3 +33,6 @@ gene x cell expression matrix
 \description{
 Get expression matrix from Seurat Object
 }
+\author{
+Nicholas Mikolajewicz
+}

@@ -46,3 +46,6 @@ traj.path <- pc.fit$s[pc.fit$ord, , drop = FALSE]
 df.tp <- data.frame(traj.path)
 
 }
+\seealso{
+\code{\link{principal_curve}}
+}

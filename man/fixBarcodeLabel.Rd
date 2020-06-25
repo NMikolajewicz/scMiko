@@ -15,3 +15,6 @@ Seurat object
 \description{
 Rename metadata entry 'CellTypes' to 'Barcode'. This is a fix implemented to correct an error from an earlier analysis pipeline. Analyses post January 2020 do not require this fix.
 }
+\author{
+Nicholas Mikolajewicz
+}

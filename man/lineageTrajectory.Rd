@@ -8,6 +8,7 @@ lineageTrajectory(
   space,
   start = NULL,
   group.labels = NULL,
+  pseudotimes = NULL,
   thresh = 0.001,
   maxit = 10,
   stretch = 2,
@@ -23,6 +24,8 @@ lineageTrajectory(
 \item{start}{either a previously fit principal curve, or else a matrix of points that in row order define a starting curve. If missing or NULL, then the first principal component is used. If the smoother is "periodic_lowess", then a circle is used as the start.}
 
 \item{group.labels}{Character vector (same length as number of rows in space) specifying group membership. Optional.}
+
+\item{pseudotimes}{Either logical (TRUE) specifying whether to use internally generated pseudotimes (from principal curve fitting) to color generated umap points, or, numeric vector with pseudotimes. If provided, plotted data are colored by pseudotime. Otherwise colored by group membership.}
 
 \item{thresh}{convergence threshold on shortest distances to the curve. Default is 0.001.}
 
@@ -62,4 +65,10 @@ LT.results <- lineageTrajectory(space = as.matrix(dimSubset[["reduction"]]),
 
 
 
+}
+\seealso{
+\code{\link{inferInitialTrajectory}}
+}
+\author{
+Nicholas Mikolajewicz
 }

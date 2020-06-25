@@ -26,3 +26,9 @@ j.mat <- jaccardSimilarityMatrix(gene.sets)
 pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
 
 }
+\seealso{
+\code{\link{pheatmap}}
+}
+\author{
+Nicholas Mikolajewicz
+}

@@ -44,3 +44,6 @@ print(sft$optimization.plot)
 # visualize node-linkage density plots
 cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5)
 }
+\seealso{
+\code{\link{getConnectivity}}
+}

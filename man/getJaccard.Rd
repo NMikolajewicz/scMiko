@@ -40,3 +40,6 @@ colnames(j.mat) <- names(gene.sets)
 pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
 
 }
+\seealso{
+\code{\link{pheatmap}}
+}

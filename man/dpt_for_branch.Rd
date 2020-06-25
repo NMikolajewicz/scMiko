@@ -30,3 +30,6 @@ dpt_flat <- branch_divide(dpt, divide = 1)
 pt_vec <- dpt_for_branch(dpt_flat, branch_id = paths_to)
 
 }
+\seealso{
+\code{\link{DPT}}
+}

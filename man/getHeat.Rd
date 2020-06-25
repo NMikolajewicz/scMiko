@@ -25,3 +25,6 @@ Heatmap object
 \description{
 Uses gplots::heatmap.2 function to generate heatmap object. Run in chunk specifying include = F to suppress plot and only output object.
 }
+\author{
+Nicholas Mikolajewicz
+}

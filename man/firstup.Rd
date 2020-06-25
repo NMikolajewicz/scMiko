@@ -15,3 +15,6 @@ Character vector
 \description{
 Function used to naively convert gene list to mouse representation; i.e., Convert Hs to Mm gene symbols.
 }
+\seealso{
+\code{\link{toupper}}
+}

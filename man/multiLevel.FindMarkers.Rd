@@ -42,3 +42,6 @@ deg.list <- multiLevel.FindMarkers(so.query.2, ordered.levels = c("Time", "Mouse
                                    test.use = "wilcox")
 
 }
+\author{
+Nicholas Mikolajewicz
+}
