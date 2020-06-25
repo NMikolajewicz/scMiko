@@ -13,7 +13,7 @@ optimalDS(tree, d.mat, genes = NULL, ...)
 
 \item{genes}{vector of gene names corresponding rows/col of distance matrix (d.mat). If specified, additional "genes" column is provided in output.}
 
-\item{...}{additional arguments passed to WGCNA::cutreeDynamic()}
+\item{...}{additional arguments passed to dynamicTreeCut::cutreeDynamic()}
 }
 \value{
 mColorh, matrix specfying module membership at varying deep split parameter specifications (0:4)
@@ -27,4 +27,7 @@ geneTree <- dist2hclust(d.mat)
 # determine number of modules based on refrence dataset
 print2hide <- capture.output(mColorh <- optimalDS(tree = geneTree, d.mat = d.mat, genes  = rownames(a.mat)))
 
+}
+\seealso{
+\code{\link{cutreeDynamic}}
 }

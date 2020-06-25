@@ -17,3 +17,6 @@ modulePackages(module.number = NULL, load.default = T)
 \description{
 Load packages required for each analysis module
 }
+\seealso{
+\code{\link{library}}
+}

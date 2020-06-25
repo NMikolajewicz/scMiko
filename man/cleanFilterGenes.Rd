@@ -11,11 +11,17 @@ cleanFilterGenes(genes, so, which.species)
 
 \item{so}{Seurat Object}
 
-\item{which.species}{Species}
+\item{which.species}{Species. Either 'Hs' or 'Mm'.}
 }
 \value{
 Character vector of genes
 }
 \description{
 Clean gene list (i.e., remove NAs), convert to appropraite species, and keep only those present in seurat object.
+}
+\seealso{
+\code{\link{speciesConvert}}
+}
+\author{
+Nicholas Mikolajewicz
 }

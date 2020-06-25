@@ -19,7 +19,7 @@ updateGeneSets(input.file, output.file, dir = "", dev.directory.flag = F)
 List of data.frames saved as Rdata file.
 }
 \description{
-Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
+Takes genesets stored in Excel sheets, and converts them to dataframes stored in lists.
 }
 \examples{
 \dontrun{

@@ -17,6 +17,21 @@ Character specifying ensembl or symbol
 \description{
 Check whether genes are represented as SYMBOL or ENSEMBL. This is accomplished by comparing query to reference, and using a majority vote.
 }
+\examples{
+
+\dontrun{
+gene.rep <-  checkGeneRep(gNames.list, as.vector(rownames(so.query@assays[[current.assay]]@scale.data)))
+
+if (gene.rep == "ensembl"){
+  so.query <- ens2sym.so(so = so.query, gNames.list = gNames.list, convert.RNA = TRUE)
+  gene.rep <-  checkGeneRep(gNames.list, as.vector(rownames(so.query@assays[[current.assay]]@scale.data)))
+}
+}
+
+}
+\seealso{
+\code{\link{ens2sym.so}}
+}
 \author{
 Nicholas Mikolajewicz
 }

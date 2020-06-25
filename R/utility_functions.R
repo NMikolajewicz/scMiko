@@ -22,8 +22,19 @@ firstup <- function(x) {
 #' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
 #' @param query.genes vector of query genes to check representation
 #' @name checkGeneRep
+#' @seealso \code{\link{ens2sym.so}}
 #' @author Nicholas Mikolajewicz
 #' @return Character specifying ensembl or symbol
+#' @examples
+#'
+#' \dontrun{
+#' gene.rep <-  checkGeneRep(gNames.list, as.vector(rownames(so.query@assays[[current.assay]]@scale.data)))
+#'
+#' if (gene.rep == "ensembl"){
+#'   so.query <- ens2sym.so(so = so.query, gNames.list = gNames.list, convert.RNA = TRUE)
+#'   gene.rep <-  checkGeneRep(gNames.list, as.vector(rownames(so.query@assays[[current.assay]]@scale.data)))
+#' }
+#' }
 #'
 checkGeneRep <- function(reference.genes, query.genes){
 
@@ -1059,7 +1070,7 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 
 #' Create/update list of gene sets for scMiko package.
 #'
-#' Takes genessets stored in Excel sheets, and converts them to dataframes stored in lists.
+#' Takes genesets stored in Excel sheets, and converts them to dataframes stored in lists.
 #'
 #' @param input.file Excel file (input). Must have ".xlsx" suffix. A character.
 #' @param output.file Rdata file (output). Must have ".rda" suffix. A character.
@@ -1110,8 +1121,10 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
 #'
 #' @param genes Character vector of genes
 #' @param so Seurat Object
-#' @param which.species Species
+#' @param which.species Species. Either 'Hs' or 'Mm'.
 #' @name cleanFilterGenes
+#' @seealso \code{\link{speciesConvert}}
+#' @author Nicholas Mikolajewicz
 #' @return Character vector of genes
 #'
 cleanFilterGenes <- function(genes, so, which.species){
@@ -1119,12 +1132,9 @@ cleanFilterGenes <- function(genes, so, which.species){
   # clean dataset and include only those available in seurat object
   cur.features <- genes
   cur.features <- cur.features[!is.na(cur.features)]
-  # n.input <- length(cur.features)
-  # cur.features <- lapply(cur.features,  gene.species.filter, rownames(so@assays[[DefaultAssay(so)]]@data), which.species)
   cur.features <- lapply(cur.features,  speciesConvert, rownames(so@assays[[DefaultAssay(so)]]@data), which.species)
   cur.features <-as.vector(unlist(cur.features))
   cur.features <- cur.features[!is.na(cur.features)]
-  # n.output <- length(cur.features)
 
   return(cur.features)
 
@@ -1242,11 +1252,11 @@ avgGroupExpression <- function(so, which.data = "data", which.center = "mean", w
 
   # clear some memory
   rm(so)
-  gc()
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
   for (i in 1:length(u.clusters)){
+    warning("Computing measures of centrality...")
     if (which.center == "mean"){
       if (do.parallel){
         avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
@@ -1549,10 +1559,7 @@ multiLevel.FindMarkers <- function(so, ordered.levels, which.assay = NULL, ...){
 #'
 getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 
-  # compute connectivity
-  # wi <- apply(w.mat, 1, function(x) sum(x))
-
-  # store in data.frame
+  # compute connectivity and store in dataframe
   df.con <- data.frame(genes = gene.names, wi = apply(w.mat, 1, function(x) sum(x)))
 
   # rank
@@ -1620,10 +1627,12 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 
   # similarity matrix - using proportionality metric for scRNAseq data.
   if (is.null(s.mat)){
+    warning("Computing similarity matrix...")
     s.mat <-  dismay::dismay(e.mat, metric = cor.metric)
   }
 
   # adjacency matrix
+  warning("Computing adjacency matrix...")
   a.mat <-  sim2adj(s.mat, soft.power, network.type)
 
   # rescale value if needed
@@ -1631,7 +1640,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 
   # compute topological overlap matix (TOM)
   if (use.TOM){
-
+    warning("Computing topological overlap matix...")
     if ((TOM.type) == "signed" & (network.type == "unsigned")) {
       a.mat.tom <- a.mat * sign(s.mat)
     } else {
@@ -1655,6 +1664,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
   colnames(w.mat) <- colnames(a.mat)
 
   # dissimilarity measure
+  warning("Computing dissimilarity matix...")
   d.mat <- 1- w.mat
 
   output <- list(
@@ -1675,8 +1685,9 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 #'
 #' @param d.mat distance matrix
 #' @param method hierarchial-clustering method. Default is "average". See flashClust for options.
-#' @param ... Additional arguments passessed to flashClust {flashClust package}
+#' @param ... Additional arguments passed to flashClust {flashClust package}
 #' @name dist2hclust
+#' @seealso \code{\link{flashClust}}
 #' @return hclust object
 #' @author Nicholas Mikolajewicz
 #' @examples
@@ -1722,6 +1733,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 dist2hclust <- function(d.mat, method = "average", ...){
 
   stopifnot(class(d.mat) == "matrix")
+  library(flashClust)
 
   tree <- flashClust(as.dist(d.mat), method = method, ...)
 
@@ -1736,8 +1748,9 @@ dist2hclust <- function(d.mat, method = "average", ...){
 #' @param tree h.clust object generated by dist2hclust.
 #' @param d.mat distance matrix used to generate tree.
 #' @param genes vector of gene names corresponding rows/col of distance matrix (d.mat). If specified, additional "genes" column is provided in output.
-#' @param ... additional arguments passed to WGCNA::cutreeDynamic()
+#' @param ... additional arguments passed to dynamicTreeCut::cutreeDynamic()
 #' @name optimalDS
+#' @seealso \code{\link{cutreeDynamic}}
 #' @return mColorh, matrix specfying module membership at varying deep split parameter specifications (0:4)
 #' @examples
 #'
@@ -1746,6 +1759,8 @@ dist2hclust <- function(d.mat, method = "average", ...){
 #' print2hide <- capture.output(mColorh <- optimalDS(tree = geneTree, d.mat = d.mat, genes  = rownames(a.mat)))
 #'
 optimalDS <- function(tree, d.mat, genes = NULL, ...){
+
+  library(dynamicTreeCut)
 
   mColorh = NULL
   for (ds in 0:4){
@@ -1778,6 +1793,7 @@ optimalDS <- function(tree, d.mat, genes = NULL, ...){
 #' @param referenceNetworks a vector giving the indices of expression data to be used as reference networks. Reference networks must have their module labels given in multiColor.
 #' @param ... Additional arguments passessed to modulePreservation {WGCNA package}
 #' @name getModulePreservation
+#' @seealso \code{\link{modulePreservation}}
 #' @return data.frame of module preservation statistics
 #' @import WGCNA
 #' @examples
@@ -1789,6 +1805,7 @@ optimalDS <- function(tree, d.mat, genes = NULL, ...){
 #'
 getModulePreservation <- function(ref.mat, query.mat, ref.module, query.modules = NULL, networkType = "unsigned", referenceNetworks = 1, ...){
 
+  library(WGCNA)
   multiExpr <- list(A1=list(data=ref.mat),A2=list(data=query.mat))
 
   if (is.null(query.modules)){
@@ -2409,7 +2426,7 @@ rescaleValues <- function(values, new.min = 0, new.max = 1){
 #' Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible than Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
 #'
 #' @param X Expression matrix
-#' @name recaleValues
+#' @name BaCo
 #' @return Correlation matrix
 #' @examples
 #'

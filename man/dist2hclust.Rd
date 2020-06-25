@@ -11,7 +11,7 @@ dist2hclust(d.mat, method = "average", ...)
 
 \item{method}{hierarchial-clustering method. Default is "average". See flashClust for options.}
 
-\item{...}{Additional arguments passessed to flashClust {flashClust package}}
+\item{...}{Additional arguments passed to flashClust {flashClust package}}
 }
 \value{
 hclust object
@@ -59,6 +59,9 @@ d.mat <- output.all[["d.mat"]] # disimilarity matix
 
 geneTree <- dist2hclust(d.mat)
 
+}
+\seealso{
+\code{\link{flashClust}}
 }
 \author{
 Nicholas Mikolajewicz

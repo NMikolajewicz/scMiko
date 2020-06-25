@@ -43,3 +43,6 @@ modules.1 = mColorh.1[,4]
 stats <- getModulePreservation(ref.mat = de.1, query.mat = de.2, modules.1, nPermutations=30,maxGoldModuleSize=100,maxModuleSize=400, verbose=3)
 
 }
+\seealso{
+\code{\link{modulePreservation}}
+}
