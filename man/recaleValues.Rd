@@ -14,7 +14,7 @@ BaCo(X)
 Correlation matrix
 }
 \description{
-Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible tahn Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
+Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible than Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
 }
 \examples{
 

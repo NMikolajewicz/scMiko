@@ -53,3 +53,6 @@ Identify pseudotime-dependent genes using Random Forest (RF) Model. Given Seurat
 \examples{
 
 }
+\seealso{
+\code{\link{rand_forest}}
+}

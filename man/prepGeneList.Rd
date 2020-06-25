@@ -17,3 +17,6 @@ Named vector of available genes
 \description{
 Ensure is available and represented correctly.
 }
+\author{
+Nicholas Mikolajewicz
+}

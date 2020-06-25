@@ -20,3 +20,6 @@ Remove duplicate genes from Seurat Object
 so.query <- rmDuplicateGenes(so.query)
 
 }
+\author{
+Nicholas Mikolajewicz
+}

@@ -17,3 +17,6 @@ data.frame mapping gene Symbols to Ensembl
 \description{
 Gene symbol is converted to ensembl id using org.Hs.eg.db or org.Mm.eg.db annotation databases.
 }
+\author{
+Nicholas Mikolajewicz
+}

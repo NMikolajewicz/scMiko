@@ -15,3 +15,6 @@ Function that detachs and attaches scMiko package.
 scMikoReload()
 
 }
+\author{
+Nicholas Mikolajewicz
+}

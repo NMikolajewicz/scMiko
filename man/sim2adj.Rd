@@ -25,3 +25,6 @@ Compute adjaceny matrix from similary (correlation) matrix for different network
 a.mat <- sim2adj(s.mat, soft.power = 2, network.type = "signed")
 
 }
+\author{
+Nicholas Mikolajewicz
+}

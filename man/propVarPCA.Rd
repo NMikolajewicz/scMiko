@@ -12,3 +12,6 @@ data.frame summarize proportion of variance explained by each principal componen
 \description{
 For given Seurat Object, retrieve principal components and compute proportion of explained variance.
 }
+\author{
+Nicholas Mikolajewicz
+}

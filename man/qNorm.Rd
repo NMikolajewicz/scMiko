@@ -29,3 +29,6 @@ y.s2 <- getConnectivity(s.2, gene.names = colnames(a.2))$wi
 df.xy.s <- qNorm(x.s1, y.s2, genes = colnames(a.1))
 
 }
+\author{
+Nicholas Mikolajewicz
+}

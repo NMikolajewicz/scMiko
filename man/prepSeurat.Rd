@@ -13,5 +13,8 @@ prepSeurat(so)
 Seurat object
 }
 \description{
-Preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+Preprocess using fixBarcodeLabel(), UpdateSeuratObject() and updateDimNames() Functions.
+}
+\author{
+Nicholas Mikolajewicz
 }

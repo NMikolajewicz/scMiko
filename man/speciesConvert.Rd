@@ -19,3 +19,6 @@ Gene Symbol (character)
 \description{
 Convert gene symbol to approriate species (as specified), while ensuring that gene is present in reference gene list.
 }
+\author{
+Nicholas Mikolajewicz
+}

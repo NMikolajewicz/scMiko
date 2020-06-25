@@ -15,3 +15,6 @@ Seurat Object
 \description{
 Ensures data are properly normalized and scaled. If intergrated dataset provided, Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow is applied and default assay is set to 'RNA'. Otherwise, if  non-integrated dataset is provided, SCT transform is assumed and default assay is set to 'SCT'. If non-intergrated data have not been process with SCT workflow, see m1.scNormScale() function.
 }
+\author{
+Nicholas Mikolajewicz
+}

@@ -25,3 +25,6 @@ Rescales vector of values to span between specified range [new.min, new.max]
 values <- rescaleValues(values)
 
 }
+\author{
+Nicholas Mikolajewicz
+}

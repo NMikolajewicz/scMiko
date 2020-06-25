@@ -36,3 +36,6 @@ id <- term2id(term, db = "GO", species = "Hs")
 gene.set <- id2geneset(id, "Hs")
 
 }
+\author{
+Nicholas Mikolajewicz
+}

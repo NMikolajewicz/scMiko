@@ -4,7 +4,13 @@
 \alias{runEnrichment}
 \title{Wrapper to run  GO enrichment, using fisher enrichment method}
 \usage{
-runEnrichment(gene.list, gene.universe, species)
+runEnrichment(
+  gene.list,
+  gene.universe,
+  species,
+  p.threshold = 0.01,
+  p.adj.threshold = 0.05
+)
 }
 \arguments{
 \item{gene.list}{named list of gene sets to query, where name specify name of gene set, and entry is vector of gene symbols.}
@@ -12,6 +18,10 @@ runEnrichment(gene.list, gene.universe, species)
 \item{gene.universe}{background genes}
 
 \item{species}{Species: Hs or Mm}
+
+\item{p.threshold}{numeric specifying p value threshold. Default is 0.01.}
+
+\item{p.adj.threshold}{numeric specifing adjusted p value threshold. Defulat is 0.05.}
 }
 \value{
 list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
@@ -25,4 +35,7 @@ enrichment.list <- runEnrichment(module.list, gene.universe = all.genes, species
 results.p <- enrichment.list$results.table.p
 results.bh <- enrichment.list$results.table.bh
 
+}
+\author{
+Nicholas Mikolajewicz
 }

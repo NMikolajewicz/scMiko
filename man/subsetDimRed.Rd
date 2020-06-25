@@ -24,3 +24,6 @@ list of results
 \description{
 Get dimensional reduction from Seurat Object for subset of data.
 }
+\author{
+Nicholas Mikolajewicz
+}

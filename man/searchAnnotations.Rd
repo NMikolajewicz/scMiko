@@ -34,3 +34,6 @@ dataframe of terms that match query
 \description{
 Searches Reactome/GO databases using query stem (i.e., incomplete term) and returns all matches.
 }
+\author{
+Nicholas Mikolajewicz
+}
