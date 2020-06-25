@@ -1055,25 +1055,6 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 }
 
 
-#' Add entry to analysis log
-#'
-#' Add entry to analysis log
-#'
-#' @param entry.name name of entry. A character.
-#' @param entry entry.
-#' @param df.log existing analysis log to add entry to. A data.frame.
-#' @param entry.variable.name name of variable storing entry (optional). A character.
-#' @name addLogEntry
-#' @return data.frame
-#'
-addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
-
-  df.log[nrow(df.log)+1, 1] <- as.character(entry.name)
-  df.log[nrow(df.log), 2] <- as.character(entry.variable.name)
-  df.log[nrow(df.log), 3] <- paste(entry, collapse=", ")
-
-  return(df.log)
-}
 
 
 #' Create/update list of gene sets for scMiko package.

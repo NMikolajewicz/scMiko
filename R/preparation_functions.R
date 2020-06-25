@@ -5,6 +5,7 @@
 #' @param module.number Numeric.
 #' @param load.default Logical flag specifying wther to load default packages. If module.number is specified, load.default is ignored.
 #' @name modulePackages
+#' @seealso \code{\link{library}}
 #' @return
 #'
 modulePackages <- function (module.number = NULL, load.default = T){
@@ -106,10 +107,18 @@ modulePackages <- function (module.number = NULL, load.default = T){
 #' Create analysis log data.frame template
 #'
 #' @param module.name Character specifying module name
-#' @name inititateLog
+#' @name initiateLog
+#' @seealso \code{\link{addLogEntry}}
 #' @return data.frame
+#' @examples
 #'
-inititateLog <- function (module.name = ""){
+#' # intiate data log
+#' df.log <- initiateLog("log name")
+#'
+#' # add new entry to log
+#' df.log <- addLogEntry("Query File (.Rdata)", (input.file), df.log, "input.file")
+#'
+initiateLog <- function (module.name = ""){
 
   # Module
   df.log <- data.frame()
@@ -131,6 +140,35 @@ inititateLog <- function (module.name = ""){
   return(df.log)
 }
 
+
+#' Add entry to analysis log
+#'
+#' Add entry to analysis log
+#'
+#' @param entry.name name of entry. A character.
+#' @param entry entry.
+#' @param df.log existing analysis log to add entry to. A data.frame.
+#' @param entry.variable.name name of variable storing entry (optional). A character.
+#' @name addLogEntry
+#' @seealso \code{\link{initiateLog}}
+#' @author Nicholas Mikolajewicz
+#' @return datalog data.frame
+#' @examples
+#'
+#' # intiate data log
+#' df.log <- initiateLog("log name")
+#'
+#' # add new entry to log
+#' df.log <- addLogEntry("Query File (.Rdata)", (input.file), df.log, "input.file")
+#'
+addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
+
+  df.log[nrow(df.log)+1, 1] <- as.character(entry.name)
+  df.log[nrow(df.log), 2] <- as.character(entry.variable.name)
+  df.log[nrow(df.log), 3] <- paste(entry, collapse=", ")
+
+  return(df.log)
+}
 
 
 
