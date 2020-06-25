@@ -5,6 +5,7 @@
 #'
 #' @param x Character vector
 #' @name firstup
+#' @seealso \code{\link{toupper}}
 #' @return Character vector
 #'
 firstup <- function(x) {
@@ -21,6 +22,7 @@ firstup <- function(x) {
 #' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
 #' @param query.genes vector of query genes to check representation
 #' @name checkGeneRep
+#' @author Nicholas Mikolajewicz
 #' @return Character specifying ensembl or symbol
 #'
 checkGeneRep <- function(reference.genes, query.genes){
@@ -48,6 +50,7 @@ checkGeneRep <- function(reference.genes, query.genes){
 #' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
 #' @param query.genes vector of query genes to check representation
 #' @name ens2sym.so
+#' @author Nicholas Mikolajewicz
 #' @return Seurat object with specified gene representation.
 #'
 ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
@@ -118,6 +121,9 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
       so@assays[["integrated"]]@data <- so_d
     }
 
+    # ensure dim names are correctly specified
+    so <- updateDimNames(so)
+
 
     return(so)
 }
@@ -131,6 +137,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 #' @param gene.list Character(s). Vector of all genes under consideration
 #' @param which.species Character. Species
 #' @name speciesConvert
+#' @author Nicholas Mikolajewicz
 #' @return Gene Symbol (character)
 #'
 speciesConvert <- function(query.gene, gene.list, which.species){
@@ -165,6 +172,7 @@ speciesConvert <- function(query.gene, gene.list, which.species){
 #' @param my.symbols Character. Vector of Gene symbols.
 #' @param my.species Character. Species.
 #' @name sym2entrez
+#' @author Nicholas Mikolajewicz
 #' @return data.frame mapping gene Symbols to Entrez
 #'
 sym2entrez <- function(my.symbols, my.species){
@@ -191,6 +199,7 @@ sym2entrez <- function(my.symbols, my.species){
 #' @param my.symbols Character. Vector of Gene symbols.
 #' @param my.species Character. Species.
 #' @name sym2ens
+#' @author Nicholas Mikolajewicz
 #' @return data.frame mapping gene Symbols to Ensembl
 #'
 sym2ens <- function(my.symbols, my.species){
@@ -223,6 +232,7 @@ sym2ens <- function(my.symbols, my.species){
 #' @param xlab Character. X axis label.
 #' @param ... additional parameters passed to gplots::heatmap.2(...)
 #' @name getHeat
+#' @author Nicholas Mikolajewicz
 #' @return Heatmap object
 #'
 getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = NULL, ...){
@@ -275,6 +285,7 @@ getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = N
 #'
 #' @param directory Character. Directory name.
 #' @name getAvailableFiles
+#' @author Nicholas Mikolajewicz
 #' @return list of files
 #'
 getAvailableFiles <- function(directory = "Preprocessed Datasets/"){
@@ -289,6 +300,7 @@ return(list.files(directory))
 #'
 #' @param so Seurat Object
 #' @name prepExpression
+#' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
 prepExpression <- function(so){
@@ -317,6 +329,7 @@ prepExpression <- function(so){
 #' @param query.gene Character. Gene of interest.
 #' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
 #' @name isGeneAvailable
+#' @author Nicholas Mikolajewicz
 #' @return Logical
 #'
 isGeneAvailable <- function(so, query.gene, reference.genes){
@@ -335,6 +348,7 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 #' Function that detachs and attaches scMiko package.
 #'
 #' @name scMikoReload
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # reload scMiko package
@@ -355,6 +369,7 @@ scMikoReload <- function(){
 #'
 #' @param so.list List of seurat objects
 #' @name mergeSeuratList
+#' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
 mergeSeuratList <- function(so.list){
@@ -385,6 +400,7 @@ mergeSeuratList <- function(so.list){
 #'
 #' @param so Seurat Object
 #' @name fixBarcodeLabel
+#' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
 fixBarcodeLabel <- function (so){
@@ -419,6 +435,7 @@ fixBarcodeLabel <- function (so){
 #' @param so Seurat Object
 #' @param cluster.resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
 #' @name setResolution
+#' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
 setResolution <- function (so, cluster.resolution){
@@ -436,6 +453,7 @@ setResolution <- function (so, cluster.resolution){
 #' @param so Seurat Object
 #' @param global.enviroment global.enviroment <- object()
 #' @name prepGeneList
+#' @author Nicholas Mikolajewicz
 #' @return Named vector of available genes
 #'
 #'
@@ -491,16 +509,18 @@ getLoadPath <- function (file, directory = NULL){
 
 #' prep Seurat
 #'
-#' Preprocess using fixBarcodeLabel() and UpdateSeuratObject() Functions.
+#' Preprocess using fixBarcodeLabel(), UpdateSeuratObject() and updateDimNames() Functions.
 #'
 #' @param so Seurat objects
 #' @name prepSeurat
+#' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
 prepSeurat <- function (so){
 
   so <- fixBarcodeLabel(so)
   so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+  so <- updateDimNames(so) # required after Seurat 3.1.2 update
 
   return(so)
 }
@@ -651,6 +671,7 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
 #' }
 #' @name term2id
 #' @return Reactome/GO ID
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # map GO term to GO id
@@ -759,6 +780,7 @@ id2term <- function(id, db = "Reactome", species = NULL){
 #' \item "CC" - cellular compartment
 #' }
 #' @name searchAnnotations
+#' @author Nicholas Mikolajewicz
 #' @return dataframe of terms that match query
 #'
 searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL){
@@ -862,6 +884,7 @@ searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL)
 #' @param id Reactome/GO identifier. Reactome has "R-" prefix; GO has "GO" prefix.
 #' @param my.species Specify species; ensures that correct gene symbols are retrieved.
 #' @name id2geneset
+#' @author Nicholas Mikolajewicz
 #' @return Character vector of gene symbols belonging to Reactome/GO geneset.
 #'
 id2geneset <- function(id, my.species){
@@ -948,6 +971,7 @@ entrez2sym <- function(my.entrez, my.species){
 #' }
 #' @param use.additional.genes Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.
 #' @name getExpressionMatrix
+#' @author Nicholas Mikolajewicz
 #' @return gene x cell expression matrix
 #'
 getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale", use.additional.genes = NA){
@@ -1019,6 +1043,7 @@ rmvCSVprefix <- function(x){
 #' @param expression.threshold Numeric. Return cells that express query above threshold value. Default is 0.
 #' @param which.data Seurat data slot ("data", "scale")
 #' @name getExpressingCells
+#' @author Nicholas Mikolajewicz
 #' @return Character vector of cell barcodes/ids
 #'
 getExpressingCells <- function(so, query, expression.threshold = 0, which.data = "data"){
@@ -1060,6 +1085,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param dir Directory of input and output file (same folder). A character.
 #' @param dev.directory.flag Logical indicating whether to use developer specific director. Default is False. If true dir is ignored.
 #' @name updateGeneSets
+#' @author Nicholas Mikolajewicz
 #' @return List of data.frames saved as Rdata file.
 #' @examples
 #' \dontrun{
@@ -1132,6 +1158,7 @@ cleanFilterGenes <- function(genes, so, which.species){
 #' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
 #' @param subsample.n Numeric [1,ncol(so)]. Number of cells to subsample. If specified, overides subsample.factor.
 #' @name downsampleSeurat
+#' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
 downsampleSeurat <- function(so, subsample.factor = 1, subsample.n = NULL){
@@ -1201,6 +1228,7 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
 #' @name avgGroupExpression
+#' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
 avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
@@ -1382,6 +1410,7 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
 #' @param new.field New seurat meta field that will be created with relablled entries from old.field.
 #' @param mapping.list Named list specifying how to relabel entries in old.field (mapping.list entries) to new.field (mapping.list names) in seurat meta data. Note that entries in mapping list do not have to match old.field entires exactly; entries are used as pattern arguemtn to grepl() function.
 #' @name mapSubsetSeurat
+#' @author Nicholas Mikolajewicz
 #' @return Seurat object in which old field was mapped to new field, according to mapping specified in mapping.list. Any cells that are not mapped are omitted from seurat object.
 #' @examples
 #'
@@ -1434,6 +1463,7 @@ mapSubsetSeurat <- function(so, old.field, new.field, mapping.list){
 #' @param ... Additional arguments passed to Seurat's FindMarkers() function.
 #' @name multiLevel.FindMarkers
 #' @return list of data.frames where each data.fram contains results from an individual pairwise comparison.
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # define mapping lists
@@ -1521,6 +1551,7 @@ multiLevel.FindMarkers <- function(so, ordered.levels, which.assay = NULL, ...){
 #' @param flag.top.n Numerical specifying top N genes to flag (for subsequent plotting). Default is 20.
 #' @name getConnectivity
 #' @return Dataframe with gene connectivity, rank and label flag.
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # run WCGNA
@@ -1666,6 +1697,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 #' @param ... Additional arguments passessed to flashClust {flashClust package}
 #' @name dist2hclust
 #' @return hclust object
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # Get expression matrix
@@ -1996,17 +2028,21 @@ getSoftThreshold <- function (s.mat, dataIsExpr = F, weights = NULL, RsquaredCut
 #' @param gene.list named list of gene sets to query, where name specify name of gene set, and entry is vector of gene symbols.
 #' @param gene.universe background genes
 #' @param species Species: Hs or Mm
+#' @param p.threshold numeric specifying p value threshold. Default is 0.01.
+#' @param p.adj.threshold numeric specifing adjusted p value threshold. Defulat is 0.05.
 #' @name runEnrichment
 #' @return list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
 #' @import topGO
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' enrichment.list <- runEnrichment(module.list, gene.universe = all.genes, species = "Hs")
 #' results.p <- enrichment.list$results.table.p
 #' results.bh <- enrichment.list$results.table.bh
 #'
-runEnrichment <- function(gene.list, gene.universe, species){
+runEnrichment <- function(gene.list, gene.universe, species, p.threshold = 0.01, p.adj.threshold = 0.05){
 
+  library(topGO)
 
   #get list of significant GO before multiple testing correction
   results.table.p <- NULL
@@ -2023,8 +2059,8 @@ runEnrichment <- function(gene.list, gene.universe, species){
       enrich.list <- enrichGO.fisher(gene.candidates = toupper(gene.list[[i]]),
                                      gene.universe = toupper(gene.universe),
                                      which.species = species,
-                                     p.threshold = 0.01,
-                                     padj.threshold = 0.05,
+                                     p.threshold = p.threshold,
+                                     padj.threshold = p.adj.threshold,
                                      topGO.object = topGO.data)
 
     } else if (species == "Mm"){
@@ -2032,8 +2068,8 @@ runEnrichment <- function(gene.list, gene.universe, species){
       enrich.list <- enrichGO.fisher(gene.candidates = gene.list[[i]],
                                      gene.universe = gene.universe,
                                      which.species = species,
-                                     p.threshold = 0.01,
-                                     padj.threshold = 0.05,
+                                     p.threshold = p.threshold,
+                                     padj.threshold = p.adj.threshold,
                                      topGO.object = topGO.data)
 
     }
@@ -2075,6 +2111,7 @@ runEnrichment <- function(gene.list, gene.universe, species){
 #' @param add.prefix Logical specifying whether to add "M#." prefix to each module name.
 #' @name getModuleGenes
 #' @return Named list, where names are module names and entries are module genes.
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' module.list.1 <- getModuleGenes(modules.1, SubGeneNames, add.prefix = F)
@@ -2119,6 +2156,7 @@ getModuleGenes <- function(module.colors, genes, add.prefix = T){
 #' @param graph.type Type of graph. Default is "undirected"
 #' @name wgcna2graphDF
 #' @return igraph data.frame
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # get connectivity for specified module
@@ -2206,6 +2244,7 @@ getNodesEdges <- function(df.data){
 #' @param high.col Color representing high values. Default is "tomato"
 #' @name value2col
 #' @return vector of colors.
+#' @seealso \code{\link{colorRampPalette}}
 #' @examples
 #'
 #' # get edge colors
@@ -2235,6 +2274,8 @@ value2col <- function(values, limit = NULL, gradient.length = 100, low.col = "sk
 #' @param value.header character specifying header name that will be assigned to value column. If unspecified, defaults to "value".
 #' @name namedList2longDF
 #' @return long data.frame
+#' @seealso \code{\link{namedList2wideDF}}
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # specify named list
@@ -2245,26 +2286,23 @@ value2col <- function(values, limit = NULL, gradient.length = 100, low.col = "sk
 #'
 namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
 
+  if (class(my.list) != "list") stop("input is not a list")
+  my.list <- my.list[lapply(my.list, length) > 0]
+
   # unlist and assign values to data.frame
-  my.vector <- unlist(my.list)
-  my.df <- data.frame(as.vector(my.vector))
+  my.df <- NULL
+  for (i in 1:length(my.list)){
+    my.df <- bind_rows(my.df, data.frame(name = names(my.list)[i], value = as.vector(unlist(my.list[i]))))
+  }
 
   # get data.frame column names
   if (is.null(value.header)) value.header <- "value"
   if (is.null(name.header)) name.header <- "name"
-  colnames(my.df) <- value.header
-
-  # assign names to corresponding values
-  my.df[ ,name.header] <- NA
-  for (i in 1:length(my.list)){
-    my.df[  my.df[ ,value.header] %in% my.list[[i]] ,name.header] <- names(my.list)[i]
-  }
-
-  # rearrange column order
-  my.df <- my.df[ , c(name.header, value.header)]
+  colnames(my.df) <- c(name.header, value.header)
 
   # return long data.frame
   return(my.df)
+
 }
 
 
@@ -2275,6 +2313,8 @@ namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
 #' @param my.list named list
 #' @name namedList2wideDF
 #' @return wide data.frame
+#' @seealso \code{\link{namedList2longDF}}
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # specify named list
@@ -2284,6 +2324,8 @@ namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
 #' my.df <- namedList2wideDF(my.list)
 #'
 namedList2wideDF <- function(my.list){
+
+  if (class(my.list) != "list") stop("input is not a list")
 
   df.long <- scMiko::namedList2longDF(my.list, name.header = "name", value.header = "value")
   df.long$name <- as.character(df.long$name)
@@ -2308,6 +2350,7 @@ namedList2wideDF <- function(my.list){
 #' @param soft.power Numeric specifying soft power used to calculate adjacency matrix.
 #' @param network.type character specifying network type. Must be one of "unsigned", "signed", or "signed hybrid".
 #' @name sim2adj
+#' @author Nicholas Mikolajewicz
 #' @return adjaceny matrix (a.mat)
 #' @examples
 #'
@@ -2344,6 +2387,7 @@ sim2adj <- function(s.mat, soft.power, network.type){
 #' @param new.min Numeric specfiying new minimum. If unspecified, default is 0.
 #' @param new.max Numeric specfiying new maximum. If unspecified, default is 1.
 #' @name rescaleValues
+#' @author Nicholas Mikolajewicz
 #' @return Numeric vector of rescaled values
 #' @examples
 #'
@@ -2381,7 +2425,7 @@ rescaleValues <- function(values, new.min = 0, new.max = 1){
 
 #' Bayesian Correlation algorithm
 #'
-#' Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible tahn Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
+#' Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible than Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
 #'
 #' @param X Expression matrix
 #' @name recaleValues
@@ -2426,6 +2470,7 @@ BaCo <- function(X){
 #' @param removeFirst Logical specifying whether the first bin should be removed from the connectivity histogram. Default is True.
 #' @param rescale.adjacency Logical indicating if s.mat should be rescaled to [0,1]
 #' @name getSoftThreshold.v2
+#' @seealso \code{\link{getConnectivity}}
 #' @return named list containing power estimates, r2 estimates, distribution plots, optimiation plot and results data.frame.
 #' @examples
 #'
@@ -2542,6 +2587,7 @@ getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10))
 #' @param mat.2 Second input matrix.
 #' @param method Character specifying which matching method to use. Must be one of "match.max" (default) or "match.min". For either option, matrix with min/max number of rows is resamples to match the other matrix.
 #' @name balanceMatrixSize
+#' @author Nicholas Mikolajewicz
 #' @return list of resampled matrices.
 #' @examples
 #'
@@ -2690,6 +2736,7 @@ scaleTOM <- function(query.TOM, reference.TOM, reference.percentile = 0.95){
 #' @param so Seurat Object
 #' @name rmDuplicateGenes
 #' @return seurat object
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' so.query <- rmDuplicateGenes(so.query)
@@ -2720,6 +2767,7 @@ rmDuplicateGenes <- function(so){
 #' @param genes Character vector of gene names. Used to label entries in data.frame output.
 #' @param flag.top.n Numeric indicating top n genes to flag in data.frame output. Default is 15.
 #' @name qNorm
+#' @author Nicholas Mikolajewicz
 #' @return data.frame of quantile normalized values.
 #' @examples
 #'
@@ -2785,6 +2833,7 @@ qNorm <- function(x, y, genes = NULL, flag.top.n = 15){
 #' @param assert.unique Logical flag specifying whether to ensure that x1 and x2 are unique. Default is TRUE.
 #' @name getJaccard
 #' @return Jaccard similarity score (numeric)
+#' @seealso \code{\link{pheatmap}}
 #' @examples
 #'
 #' # compute jaccard similarity matrix for (named) list of genesets.
@@ -2831,6 +2880,8 @@ getJaccard <- function(x1, x2, assert.unique = T){
 #' @param assert.unique Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.
 #' @name jaccardSimilarityMatrix
 #' @return Jaccard similarity matrix
+#' @seealso \code{\link{pheatmap}}
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # compute jaccard similarity matrix for (named) list of genesets.
@@ -2865,6 +2916,7 @@ jaccardSimilarityMatrix <- function(gene.sets, assert.unique = T){
 #' @param which.mean Specify which central values to use. One of 'mean' or 'median'. Default is 'mean'.
 #' @return df.centers
 #' @name getClusterCenters
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # compute cluster centers
@@ -2910,6 +2962,7 @@ getClusterCenters <- function(df, which.center = "mean"){
 #' @param importance Type of importance. Default is 'impurity'.
 #' @param num.threads An integer for the number of threads to use when fitting RF model
 #' @return List of results
+#' @seealso \code{\link{rand_forest}}
 #' @name pseudotimeRF
 #' @examples
 #'
@@ -2970,6 +3023,7 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
 #' @param k The number of clusters
 #' @return the initial trajectory obtained by this method
 #' @name inferInitialTrajectory
+#' @seealso \code{\link{subsetDimRed}}
 #' @examples
 #'
 #' # specify features (i.e., clusters of interest)
@@ -2977,6 +3031,9 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
 #'
 #' # get dimensional reduction for specified clusters
 #' dimSubset <- subsetDimRed(so.query, which.features = which.clusters)
+#'
+#' # get initial trajectory
+#' start.traj <- inferInitialTrajectory(as.matrix(dimSubset[["reduction"]]), k = length(unique(dimSubset[["features"]])))
 #'
 inferInitialTrajectory <- function (space, k) {
   # check_numeric_matrix(space, "space", finite = TRUE)
@@ -3017,6 +3074,7 @@ inferInitialTrajectory <- function (space, k) {
 #' @param groups A character specifying metadata column name (in Seurat object) that contains features of interest. \
 #' @param reduction A character specifying which reduction to retrieve from Seurat Object. Default is 'umap'.
 #' @return list of results
+#' @author Nicholas Mikolajewicz
 #' @name subsetDimRed
 subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reduction = "umap"){
 
@@ -3062,6 +3120,7 @@ subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reducti
 #' @param space A numeric matrix or a data frame containing the coordinates of samples.
 #' @param start either a previously fit principal curve, or else a matrix of points that in row order define a starting curve. If missing or NULL, then the first principal component is used. If the smoother is "periodic_lowess", then a circle is used as the start.
 #' @param group.labels Character vector (same length as number of rows in space) specifying group membership. Optional.
+#' @param pseudotimes Either logical (TRUE) specifying whether to use internally generated pseudotimes (from principal curve fitting) to color generated umap points, or, numeric vector with pseudotimes. If provided, plotted data are colored by pseudotime. Otherwise colored by group membership.
 #' @param thresh convergence threshold on shortest distances to the curve. Default is 0.001.
 #' @param maxit maximum number of iterations.
 #' @param stretch A stretch factor for the endpoints of the curve, allowing the curve to grow to avoid bunching at the end. Must be a numeric value between 0 and 2.
@@ -3070,7 +3129,9 @@ subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reducti
 #' @param trace If TRUE, the iteration information is printed
 #' @param plot_iteractions If TRUE the iterations are plotted.
 #' @return list of results containing principal curve fits and coordinates, pseutimes, plots
+#' @seealso \code{\link{inferInitialTrajectory}}
 #' @name lineageTrajectory
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 #' # get lineage name
@@ -3089,7 +3150,7 @@ subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reducti
 #'
 #'
 #'
-lineageTrajectory <- function(space, start = NULL, group.labels = NULL, thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline", approx_points = 100, trace = FALSE, plot_iterations = FALSE){
+lineageTrajectory <- function(space, start = NULL, group.labels = NULL, pseudotimes = NULL, thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline", approx_points = 100, trace = FALSE, plot_iterations = FALSE){
 
 
   # fit prinicpal curves
@@ -3109,9 +3170,23 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, thresh =
   colnames(space)[c(1,2)] <- c("x", "y")
   colnames(df.traj)[c(1,2)] <- c("x", "y")
 
-  if (!is.null(group.labels)){
+
+
+
+  if (!is.null(group.labels) & is.null(pseudotimes)){
     df.space <- data.frame(space, group = group.labels)
     plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = group))
+  } else if (class(pseudotimes) == "logical"){
+    if (pseudotimes){
+      df.space <- data.frame(space, pt = ps)
+      plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = pt)) + scale_color_viridis("pseudotime")
+    } else {
+      df.space <- data.frame(space)
+      plt.space <- df.space %>% ggplot() + geom_point(aes(x,y))
+    }
+  } else if (class(pseudotimes) == "numeric"){
+    df.space <- data.frame(space, pt = pseudotimes)
+    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = pt)) + scale_color_viridis("pseudotime")
   } else {
     df.space <- data.frame(space)
     plt.space <- df.space %>% ggplot() + geom_point(aes(x,y))
@@ -3134,7 +3209,8 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, thresh =
     pseudotime = ps,
     plt.trajectory = plt.trajectory,
     space = space,
-    groups = group.labels
+    groups = group.labels,
+    df.space = df.space
   )
 
   return(output)
@@ -3151,6 +3227,7 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, thresh =
 #'
 #' @param so
 #' @return data.frame summarize proportion of variance explained by each principal component
+#' @author Nicholas Mikolajewicz
 #' @name propVarPCA
 propVarPCA <- function(so){
 
@@ -3182,6 +3259,7 @@ propVarPCA <- function(so){
 #' @param branch_id
 #' @return numeric vector; pseudotimes
 #' @name dpt_for_branch
+#' @seealso \code{\link{DPT}}
 #' @examples
 #'
 #' # PCA embedding
@@ -3217,6 +3295,7 @@ dpt_for_branch <- function(dpt, branch_id) {
 #' @param w.width the length of the smoothing window, if an integer, represents number of items, else, if a value between 0 and 1, represents the proportion of the input vector
 #' @return the initial trajectory
 #' @name inferInitialTrajectory.v2
+#' @seealso \code{\link{principal_curve}}
 #' @importFrom smoother smth.gaussian
 #' @importFrom graphics plot
 #' @examples
@@ -3261,6 +3340,7 @@ inferInitialTrajectory.v2 <- function(pt, space, w_width = .1) {
 #' @param which.cluster specify which cluster to get root cell fot.
 #' @return root cell index
 #' @name getClusterRoot
+#' @author Nicholas Mikolajewicz
 #' @examples
 #'
 getClusterRoot <- function(x, y, cluster.membership, which.cluster){
@@ -3286,5 +3366,439 @@ getClusterRoot <- function(x, y, cluster.membership, which.cluster){
   root_cell <- which.min( df.cc$xtDist)
 
   return(root_cell)
+}
+
+#' Ensure that all dimNames are correctly specified in Seurat Object
+#'
+#' Ensure that all dimNames are correctly specified in Seurat Object. If incorrectly specified, subsetting functions will lead to unexpected results.
+#'
+#' @param so Seurat Object
+#' @return Seurat Object
+#' @name updateDimNames
+#' @author Nicholas Mikolajewicz
+#' @examples
+#'
+#'so <- UpdateDimNames(so)
+#'
+updateDimNames <- function(so){
+
+  # get all assays
+  all.assays <- names(so@assays)
+
+  # ensure dim names are correctly specified
+  for (i in 1:length(all.assays)){
+    c.dim <- so@assays[[all.assays[i]]]@counts@Dimnames
+    d.dim <- so@assays[[all.assays[i]]]@data@Dimnames
+
+    if ((length(c.dim) == 1) & (length(d.dim) == 2)){
+      if ((so@assays[[all.assays[i]]]@counts@Dim[1] == so@assays[[all.assays[i]]]@data@Dim[1]) &
+          (so@assays[[all.assays[i]]]@counts@Dim[2] == so@assays[[all.assays[i]]]@data@Dim[2])){
+        so@assays[[all.assays[i]]]@counts@Dimnames <- so@assays[[all.assays[i]]]@data@Dimnames
+      }
+    } else if ((length(d.dim) == 1) & (length(c.dim) == 2)){
+      if ((so@assays[[all.assays[i]]]@counts@Dim[1] == so@assays[[all.assays[i]]]@data@Dim[1]) &
+          (so@assays[[all.assays[i]]]@counts@Dim[2] == so@assays[[all.assays[i]]]@data@Dim[2])){
+        so@assays[[all.assays[i]]]@data@Dimnames <- so@assays[[all.assays[i]]]@counts@Dimnames
+      }
+    }
+  }
+
+  return(so)
+}
+
+
+
+
+#' Filter seurat object by specified cluster ids
+#'
+#' Filter seurat object by specified cluster ids
+#'
+#' @param so Seurat Object
+#' @param include Cluster ids to include. Optional, NULL if unspecified.
+#' @param omit Cluster ids to omit. Optional, NULL if unspecified.
+#' @param which.field Metadata field to filter by. Default is 'seurat_clusters'
+#' @return Seurat Object
+#' @author Nicholas Mikolajewicz
+#' @name clusterFilter
+#' @examples
+#'
+#' # specify filtering parameters
+#' filter.parameters <- list(
+#'      include = NULL,
+#'      omit = c(8,9)
+#'      )
+#'
+#' # filter seurat
+#' so.filtered <- clusterFilter(so, include = filter.parameters$include, omit = filter.parameters$omit)
+#'
+clusterFilter <- function(so, include = NULL, omit = NULL, which.field = "seurat_clusters"){
+
+  # ensure seurat dim names are up to date to ensure proper subsetting
+  so <- updateDimNames(so)
+
+  # get seurat meta data
+  df.meta <- so@meta.data
+  df.meta$cells <- rownames(df.meta)
+
+  # which cells to include (according to inclusion parameters)
+  if (!is.null(include)){
+    include.which.include <- df.meta$cells[as.character(df.meta[,which.field]) %in% as.character(include)]
+  } else {
+    include.which.include <- NULL
+  }
+
+  # which cells to include (according to omission parameters)
+  if (!is.null(omit)){
+    include.which.omit <-df.meta$cells[!(as.character(df.meta[,which.field]) %in% as.character(omit))]
+  } else {
+    include.which.omit <- NULL
+  }
+
+  # combine inclusion and omission indices
+  if (is.null(include.which.include) & is.null(include.which.omit)){
+    include.which.all <- df.meta$cells
+  } else {
+    include.which.all <- unique(c(include.which.include, include.which.omit))
+  }
+
+  # subset and return seurat object
+  return(SubsetData(so, cells = WhichCells(so, cells = include.which.all)))
+}
+
+
+# quickly choose an elbow for a PC.
+# at variance below 5% per component, choose the largest % drop
+# designed for variance percentages, but will also work given a full set of Evalues
+#' Quickly estimate the 'elbow' of a scree plot (PCA)
+#'
+#' This function uses a rough algorithm to estimate a sensible 'elbow' to
+#' choose for a PCA scree plot of eigenvalues. The function looks at an initial arbitrarily 'low'
+#' level of variance and looks for the first eigenvalue lower than this. If the very first eigenvalue
+#' is actually lower than this (i.e, when the PCs are not very explanatory) then this 'low' value is
+#' iteratively halved until this is no longer the case. After starting below this arbitrary threshold
+#' the drop in variance explained by each pair of consecutive PCs is standardized by dividing over the
+#' larger of the pair. The largest percentage drop in the series below 'low' % is selected as the 'elbow'.
+#' @param varpc numeric, vector of eigenvalues, or 'percentage of variance' explained datapoints for
+#'  each principle component. If only using a partial set of components, should first pass to
+#'  estimate.eig.vpcs() to estimate any missing eigenvalues.
+#' @param low numeric, between zero and one, the threshold to define that a principle component
+#'  does not explain much 'of the variance'.
+#' @param max.pc maximum percentage of the variance to capture before the elbow (cumulative sum to PC 'n')
+#' @return The number of last principle component to keep, prior to the determined elbow cutoff
+#' @export
+#' @author Nicholas Cooper
+#' @name pcaElbow
+#' @examples
+#' # correlated data
+#' mat <- sim.cor(100,50)
+#' result <- princomp(mat)
+#' eig <- result$sdev^2
+#' elb.a <- quick.elbow(eig)
+#' pca.scree.plot(eig,elbow=elb.a,M=mat)
+#' elb.b <- quick.elbow(eig,low=.05) # decrease 'low' to select more components
+#' pca.scree.plot(eig,elbow=elb.b,M=mat)
+#' # random (largely independent) data, usually higher elbow #
+#' mat2 <- generate.test.matrix(5,3)
+#' result2 <- princomp(mat2)
+#' eig2 <- result2$sdev^2
+#' elb2 <- quick.elbow(result2$sdev^2)
+#' pca.scree.plot(eig2,elbow=elb2,M=mat2)
+pcaElbow <- function(varpc,low=.08,max.pc=.9) {
+  ee <- varpc/sum(varpc) # ensure sums to 1
+  #print(round(log(ee),3))
+  while(low>=max(ee)) { low <- low/2 } # when no big components, then adjust 'low'
+  lowie <- (ee<low) ; highie <- ee>low/8
+  low.ones <- which(lowie & highie)
+  others <- length(which(!lowie))
+  if(length(low.ones)>0) {
+    if(length(low.ones)==1) {
+      elbow <- low.ones
+    } else {
+      set <- ee[low.ones]
+      pc.drops <- abs(diff(set))/(set[1:(length(set)-1)])
+      infz <- is.infinite(pc.drops)
+      #print(pc.drops)
+      elbow <- which(pc.drops==max(pc.drops[!infz],na.rm=T))[1]+others
+    }
+  } else {
+    # if somehow there are no small eigenvalues, just choose the elbow as the second last
+    warning("no eigenvalues were significantly smaller than the previous\n")
+    elbow <- length(ee)
+  }
+  if(tail(cumsum(ee[1:elbow]),1)>max.pc) {
+    elbow <- which(cumsum(ee)>max.pc)[1]-1
+  }
+  if(elbow<1) {
+    warning("elbow calculation failed, return zero")
+    return(0)
+  }
+  names(elbow) <- NULL
+  return(elbow)
+}
+
+
+
+
+
+#' Identify temporally varying pathways using Tempora
+#'
+#' Identify temporally varying pathways using Tempora
+#'
+#' @param object Tempora Object
+#' @param pval_threshold P-value threshold to determine the significance of pathway enrichment over time. Default is 0.05.
+#' @param adjust.p Flag to adjust p value using BH correction. Default is TRUE.
+#' @param pathway.filter Numeric specifying z score threshold used to pre-filter pathways. Default is 3.
+#' @return List containing generalized additive model (GAMs) fits, plots and p-values
+#' @author Gary Bader et. al
+#' @name varyingPaths.Tempora
+#' @examples
+#'
+varyingPaths.Tempora <- function (object, pval_threshold = 0.05, adjust.p = T, pathway.filter = 3) {
+
+  # initiate results list
+  tp.list <- list()
+
+  if (class(object)[1] != "Tempora") {
+    stop("Not a valid Tempora object")
+  }
+  if (is.null(object@n.pcs)) {
+    stop("BuildTrajectory has not been run. See ?Tempora::BuildTrajectory for details")
+  }
+  if (is.null(object@cluster.pathways)) {
+    stop("CalculatePWProfiles has not been run. See ?Tempora::CalculatePWProfiles for details")
+  }
+  gsva_bycluster <- object@cluster.pathways
+  significant_pathways <- c()
+
+  for (i in 1:object@n.pcs) {
+    genes_scaled <- scale(object@cluster.pathways.dr$rotation[,
+                                                              i])
+    significant_pathways <- c(names(which(genes_scaled[, 1] > pathway.filter |
+                                            genes_scaled[, 1] < -pathway.filter)), significant_pathways)
+  }
+
+  tp.list$genes.scaled <- genes_scaled
+  tp.list$n.pathways.considered <- length(significant_pathways)
+  tp.list$considered.pathways <- significant_pathways
+
+  pca_pathways <- sub("%.*", "", significant_pathways)
+  pca_pathways_cleaned <- gsub("[[:punct:]]", "", pca_pathways)
+  themes <- pca_pathways_cleaned
+  warning("Fitting GAM models...")
+  p_vals <- gams <- list()
+
+  for (i in 1:length(themes)) {
+    if (length(grep(themes[i], rownames(gsva_bycluster))) > 1) {
+      plot_df <- data.frame(cluster = colnames(gsva_bycluster[grep(themes[i],
+                                                                   rownames(gsva_bycluster)), ]),
+                            value = colMeans(gsva_bycluster[grep(themes[i],
+                                                                 rownames(gsva_bycluster)), ], na.rm = T))
+    }
+    else if (length(grep(themes[i], rownames(gsva_bycluster))) == 1) {
+      plot_df <- data.frame(cluster = names(gsva_bycluster[grep(themes[i],
+                                                                rownames(gsva_bycluster)), ]),
+                            value = gsva_bycluster[grep(themes[i],
+                                                        rownames(gsva_bycluster)), ])
+    } else {
+      next
+    }
+    plot_df$time <- object@cluster.metadata$Cluster_time_score
+    gams[[themes[i]]] <- mgcv::gam(value ~ s(time, k = 3, bs = "cr"),
+                                   data = plot_df)
+    temp_anova <- mgcv::anova.gam(gams[[themes[i]]])
+    p_vals[[themes[i]]] <- temp_anova$s.pv
+  }
+
+  if (adjust.p){
+    p_vals_adj <- p.adjust(unlist(p_vals[which(unlist(p_vals) >
+                                                 0)]), method = "BH")
+    p.val.label <- "P-value = "
+  } else {
+    p_vals_adj <- unlist(p_vals[which(unlist(p_vals) > 0)])
+    p.val.label <- "Adjusted p-value = "
+  }
+
+  varying_pathways <- p_vals_adj[which(p_vals_adj < pval_threshold)]
+  varying_pathways <- varying_pathways[!duplicated(names(varying_pathways))]
+
+  tp.list$p.vals <-  p_vals
+  tp.list$p.vals.adj <- p_vals_adj
+  tp.list$gams <- gams
+  tp.list$varying.pathways <- varying_pathways
+
+  plt.varying.pathway <- list()
+  if (length(varying_pathways) == 0){
+
+  } else {
+
+
+    warning("Generating time-dependent pathways plots...")
+
+    for (i in 1:length(varying_pathways)) {
+
+      pathway.name <- varying_pathways[i]
+
+      if (length(grep(names(varying_pathways)[i], rownames(gsva_bycluster))) > 1) {
+        plot_df <- data.frame(cluster = colnames(gsva_bycluster[grep(names(varying_pathways)[i],
+                                                                     rownames(gsva_bycluster)), ]),
+                              value = colMeans(gsva_bycluster[grep(names(varying_pathways)[i],
+                                                                   rownames(gsva_bycluster)), ]))
+        plot_df$time <- object@cluster.metadata$Cluster_time_score
+      } else if (length(grep(names(varying_pathways)[i], rownames(gsva_bycluster))) ==  1) {
+        plot_df <- data.frame(cluster = names(gsva_bycluster[grep(names(varying_pathways)[i],
+                                                                  rownames(gsva_bycluster)), ]),
+                              value = gsva_bycluster[grep(names(varying_pathways)[i],
+                                                          rownames(gsva_bycluster)), ])
+        plot_df$time <- object@cluster.metadata$Cluster_time_score
+      }
+
+      id <- which(names(gams) == names(varying_pathways)[i])
+
+      # get plotting data
+      plot.list <- NULL
+      plot.list <- R.devices::suppressGraphics({mgcv::plot.gam(gams[[id[1]]], main = paste0(names(varying_pathways)[i]),
+                                                               xlab = "Inferred Time", ylab = "Pathway Expression Level",
+                                                               bty = "l", cex.main = 1,  shade = F,
+                                                               se = 3, scheme = 1)})
+
+      # prep data as dataframe
+      df.plot <- data.frame(x = plot.list[[1]][["x"]],
+                            y = plot.list[[1]][["fit"]],
+                            se = plot.list[[1]][["se"]],
+                            ci = 1.96*plot.list[[1]][["se"]])
+
+      # generate ggplot
+
+      x.min <- min(df.plot$x, na.rm = T); x.max <- max(df.plot$x, na.rm = T)
+      plt.varying.pathway[[i]] <- ggplot() +
+        xlab("Inferred Time") +
+        ylab("Pathway Activity") +
+        theme_miko() +
+        geom_ribbon(data = df.plot, aes(x, y, ymin = y-ci, ymax = y+ci), alpha = 0.3) +
+        geom_line(data = df.plot, aes(x, y), size = 1, alpha = 0.8) +
+        geom_text(data = plot_df, aes(x = time, y = value, label = cluster), size = 5) +
+        labs(title = plot.list[[1]][["main"]], subtitle = paste0(p.val.label, round(varying_pathways[[i]], 5))) +
+        scale_x_continuous(breaks=c(x.min, x.max), labels=c("Early", "Late"))
+
+      # print(plt.varying.pathway[[i]])
+    }
+  }
+
+  tp.list$plots <-  plt.varying.pathway
+
+  return(tp.list)
+}
+
+
+#' Calcualte pathway enrichment scores in Tempora Framework
+#'
+#' Calcualte pathway enrichment scores in Tempora Framework. Uses GSVA backend.
+#'
+#' @param object Tempora Object
+#' @param gmt_path Local path to database of pathways or genesets organized as a .gmt file. Genesets files in GMT format can be downloaded at http://baderlab.org/GeneSets.
+#' @param method Method used to estimate pathway enrichment profile per cluster. Can be "gsva", "ssgsea", "zscore" or "plage", default to "gsva". See ?gsva for more information.
+#' @param min.sz Minimum size of the genesets used in enrichment estimation, set to 5 genes by default.
+#' @param max.sz Maximum size of the genesets used in enrichment estimation, set to 200 genes by default.
+#' @param parallel.sz Type of cluster architecture when using snow. If 1, no parallelization will be used. If 0, all available cores will be used.
+#' @param verbose Flag for reporting progress
+#' @param do.plot Flag for ploting scree plot
+#' @return Tempora object with internally calculated pathway scores
+#' @author Gary Bader et. al
+#' @name pathActivity.Tempora
+#' @examples
+#'
+pathActivity.Tempora <- function (object, gmt_path, method = "gsva", min.sz = 5, max.sz = 200,
+                                  parallel.sz = 1, verbose = F, do.plot = F)
+{
+  if (class(object)[1] != "Tempora") {
+    stop("Not a valid Tempora object")
+  }
+  warning("Calculating cluster average gene expression profile...")
+  exprMatrix <- object@data
+  exprMatrix_bycluster <- list()
+  pathwaygmt <- GSEABase::getGmt(gmt_path)
+
+  for (i in sort(unique(object@meta.data$Clusters))) {
+    exprMatrix_bycluster[[i]] <- rowMeans(exprMatrix[, which(colnames(exprMatrix) %in%
+                                                               rownames(object@meta.data)[which(object@meta.data$Clusters ==
+                                                                                                  i)])])
+  }
+
+  names(exprMatrix_bycluster) <- sort(unique(object@meta.data$Clusters))
+  exprMatrix_bycluster <- do.call(cbind, exprMatrix_bycluster)
+  colnames(exprMatrix_bycluster) <- sort(unique(object@meta.data$Clusters))
+  rownames(exprMatrix_bycluster) <- rownames(exprMatrix)
+
+  warning("\nCalculating cluster pathway enrichment profiles...\n")
+  gsva_bycluster <- GSVA::gsva(as.matrix(exprMatrix_bycluster),
+                               pathwaygmt, method = method, min.sz = min.sz, max.sz = max.sz,
+                               parallel.sz = parallel.sz, verbose = verbose)
+
+  colnames(gsva_bycluster) <- colnames(exprMatrix_bycluster)
+  object@cluster.pathways <- gsva_bycluster
+
+  gsva_bycluster_pca <- prcomp(t(gsva_bycluster), scale = T,
+                               center = T)
+
+  if (do.plot){
+    screeplot(gsva_bycluster_pca, npcs = 25, type = "lines",
+              main = "PCA on pathway enrichment analysis result")
+  }
+
+  object@cluster.pathways.dr <- gsva_bycluster_pca
+  validObject(object)
+  return(object)
+}
+
+
+#' Row-wise matrix binning
+#'
+#' Bin matrix row-wise by taking averages across regular row intervals.
+#'
+#' @param m matrix
+#' @param bin.size Numeric indicating number of bins. Resulting matrix will have bin.size number of rows.
+#' @return binned matrix
+#' @author Nicholas Mikolajewicz
+#' @name binMatrix
+#' @examples
+#'
+binMatrix <- function(m, bin.size) {
+
+  if (bin.size > nrow(m)) stop("bin.size cannot exceed number of rows in matrix")
+  bm <- matrix(nrow = round((nrow(m)/bin.size)), ncol = ncol(m))
+  for (i in 1:round((nrow(m)/bin.size))) {
+    er <- (i*bin.size)
+    sr <- er-(bin.size-1)
+    if (er > nrow(m)) er <- nrow(m)
+    bm[i,] <- colMeans(m[sr:er ,],na.rm=T)
+  }
+  colnames(bm) <- colnames(m)
+  bm
+}
+
+
+#' Vector binning
+#'
+#' Bin vector by taking averages across regular intervals.
+#'
+#' @param v numeric vector
+#' @param bin.size Numeric indicating number of bins. Resulting vector will have bin.size length.
+#' @return binned vector
+#' @author Nicholas Mikolajewicz
+#' @name binVector
+#' @examples
+#'
+binVector <- function(v, bin.size) {
+
+  if (bin.size > length(v)) stop("bin.size cannot exceed length of vector")
+  bv <- c()
+  for (i in 1:round((length(v)/bin.size))) {
+    er <- (i*bin.size)
+    sr <- er-(bin.size-1)
+    if (er > length(v)) er <- length(v)
+    bv <- c(bv, mean(v[sr:er],na.rm=T))
+  }
+
+  bv
 }
 
