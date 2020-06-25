@@ -92,9 +92,9 @@ flex.multiTabLogs <- function(module.logs) {
 }
 
 
-#' Outputs datatable with print buttom options
+#' Outputs datatable with print button options
 #'
-#' Outputs datatable with print buttom options
+#' Outputs datatable with print button options
 #'
 #' @param df data.frame
 #' @name flex.asDT
