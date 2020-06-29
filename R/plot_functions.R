@@ -636,7 +636,7 @@ pseudotime.UMAP <- function(x, y, pseudotime, pt.size = 1, pt.alpha = 1, x.lab =
     theme_classic() +
     xlab(x.lab) +
     ylab(y.lab) +
-    scale_color_viridis()
+    viridis::scale_color_viridis()
 
   return(plt.pt)
 

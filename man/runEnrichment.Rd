@@ -36,6 +36,9 @@ results.p <- enrichment.list$results.table.p
 results.bh <- enrichment.list$results.table.bh
 
 }
+\seealso{
+\code{\link{enrichGO.fisher}}
+}
 \author{
 Nicholas Mikolajewicz
 }

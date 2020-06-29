@@ -2029,8 +2029,8 @@ getSoftThreshold <- function (s.mat, dataIsExpr = F, weights = NULL, RsquaredCut
 #' @param p.threshold numeric specifying p value threshold. Default is 0.01.
 #' @param p.adj.threshold numeric specifing adjusted p value threshold. Defulat is 0.05.
 #' @name runEnrichment
+#' @seealso \code{\link{enrichGO.fisher}}
 #' @return list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
-#' @import topGO
 #' @author Nicholas Mikolajewicz
 #' @examples
 #'
@@ -2214,7 +2214,7 @@ wgcna2graphDF <- function(w.mat, top.n = NULL, top.percentile = NULL, graph.type
 #' vis.links <- node.edge.output$edges
 #'
 getNodesEdges <- function(df.data){
-  # w.graph.top <- igraph::graph_from_data_frame(df.data, directed = F, vertices = NULL)
+
   gD.cur <- igraph::simplify(igraph::graph.data.frame(df.data, directed=FALSE))
 
   # convert to VisNet representation

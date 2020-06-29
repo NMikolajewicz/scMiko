@@ -1,75 +1,4 @@
-#' Load parameter specifications for Module 1
-#'
-#' Load parameter specification list for Module 1 (preprocessing and QC). If not specified, default settings are applied.
-#'
-#' @param which.data Character. Specify input data (input file specification are stored in separate data.frame. See Module 1 for details)
-#' @param which.strata Character. Specify how input data are subset. Leave unspecified to keep all data.
-#' @param organism.filter.flag Logical specifying whether inputs should be filtered by species. Recommended if multiple species are present in input.
-#' @param organism.include Character. Which species to include. One of:
-#' \itemize{
-#' \item "Hs" - Human
-#' \item "Mm" - Mouse
-#' \item "Hs, Mm" - both species included
-#' }
-#' @param save.flag Logical specifying whether preprocessed data are saved as RData file.
-#' @param save.filename Character. Output filename (must include .Rdata suffix)
-#' @param save.directory Character. output directory (Default is "Preprocessed Datasets/")
-#' @param set_names Optional character. Label for dataset.
-#' @param data.imputed.flag Logical specifying wehther data were imputed. Default is F.
-#' @param vars2regress Character vector specifying which parameters to regress during data scaling. Default is "percent.mt"
-#' @param subsample_factor Numeric [0,1]. Factor used to subsample data. Recommended during initial data exploration, especially if dataset is large.
-#' @param plt.log.flag Logical specifying whether QC violin plots are on log scale.
-#' @param RNA.upperlimit Numeric. Upper limit for number of genes per cell. Default is 200.
-#' @param RNA.lowerlimit Numeric. Lower limit for number of genes per cell. Default is 9000.
-#' @param mt.upperlimit Numeric [0,100]. Upper limit for mitochondrial percentage. Default is 60.
-#' @param cluster.resolution Resolution used for cell clustering.
-#' @param print.inline Logical specifying wheter data are printed in R notebook. Default is F - recommended if generated flexdashboard output.
-#' @name m1.analysisParameters
-#' @return list
-#'
-m1.analysisParameters <- function (which.data, which.strata = NULL, organism.filter.flag, organism.include, save.flag = T, save.filename, save.directory = "Preprocessed Datasets/",
-                                   set_names = NULL, data.imputed.flag = F, vars2regress = "percent.mt", subsample_factor = 1, plt.log.flag = TRUE,
-                                   RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, cluster.resolution = 0.4, print.inline = FALSE){
 
-  # Assertions
-  if (is.null(which.data)) stop("Input not specified")
-  if (is.null(which.strata)) which.strata <- NA
-  if (is.null(set_names)) set_names <- which.data
-  if (!is.logical(data.imputed.flag)) stop("data.imputed.flag must be logical")
-  stopifnot(organism.include %in% c("Mm", "Hs"))
-  if (!is.logical(print.inline)) stop("print.inline must be logical")
-  stopifnot(is.logical(plt.log.flag) & length(plt.log.flag) == 1)
-  if (RNA.upperlimit < 0 ) stop("RNA.upperlimit must be positive value")
-  if (RNA.lowerlimit < 0 ) stop("RNA.lowerlimit must be positive value")
-  if (mt.upperlimit < 0 | mt.upperlimit > 100) stop("mt.upperlimit must be value between 0 and 100")
-  stopifnot(is.numeric(subsample_factor))
-  stopifnot(subsample_factor <= 1 | subsample_factor >= 0)
-
-  if (data.imputed.flag) RNA.upperlimit <- Inf
-
-  # assign parameters
-  analysis.parameters <- list(
-    which.data = which.data,                          # specify input data files
-    which.strata = which.strata,
-    organism.filter.flag = organism.filter.flag,      # REQUIRED; logical
-    organism.include = organism.include,              # character; options: "Hs", "Mm"
-    save.flag = save.flag,                            # OPTIONAL; logical (default = T)  # save results
-    save.filename = save.filename,                    # string; e.g., filename.Rdata
-    save.directory = save.directory,
-    set_names = set_names,
-    data.imputed.flag = data.imputed.flag,
-    vars2regress = vars2regress,
-    subsample_factor = subsample_factor,
-    plt.log.flag = plt.log.flag,
-    RNA.upperlimit = RNA.upperlimit,                  # OPTIONAL; positive numerical (default = 9000)
-    RNA.lowerlimit = RNA.lowerlimit,                  # OPTIONAL; positive numerical (default = 200)
-    mt.upperlimit = mt.upperlimit,                    # OPTIONAL; positive numerical (default = 60)
-    cluster.resolution = cluster.resolution,          # cluster.resolution
-    print.inline = print.inline                      # print figures in R
-  )
-
-  return(analysis.parameters)
-}
 
 
 #' Load CellRanger preprocessed data
@@ -85,10 +14,10 @@ m1.analysisParameters <- function (which.data, which.strata = NULL, organism.fil
 #' \item c("Hs", "Mm") - both species included
 #' }
 #' @param dir Character. folder containing import_set folder.
-#' @name m1.loadCellRanger
+#' @name loadCellRanger
 #' @return list containing Seurat Object and named gene vector.
 #'
-m1.loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, dir) {
+loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, dir) {
 
   import_set_path <- paste(dir, import_set, sep ="")
 
@@ -173,10 +102,10 @@ m1.loadCellRanger <- function(import_set, subsample_factor, all_input_organisms,
 #' \item c("Hs", "Mm") - both species included
 #' }
 #' @param dir Character. folder containing import_set files
-#' @name m1.loadMoffat
+#' @name loadMoffat
 #' @return list containing Seurat Object and named gene vector.
 #'
-m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, organism.include, dir) {
+loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.include, dir) {
 
   # load gene count matrix
   import_set_path <- paste(dir, import_set, sep ="")
@@ -186,23 +115,13 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
   gene_count2 <- gene_count
 
   # Infer organism
-  orgs <- scMiko::m1.inferSpecies(gene_count2, all_input_organisms)
+  orgs <- scMiko::inferSpecies(gene_count2, input_organisms)
   df_cell$orgs <- orgs
-  # if (length(all_input_organisms) > 1) {
-  #   orgIDs <- rownames(gene_count2)[ apply( gene_count2,2,which.max )];
-  #   orgs <- rep("Hs",ncol(gene_count2));
-  #   orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
-  #   names(orgs) <- colnames(gene_count2);
-  # } else {
-  #   orgs <- rep(all_input_organisms,ncol(gene_count2));
-  #   names(orgs) <- colnames(gene_count2);
-  # }
-
 
   # filter out incorrect species genes immediately.
   all.genes <- rownames(gene_count2)
   include.which.genes <- rep(FALSE, length(all.genes))
-  if ((length(all_input_organisms) > length(organism.include)) | (length(organism.include) == 1)){
+  if ((length(input_organisms) > length(organism.include)) | (length(organism.include) == 1)){
     for (i in 1:length(organism.include)){
       if (organism.include[i] == "Mm"){
         include.which.genes[grepl("MUSG", all.genes)] <- T
@@ -233,30 +152,37 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
   # Need names vectors to add additional metadata to Seurat object
   gNames <- as.character( df_gene$gene_name );
   names(gNames) <- as.character( df_gene$gene_id );
-  names(gNames) <-gsub("\\..*","",as.vector( names(gNames)))
+  names(gNames) <-gsub("\\\\..*","",as.vector( names(gNames)))
 
 
 
   # Add PCR barcodes
   pcr.barcode.flag <- F
   try({
-    grps <- read.csv(import_set_path[2], header=T,sep="\t",stringsAsFactors=F);
-    wells <- gsub("Han_[0-9]+_([A-Z0-9]{2,3}).[ACGT]+$","\\1",colnames(gene_count2));
+    grps <- read.csv(import_set_path[2], header=T,sep="\\t",stringsAsFactors=F);
+    wells <- gsub("Han_[0-9]+_([A-Z0-9]{2,3}).[ACGT]+$","\\\\1",colnames(gene_count2));
     myGrps <- grps$ConditionGroup[ match(wells,grps$sampleWell) ];
     names(myGrps) <- colnames(gene_count2)
     pcr.barcode.flag <- T
   }, silent = T)
 
-  # Add RT barcodes
-  rtBC <- read.csv(import_set_path[3],header=T,sep="\t",stringsAsFactors=F);
+  # Add RT barcode
+  rtBC <- tryCatch({
+    rtBC <- read.csv(import_set_path[3],header=T,sep="\\t",stringsAsFactors=F);
+  }, error = function(e){
+    rtBC <- read.csv2(import_set_path[3],header=T,sep="\t",stringsAsFactors=F)
+    return(rtBC)
+  })
 
-  barcodes <- gsub(".+([ACGT]{10}$)","\\1",colnames(gene_count2));
+
+  barcodes <- gsub(".+([ACGT]{10}$)","\\\\1",colnames(gene_count2));
+  if (unique(barcodes) == "\\1")  barcodes <- gsub(".+([ACGT]{10}$)","\\1",colnames(gene_count2));
   idx <- match( barcodes,rtBC$rt.bc );
   rtGrp <- rtBC$Sample.type[idx];
   names(rtGrp) <- colnames(gene_count2);
 
   # remove .* suffix in ensembl
-  rownames(gene_count2)<-gsub("\\..*","",as.vector( rownames(gene_count2)))
+  rownames(gene_count2)<-gsub("\\\\..*","",as.vector( rownames(gene_count2)))
 
   # Create seurat object with count matrix data
   # so <- CreateSeuratObject(counts=gene_count2,project="Hong-sciSeq3",min.cells=3,min.features=200,names.field=2,names.delim="." )
@@ -300,7 +226,6 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
 }
 
 
-
 #' Load preprocessed TPM data (e.g., Neftel 2019 datasets)
 #'
 #' Load preprocessed TPM data (e.g., Neftel 2019 datasets). While originally developed for TPM matrices, this function extends to any expression matrix.
@@ -313,11 +238,11 @@ m1.loadMoffat <- function(import_set, subsample_factor, all_input_organisms, org
 #' \item "Mm" - Mouse
 #' }
 #' @param dir Character. folder containing import_set file
-#' @name m1.loadTPM
+#' @name loadTPM
 #' @return list containing Seurat Object and named gene vector.
 #'
 
-m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
+loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
 
 
   import_set_path <- paste(dir, import_set, sep ="")
@@ -393,10 +318,10 @@ m1.loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
 #'
 #' @param so Seurat Object
 #' @param which.strata Barcode labeling parameter. If NA, "subset_group" metadata field is set to "pooled".
-#' @name m1.barcodeLabels
+#' @name barcodeLabels
 #' @return Seurat Object (with updated metadata)
 #'
-m1.barcodeLabels <- function(so, which.strata) {
+barcodeLabels <- function(so, which.strata) {
   # set Seurat subset labels for cells of interest
   if (!is.na(which.strata)){
     pattern <- paste(which.strata, collapse="|")
@@ -421,10 +346,10 @@ m1.barcodeLabels <- function(so, which.strata) {
 #' @param so Seurat Object
 #' @param gNames Named gene list; entries are Symbols, names are Ensemble.
 #' @param omit.na Logical specifying whether to omit NA entries (present when unfiltered 10x dataset is used). Default is True.
-#' @name m1.getMitoContent
+#' @name getMitoContent
 #' @return Seurat Object (with updated metadata)
 #'
-m1.getMitoContent <- function(so, gNames, omit.na = T) {
+getMitoContent <- function(so, gNames, omit.na = T) {
   hs <- grep("^ENSG",rownames(so[["RNA"]]),value=T)
   mm <- grep("^ENSMUSG",rownames(so[["RNA"]]),value=T)
   pctHS <- PercentageFeatureSet(so, features=hs)
@@ -457,20 +382,36 @@ m1.getMitoContent <- function(so, gNames, omit.na = T) {
 #' @param unmatch.low Numeric [0,1]. Lower limit threshold for unmatch rate. Default is 0. Ignored if data is not from sciRNA-seq3 pipeline.
 #' @param unmatch.high Numeric [0,1]. Upper limit threshold for unmatch rate. Default is 1. Ignored if data is not from sciRNA-seq3 pipeline.
 #' @param set_names Character specifying dataset name. Optional.
-#' @name m1.filterSeurat
-#' @return List containing seurat object and filter summary statistics (as data.frame)
+#' @name filterSeurat
+#' @author Nicholas Mikolajewicz
+#' @return List containing seurat object, filter summary statistics, and filter breakdown list
 #'
-m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1, set_names = NULL) {
+filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1, set_names = NULL) {
 
   # determine unfiltered UMI count
-  original_count = length(so@meta.data[["nCount_RNA"]])
+  original_count <- length(so@meta.data[["nCount_RNA"]])
+
+  # breakdown of filter
+  df.criteria <- data.frame(cells = colnames(so), mito.content = so$percent.mt, gene.count = so$nFeature_RNA)
+  if ("unmatched.rate" %in% names(so@meta.data)) {
+    df.criteria$u.rate <- so@meta.data[["unmatched.rate"]]
+  } else {
+    df.criteria$u.rate <- 0
+  }
+
+  filter.list <- list(
+    mito.content = df.criteria$cells[df.criteria$mito.content > mt.upperlimit],
+    gene.count = df.criteria$cells[(df.criteria$gene.count > RNA.upperlimit) | (df.criteria$gene.count < RNA.lowerlimit)],
+    unmatched.rate = df.criteria$cells[(df.criteria$u.rate > unmatch.high) | (df.criteria$u.rate < unmatch.low)]
+  )
+
 
   # filter dataset
   if ((unmatch.low == 0) & (unmatch.high == 1)){
-    so <- subset(so, subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA > RNA.lowerlimit) & (percent.mt < mt.upperlimit)))
+    so <- subset(so, subset = ((nFeature_RNA <= RNA.upperlimit) & (nFeature_RNA >= RNA.lowerlimit) & (percent.mt <= mt.upperlimit)))
   } else {
     so <- subset(so,
-                 subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA > RNA.lowerlimit) & (percent.mt < mt.upperlimit) & (unmatched.rate > unmatch.low) & (unmatched.rate < unmatch.high)))
+                 subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA >= RNA.lowerlimit) & (percent.mt <= mt.upperlimit) & (unmatched.rate >= unmatch.low) & (unmatched.rate <= unmatch.high)))
   }
 
   # determine filtered UMI count
@@ -493,7 +434,9 @@ m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.
     ylab("Cell Count") +
     ggtitle(paste(per.omitted, "% cells omitted", sep = ""))
 
-  output <- list(so, plt.filter_pre_post)
+  output <- list(seurat = so,
+                 plot = plt.filter_pre_post,
+                 filter.breakdown = filter.list)
   return(output)
 
 }
@@ -520,10 +463,10 @@ m1.filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.
 #' @param mean.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature means.
 #' @param dispersion.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.
 #' @param assay Name of assay to pull the count data from; default is 'RNA'
-#' @name m1.scNormScale
+#' @name scNormScale
 #' @return Seurat Object
 #'
-m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
+scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
                            variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), assay = "RNA"){
 
 
@@ -599,10 +542,10 @@ m1.scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enabl
 #' \item "orig" - Original method; computation slower than alternative.
 #' \item "alt" - Default. Alternative method;
 #' }
-#' @name m1.inferSpecies
+#' @name inferSpecies
 #' @return Character vector specifying species of each cell in expression  matrix.
 #'
-m1.inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
+inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
 
   # Infer organism
   if (length(expected.species) > 1) {
