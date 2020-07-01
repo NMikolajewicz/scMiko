@@ -28,6 +28,7 @@ A list of data.frames containing the following genesets:
 \item{immune_literaturePanel}{Immune marker panels obtained from literature review}
 \item{universal_literaturePanel}{universal marker panels obtained from literature review}
 \item{cancer_literaturePanel}{cancer marker panels obtained from literature review}
+\item{AnimalTFDB (\href{http://bioinfo.life.hust.edu.cn/AnimalTFDB/#!/}{link})}{Animal transcription factor database. List of human and murine transcription factors}
 }
 }
 \usage{
