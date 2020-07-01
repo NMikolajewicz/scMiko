@@ -529,8 +529,13 @@ getLoadPath <- function (file, directory = NULL){
 #'
 prepSeurat <- function (so){
 
+  if (class(so) != "Seurat") stop("input must be Seurat Object")
+
   so <- fixBarcodeLabel(so)
-  so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+
+  if (!("SCT_nn" %in% names(so@graphs)))  {
+    so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+  }
   so <- updateDimNames(so) # required after Seurat 3.1.2 update
 
   return(so)
@@ -1632,7 +1637,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
   }
 
   # adjacency matrix
-  warning("Computing adjacency matrix...")
+  warning("\nComputing adjacency matrix...")
   a.mat <-  sim2adj(s.mat, soft.power, network.type)
 
   # rescale value if needed
@@ -1640,7 +1645,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 
   # compute topological overlap matix (TOM)
   if (use.TOM){
-    warning("Computing topological overlap matix...")
+    warning("\nComputing topological overlap matix...")
     if ((TOM.type) == "signed" & (network.type == "unsigned")) {
       a.mat.tom <- a.mat * sign(s.mat)
     } else {
@@ -1654,6 +1659,9 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
       stop("Adjacency matrix is not symmetric")
     }
 
+    # ensure adjacency matrix satisfied criterion
+    a.mat.tom <- 0.9999*a.mat.tom
+
     print2hide <-  capture.output(w.mat <- TOMsimilarity(a.mat.tom, TOMType = TOM.type, ...))
   } else {
     w.mat <- a.mat
@@ -1664,7 +1672,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
   colnames(w.mat) <- colnames(a.mat)
 
   # dissimilarity measure
-  warning("Computing dissimilarity matix...")
+  warning("\nComputing dissimilarity matix...")
   d.mat <- 1- w.mat
 
   output <- list(
@@ -1732,7 +1740,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 #'
 dist2hclust <- function(d.mat, method = "average", ...){
 
-  stopifnot(class(d.mat) == "matrix")
+  stopifnot(any(class(d.mat) == "matrix"))
   library(flashClust)
 
   tree <- flashClust(as.dist(d.mat), method = method, ...)
@@ -2467,13 +2475,14 @@ BaCo <- function(X){
 #' @param nBreaks Number of bins in connectivity histograms. Default is 20.
 #' @param removeFirst Logical specifying whether the first bin should be removed from the connectivity histogram. Default is True.
 #' @param rescale.adjacency Logical indicating if s.mat should be rescaled to [0,1]
-#' @name getSoftThreshold.v2
+#' @param n.cores Number of cores to use for parallelization. Default is 4.
+#' @name getSoftThreshold2
 #' @seealso \code{\link{getConnectivity}}
 #' @return named list containing power estimates, r2 estimates, distribution plots, optimiation plot and results data.frame.
 #' @examples
 #'
 #' # determine optimal soft threshold
-#' sft <- getSoftThreshold.v2(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)),
+#' sft <- getSoftThreshold2(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)),
 #' network.type = "signed", rescale.adjacency = F)
 #'
 #' # visualize optimization plot
@@ -2482,21 +2491,25 @@ BaCo <- function(X){
 #' # visualize node-linkage density plots
 #' cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5)
 
-getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), network.type = "signed", nBreaks = 20, removeFirst = T, rescale.adjacency = F){
+getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), network.type = "signed", nBreaks = 20, removeFirst = T, rescale.adjacency = F, n.cores = 4){
 
 
-  powers <- c(seq(0.5,5, by = 0.5), seq(6,10))
   plt.sf.list <- list()
-
+  powers <- power
   r2.sf <- c()
 
-  for (i in 1:length(powers)){
+  # start cluster
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+
+  sf.list <- list()
+
+  sf.list <- (foreach(i = 1:length(powers), .packages = c("scMiko", "dplyr", "ggplot2", "ggpmisc"))) %dopar% {
 
     power.cur <- powers[i]
     a.cur <-  sim2adj(s.mat, soft.power = power.cur, network.type = network.type)
 
     if (rescale.adjacency)  a.cur <- recaleValues(a.cur, new.min = 0, new.max = 1)
-
 
     # get connectivity for specified power
     net.connectivity.df <- getConnectivity(a.cur, rownames(a.cur), flag.top.n = 20)
@@ -2521,9 +2534,8 @@ getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10))
     }
     log.p.dk <- as.numeric(log10(p.dk + 1e-09))
     lm1 <- lm(log.p.dk ~ log.dk)
-    # lm.summary <- summary(lm1)
 
-    r2.sf[i] <- summary(lm1)[["r.squared"]]
+    r2.sf[i] <- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])
 
     df.sf <- data.frame(x = log.dk, y = log.p.dk)
 
@@ -2543,6 +2555,25 @@ getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10))
                                                     stat(r.squared), stat(p.value))),
                       parse = TRUE)
 
+
+    sf.list[[i]] <- list(
+      r2 = r2.sf[i],
+      df = df.sf,
+      plt = plt.sf.list[[as.character(power.cur)]]
+    )
+
+    return(sf.list)
+
+  }
+
+  stopCluster(cl)
+
+  # unpack results
+  r2.sf <- c(); plt.sf.list <- list();
+  for (i in 1:length(sf.list)){
+    power.cur <- powers[i]
+    r2.sf[i] <- sf.list[[i]][[i]][["r2"]]
+    plt.sf.list[[as.character(power.cur)]] <- sf.list[[i]][[i]][["plt"]]
   }
 
   # store powers and r2
@@ -2551,19 +2582,21 @@ getSoftThreshold.v2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10))
   # optimizatio plot
   plt.opt.sf <- df.r2.sf %>%
     ggplot(aes(x = sf, y = r2)) +
-    geom_smooth(color = "tomato", fill = "tomato") +
+    geom_hline(yintercept = df.r2.sf$r2[which.min(df.r2.sf$r2)], color = "tomato") +
+    geom_vline(xintercept = df.r2.sf$sf[which.min(df.r2.sf$r2)], color = "tomato") +
+    geom_smooth(method = "loess", color = "black", fill = "grey") +
     geom_point(size = 3) +
-    geom_hline(yintercept = df.r2.sf$r2[which.max(df.r2.sf$r2)]) +
-    geom_vline(xintercept = df.r2.sf$sf[which.max(df.r2.sf$r2)]) +
     xlab("Soft Power") +
     ylab("R2 (Scale Free Topology)") +
+    geom_hline(yintercept = 0, linetype = "dashed") +
     theme_classic() +
-    ggtitle(paste0("Soft Power Optimization\nbest power = ", df.r2.sf$sf[which.max(df.r2.sf$r2)], ", r2 = ", signif(df.r2.sf$r2[which.max(df.r2.sf$r2)], 3)))
+    labs(title = "Soft Power Optimization",
+         subtitle = paste0("Optimal power = ", df.r2.sf$sf[which.min(df.r2.sf$r2)], ", r2 = ", signif(df.r2.sf$r2[which.min(df.r2.sf$r2)], 3)))
 
   # store results
   output <- list(
-    powerEstimate = df.r2.sf$sf[which.max(df.r2.sf$r2)],
-    r2Estimate = df.r2.sf$r2[which.max(df.r2.sf$r2)],
+    powerEstimate = df.r2.sf$sf[which.min(df.r2.sf$r2)],
+    r2Estimate = df.r2.sf$r2[which.min(df.r2.sf$r2)],
     distribution.plot = plt.sf.list,
     optimization.plot = plt.opt.sf,
     results = df.r2.sf
