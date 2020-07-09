@@ -573,10 +573,12 @@ subsetSeurat <- function (so, subset.df){
 
   # subset data
   if (subset.flag){
-    pattern <- paste( "^", as.vector(subset.df$subgroups), "$", collapse="|")
+    pattern <- paste( as.vector(subset.df$subgroups), collapse="|")
     pattern <- gsub(" ", "", pattern)
     cur.field <- as.vector(unique(subset.df$field))
-    so <- subset(x = so, cells = which(grepl(pattern, as.character(so@meta.data[[cur.field]]))))
+    match.ind <- grepl(pattern, as.character(so@meta.data[[cur.field]]))
+    so <- subset(x = so, cells = which(match.ind))
+    so <- UpdateSeuratObject(so)
   }
 
   return(so)
