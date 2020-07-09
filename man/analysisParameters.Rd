@@ -12,7 +12,7 @@ analysisParameters(
   save.flag = T,
   save.all.files.flag = F,
   save.filename,
-  save.directory = "Preprocessed Datasets/",
+  save.directory = "Preprocessed_Datasets/",
   set_names = NULL,
   data.imputed.flag = F,
   vars2regress = "percent.mt",
