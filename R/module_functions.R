@@ -150,7 +150,7 @@ m23.binarizeExpression <- function(so, query.gene, quantile.threshold = 0.25, re
 #' @name analysisParameters
 #' @return list
 #'
-analysisParameters <- function (which.data, which.strata = NULL, organism.filter.flag, organism.include, save.flag = T, save.all.files.flag = F, save.filename, save.directory = "Preprocessed Datasets/",
+analysisParameters <- function (which.data, which.strata = NULL, organism.filter.flag, organism.include, save.flag = T, save.all.files.flag = F, save.filename, save.directory = "Preprocessed_Datasets/",
                                 set_names = NULL, data.imputed.flag = F, vars2regress = "percent.mt", subsample_factor = 1, plt.log.flag = TRUE,
                                 RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatched.rate.filter.flag = T, cluster.resolution = 0.4, print.inline = FALSE){
 
