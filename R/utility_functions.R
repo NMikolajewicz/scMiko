@@ -66,78 +66,79 @@ checkGeneRep <- function(reference.genes, query.genes){
 #'
 ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
-    # var features
-    so_temp <- so@assays[["SCT"]]@var.features
-    so@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
+  # var features
+  so_temp <- so@assays[["SCT"]]@var.features
+  so@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
 
-    # scale data
-    so_temp <- so@assays[["SCT"]]@scale.data
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@assays[["SCT"]]@scale.data <- so_temp
+  # scale data
+  so_temp <- so@assays[["SCT"]]@scale.data
+  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+  so@assays[["SCT"]]@scale.data <- so_temp
+
+  # data
+  so_temp <- so@assays[["SCT"]]@data
+  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+  so@assays[["SCT"]]@data <- so_temp
+
+  # metadata
+  so_m <- so@assays[["SCT"]]@meta.features
+  so_m$ENSEMBLE <- rownames(so_m)
+  so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
+  rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
+  so@assays[["SCT"]]@meta.features <- so_m
+
+  # dimnames
+  so_temp <- so@assays[["SCT"]]@counts@Dimnames[[1]]
+  so@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+
+  # pca feature loading
+  so_temp <-  so@reductions[["pca"]]@feature.loadings
+  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+  so@reductions[["pca"]]@feature.loadings <- so_temp
+
+  # RNA ASSAY
+
+  if (convert.RNA == TRUE){
+    # var features
+    so_temp <- so@assays[["RNA"]]@var.features
+    so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
 
     # data
-    so_temp <- so@assays[["SCT"]]@data
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@assays[["SCT"]]@data <- so_temp
+    so_temp <- so@assays[["RNA"]]@data
+    row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+    so@assays[["RNA"]]@data <- so_temp
 
-    # metadata
-    so_m <- so@assays[["SCT"]]@meta.features
-    rownames(so_m) <-  make.names(as.vector((gNames.list[rownames(so_m)])), unique = T)
-    so@assays[["SCT"]]@meta.features <- so_m
+    # counts
+    so_temp <- so@assays[["RNA"]]@counts
+    row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+    so@assays[["RNA"]]@counts <- so_temp
 
-    # dimnames
-    so_temp <- so@assays[["SCT"]]@counts@Dimnames[[1]]
-    so@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+  }
 
-    # pca feature loading
-    so_temp <-  so@reductions[["pca"]]@feature.loadings
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@reductions[["pca"]]@feature.loadings <- so_temp
+  if ("integrated" %in% names(so@assays)){
 
-    # RNA ASSAY
+    # var features
+    so_ens <- so@assays[["integrated"]]@var.features
+    so@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
 
-    if (convert.RNA == TRUE){
-      # var features
-      so_temp <- so@assays[["RNA"]]@var.features
-      so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+    # scale data
+    so_sd <- so@assays[["integrated"]]@scale.data
+    row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
+    so@assays[["integrated"]]@scale.data <- so_sd
 
-      # data
-      so_temp <- so@assays[["RNA"]]@data
-      row.names(so_temp) <-   so@assays[["RNA"]]@meta.features[["gene_name"]]
-      so@assays[["RNA"]]@data <- so_temp
+    # data
+    so_d <- so@assays[["integrated"]]@data
+    row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
+    so@assays[["integrated"]]@data <- so_d
+  }
 
-      # counts
-      so_temp <- so@assays[["RNA"]]@counts
-      row.names(so_temp) <-   so@assays[["RNA"]]@meta.features[["gene_name"]]
-      so@assays[["RNA"]]@counts <- so_temp
-
-      # Dimnames
-      so@assays[["RNA"]]@counts@Dimnames[[1]] <- so@assays[["RNA"]]@meta.features[["gene_name"]]
-    }
-
-    if (DefaultAssay(so) == "integrated"){
-
-      # var features
-      so_ens <- so@assays[["integrated"]]@var.features
-      so@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
-
-      # scale data
-      so_sd <- so@assays[["integrated"]]@scale.data
-      row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
-      so@assays[["integrated"]]@scale.data <- so_sd
-
-      # data
-      so_d <- so@assays[["integrated"]]@data
-      row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
-      so@assays[["integrated"]]@data <- so_d
-    }
-
-    # ensure dim names are correctly specified
-    so <- updateDimNames(so)
+  # ensure dim names are correctly specified
+  so <- updateDimNames(so)
 
 
-    return(so)
+  return(so)
 }
+
 
 
 #' Convert gene symbol representation to Hs or Mm
