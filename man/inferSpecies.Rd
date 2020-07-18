@@ -4,7 +4,7 @@
 \alias{inferSpecies}
 \title{Infer species from list of Ensemble ids}
 \usage{
-inferSpecies(exp.mat, expected.species, rep.ens.method = "alt")
+inferSpecies(exp.mat, expected.species, rep.ens.method = "orig")
 }
 \arguments{
 \item{exp.mat}{Expression matrix (genes x cell); row names are ensemble IDs, col names are cell IDs.}

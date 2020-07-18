@@ -463,11 +463,13 @@ setResolution <- function (so, cluster.resolution){
 #' Ensure is available and represented correctly.
 #'
 #' @param so Seurat Object
-#' @param global.enviroment global.enviroment <- object()
+#' @param global.enviroment global.enviroment <- objects()
 #' @name prepGeneList
 #' @author Nicholas Mikolajewicz
 #' @return Named vector of available genes
+#' @examples
 #'
+#' gNames.list <- prepGeneList(so, objects())
 #'
 prepGeneList <- function (so, global.enviroment){
 

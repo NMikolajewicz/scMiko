@@ -545,7 +545,7 @@ scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.p
 #' @name inferSpecies
 #' @return Character vector specifying species of each cell in expression  matrix.
 #'
-inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
+inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "orig"){
 
   # Infer organism
   if (length(expected.species) > 1) {
@@ -554,6 +554,8 @@ inferSpecies <- function(exp.mat, expected.species, rep.ens.method = "alt"){
     if (rep.ens.method == "orig"){
       orgIDs <- rownames(exp.mat)[ apply( exp.mat,2,which.max )]
     } else if (rep.ens.method == "alt"){
+
+      # SOME ISSUES WITH ALT METHOD. EITHER REMOVE OR TROUBLESHOOT (180720). ORIG WORKS.
       n <- 1000
       nc <- ncol(exp.mat)
       z <- split(colnames(exp.mat), rep(1:ceiling(nc/n), each=n, length.out=nc))

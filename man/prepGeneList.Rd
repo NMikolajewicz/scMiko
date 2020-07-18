@@ -9,13 +9,18 @@ prepGeneList(so, global.enviroment)
 \arguments{
 \item{so}{Seurat Object}
 
-\item{global.enviroment}{global.enviroment <- object()}
+\item{global.enviroment}{global.enviroment <- objects()}
 }
 \value{
 Named vector of available genes
 }
 \description{
 Ensure is available and represented correctly.
+}
+\examples{
+
+gNames.list <- prepGeneList(so, objects())
+
 }
 \author{
 Nicholas Mikolajewicz
