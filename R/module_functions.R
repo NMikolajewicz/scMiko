@@ -133,7 +133,6 @@ m23.binarizeExpression <- function(so, query.gene, quantile.threshold = 0.25, re
 #' \item "Hs, Mm" - both species included
 #' }
 #' @param save.flag Logical specifying whether preprocessed data (seurat object) are saved as RData file. Default is TRUE
-#' @param save.all.files.flag Locial to save all output files required to generate dashboard report (includes seurat object). If TRUE, ignores save.file flag. Default is FALSE.
 #' @param save.filename Character. Output filename (must include .Rdata suffix)
 #' @param save.directory Character. output directory (Default is "Preprocessed Datasets/")
 #' @param set_names Optional character. Label for dataset.
@@ -141,18 +140,19 @@ m23.binarizeExpression <- function(so, query.gene, quantile.threshold = 0.25, re
 #' @param vars2regress Character vector specifying which parameters to regress during data scaling. Default is "percent.mt"
 #' @param subsample_factor Numeric [0,1]. Factor used to subsample data. Recommended during initial data exploration, especially if dataset is large.
 #' @param plt.log.flag Logical specifying whether QC violin plots are on log scale.
-#' @param RNA.upperlimit Numeric. Upper limit for number of genes per cell. Default is 200.
-#' @param RNA.lowerlimit Numeric. Lower limit for number of genes per cell. Default is 9000.
+#' @param gene.upperlimit Numeric. Upper limit for number of genes per cell. Default is 200.
+#' @param gene.lowerlimit Numeric. Lower limit for number of genes per cell. Default is 9000.
 #' @param mt.upperlimit Numeric [0,100]. Upper limit for mitochondrial percentage. Default is 60.
 #' @param unmatched.rate.filter.flag Logical flag for filtering cells unmatched rate. Adaptive threshold are used.
+#' @param do.additional.reduction Flag to generate ICA and TSNE reductions. Default is FALSE.
 #' @param cluster.resolution Resolution used for cell clustering.
 #' @param print.inline Logical specifying wheter data are printed in R notebook. Default is F - recommended if generated flexdashboard output.
 #' @name analysisParameters
 #' @return list
 #'
-analysisParameters <- function (which.data, which.strata = NULL, organism.filter.flag, organism.include, save.flag = T, save.all.files.flag = F, save.filename, save.directory = "Preprocessed_Datasets/",
+analysisParameters <- function (which.data, which.strata = NULL, organism.filter.flag, organism.include, save.flag = T,  save.filename, save.directory = "Preprocessed_Datasets/",
                                 set_names = NULL, data.imputed.flag = F, vars2regress = "percent.mt", subsample_factor = 1, plt.log.flag = TRUE,
-                                RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatched.rate.filter.flag = T, cluster.resolution = 0.4, print.inline = FALSE){
+                                gene.upperlimit = 9000, gene.lowerlimit = 200, mt.upperlimit = 60, unmatched.rate.filter.flag = T, do.additional.reduction = F, cluster.resolution = 0.4, print.inline = FALSE){
 
   # Assertions
   if (is.null(which.data)) stop("Input not specified")
@@ -162,14 +162,14 @@ analysisParameters <- function (which.data, which.strata = NULL, organism.filter
   stopifnot(organism.include %in% c("Mm", "Hs"))
   if (!is.logical(print.inline)) stop("print.inline must be logical")
   stopifnot(is.logical(plt.log.flag) & length(plt.log.flag) == 1)
-  if (RNA.upperlimit < 0 ) stop("RNA.upperlimit must be positive value")
-  if (RNA.lowerlimit < 0 ) stop("RNA.lowerlimit must be positive value")
+  if (gene.upperlimit < 0 ) stop("gene.upperlimit must be positive value")
+  if (gene.lowerlimit < 0 ) stop("gene.lowerlimit must be positive value")
   if (mt.upperlimit < 0 | mt.upperlimit > 100) stop("mt.upperlimit must be value between 0 and 100")
   stopifnot(is.numeric(subsample_factor))
   stopifnot(subsample_factor <= 1 | subsample_factor >= 0)
   if (!is.logical(unmatched.rate.filter.flag)) stop("unmatched.rate.filter.flag must be logical")
 
-  if (data.imputed.flag) RNA.upperlimit <- Inf
+  if (data.imputed.flag) gene.upperlimit <- Inf
 
   # assign parameters
   analysis.parameters <- list(
@@ -178,7 +178,6 @@ analysisParameters <- function (which.data, which.strata = NULL, organism.filter
     organism.filter.flag = organism.filter.flag,      # REQUIRED; logical
     organism.include = organism.include,              # character; options: "Hs", "Mm"
     save.flag = save.flag,                            # OPTIONAL; logical (default = T)  # save results
-    save.all.files.flag = save.all.files.flag,
     save.filename = save.filename,                    # string; e.g., filename.Rdata
     save.directory = save.directory,
     set_names = set_names,
@@ -186,10 +185,11 @@ analysisParameters <- function (which.data, which.strata = NULL, organism.filter
     vars2regress = vars2regress,
     subsample_factor = subsample_factor,
     plt.log.flag = plt.log.flag,
-    RNA.upperlimit = RNA.upperlimit,                  # OPTIONAL; positive numerical (default = 9000)
-    RNA.lowerlimit = RNA.lowerlimit,                  # OPTIONAL; positive numerical (default = 200)
+    gene.upperlimit = gene.upperlimit,                  # OPTIONAL; positive numerical (default = 9000)
+    gene.lowerlimit = gene.lowerlimit,                  # OPTIONAL; positive numerical (default = 200)
     mt.upperlimit = mt.upperlimit,                    # OPTIONAL; positive numerical (default = 60)
     cluster.resolution = cluster.resolution,          # cluster.resolution
+    do.additional.reduction = do.additional.reduction,
     print.inline = print.inline,                      # print figures in R
     unmatched.rate.filter.flag = unmatched.rate.filter.flag
   )

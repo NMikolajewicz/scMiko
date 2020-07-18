@@ -10,7 +10,6 @@ analysisParameters(
   organism.filter.flag,
   organism.include,
   save.flag = T,
-  save.all.files.flag = F,
   save.filename,
   save.directory = "Preprocessed_Datasets/",
   set_names = NULL,
@@ -18,10 +17,11 @@ analysisParameters(
   vars2regress = "percent.mt",
   subsample_factor = 1,
   plt.log.flag = TRUE,
-  RNA.upperlimit = 9000,
-  RNA.lowerlimit = 200,
+  gene.upperlimit = 9000,
+  gene.lowerlimit = 200,
   mt.upperlimit = 60,
   unmatched.rate.filter.flag = T,
+  do.additional.reduction = F,
   cluster.resolution = 0.4,
   print.inline = FALSE
 )
@@ -42,8 +42,6 @@ analysisParameters(
 
 \item{save.flag}{Logical specifying whether preprocessed data (seurat object) are saved as RData file. Default is TRUE}
 
-\item{save.all.files.flag}{Locial to save all output files required to generate dashboard report (includes seurat object). If TRUE, ignores save.file flag. Default is FALSE.}
-
 \item{save.filename}{Character. Output filename (must include .Rdata suffix)}
 
 \item{save.directory}{Character. output directory (Default is "Preprocessed Datasets/")}
@@ -58,13 +56,15 @@ analysisParameters(
 
 \item{plt.log.flag}{Logical specifying whether QC violin plots are on log scale.}
 
-\item{RNA.upperlimit}{Numeric. Upper limit for number of genes per cell. Default is 200.}
+\item{gene.upperlimit}{Numeric. Upper limit for number of genes per cell. Default is 200.}
 
-\item{RNA.lowerlimit}{Numeric. Lower limit for number of genes per cell. Default is 9000.}
+\item{gene.lowerlimit}{Numeric. Lower limit for number of genes per cell. Default is 9000.}
 
 \item{mt.upperlimit}{Numeric [0,100]. Upper limit for mitochondrial percentage. Default is 60.}
 
 \item{unmatched.rate.filter.flag}{Logical flag for filtering cells unmatched rate. Adaptive threshold are used.}
+
+\item{do.additional.reduction}{Flag to generate ICA and TSNE reductions. Default is FALSE.}
 
 \item{cluster.resolution}{Resolution used for cell clustering.}
 
