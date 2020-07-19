@@ -453,7 +453,7 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' \item "NFS" - Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow. Parameters are set to use LogNormalization method with a scale.factor of 1000. Variable features are selceted using 'mvp' method, and var2regress is regressed out during data scaling.
 #' \item "SCT" - Default. SCTransform workflow; Uses regularized negative binomial regression to normalize UMI count data. All genes are returned (not only variable), and residual variace cutoff is set to 1.3; var2regress is included in model.
 #' }
-#' @param var2regress Character vector specifying which variables to regress out during data scaling.
+#' @param vars2regress Character vector specifying which variables to regress out during data scaling.
 #' @param enable.parallelization Logical specifying whether to enable parallelization. Default is T.
 #' @param n.works Number of works to used during parallel processing. Default is 3.
 #' @param max.memory Max memory to use during parallel processing. Default is 20480 * 1024^2
@@ -466,13 +466,11 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @name scNormScale
 #' @return Seurat Object
 #'
-scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
+scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
                            variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), assay = "RNA"){
 
 
   # enable parallelization
-  # plan(strategy = "multisession", workers = parallel::detectCores())
-
   if (enable.parallelization){
     future::plan(strategy = "multisession", workers = n.workers)
     options(future.globals.maxSize = max.memory)
@@ -490,7 +488,7 @@ scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.p
     # Find variable features
     so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = mean.cutoff, dispersion.cutoff = dispersion.cutoff, assay = assay)
     # Scale data
-    if (is.null(var2regress)){
+    if (is.null(vars2regress)){
       so <- ScaleData(so, features = rownames(so), assay = assay)
     } else {
       so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress, assay = assay)
@@ -501,7 +499,7 @@ scNormScale <- function(so, gNames, method = "SCT", var2regress = NULL, enable.p
 
     # apply sctransform (regularized negative binomial regression)
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
-    if (is.null(var2regress)){
+    if (is.null(vars2regress)){
       so <- SCTransform(so,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,

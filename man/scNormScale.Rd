@@ -8,7 +8,7 @@ scNormScale(
   so,
   gNames,
   method = "SCT",
-  var2regress = NULL,
+  vars2regress = NULL,
   enable.parallelization = T,
   n.workers = 3,
   max.memory = (20480 * 1024^2),
@@ -31,7 +31,7 @@ scNormScale(
 \item "SCT" - Default. SCTransform workflow; Uses regularized negative binomial regression to normalize UMI count data. All genes are returned (not only variable), and residual variace cutoff is set to 1.3; var2regress is included in model.
 }}
 
-\item{var2regress}{Character vector specifying which variables to regress out during data scaling.}
+\item{vars2regress}{Character vector specifying which variables to regress out during data scaling.}
 
 \item{enable.parallelization}{Logical specifying whether to enable parallelization. Default is T.}
 
