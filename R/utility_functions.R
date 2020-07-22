@@ -68,17 +68,24 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
   # var features
   so_temp <- so@assays[["SCT"]]@var.features
-  so@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
+  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  if (gene.rep == "ensembl") so@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
 
   # scale data
   so_temp <- so@assays[["SCT"]]@scale.data
-  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-  so@assays[["SCT"]]@scale.data <- so_temp
+  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  if (gene.rep == "ensembl") {
+    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+    so@assays[["SCT"]]@scale.data <- so_temp
+  }
 
   # data
   so_temp <- so@assays[["SCT"]]@data
-  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-  so@assays[["SCT"]]@data <- so_temp
+  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  if (gene.rep == "ensembl") {
+    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+    so@assays[["SCT"]]@data <- so_temp
+  }
 
   # metadata
   so_m <- so@assays[["SCT"]]@meta.features
@@ -89,27 +96,63 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
   # dimnames
   so_temp <- so@assays[["SCT"]]@counts@Dimnames[[1]]
-  so@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  if (gene.rep == "ensembl") {
+    so@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+  }
 
   # pca feature loading
   so_temp <-  so@reductions[["pca"]]@feature.loadings
-  row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-  so@reductions[["pca"]]@feature.loadings <- so_temp
+  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  if (gene.rep == "ensembl") {
+    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+    so@reductions[["pca"]]@feature.loadings <- so_temp
+  }
+
+
+  # vst
+  gene.rep <- checkGeneRep (gNames.list,  names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]))
+  if (gene.rep == "ensembl") {
+    names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
+  }
+
+  gene.rep <- checkGeneRep (gNames.list,   so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]])
+  if (gene.rep == "ensembl") {
+    so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+  }
+
+  gene.rep <- checkGeneRep (gNames.list,  rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]))
+  if (gene.rep == "ensembl") {
+    rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]) <- as.vector((gNames.list[rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])]))
+  }
 
   # RNA ASSAY
 
   if (convert.RNA == TRUE){
     # var features
     so_temp <- so@assays[["RNA"]]@var.features
-    so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+    gene.rep <- checkGeneRep (gNames.list, so_temp)
+    if (gene.rep == "ensembl") {
+      so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+    }
 
     # data
     so_temp <- so@assays[["RNA"]]@data
-    row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-    so@assays[["RNA"]]@data <- so_temp
+    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
+    if (gene.rep == "ensembl") {
+      row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+      so@assays[["RNA"]]@data <- so_temp
+    }
+
+
 
     # counts
     so_temp <- so@assays[["RNA"]]@counts
+    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
+    if (gene.rep == "ensembl") {
+      row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+      so@assays[["RNA"]]@data <- so_temp
+    }
     row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
     so@assays[["RNA"]]@counts <- so_temp
 
@@ -1225,15 +1268,32 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #'
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
-#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".
+#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
+#' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
+#' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
+#' @name aggGroupExpression
+#' @author Nicholas Mikolajewicz
+#' @return data.frame (gene rows, group columns)
+#'
+aggGroupExpression <-  function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
+  return(avgGroupExpression(...))
+}
+
+#' Get summary of group expression in Seurat object
+#'
+#' Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
+#'
+#' @param so Seurat Object
+#' @param which.data Character specfying which data slot. Default is "data".
+#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
 #' @name avgGroupExpression
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <- function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
-  # which.center options: "mean", "fraction", "median", "sd", "cv"
+avgGroupExpression <-  function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
+  # which.center options: "mean", "fraction", "median", "sum", "sd", "cv"
 
   # inititate parallel processes
   if (do.parallel){
@@ -1269,56 +1329,62 @@ avgGroupExpression <- function(so, which.data = "data", which.center = "mean", w
     warning("Computing measures of centrality...")
     if (which.center == "mean"){
       if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
       }
     } else if (which.center == "median"){
       if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x, na.rm = T))
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x))
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x, na.rm = T))
       }
-    } else if (which.center == "sd"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+      } else if (which.center == "sum"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
+        } else {
+          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
+        }
+      } else if (which.center == "sd"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        } else {
+          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        }
+      } else if (which.center == "cv"){
+        if (do.parallel){
+          sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+          av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        } else {
+          sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+          av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        }
+        avg.mat[,i] <- sd.cur / abs(av.cur)
+      } else if (which.center == "fraction"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+        } else {
+          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+        }
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
+        stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
       }
-    } else if (which.center == "cv"){
-      if (do.parallel){
-        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
-        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
-      } else {
-        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x))
-        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x))
-      }
-      avg.mat[,i] <- sd.cur / abs(av.cur)
-    } else if (which.center == "fraction"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
-      } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
-      }
-    } else {
-      stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
     }
+
+    df.avg <- as.data.frame(avg.mat)
+
+    if (which.group == "seurat_clusters"){
+      colnames(df.avg) <- paste("c", u.clusters, sep = "")
+    } else {
+      colnames(df.avg) <- u.clusters
+    }
+
+    df.avg <- bind_cols(data.frame(genes = gene.list), df.avg)
+
+    return(df.avg)
+
+
   }
-
-  df.avg <- as.data.frame(avg.mat)
-
-  if (which.group == "seurat_clusters"){
-    colnames(df.avg) <- paste("c", u.clusters, sep = "")
-  } else {
-    colnames(df.avg) <- u.clusters
-  }
-
-  df.avg <- bind_cols(data.frame(genes = gene.list), df.avg)
-
-  return(df.avg)
-
-
-}
 
 
 
