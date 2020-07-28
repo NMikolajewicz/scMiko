@@ -228,7 +228,6 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
 #' @name loadMat
 #' @return list containing Seurat Object and named gene vector.
 #'
-
 loadMat <- function(import_set, input_organisms, dir) {
 
 
