@@ -7,6 +7,7 @@
 aggGroupExpression(
   so,
   which.data = "data",
+  which.assay = DefaultAssay(so),
   which.center = "mean",
   which.group = "seurat_clusters",
   do.parallel = F
@@ -16,6 +17,8 @@ aggGroupExpression(
 \item{so}{Seurat Object}
 
 \item{which.data}{Character specfying which data slot. Default is "data".}
+
+\item{which.assay}{Character specigin which assay to use.}
 
 \item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".}
 
@@ -27,7 +30,7 @@ aggGroupExpression(
 data.frame (gene rows, group columns)
 }
 \description{
-Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
+Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv. Calls scMiko::avgGroupExpression().
 }
 \author{
 Nicholas Mikolajewicz

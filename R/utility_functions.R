@@ -73,7 +73,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
   # scale data
   so_temp <- so@assays[["SCT"]]@scale.data
-  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
   if (gene.rep == "ensembl") {
     row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
     so@assays[["SCT"]]@scale.data <- so_temp
@@ -81,7 +81,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
   # data
   so_temp <- so@assays[["SCT"]]@data
-  gene.rep <- checkGeneRep (gNames.list, so_temp)
+  gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
   if (gene.rep == "ensembl") {
     row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
     so@assays[["SCT"]]@data <- so_temp
@@ -90,9 +90,12 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
   # metadata
   so_m <- so@assays[["SCT"]]@meta.features
   so_m$ENSEMBLE <- rownames(so_m)
-  so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
-  rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
-  so@assays[["SCT"]]@meta.features <- so_m
+  gene.rep <- checkGeneRep (gNames.list,  so_m$ENSEMBLE)
+  if (gene.rep == "ensembl") {
+    so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
+    rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
+    so@assays[["SCT"]]@meta.features <- so_m
+  }
 
   # dimnames
   so_temp <- so@assays[["SCT"]]@counts@Dimnames[[1]]
@@ -102,13 +105,14 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
   }
 
   # pca feature loading
-  so_temp <-  so@reductions[["pca"]]@feature.loadings
-  gene.rep <- checkGeneRep (gNames.list, so_temp)
-  if (gene.rep == "ensembl") {
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@reductions[["pca"]]@feature.loadings <- so_temp
+  if ("pca" %in% names(so@reductions)){
+    so_temp <-  so@reductions[["pca"]]@feature.loadings
+    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
+    if (gene.rep == "ensembl") {
+      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+      so@reductions[["pca"]]@feature.loadings <- so_temp
+    }
   }
-
 
   # vst
   gene.rep <- checkGeneRep (gNames.list,  names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]))
@@ -116,25 +120,49 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
     names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
   }
 
-  gene.rep <- checkGeneRep (gNames.list,   so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]])
-  if (gene.rep == "ensembl") {
-    so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+  if (!is.null(so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]])){
+    gene.rep <- checkGeneRep (gNames.list,   so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]])
+    if (gene.rep == "ensembl") {
+      so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+    }
   }
 
+
   gene.rep <- checkGeneRep (gNames.list,  rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]))
-  if (gene.rep == "ensembl") {
-    rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]) <- as.vector((gNames.list[rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])]))
-  }
+  try({
+    if (gene.rep == "ensembl") {
+      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]) <- as.vector((gNames.list[rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])]))
+    }
+  }, silent = T)
+
+  try({
+    so.temp <- rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]])
+    gene.rep <- checkGeneRep (gNames.list, so.temp)
+    if (gene.rep == "ensembl") {
+      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]]) <- as.vector((gNames.list[so.temp]))
+    }
+  }, silent = T)
+
+  try({
+    so.temp <- rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]])
+    gene.rep <- checkGeneRep (gNames.list,  so.temp)
+    if (gene.rep == "ensembl") {
+      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]]) <- as.vector((gNames.list[so.temp]))
+    }
+  }, silent = T)
 
   # RNA ASSAY
 
   if (convert.RNA == TRUE){
     # var features
     so_temp <- so@assays[["RNA"]]@var.features
-    gene.rep <- checkGeneRep (gNames.list, so_temp)
-    if (gene.rep == "ensembl") {
-      so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+    if (length(so_temp) > 0){
+      gene.rep <- checkGeneRep (gNames.list, so_temp)
+      if (gene.rep == "ensembl") {
+        so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+      }
     }
+
 
     # data
     so_temp <- so@assays[["RNA"]]@data
@@ -144,17 +172,13 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
       so@assays[["RNA"]]@data <- so_temp
     }
 
-
-
     # counts
     so_temp <- so@assays[["RNA"]]@counts
     gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
     if (gene.rep == "ensembl") {
       row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-      so@assays[["RNA"]]@data <- so_temp
+      so@assays[["RNA"]]@counts <- so_temp
     }
-    row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-    so@assays[["RNA"]]@counts <- so_temp
 
   }
 
@@ -162,17 +186,27 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
     # var features
     so_ens <- so@assays[["integrated"]]@var.features
-    so@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
+    gene.rep <- checkGeneRep (gNames.list, so_ens)
+    if (gene.rep == "ensembl") {
+      so@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
+    }
 
     # scale data
     so_sd <- so@assays[["integrated"]]@scale.data
-    row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
-    so@assays[["integrated"]]@scale.data <- so_sd
+    gene.rep <- checkGeneRep (gNames.list,  row.names(so_sd))
+    if (gene.rep == "ensembl") {
+      row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
+      so@assays[["integrated"]]@scale.data <- so_sd
+    }
 
     # data
     so_d <- so@assays[["integrated"]]@data
-    row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
-    so@assays[["integrated"]]@data <- so_d
+    gene.rep <- checkGeneRep (gNames.list,  row.names(so_d))
+    if (gene.rep == "ensembl") {
+      row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
+      so@assays[["integrated"]]@data <- so_d
+    }
+
   }
 
   # ensure dim names are correctly specified
@@ -1264,10 +1298,11 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 
 #' Get summary of group expression in Seurat object
 #'
-#' Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
+#' Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv. Calls scMiko::avgGroupExpression().
 #'
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
+#' @param which.assay Character specigin which assay to use.
 #' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
@@ -1275,8 +1310,8 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-aggGroupExpression <-  function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
-  return(avgGroupExpression(...))
+aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
+  return(avgGroupExpression(so, which.data, which.assay, which.center, which.group, do.parallel))
 }
 
 #' Get summary of group expression in Seurat object
@@ -1285,6 +1320,7 @@ aggGroupExpression <-  function(so, which.data = "data", which.center = "mean", 
 #'
 #' @param so Seurat Object
 #' @param which.data Character specfying which data slot. Default is "data".
+#' @param which.assay Character specigin which assay to use.
 #' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
@@ -1292,7 +1328,7 @@ aggGroupExpression <-  function(so, which.data = "data", which.center = "mean", 
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <-  function(so, which.data = "data", which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
+avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
   # which.center options: "mean", "fraction", "median", "sum", "sd", "cv"
 
   # inititate parallel processes
@@ -1302,7 +1338,7 @@ avgGroupExpression <-  function(so, which.data = "data", which.center = "mean", 
   }
 
   # entire matrix
-  exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
+  exp.mat.complete <- getExpressionMatrix(so, which.data = which.data, which.assay = which.assay)
 
   # group ID vector
   cluster.membership <- so@meta.data[[which.group]]
@@ -1314,9 +1350,9 @@ avgGroupExpression <-  function(so, which.data = "data", which.center = "mean", 
   u.clusters <- getOrderedGroups(so, which.group, is.number = F)
 
   if ((which.center == "fraction") & (which.data != "data")){
-    warning("Data from 'data' slot used to compute expressing fraction")
+    warning("\nData from 'data' slot used to compute expressing fraction")
     which.data <- "data"
-    exp.mat.complete <- getExpressionMatrix(so, which.data = which.data)
+    exp.mat.complete <- getExpressionMatrix(so, which.data = which.data, which.assay = which.assay)
     gene.list <- rownames(exp.mat.complete)
   }
 
@@ -1326,7 +1362,7 @@ avgGroupExpression <-  function(so, which.data = "data", which.center = "mean", 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
   for (i in 1:length(u.clusters)){
-    warning("Computing measures of centrality...")
+    warning("\nComputing measures of centrality...")
     if (which.center == "mean"){
       if (do.parallel){
         avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
@@ -2380,6 +2416,42 @@ namedList2longDF <- function(my.list, name.header = NULL, value.header = NULL){
   # return long data.frame
   return(my.df)
 
+}
+
+
+#' Convert wide data.frame to named list
+#'
+#' Convert wide data.frame to named list. Column entries are used as list entries, and each entry is named using the corresponding column name in the data.frame.
+#'
+#' @param df.wide wide data.frame
+#' @name wideDF2namedList
+#' @return named list
+#' @seealso \code{\link{namedList2wideDF}}
+#' @author Nicholas Mikolajewicz
+#' @examples
+#'
+#' # get wide data frame
+#' CancerSEA_Hs <-geneSets[["CancerSEA_Hs"]]
+#'
+#' # convert wide data frame to named list
+#' my.list <- namedList2longDF(CancerSEA_Hs)
+#'
+wideDF2namedList <- function(df.wide){
+  try({df.wide <- as.data.frame(df.wide)}, silent = T)
+  if (!("data.frame" %in% class(df.wide))) stop("Input must be a data frame")
+
+  n.list <- list()
+  for (i in 1:ncol(df.wide)){
+
+    col.name <- colnames(df.wide)[i]
+    entries <- df.wide[ ,i]
+    entries <- entries[!is.na(entries)]
+    entries <- entries[entries != ""]
+    n.list[[col.name]] <- entries
+
+  }
+
+  return(n.list)
 }
 
 
@@ -3902,5 +3974,39 @@ binVector <- function(v, bin.size) {
   }
 
   bv
+}
+
+
+
+#' Returns top module genes from NMF feature loading matrix
+#'
+#' Returns top module genes from NMF feature loading matrix
+#'
+#' @param feature.loading Matrix; m genes x n modules loading
+#' @param norm.cutoff Numeric [0,1]; cutoff to get top genes. Default is 0.5.
+#' @author Nicholas Mikolajewicz
+#' @name getNMFGenes
+#' @examples
+#'
+#' # get feature loading matrix (W matrix)
+#' nmf.kme <- as.matrix(so.query@misc[["nmf"]][["nmf"]][["W"]])
+#'
+#' # get module genes
+#' nmf.module.genes <- getNMFGenes((nmf.kme), norm.cutoff = (1/ncol(nmf.kme)) + .25)
+#'
+getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
+
+  if (!("matrix" %in% class(feature.loading))) stop("feature.loading input is not a matrix")
+
+  nmf.kme <- t(feature.loading)
+  nmf.kme <- (apply(nmf.kme, 2, function(x) (x/sum(x))))
+
+  # get module genes
+  module.genes <-  apply(nmf.kme, 1, function(x) colnames(nmf.kme)[x>norm.cutoff])
+
+  module.size <- unlist(lapply(module.genes, length))
+  nmf.module.genes <- module.genes[module.size > 0]
+
+  return(nmf.module.genes)
 }
 

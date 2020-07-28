@@ -7,6 +7,7 @@
 avgGroupExpression(
   so,
   which.data = "data",
+  which.assay = DefaultAssay(so),
   which.center = "mean",
   which.group = "seurat_clusters",
   do.parallel = F
@@ -16,6 +17,8 @@ avgGroupExpression(
 \item{so}{Seurat Object}
 
 \item{which.data}{Character specfying which data slot. Default is "data".}
+
+\item{which.assay}{Character specigin which assay to use.}
 
 \item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".}
 
