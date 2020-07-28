@@ -4,14 +4,12 @@
 \alias{loadCellRanger}
 \title{Load CellRanger preprocessed data}
 \usage{
-loadCellRanger(import_set, subsample_factor, all_input_organisms, dir)
+loadCellRanger(import_set, input_organisms, dir = "")
 }
 \arguments{
 \item{import_set}{Character specifying folder containing matrix.mtx, gense.tsv and barcodes.tsv files provided by 10x.}
 
-\item{subsample_factor}{Numeric [0,1]. Subsampling factor}
-
-\item{all_input_organisms}{Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
+\item{input_organisms}{Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
 \itemize{
 \item "Hs" - Human
 \item "Mm" - Mouse

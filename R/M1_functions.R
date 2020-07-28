@@ -6,8 +6,7 @@
 #' Input data is output from cell ranger (10x datasets)
 #'
 #' @param import_set Character specifying folder containing matrix.mtx, gense.tsv and barcodes.tsv files provided by 10x.
-#' @param subsample_factor Numeric [0,1]. Subsampling factor
-#' @param all_input_organisms Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
+#' @param input_organisms Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
 #' \itemize{
 #' \item "Hs" - Human
 #' \item "Mm" - Mouse
@@ -17,7 +16,7 @@
 #' @name loadCellRanger
 #' @return list containing Seurat Object and named gene vector.
 #'
-loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, dir) {
+loadCellRanger <- function(import_set, input_organisms, dir = "") {
 
   import_set_path <- paste(dir, import_set, sep ="")
 
@@ -45,17 +44,7 @@ loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, di
   rownames(expression_matrix2) <- names(gNames)
 
   # assign species
-  orgs <- scMiko::m1.inferSpecies(expression_matrix2, all_input_organisms)
-  # if (length(all_input_organisms) > 1) {
-  #   orgIDs <- rownames(expression_matrix2)[ apply( expression_matrix2,2,which.max )];
-  #   orgs <- rep("Hs",ncol(expression_matrix2));
-  #   orgs[grep("^ENSMUS",orgIDs) ] <- "Mm";
-  #   names(orgs) <- colnames(expression_matrix2);
-  # } else {
-  #   orgs <- rep(all_input_organisms,ncol(expression_matrix2));
-  #   names(orgs) <- colnames(expression_matrix2);
-  # }
-
+  orgs <- scMiko::m1.inferSpecies(expression_matrix2, input_organisms)
 
   # create seurat object
   # so = CreateSeuratObject(counts = expression_matrix2,project="cell_ranger",min.cells=3,min.features=200)
@@ -87,15 +76,15 @@ loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, di
 #'
 #' Load preprocessed data from Moffat lab sciRNA-seq3 pipeline
 #'
-#' @param import_set Character vector specifying expression matrix (import_set[1]), rt barcodes (import_set[2]) and pcr barcodes (import_set[3]). Expression matrix will be imported successfully if barcodes are omitted.
+#' @param import_set Character vector specifying expression matrix (import_set[1]), PCR barcodes (import_set[2]) and RC barcodes (import_set[3]). Expression matrix will be imported successfully if barcodes are omitted.
 #' @param subsample_factor Numeric [0,1]. Subsampling factor
-#' @param all_input_organisms All species included in input files. One of:
+#' @param input_organisms All species included in input files. One of:
 #' \itemize{
 #' \item "Hs" - Human
 #' \item "Mm" - Mouse
 #' \item c("Hs", "Mm") - both species included
 #' }
-#' @param organism.include Species to include in downstream analysis. One of:
+#' @param organism_include Species to include in downstream analysis. One of:
 #' \itemize{
 #' \item "Hs" - Human
 #' \item "Mm" - Mouse
@@ -105,7 +94,7 @@ loadCellRanger <- function(import_set, subsample_factor, all_input_organisms, di
 #' @name loadMoffat
 #' @return list containing Seurat Object and named gene vector.
 #'
-loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.include, dir) {
+loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_include, dir) {
 
   # load gene count matrix
   import_set_path <- paste(dir, import_set, sep ="")
@@ -121,11 +110,11 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
   # filter out incorrect species genes immediately.
   all.genes <- rownames(gene_count2)
   include.which.genes <- rep(FALSE, length(all.genes))
-  if ((length(input_organisms) > length(organism.include)) | (length(organism.include) == 1)){
-    for (i in 1:length(organism.include)){
-      if (organism.include[i] == "Mm"){
+  if ((length(input_organisms) > length(organism_include)) | (length(organism_include) == 1)){
+    for (i in 1:length(organism_include)){
+      if (organism_include[i] == "Mm"){
         include.which.genes[grepl("MUSG", all.genes)] <- T
-      } else if (organism.include[i] == "Hs"){
+      } else if (organism_include[i] == "Hs"){
         include.which.genes[!(grepl("MUSG", all.genes))] <- T
       }
     }
@@ -144,17 +133,17 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
 
   # subsample data
   if (subsample_factor < 1){
-    row_ind <- c(1:dim(gene_count2)[1])
-    subsample_ind <- sample(row_ind, round(subsample_factor * dim(gene_count2)[1]), replace = FALSE)
-    gene_count2 <- gene_count2[subsample_ind,]
+    col_ind <- c(1:dim(gene_count2)[3])
+    subsample_ind <- sample(col_ind, round(subsample_factor * dim(gene_count2)[2]), replace = FALSE)
+    gene_count2 <- gene_count2[,subsample_ind]
+  } else {
+    subsample_ind <- subsample_ind
   }
 
   # Need names vectors to add additional metadata to Seurat object
   gNames <- as.character( df_gene$gene_name );
   names(gNames) <- as.character( df_gene$gene_id );
   names(gNames) <-gsub("\\\\..*","",as.vector( names(gNames)))
-
-
 
   # Add PCR barcodes
   pcr.barcode.flag <- F
@@ -163,6 +152,7 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
     wells <- gsub("Han_[0-9]+_([A-Z0-9]{2,3}).[ACGT]+$","\\\\1",colnames(gene_count2));
     myGrps <- grps$ConditionGroup[ match(wells,grps$sampleWell) ];
     names(myGrps) <- colnames(gene_count2)
+    myGrps <- myGrps[subsample_ind]
     pcr.barcode.flag <- T
   }, silent = T)
 
@@ -173,6 +163,7 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
     rtBC <- read.csv2(import_set_path[3],header=T,sep="\t",stringsAsFactors=F)
     return(rtBC)
   })
+  rtBC <- rtBC[subsample_ind, ]
 
 
   barcodes <- gsub(".+([ACGT]{10}$)","\\\\1",colnames(gene_count2));
@@ -185,7 +176,6 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
   rownames(gene_count2)<-gsub("\\\\..*","",as.vector( rownames(gene_count2)))
 
   # Create seurat object with count matrix data
-  # so <- CreateSeuratObject(counts=gene_count2,project="Hong-sciSeq3",min.cells=3,min.features=200,names.field=2,names.delim="." )
   so <- CreateSeuratObject(counts=gene_count2,project="Hong-sciSeq3",min.cells=0,min.features=0,names.field=2,names.delim="." )
 
   # Add gene symbols as meta data that we can use later
@@ -203,8 +193,6 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
   so.merge <- so.merge %>% dplyr::arrange(ind)
   if ("unmatched_rate" %in% colnames(df_cell))  so[["unmatched.rate"]] <- so.merge$unmatched_rate
   so[["Organism"]] <- so.merge$orgs
-
-
 
   if (length(import_set) > 1){ # same as above, if barecode and well info. provided, assign to so structure
     # Add group #s for mapping cells to PCR condition groups
@@ -226,23 +214,22 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism.i
 }
 
 
-#' Load preprocessed TPM data (e.g., Neftel 2019 datasets)
+#' Load preprocessed count matrix (e.g., Neftel 2019 datasets)
 #'
-#' Load preprocessed TPM data (e.g., Neftel 2019 datasets). While originally developed for TPM matrices, this function extends to any expression matrix.
+#' Load preprocessed count data (e.g., Neftel 2019 datasets),
 #'
 #' @param import_set Character specifying TPM matrix file name.
-#' @param subsample_factor Numeric [0,1]. Subsampling factor
-#' @param all_input_organisms All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
+#' @param input_organisms All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
 #' \itemize{
 #' \item "Hs" - Human
 #' \item "Mm" - Mouse
 #' }
 #' @param dir Character. folder containing import_set file
-#' @name loadTPM
+#' @name loadMat
 #' @return list containing Seurat Object and named gene vector.
 #'
 
-loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
+loadMat <- function(import_set, input_organisms, dir) {
 
 
   import_set_path <- paste(dir, import_set, sep ="")
@@ -274,15 +261,15 @@ loadTPM <- function(import_set, subsample_factor, all_input_organisms, dir) {
 
   expression_matrix2 <- dplyr::select(expression_matrix2, -c("GENE"))
   rownames(expression_matrix2) <- feature.names
-  stopifnot(length(all_input_organisms) == 1)
-  g2eNames <- sym2ens(my.symbols =  feature.names, my.species = all_input_organisms)
+  stopifnot(length(input_organisms) == 1)
+  g2eNames <- sym2ens(my.symbols =  feature.names, my.species = input_organisms)
   gNames <- g2eNames$SYMBOL
   names(gNames) <- g2eNames$ENSEMBL
   gNames <- gNames[!is.na(gNames)]
   names(gNames) <-gsub("\\..*","",as.vector( names(gNames)))
 
   # assign organism
-  orgs <- rep(all_input_organisms,ncol(expression_matrix2));
+  orgs <- rep(input_organisms,ncol(expression_matrix2));
   names(orgs) <- colnames(expression_matrix2);
 
 

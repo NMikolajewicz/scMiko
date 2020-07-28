@@ -8,16 +8,23 @@ loadMoffat(
   import_set,
   subsample_factor,
   input_organisms,
-  organism.include,
+  organism_include,
   dir
 )
 }
 \arguments{
-\item{import_set}{Character vector specifying expression matrix (import_set[1]), rt barcodes (import_set[2]) and pcr barcodes (import_set[3]). Expression matrix will be imported successfully if barcodes are omitted.}
+\item{import_set}{Character vector specifying expression matrix (import_set[1]), PCR barcodes (import_set[2]) and RC barcodes (import_set[3]). Expression matrix will be imported successfully if barcodes are omitted.}
 
 \item{subsample_factor}{Numeric [0,1]. Subsampling factor}
 
-\item{organism.include}{Species to include in downstream analysis. One of:
+\item{input_organisms}{All species included in input files. One of:
+\itemize{
+\item "Hs" - Human
+\item "Mm" - Mouse
+\item c("Hs", "Mm") - both species included
+}}
+
+\item{organism_include}{Species to include in downstream analysis. One of:
 \itemize{
 \item "Hs" - Human
 \item "Mm" - Mouse
@@ -25,13 +32,6 @@ loadMoffat(
 }}
 
 \item{dir}{Character. folder containing import_set files}
-
-\item{all_input_organisms}{All species included in input files. One of:
-\itemize{
-\item "Hs" - Human
-\item "Mm" - Mouse
-\item c("Hs", "Mm") - both species included
-}}
 }
 \value{
 list containing Seurat Object and named gene vector.
