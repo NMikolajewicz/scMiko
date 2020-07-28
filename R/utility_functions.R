@@ -3406,7 +3406,7 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, pseudoti
 propVarPCA <- function(so){
 
   # get pca reduction
-  pc.std <- so.query@reductions[["pca"]]@stdev
+  pc.std <- so@reductions[["pca"]]@stdev
 
   # variance explained
   pc.var <- pc.std^2
