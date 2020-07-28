@@ -337,14 +337,8 @@ barcodeLabels <- function(so, which.strata) {
 #' @return Seurat Object (with updated metadata)
 #'
 getMitoContent <- function(so, gNames, omit.na = T) {
-  hs <- grep("^ENSG",rownames(so[["RNA"]]),value=T)
-  mm <- grep("^ENSMUSG",rownames(so[["RNA"]]),value=T)
-  pctHS <- PercentageFeatureSet(so, features=hs)
-  pctMM <- PercentageFeatureSet(so, features=mm)
 
-  # find relevant entries (genes that were detected from master gene list)
-  f.mm <- intersect(names(gNames)[ grep("^mt-",gNames) ],rownames(so[["RNA"]]))
-  f.hs <- intersect(names(gNames)[ grep("^MT-",gNames) ],rownames(so[["RNA"]]))
+
   f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[["RNA"]]))
   so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
 
