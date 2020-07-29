@@ -133,11 +133,11 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
 
   # subsample data
   if (subsample_factor < 1){
-    col_ind <- c(1:dim(gene_count2)[3])
+    col_ind <- c(1:dim(gene_count2)[2])
     subsample_ind <- sample(col_ind, round(subsample_factor * dim(gene_count2)[2]), replace = FALSE)
     gene_count2 <- gene_count2[,subsample_ind]
   } else {
-    subsample_ind <- subsample_ind
+    subsample_ind <- c(1:dim(gene_count2)[2])
   }
 
   # Need names vectors to add additional metadata to Seurat object
