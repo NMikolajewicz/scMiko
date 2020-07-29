@@ -434,7 +434,7 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 
 #' Reload scMiko package
 #'
-#' Function that detachs and attaches scMiko package.
+#' Function that detaches and attaches scMiko package.
 #'
 #' @name scMikoReload
 #' @author Nicholas Mikolajewicz
@@ -4016,6 +4016,7 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
 #' Reinstall scMiko package from private repository (https://github.com/NMikolajewicz/scMiko). Package is reloaded after update.
 #'
 #' @param token autherization key to for private git repository
+#' @param ... Additional arguments passed to devtools::install_github()
 #' @author Nicholas Mikolajewicz
 #' @name scMikoUpdate
 #' @examples
@@ -4023,16 +4024,17 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
 #' # reinstall scMiko
 #' scMikoUpdate()
 #'
-scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa"){
+scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...){
 
   try({detach("package:scMiko", unload = T)}, silent = T)
 
   devtools::install_github(
     repo = "NMikolajewicz/scMiko",
     ref = "master",
-    auth_token = token)
+    auth_token = token,
+    ...)
 
-  scMiko::scMikoReload()
+  try({scMiko::scMikoReload()})
 }
 
 
