@@ -4013,9 +4013,9 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
 
 #' Reinstall scMiko package
 #'
-#' Reinstall scMiko package from private repository. Package is reloaded after update.
+#' Reinstall scMiko package from private repository (https://github.com/NMikolajewicz/scMiko). Package is reloaded after update.
 #'
-#' @param token Matrix; m genes x n modules loading
+#' @param token autherization key to for private git repository
 #' @author Nicholas Mikolajewicz
 #' @name scMikoUpdate
 #' @examples
