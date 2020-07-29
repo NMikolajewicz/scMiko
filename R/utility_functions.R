@@ -432,7 +432,7 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 
 
 
-#' reload scMiko
+#' Reload scMiko package
 #'
 #' Function that detachs and attaches scMiko package.
 #'
@@ -445,7 +445,7 @@ isGeneAvailable <- function(so, query.gene, reference.genes){
 #'
 scMikoReload <- function(){
 
-  detach("package:scMiko", unload=TRUE)
+  try({detach("package:scMiko", unload=TRUE)}, silent = T)
   library(scMiko)
 
 }
@@ -4024,6 +4024,8 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
 #' scMikoUpdate()
 #'
 scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa"){
+
+  try({detach("package:scMiko", unload = T)}, silent = T)
 
   devtools::install_github(
     repo = "NMikolajewicz/scMiko",

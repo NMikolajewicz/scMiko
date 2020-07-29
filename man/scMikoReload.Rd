@@ -2,7 +2,7 @@
 % Please edit documentation in R/utility_functions.R
 \name{scMikoReload}
 \alias{scMikoReload}
-\title{reload scMiko}
+\title{Reload scMiko package}
 \usage{
 scMikoReload()
 }
