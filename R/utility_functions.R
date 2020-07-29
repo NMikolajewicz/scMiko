@@ -4038,3 +4038,64 @@ scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...
 }
 
 
+#' Update central log
+#'
+#' Update central log. Central log keeps track of every scPipeline run and includes information about the module run, data used, user, date.
+#'
+#' @param Module Module Name/ID. e.g., "M01" is used to specify Module 1.
+#' @param clog.file Central log file name. A character.
+#' @param log.path Path to central log file. Set to data.path specified in .RProfile by default.
+#' @param user.id User name. Set to user specified in .RProfile by default.
+#' @param run.notes Additional notes to describe current run.
+#' @param pdf.flag Logical indicating whether PDF figures were generated.
+#' @author Nicholas Mikolajewicz
+#' @name updateCentralLog
+#' @examples
+#'
+#' # update central log (usually at the end of a successful module run)
+#' updateCentralLog(Module = "M01", pdf.flag = F)
+#'
+updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(exists("data.path")) data.path else "", user.id = if(exists("user")) user else "guest", run.notes = NA, pdf.flag = save.pdf){
+
+  warning("Updating central log...\n")
+  df.clog <- read.csv(paste0(data.path, clog.file))
+  colnames(df.clog) <- rmvCSVprefix(colnames(df.clog))
+
+  if (nrow(df.clog) > 0) if (max(df.clog$ID) != df.clog$ID[nrow(df.clog)]) warning("Last run ID is not assigned the highest valued ID. Check log.")
+
+  if (nrow(df.clog) == 0){
+    last.run <- 0
+  } else {
+    last.run <- df.clog$ID[nrow(df.clog)]
+  }
+
+  current.run <- last.run + 1
+
+  current.clog <- data.frame(
+    ID = current.run,
+    Identifier = paste0(user, "_R", current.run),
+    Module = Module,
+    User = user.id,
+    Date = format(Sys.time(), '%d %B, %Y'),
+    Input = paste(which.data, collapse = ", "),
+    Subset = paste(which.strata, collapse = ", "),
+    HTML = T,
+    PDF = pdf.flag,
+    Notes = run.notes
+  )
+
+  if (nrow(df.clog) == 0){
+    df.clog <-current.clog
+  } else {
+    df.clog <- bind_rows(df.clog, current.clog)
+  }
+
+
+  # override previous log
+  write.csv(df.clog,
+            file = paste0(data.path, clog.file),
+            row.names = F)
+  warning("Central log update succesfull!\n")
+}
+
+
