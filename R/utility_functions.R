@@ -4010,3 +4010,27 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
   return(nmf.module.genes)
 }
 
+
+#' Reinstall scMiko package
+#'
+#' Reinstall scMiko package from private repository. Package is reloaded after update.
+#'
+#' @param token Matrix; m genes x n modules loading
+#' @author Nicholas Mikolajewicz
+#' @name scMikoUpdate
+#' @examples
+#'
+#' # reinstall scMiko
+#' scMikoUpdate()
+#'
+scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa"){
+
+  devtools::install_github(
+    repo = "NMikolajewicz/scMiko",
+    ref = "master",
+    auth_token = token)
+
+  scMiko::scMikoReload()
+}
+
+
