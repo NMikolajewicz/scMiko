@@ -127,11 +127,6 @@ initiateLog <- function (module.name = ""){
   df.log[nrow(df.log), 3] <- as.character(module.name)
   colnames(df.log) <- c("Description", "Variable Name", "Value")
 
-  # User
-  df.log[nrow(df.log)+1, 1] <- as.character("User")
-  df.log[nrow(df.log), 2] <- as.character("Sys.getenv('USERDOMAIN')")
-  df.log[nrow(df.log), 3] <- as.character(Sys.getenv("USERDOMAIN"))
-
   # Date
   df.log[nrow(df.log)+1, 1] <- as.character("Date")
   df.log[nrow(df.log), 2] <- as.character("Sys.time()")
