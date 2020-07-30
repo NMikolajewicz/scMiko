@@ -147,14 +147,17 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
 
   # Add PCR barcodes
   pcr.barcode.flag <- F
-  try({
-    grps <- read.csv(import_set_path[2], header=T,sep="\\t",stringsAsFactors=F);
-    wells <- gsub("Han_[0-9]+_([A-Z0-9]{2,3}).[ACGT]+$","\\\\1",colnames(gene_count2));
-    myGrps <- grps$ConditionGroup[ match(wells,grps$sampleWell) ];
-    names(myGrps) <- colnames(gene_count2)
-    myGrps <- myGrps[subsample_ind]
-    pcr.barcode.flag <- T
-  }, silent = T)
+  if (dir != import_set_path[2]){
+    try({
+      grps <- read.csv(import_set_path[2], header=T,sep="\\t",stringsAsFactors=F);
+      wells <- gsub("Han_[0-9]+_([A-Z0-9]{2,3}).[ACGT]+$","\\\\1",colnames(gene_count2));
+      myGrps <- grps$ConditionGroup[ match(wells,grps$sampleWell) ];
+      names(myGrps) <- colnames(gene_count2)
+      myGrps <- myGrps[subsample_ind]
+      pcr.barcode.flag <- T
+    }, silent = T)
+  }
+
 
   # Add RT barcode
   rtBC <- tryCatch({
