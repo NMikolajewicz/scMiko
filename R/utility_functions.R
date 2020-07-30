@@ -4073,7 +4073,7 @@ updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(
 
   current.clog <- data.frame(
     ID = current.run,
-    Identifier = paste0(user, "_R", current.run),
+    Identifier = paste0(Module, "_", user, "_R", current.run),
     Module = Module,
     User = user.id,
     Date = format(Sys.time(), '%d %B, %Y'),
@@ -4096,6 +4096,8 @@ updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(
             file = paste0(data.path, clog.file),
             row.names = F)
   warning("Central log update succesfull!\n")
+
+  return(current.clog$Identifier)
 }
 
 
