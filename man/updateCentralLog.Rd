@@ -6,6 +6,8 @@
 \usage{
 updateCentralLog(
   Module,
+  input.data = NA,
+  input.subset = NA,
   clog.file = "moduleLog.csv",
   log.path = if (exists("data.path")) data.path else "",
   user.id = if (exists("user")) user else "guest",
@@ -15,6 +17,10 @@ updateCentralLog(
 }
 \arguments{
 \item{Module}{Module Name/ID. e.g., "M01" is used to specify Module 1.}
+
+\item{input.data}{Input dataset (that was preprocessed in current module). A character.}
+
+\item{input.subset}{data subset. A character specifying whether a certain subset of data was analyzed. A character.}
 
 \item{clog.file}{Central log file name. A character.}
 

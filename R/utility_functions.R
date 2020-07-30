@@ -4043,6 +4043,8 @@ scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...
 #' Update central log. Central log keeps track of every scPipeline run and includes information about the module run, data used, user, date.
 #'
 #' @param Module Module Name/ID. e.g., "M01" is used to specify Module 1.
+#' @param input.data Input dataset (that was preprocessed in current module). A character.
+#' @param input.subset data subset. A character specifying whether a certain subset of data was analyzed. A character.
 #' @param clog.file Central log file name. A character.
 #' @param log.path Path to central log file. Set to data.path specified in .RProfile by default.
 #' @param user.id User name. Set to user specified in .RProfile by default.
@@ -4055,7 +4057,7 @@ scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...
 #' # update central log (usually at the end of a successful module run)
 #' updateCentralLog(Module = "M01", pdf.flag = F)
 #'
-updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(exists("data.path")) data.path else "", user.id = if(exists("user")) user else "guest", run.notes = NA, pdf.flag = save.pdf){
+updateCentralLog <- function(Module, input.data = NA, input.subset = NA, clog.file = "moduleLog.csv", log.path = if(exists("data.path")) data.path else "", user.id = if(exists("user")) user else "guest", run.notes = NA, pdf.flag = save.pdf){
 
   warning("Updating central log...\n")
   df.clog <- read.csv(paste0(data.path, clog.file))
@@ -4077,8 +4079,8 @@ updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(
     Module = Module,
     User = user.id,
     Date = format(Sys.time(), '%d %B, %Y'),
-    Input = paste(which.data, collapse = ", "),
-    Subset = paste(which.strata, collapse = ", "),
+    Input = paste(input.data, collapse = ", "),
+    Subset = paste(input.subset, collapse = ", "),
     HTML = T,
     PDF = pdf.flag,
     Notes = run.notes
@@ -4095,7 +4097,7 @@ updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(
   write.csv(df.clog,
             file = paste0(data.path, clog.file),
             row.names = F)
-  warning("Central log update succesfull!\n")
+  warning("Central log update successful!\n")
 
   return(current.clog$Identifier)
 }
