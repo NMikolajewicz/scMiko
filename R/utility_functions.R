@@ -4101,3 +4101,28 @@ updateCentralLog <- function(Module, clog.file = "moduleLog.csv", log.path = if(
 }
 
 
+#' Save figure as pdf
+#'
+#' Save figure as pdf
+#'
+#' @param file.name path/filename of output pdf. A character.
+#' @param plot.handle plot handle that will be saved as pdf. E.g., GGplot handle.
+#' @param fig.width Numeric for plot width. Default is 5.
+#' @param fig.height Numeric for plot height Default is 5.
+#' @param save.flag Logical to save figure. Default is TRUE.
+#' @author Nicholas Mikolajewicz
+#' @name savePDF
+#' @examples
+#'
+#' # save module figure
+#' savePDF(file.name = "M01_QC_violin.pdf", plot.handle = plt.QC_violin, fig.width = 5, fig.height = 5, save.flag = save.pdf)
+#'
+savePDF <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save.flag = T){
+  if (save.flag){
+    if (!grepl(".pdf", file.name)) file.name <- paste0(file.name, ".pdf")
+    pdf(file=file.name, width = fig.width, height = fig.height)
+    print(plot.handle)
+    garbage <- dev.off()
+  }
+}
+
