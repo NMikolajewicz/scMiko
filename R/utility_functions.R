@@ -4075,7 +4075,7 @@ updateCentralLog <- function(Module, input.data = NA, input.subset = NA, clog.fi
 
   current.clog <- data.frame(
     ID = current.run,
-    Identifier = paste0(Module, "_", user, "_R", current.run),
+    Identifier = paste0("R", current.run,"_", Module, "_", user),
     Module = Module,
     User = user.id,
     Date = format(Sys.time(), '%d %B, %Y'),
