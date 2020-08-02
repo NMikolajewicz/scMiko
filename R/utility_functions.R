@@ -4128,3 +4128,99 @@ savePDF <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save.
   }
 }
 
+
+#' Gene expression markers for all identity classes.
+#'
+#' Finds markers (differentially expressed genes) for each of the identity classes in a dataset, with parallel implementation. Produces identical output as Seurat::FindAllMarkers,
+#'
+#' @param object Seurat object
+#' @param n.work Number of workers. If 1 (default), runs Seurat::FindAllMarkers(). If >1, parallelized implementation is used.
+#' @param assay Assay to use in differential expression testing. Default is DefaultAssay(object)
+#' @param slot Slot to pull data from; note that if test.use is "negbinom", "poisson", or "DESeq2", slot will be set to "counts". Default is "data".
+#' @param only.pos Only return positive markers (FALSE by default)
+#' @param min.pct only test genes that are detected in a minimum fraction of min.pct cells in either of the two populations. Meant to speed up the function by not testing genes that are very infrequently expressed. Default is 0
+#' @param test.use Test to use. See Seurat::FindAllMarkers() or Seurat::FindMarkers() for list of all options.
+#' @param logfc.threshold Limit testing to genes which show, on average, at least X-fold difference (log-scale) between the two groups of cells. Default is 0.25 Increasing logfc.threshold speeds up the function, but can miss weaker signals.
+#' @param max.cells.per.ident Down sample each identity class to a max number. Default is 200.
+#' @param return.thresh Only return markers that have a p-value < return.thresh, or a power > return.thresh (if the test is ROC).
+#' @param verbose Print a progress bar once expression testing begins. Default is F.
+#' @param ... additional arguments passed to Seurat::FindAllMarkers() (if n.work = 1) or Seurat::FindMarkers() (if n.work >1)
+#' @author Nicholas Mikolajewicz
+#' @name FindAllMarkers.Parallel
+#' @value Matrix containing a ranked list of putative markers, and associated statistics (p-values, ROC score, etc.)
+#' @seealso \code{\link{FindAllMarkers}} \code{\link{FindMarkers}}
+#' @examples
+#'
+#' # Find markers for all clusters
+#' all.markers <- FindAllMarkers.Parallel(object = so.query, n.work = 4)
+#'
+FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(object), slot = "data", only.pos = F, min.pct = 0, test.use = "MAST",
+                                    logfc.threshold = 0.15, max.cells.per.ident = 200, return.thresh = 1, verbose = F){
+
+
+  if (n.work == 1){
+    deg.gene.a <- FindAllMarkers(object,
+                                 assay = assay,
+                                 slot = slot,
+                                 only.pos = only.pos,
+                                 min.pct = min.pct,
+                                 test.use = test.use,
+                                 logfc.threshold = logfc.threshold,
+                                 max.cells.per.ident = max.cells.per.ident,
+                                 return.thresh = return.thresh, #1 ensures all genes are returned
+                                 verbose = verbose,
+                                 ...)
+  } else {
+
+    if (!require("BiocParallel")) stop("BiocParallel package not found.")
+
+    suppressWarnings({
+
+
+      # helper function to set BPParam
+      safeBPParam <- function(nworkers) {
+        if (.Platform$OS.type=="windows") {
+          BiocParallel::SnowParam(nworkers)
+        } else {
+          BiocParallel::MulticoreParam(nworkers)
+        }
+      }
+
+      # get number of unique clusters
+      M <- length(unique(object@active.ident))
+      N <- M-1
+
+      # get optimal BPParam setup
+      if (n.work > M) n.work <- M
+      nw <- safeBPParam(n.work)
+
+      # find marker wrapper function
+      FindMarker.wrapper <- function(object, x){
+        Seurat::FindMarkers(object, ident.1 = x, only.pos = only.pos, min.pct =min.pct, test.use = test.use,
+                            logfc.threshold = logfc.threshold, max.cells.per.ident = max.cells.per.ident, verbose = verbose, ...)
+      }
+
+
+
+      # run parallelized implementation of find markers
+      deg.gene.par <- bplapply(0:N, object = object, FUN = FindMarker.wrapper, BPPARAM = nw)
+
+      # retrieve results
+      deg.gene.a <- NULL
+      for (i in 1:length(deg.gene.par)){
+        deg.gene.par[[i]]$cluster <- as.character(i-1)
+        deg.gene.par[[i]]$gene <- rownames(deg.gene.par[[i]])
+        deg.gene.a <- bind_rows(deg.gene.a, deg.gene.par[[i]])
+      }
+
+      rm(deg.gene.par)
+      invisible(gc())
+
+    })
+  }
+
+  return(deg.gene.a)
+
+}
+
+
