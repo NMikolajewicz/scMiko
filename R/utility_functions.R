@@ -613,9 +613,10 @@ prepSeurat <- function (so){
 
   so <- fixBarcodeLabel(so)
 
-  if (!("SCT_nn" %in% names(so@graphs)))  {
+  try({
     so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
-  }
+  }, silent = T)
+
   so <- updateDimNames(so) # required after Seurat 3.1.2 update
 
   return(so)
