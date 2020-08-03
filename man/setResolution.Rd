@@ -4,12 +4,14 @@
 \alias{setResolution}
 \title{Set cluster resolution}
 \usage{
-setResolution(so, cluster.resolution)
+setResolution(so, cluster.resolution, assay = DefaultAssay(so))
 }
 \arguments{
 \item{so}{Seurat Object}
 
 \item{cluster.resolution}{Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.}
+
+\item{assay}{Seurat assay to check for existing clustering at specified resolution.}
 }
 \value{
 Seurat object

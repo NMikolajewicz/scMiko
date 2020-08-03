@@ -523,13 +523,24 @@ fixBarcodeLabel <- function (so){
 #'
 #' @param so Seurat Object
 #' @param cluster.resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
+#' @param assay Seurat assay to check for existing clustering at specified resolution.
 #' @name setResolution
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-setResolution <- function (so, cluster.resolution){
+setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so)){
 
-  so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+  if (!("Seurat" %in% class(so))) stop("input is not a seurat object")
+  if (!("numeric" %in% class(cluster.resolution))) stop("cluster.resolution is not a numeric")
+
+  target.entry <- paste0(assay, "_snn_res.", cluster.resolution)
+
+  if (target.entry %in% names(so@meta.data)){
+    so@meta.data[["seurat_clusters"]] <- so@meta.data[["target.entry"]]
+    Idents(so) <- so@meta.data[["seurat_clusters"]]
+  } else {
+    so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+  }
 
   return(so)
 }
