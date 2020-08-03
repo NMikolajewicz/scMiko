@@ -4155,7 +4155,7 @@ savePDF <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save.
 #' all.markers <- FindAllMarkers.Parallel(object = so.query, n.work = 4)
 #'
 FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(object), slot = "data", only.pos = F, min.pct = 0, test.use = "MAST",
-                                    logfc.threshold = 0.15, max.cells.per.ident = 200, return.thresh = 1, verbose = F){
+                                    logfc.threshold = 0.15, max.cells.per.ident = 200, return.thresh = 1, verbose = F, ...){
 
 
   if (n.work == 1){

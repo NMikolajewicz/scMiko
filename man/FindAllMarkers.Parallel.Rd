@@ -15,7 +15,8 @@ FindAllMarkers.Parallel(
   logfc.threshold = 0.15,
   max.cells.per.ident = 200,
   return.thresh = 1,
-  verbose = F
+  verbose = F,
+  ...
 )
 }
 \arguments{
