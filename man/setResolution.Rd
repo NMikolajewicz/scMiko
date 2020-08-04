@@ -4,7 +4,12 @@
 \alias{setResolution}
 \title{Set cluster resolution}
 \usage{
-setResolution(so, cluster.resolution, assay = DefaultAssay(so))
+setResolution(
+  so,
+  cluster.resolution,
+  assay = DefaultAssay(so),
+  use.existing.clusters = T
+)
 }
 \arguments{
 \item{so}{Seurat Object}
@@ -12,6 +17,8 @@ setResolution(so, cluster.resolution, assay = DefaultAssay(so))
 \item{cluster.resolution}{Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.}
 
 \item{assay}{Seurat assay to check for existing clustering at specified resolution.}
+
+\item{use.existing.clusters}{Logical flag specifying whether to use existing clustering solution if it already exists for specified resolution.}
 }
 \value{
 Seurat object
