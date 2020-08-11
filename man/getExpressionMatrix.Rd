@@ -9,7 +9,8 @@ getExpressionMatrix(
   only.variable = F,
   which.assay = NULL,
   which.data = "scale",
-  use.additional.genes = NA
+  use.additional.genes = NA,
+  as.dense = F
 )
 }
 \arguments{
@@ -17,7 +18,7 @@ getExpressionMatrix(
 
 \item{only.variable}{Logical indicating whether to include variable features only or not.}
 
-\item{which.assay}{Seurat assay to get data frome. Default is DefaultAssay(so).}
+\item{which.assay}{Seurat assay to get data from. Default is DefaultAssay(so).}
 
 \item{which.data}{Specify which data to use (refers to slots in Seurat object assay). One of:
 \itemize{
@@ -26,6 +27,8 @@ getExpressionMatrix(
 }}
 
 \item{use.additional.genes}{Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.}
+
+\item{as.dense}{Logical to convert sparse to dense matrix. Only applies if which.data is 'data'. Default is FALSE.}
 }
 \value{
 gene x cell expression matrix

@@ -1069,18 +1069,19 @@ entrez2sym <- function(my.entrez, my.species){
 #'
 #' @param so Seurat Object
 #' @param only.variable Logical indicating whether to include variable features only or not.
-#' @param which.assay Seurat assay to get data frome. Default is DefaultAssay(so).
+#' @param which.assay Seurat assay to get data from. Default is DefaultAssay(so).
 #' @param which.data Specify which data to use (refers to slots in Seurat object assay). One of:
 #' \itemize{
 #' \item "scale" - Default
 #' \item "data"
 #' }
 #' @param use.additional.genes Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.
+#' @param as.dense Logical to convert sparse to dense matrix. Only applies if which.data is 'data'. Default is FALSE.
 #' @name getExpressionMatrix
 #' @author Nicholas Mikolajewicz
 #' @return gene x cell expression matrix
 #'
-getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale", use.additional.genes = NA){
+getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which.data = "scale", use.additional.genes = NA, as.dense = F){
 
   # specify assay
   if (is.null(which.assay)) which.assay <- DefaultAssay(so)
@@ -1089,9 +1090,13 @@ getExpressionMatrix <- function(so, only.variable = F, which.assay = NULL, which
   if (which.data == "scale"){
     exp.mat.complete <- so@assays[[which.assay]]@scale.data
   } else if (which.data == "data"){
-    exp.mat.complete <- as.matrix(so@assays[[which.assay]]@data)
-  }
+    if (as.dense){
+      exp.mat.complete <- as.matrix(so@assays[[which.assay]]@data)
+    } else {
+      exp.mat.complete <- (so@assays[[which.assay]]@data)
+    }
 
+  }
 
 
   if (only.variable){
