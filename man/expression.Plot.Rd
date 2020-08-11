@@ -7,8 +7,11 @@
 expression.Plot(
   so,
   which.gene,
+  e.mat = NULL,
+  f.mat = NULL,
   which.group = "seurat_clusters",
-  which.data = "data"
+  which.data = "data",
+  which.assay = DefaultAssay(so)
 )
 }
 \arguments{
@@ -16,9 +19,15 @@ expression.Plot(
 
 \item{which.gene}{query gene. Must be available in Seurat object.}
 
+\item{e.mat}{expression matrix (gene x cell). If not provided, computed from seurat object (more computationally heavy).}
+
+\item{f.mat}{expression fraction matrix (gene x cell). If not provided, computed from seurat object (more computationally heavy).}
+
 \item{which.group}{Group to cluster gene expression by. Must be column header in so meta data. Default is "seurat_clusters".}
 
-\item{which.data}{Specifies which data to use for plot. Must be either "data" (default) or "scale".}
+\item{which.data}{Specifies which seurat data used to compute e.mat and f.mat. Must be either "data" (default) or "scale". Used only if e.mat and f.mat are not provided.}
+
+\item{which.assay}{Specifies which seurat assay to used to compute e.mat. Used only if e.mat is not provided. Default is DefaultAssay(so)}
 }
 \value{
 ggplot object
