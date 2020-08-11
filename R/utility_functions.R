@@ -571,8 +571,6 @@ prepGeneList <- function (so, global.enviroment) {
     gNames.df <- unique(gNames.df)
     gNames.list <- as.vector(gNames.df$g)
     names(gNames.list) <- as.vector(gNames.df$n)
-  } else if (exists("gNames.list")) {
-    gNames.list <- gNames.list
   } else {
     try({av.meta <- so@assays[["RNA"]]@meta.features}, silent = T)
     try({av.meta2 <- so.query@assays[["SCT"]]@meta.features}, silent = T)
