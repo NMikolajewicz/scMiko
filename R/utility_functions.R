@@ -562,7 +562,6 @@ setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so), use
 #'
 prepGeneList <- function (so, global.enviroment) {
   if (("gNames.list_master" %in% global.enviroment)) {
-    gNames.list <- NULL
     for (i in 1:length(gNames.list_master)) {
       gNames.list <- c(gNames.list, gNames.list_master[[i]])
     }
