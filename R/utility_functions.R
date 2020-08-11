@@ -561,27 +561,30 @@ setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so), use
 #' gNames.list <- prepGeneList(so, objects())
 #'
 prepGeneList <- function (so, global.enviroment) {
-  if (("gNames.list_master" %in% global.enviroment)) {
-    for (i in 1:length(gNames.list_master)) {
-      gNames.list <- c(gNames.list, gNames.list_master[[i]])
+  if (!exists("gNames.list")){
+    if (("gNames.list_master" %in% global.enviroment)) {
+      for (i in 1:length(gNames.list_master)) {
+        gNames.list <- c(gNames.list, gNames.list_master[[i]])
+      }
+      gNames.df <- data.frame(n = gsub("\\..*", "", as.vector(names(gNames.list))),
+                              g = as.vector(gNames.list))
+      gNames.df <- unique(gNames.df)
+      gNames.list <- as.vector(gNames.df$g)
+      names(gNames.list) <- as.vector(gNames.df$n)
+    } else {
+      try({av.meta <- so@assays[["RNA"]]@meta.features}, silent = T)
+      try({av.meta2 <- so.query@assays[["SCT"]]@meta.features}, silent = T)
+      if (exists("av.meta") && all(c("SYMBOL", "ENSEMBL") %in% colnames(av.meta)) && (sum(is.na(av.meta$ENSEMBL)) == 0)) {
+        gNames.list <- as.vector(av.meta$SYMBOL)
+        names(gNames.list) <- as.vector(av.meta$ENSEMBL)
+      } else if (exists("av.meta2") && all(c("SYMBOL", "ENSEMBL") %in% colnames(av.meta2)) && (sum(is.na(av.meta2$ENSEMBL)) == 0)){
+        gNames.list <- as.vector(av.meta2$SYMBOL)
+        names(gNames.list) <- as.vector(av.meta2$ENSEMBL)
+      }
     }
-    gNames.df <- data.frame(n = gsub("\\..*", "", as.vector(names(gNames.list))),
-                            g = as.vector(gNames.list))
-    gNames.df <- unique(gNames.df)
-    gNames.list <- as.vector(gNames.df$g)
-    names(gNames.list) <- as.vector(gNames.df$n)
-  } else {
-    try({av.meta <- so@assays[["RNA"]]@meta.features}, silent = T)
-    try({av.meta2 <- so.query@assays[["SCT"]]@meta.features}, silent = T)
-    if (exists("av.meta") && all(c("SYMBOL", "ENSEMBL") %in% colnames(av.meta)) && (sum(is.na(av.meta$ENSEMBL)) == 0)) {
-      gNames.list <- as.vector(av.meta$SYMBOL)
-      names(gNames.list) <- as.vector(av.meta$ENSEMBL)
-    } else if (exists("av.meta2") && all(c("SYMBOL", "ENSEMBL") %in% colnames(av.meta2)) && (sum(is.na(av.meta2$ENSEMBL)) == 0)){
-      gNames.list <- as.vector(av.meta2$SYMBOL)
-      names(gNames.list) <- as.vector(av.meta2$ENSEMBL)
-    }
+    stopifnot(exists("gNames.list"))
   }
-  stopifnot(exists("gNames.list"))
+
   return(gNames.list)
 }
 
