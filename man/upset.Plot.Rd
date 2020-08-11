@@ -4,12 +4,14 @@
 \alias{upset.Plot}
 \title{Upset plot}
 \usage{
-upset.Plot(gene.sets, row.title = "")
+upset.Plot(gene.sets, row.title = "", column.title = "")
 }
 \arguments{
 \item{gene.sets}{named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.}
 
 \item{row.title}{Row title.}
+
+\item{column.title}{Column title.}
 }
 \value{
 plot handle

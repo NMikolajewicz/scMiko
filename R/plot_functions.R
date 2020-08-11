@@ -572,6 +572,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 #'
 #' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
 #' @param row.title Row title.
+#' @param column.title Column title.
 #' @name upset.Plot
 #' @return plot handle
 #' @examples
@@ -582,9 +583,9 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 #' # print plot
 #' print(plt.upset)
 #'
-upset.Plot <- function(gene.sets, row.title = ""){
-  # gene.mat <- list_to_matrix(gene.sets)
+upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 
+  if (!require(ComplexHeatmap)) stop("ComplexHeatmap package not found")
   m = ComplexHeatmap::make_comb_mat(gene.sets)
 
   plt.upset <- ComplexHeatmap::UpSet(m, top_annotation = HeatmapAnnotation(
@@ -597,7 +598,7 @@ upset.Plot <- function(gene.sets, row.title = ""){
     annotation_name_side = "left",
     annotation_name_rot = 0),
     row_title = row.title,
-    column_title = sample.name)
+    column_title = column.title)
 
   return(plt.upset)
 }
