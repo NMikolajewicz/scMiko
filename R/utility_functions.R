@@ -542,7 +542,16 @@ setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so), use
     so@meta.data[["seurat_clusters"]] <- so@meta.data[[target.entry]]
     Idents(so) <- so@meta.data[["seurat_clusters"]]
   } else {
-    so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+
+    my.assay <- DefaultAssay(so)
+    if ("integrated" %in% names(so@assays)){
+      DefaultAssay(so) <- "integrated"
+      so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+      DefaultAssay(so) <- my.assay
+    } else {
+      so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+    }
+
   }
 
   return(so)
