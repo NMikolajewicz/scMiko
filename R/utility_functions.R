@@ -66,6 +66,7 @@ checkGeneRep <- function(reference.genes, query.genes){
 #'
 ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
+  warning("Converting SYMBOL to ENSEMBLE in SCT assay...\n")
   # var features
   so_temp <- so@assays[["SCT"]]@var.features
   gene.rep <- checkGeneRep (gNames.list, so_temp)
@@ -154,6 +155,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
   # RNA ASSAY
 
   if (convert.RNA == TRUE){
+    warning("Converting SYMBOL to ENSEMBLE in RNA assay...\n")
     # var features
     so_temp <- so@assays[["RNA"]]@var.features
     if (length(so_temp) > 0){
@@ -183,6 +185,7 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
   }
 
   if ("integrated" %in% names(so@assays)){
+    warning("Converting SYMBOL to ENSEMBLE in Integrated assay...\n")
 
     # var features
     so_ens <- so@assays[["integrated"]]@var.features
@@ -215,7 +218,6 @@ ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
 
   return(so)
 }
-
 
 
 #' Convert gene symbol representation to Hs or Mm
