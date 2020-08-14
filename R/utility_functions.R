@@ -4311,7 +4311,7 @@ prepSeurat2 <- function (so, e2s, species, cr= NULL, subset = NULL, subsample = 
         subset.list[[subset.input$subset[i]]]$subgroups <- as.numeric(subset.list[[subset.input$subset[i]]]$subgroups)
       }
     }
-    subset <- as.data.frame(subset.list[[subgroup]]) # NA specified as "no.subset"
+    subset <- as.data.frame(subset.list[[subset]]) # NA specified as "no.subset"
   }
 
   if (!is.null(subset) && ("data.frame" %in% class(subset))) {
