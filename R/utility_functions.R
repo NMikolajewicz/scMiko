@@ -523,19 +523,20 @@ fixBarcodeLabel <- function (so){
 #' Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
 #'
 #' @param so Seurat Object
-#' @param cluster.resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
+#' @param resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
 #' @param assay Seurat assay to check for existing clustering at specified resolution.
 #' @param use.existing.clusters Logical flag specifying whether to use existing clustering solution if it already exists for specified resolution.
+#' @param ... additional arguments passed to Seurat::FindClusters(...)
 #' @name setResolution
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so), use.existing.clusters = T){
+setResolution <- function (so, resolution, assay = DefaultAssay(so), use.existing.clusters = T, ...){
 
   if (!("Seurat" %in% class(so))) stop("input is not a seurat object")
-  if (!("numeric" %in% class(cluster.resolution))) stop("cluster.resolution is not a numeric")
+  if (!("numeric" %in% class(resolution))) stop("resolution is not a numeric")
 
-  target.entry <- paste0(assay, "_snn_res.", cluster.resolution)
+  target.entry <- paste0(assay, "_snn_res.", resolution)
 
   if ((target.entry %in% names(so@meta.data)) & use.existing.clusters){
     so@meta.data[["seurat_clusters"]] <- so@meta.data[[target.entry]]
@@ -545,10 +546,10 @@ setResolution <- function (so, cluster.resolution, assay = DefaultAssay(so), use
     my.assay <- DefaultAssay(so)
     if ("integrated" %in% names(so@assays)){
       DefaultAssay(so) <- "integrated"
-      so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+      so <- FindClusters(object = so, resolution = resolution, ...)
       DefaultAssay(so) <- my.assay
     } else {
-      so <- FindClusters(object = so, resolution = cluster.resolution, verbose = 0, algorithm = 1)
+      so <- FindClusters(object = so, resolution = resolution, ...)
     }
 
   }
