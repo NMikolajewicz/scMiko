@@ -8,7 +8,7 @@ prepSeurat2(
   so,
   e2s,
   species,
-  cr = NULL,
+  resolution = NULL,
   subset = NULL,
   subsample = 1,
   M00_subgroup.path = "M00_subgroups.csv"
@@ -21,7 +21,7 @@ prepSeurat2(
 
 \item{species}{Species. One of "Mm" or "Hs".}
 
-\item{cr}{cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.}
+\item{resolution}{cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.}
 
 \item{subset}{Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.}
 

@@ -4256,7 +4256,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @param so Seurat objects
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
 #' @param species Species. One of "Mm" or "Hs".
-#' @param cr cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
+#' @param resolution cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
 #' @param subset Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
@@ -4264,7 +4264,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (so, e2s, species, cr= NULL, subset = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv"){
+prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv"){
 
 
   warning("Checking seurat object...\n")
@@ -4321,9 +4321,9 @@ prepSeurat2 <- function (so, e2s, species, cr= NULL, subset = NULL, subsample = 
   }
 
   # set resolution #############################################################
-  if (!is.null(cr) && is.numeric(cr)){
+  if (!is.null(resolution) && is.numeric(resolution)){
     warning("setting cluster resolution...\n")
-    so <-   scMiko::setResolution(so, cluster.resolution = cr)
+    so <-   setResolution(so, resolution = resolution)
   }
 
   # convert ENSEBLE to GENE names in Seurat object #############################
