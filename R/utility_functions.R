@@ -546,9 +546,11 @@ setResolution <- function (so, resolution, assay = DefaultAssay(so), use.existin
     my.assay <- DefaultAssay(so)
     if ("integrated" %in% names(so@assays)){
       DefaultAssay(so) <- "integrated"
+      warning("Computing clusters using integrated assay...\n")
       so <- FindClusters(object = so, resolution = resolution, ...)
       DefaultAssay(so) <- my.assay
     } else {
+      warning(paste0("Computing clusters using ", assay, " assay...\n"))
       so <- FindClusters(object = so, resolution = resolution, ...)
     }
 
