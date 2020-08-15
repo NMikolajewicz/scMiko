@@ -4343,6 +4343,13 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
   }
   n.postsubsample <- ncol(so)
 
+
+  # set resolution #############################################################
+  if (!is.null(resolution) && is.numeric(resolution)){
+    warning("setting cluster resolution...\n")
+    so <-   setResolution(so, resolution = resolution)
+  }
+
   # subgroup data ##############################################################
   if (!is.null(subset) && is.character(subset)) {
     subset.input <- read.csv(M00_subgroup.path, header = TRUE)
@@ -4367,12 +4374,6 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
     so <- subsetSeurat(so, subset)
   }
   n.postsubset <- ncol(so)
-
-  # set resolution #############################################################
-  if (!is.null(resolution) && is.numeric(resolution)){
-    warning("setting cluster resolution...\n")
-    so <-   setResolution(so, resolution = resolution)
-  }
 
   # convert ENSEBLE to GENE names in Seurat object #############################
   warning("converting ENSEMBL to SYMBOL...\n")
