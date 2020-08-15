@@ -4406,7 +4406,7 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
   }
 
   # rescale if data was subset #################################################
-  if (((n.presubset != n.postsubset) | ((n.presubsample != n.postsubsample)) && (data.rescaled == F)){
+  if (((n.presubset != n.postsubset) | (n.presubsample != n.postsubsample)) && (data.rescaled == F)){
     try({
       if (length(so@assays[[DefaultAssay(so)]]@var.features) > 0) nVar <- length(so@assays[[DefaultAssay(so)]]@var.features) else nVar <- 3000
     }, silent = T)
