@@ -11,7 +11,8 @@ prepSeurat2(
   resolution = NULL,
   subset = NULL,
   subsample = 1,
-  M00_subgroup.path = "M00_subgroups.csv"
+  M00_subgroup.path = "M00_subgroups.csv",
+  terms2drop = NULL
 )
 }
 \arguments{
@@ -28,12 +29,14 @@ prepSeurat2(
 \item{subsample}{Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.}
 
 \item{M00_subgroup.path}{Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.}
+
+\item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs".}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
 }
 \description{
-Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data.
+Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.
 }
 \author{
 Nicholas Mikolajewicz
