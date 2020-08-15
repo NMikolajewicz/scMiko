@@ -4254,7 +4254,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 
 #' prep Seurat (Extended adaptation of prepSeurat)
 #'
-#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data.
+#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.
 #'
 #' @param so Seurat objects
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
@@ -4263,11 +4263,12 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @param subset Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
+#' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs".
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv"){
+prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
 
 
   warning("Checking seurat object...\n")
@@ -4294,11 +4295,53 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
     }
   }
 
+  # trim down seurat object ####################################################
+  if (!is.null(terms2drop)){
+    supported.terms <- c("pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg",
+                         "counts", "data", "scale", "rna", "sct", "integrated", "graphs")
+    terms2drop <- terms2drop[terms2drop %in% supported.terms]
+
+    # empty sparse matrix
+    null.dgcmat <- as(matrix(NA), "dgCMatrix")
+
+    if ("pca" %in% terms2drop) try({so@reductions[["pca"]] <- NULL}, silent = T)
+    if ("umap" %in% terms2drop) try({so@reductions[["umap"]] <- NULL}, silent = T)
+    if ("tsne" %in% terms2drop) try({so@reductions[["tsne"]] <- NULL}, silent = T)
+    if ("ica" %in% terms2drop) try({so@reductions[["ica"]] <- NULL}, silent = T)
+    if ("nmf" %in% terms2drop) try({so@misc[["nmf"]] <- NULL}, silent = T)
+    if ("corr" %in% terms2drop) try({so@misc[["similarity.scale"]] <- NULL}, silent = T)
+    if ("gsva" %in% terms2drop) try({so@misc[["gsva"]] <- NULL}, silent = T)
+    if ("deg" %in% terms2drop) try({so@misc[["deg"]] <- NULL}, silent = T)
+    if ("counts" %in% terms2drop) {
+      try({so@assays[["RNA"]]@counts <- null.dgcmat}, silent = T)
+      try({so@assays[["SCT"]]@counts <- null.dgcmat}, silent = T)
+      try({so@assays[["integrated"]]@counts <- null.dgcmat}, silent = T)
+    }
+    if ("data" %in% terms2drop) {
+      try({so@assays[["RNA"]]@data <- null.dgcmat}, silent = T)
+      try({so@assays[["SCT"]]@data <- null.dgcmat}, silent = T)
+      try({so@assays[["integrated"]]@data <- null.dgcmat}, silent = T)
+    }
+    if ("scale" %in% terms2drop) {
+      try({so@assays[["RNA"]]@scale.data <- matrix(NA)}, silent = T)
+      try({so@assays[["SCT"]]@scale.data <- matrix(NA)}, silent = T)
+      try({so@assays[["integrated"]]@scale.data <- matrix(NA)}, silent = T)
+    }
+    if ("rna" %in% terms2drop) try({so@assays[["RNA"]] <- NULL}, silent = T)
+    if ("sct" %in% terms2drop) try({so@assays[["SCT"]] <- NULL}, silent = T)
+    if ("integrated" %in% terms2drop) try({so@assays[["integrated"]] <- NULL}, silent = T)
+    if ("graphs" %in% terms2drop) try({so@graphs <- NULL}, silent = T)
+
+    so <- UpdateSeuratObject(so)
+  }
+
   # subsample ##################################################################
+  n.presubsample <- ncol(so)
   if (subsample < 1 && is.numeric(subsample)){
     warning("subsampling data...\n")
     so <- downsampleSeurat(so, subsample.factor = subsample)
   }
+  n.postsubsample <- ncol(so)
 
   # subgroup data ##############################################################
   if (!is.null(subset) && is.character(subset)) {
@@ -4318,10 +4361,12 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
     subset <- as.data.frame(subset.list[[subset]]) # NA specified as "no.subset"
   }
 
+  n.presubset <- ncol(so)
   if (!is.null(subset) && ("data.frame" %in% class(subset))) {
     warning("subsetting data...\n")
     so <- subsetSeurat(so, subset)
   }
+  n.postsubset <- ncol(so)
 
   # set resolution #############################################################
   if (!is.null(resolution) && is.numeric(resolution)){
@@ -4341,6 +4386,7 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
   # integrated data object handling ############################################
   all.assays <- names(so@assays)
   all.commands <- names(so@commands)
+  data.rescaled <- F
   if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
     warning("ensuring correct assays are setL...\n")
     if (DefaultAssay(so) != "RNA") {
@@ -4355,12 +4401,28 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
     so <-NormalizeData(so, verbose = FALSE)
     so <- ScaleData(so, verbose = FALSE)
     so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 3000)
+
+    data.rescaled <- T
+  }
+
+  # rescale if data was subset #################################################
+  if (((n.presubset != n.postsubset) | ((n.presubsample != n.postsubsample)) && (data.rescaled == F)){
+    try({
+      if (length(so@assays[[DefaultAssay(so)]]@var.features) > 0) nVar <- length(so@assays[[DefaultAssay(so)]]@var.features) else nVar <- 3000
+    }, silent = T)
+    if (!exists("nVar")) nVar <- 3000
+
+    so <-NormalizeData(so, verbose = FALSE)
+    so <- ScaleData(so, verbose = FALSE)
+    so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = nVar)
+
+    data.rescaled <- T
   }
 
   return(list(
     so = so,
     assay = DefaultAssay(so),
-    n.cell = ncol(so)
+    n.cell = ncol(so),
+    rescaled = data.rescaled
   ))
 }
-
