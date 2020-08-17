@@ -4400,7 +4400,7 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
   } else if (("integrated" %in% all.assays) & !("NormalizeData.RNA" %in% all.commands) & !("ScaleData.RNA" %in% all.commands)){
     DefaultAssay(so) <- "RNA"
     so <-NormalizeData(so, verbose = FALSE)
-    so <- ScaleData(so, verbose = FALSE)
+    so <- ScaleData(so, verbose = FALSE, features = rownames(so))
     so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 3000)
 
     data.rescaled <- T
@@ -4414,7 +4414,7 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
     if (!exists("nVar")) nVar <- 3000
 
     so <-NormalizeData(so, verbose = FALSE)
-    so <- ScaleData(so, verbose = FALSE)
+    so <- ScaleData(so, verbose = FALSE, features = rownames(so))
     so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = nVar)
 
     data.rescaled <- T
