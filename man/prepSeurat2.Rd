@@ -5,7 +5,7 @@
 \title{prep Seurat (Extended adaptation of prepSeurat)}
 \usage{
 prepSeurat2(
-  so,
+  object,
   e2s,
   species,
   resolution = NULL,
@@ -16,7 +16,7 @@ prepSeurat2(
 )
 }
 \arguments{
-\item{so}{Seurat objects}
+\item{object}{Seurat objects}
 
 \item{e2s}{ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.}
 

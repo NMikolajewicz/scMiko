@@ -522,7 +522,7 @@ fixBarcodeLabel <- function (so){
 #'
 #' Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
 #' @param resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
 #' @param assay Seurat assay to check for existing clustering at specified resolution.
 #' @param use.existing.clusters Logical flag specifying whether to use existing clustering solution if it already exists for specified resolution.
@@ -531,33 +531,33 @@ fixBarcodeLabel <- function (so){
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-setResolution <- function (so, resolution, assay = DefaultAssay(so), use.existing.clusters = T, ...){
+setResolution <- function (object, resolution, assay = DefaultAssay(object), use.existing.clusters = T, ...){
 
-  if (!("Seurat" %in% class(so))) stop("input is not a seurat object")
+  if (!("Seurat" %in% class(object))) stop("input is not a seurat object")
   if (!("numeric" %in% class(resolution))) stop("resolution is not a numeric")
 
   target.entry <- paste0(assay, "_snn_res.", resolution)
 
-  if ((target.entry %in% names(so@meta.data)) & use.existing.clusters){
-    so@meta.data[["seurat_clusters"]] <- so@meta.data[[target.entry]]
-    Idents(so) <- so@meta.data[["seurat_clusters"]]
+  if ((target.entry %in% names(object@meta.data)) & use.existing.clusters){
+    object@meta.data[["seurat_clusters"]] <- object@meta.data[[target.entry]]
+    Idents(object) <- object@meta.data[["seurat_clusters"]]
   } else {
 
-    my.assay <- DefaultAssay(so)
-    if ("integrated" %in% names(so@assays)){
-      DefaultAssay(so) <- "integrated"
+    my.assay <- DefaultAssay(object)
+    if ("integrated" %in% names(object@assays)){
+      DefaultAssay(object) <- "integrated"
       warning("Computing clusters using integrated assay...\n")
-      so <- FindNeighbors(object = so, verbose = F)
-      so <- FindClusters(object = so, resolution = resolution, verbose = F, ...)
-      DefaultAssay(so) <- my.assay
+      object <- FindNeighbors(object = object, verbose = F)
+      object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
+      DefaultAssay(object) <- my.assay
     } else {
       warning(paste0("Computing clusters using ", assay, " assay...\n"))
-      so <- FindClusters(object = so, resolution = resolution, verbose = F,...)
+      object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
     }
 
   }
 
-  return(so)
+  return(object)
 }
 
 
@@ -623,24 +623,24 @@ getLoadPath <- function (file, directory = NULL){
 #'
 #' Preprocess using fixBarcodeLabel(), UpdateSeuratObject() and updateDimNames() Functions.
 #'
-#' @param so Seurat objects
+#' @param object Seurat objects
 #' @name prepSeurat
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-prepSeurat <- function (so){
+prepSeurat <- function (object){
 
-  if (class(so) != "Seurat") stop("input must be Seurat Object")
+  if (class(object) != "Seurat") stop("input must be Seurat Object")
 
-  so <- fixBarcodeLabel(so)
+  object <- fixBarcodeLabel(object)
 
   try({
-    so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+    object <- UpdateSeuratObject(object) # required after Seurat 3.1.2 update
   }, silent = T)
 
-  so <- updateDimNames(so) # required after Seurat 3.1.2 update
+  object <- updateDimNames(object) # required after Seurat 3.1.2 update
 
-  return(so)
+  return(object)
 }
 
 
@@ -4256,7 +4256,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #'
 #' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.
 #'
-#' @param so Seurat objects
+#' @param object Seurat objects
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
 #' @param species Species. One of "Mm" or "Hs".
 #' @param resolution cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
@@ -4268,29 +4268,29 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
+prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
 
 
   warning("Checking seurat object...\n")
   # assertion
-  if (class(so) != "Seurat") stop("input must be Seurat Object")
+  if (class(object) != "Seurat") stop("input must be Seurat Object")
 
   # general object handling ####################################################
 
-  so <- fixBarcodeLabel(so)
+  object <- fixBarcodeLabel(object)
 
   try({
-    so <- UpdateSeuratObject(so) # required after Seurat 3.1.2 update
+    object <- UpdateSeuratObject(object) # required after Seurat 3.1.2 update
   }, silent = T)
 
-  so <- updateDimNames(so) # required after Seurat 3.1.2 update
+  object <- updateDimNames(object) # required after Seurat 3.1.2 update
 
   # species
-  if (species != unique(so@meta.data[["Organism"]])) {
-    if (length(unique(so@meta.data[["Organism"]])) == 1) {
-      species <- unique(so@meta.data[["Organism"]])
+  if (species != unique(object@meta.data[["Organism"]])) {
+    if (length(unique(object@meta.data[["Organism"]])) == 1) {
+      species <- unique(object@meta.data[["Organism"]])
       warning("Incorrect input species was provided, and was updated to reflect what was available in seurat object.\n")
-    } else if (length(unique(so@meta.data[["Organism"]])) > 1)  {
+    } else if (length(unique(object@meta.data[["Organism"]])) > 1)  {
       warning("Input species could not be verfied and is being used as-is.\n")
     }
   }
@@ -4304,50 +4304,50 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset.data = NULL,
     # empty sparse matrix
     null.dgcmat <- as(matrix(NA), "dgCMatrix")
 
-    if ("pca" %in% terms2drop) try({so@reductions[["pca"]] <- NULL}, silent = T)
-    if ("umap" %in% terms2drop) try({so@reductions[["umap"]] <- NULL}, silent = T)
-    if ("tsne" %in% terms2drop) try({so@reductions[["tsne"]] <- NULL}, silent = T)
-    if ("ica" %in% terms2drop) try({so@reductions[["ica"]] <- NULL}, silent = T)
-    if ("nmf" %in% terms2drop) try({so@misc[["nmf"]] <- NULL}, silent = T)
-    if ("corr" %in% terms2drop) try({so@misc[["similarity.scale"]] <- NULL}, silent = T)
-    if ("gsva" %in% terms2drop) try({so@misc[["gsva"]] <- NULL}, silent = T)
-    if ("deg" %in% terms2drop) try({so@misc[["deg"]] <- NULL}, silent = T)
+    if ("pca" %in% terms2drop) try({object@reductions[["pca"]] <- NULL}, silent = T)
+    if ("umap" %in% terms2drop) try({object@reductions[["umap"]] <- NULL}, silent = T)
+    if ("tsne" %in% terms2drop) try({object@reductions[["tsne"]] <- NULL}, silent = T)
+    if ("ica" %in% terms2drop) try({object@reductions[["ica"]] <- NULL}, silent = T)
+    if ("nmf" %in% terms2drop) try({object@misc[["nmf"]] <- NULL}, silent = T)
+    if ("corr" %in% terms2drop) try({object@misc[["similarity.scale"]] <- NULL}, silent = T)
+    if ("gsva" %in% terms2drop) try({object@misc[["gsva"]] <- NULL}, silent = T)
+    if ("deg" %in% terms2drop) try({object@misc[["deg"]] <- NULL}, silent = T)
     if ("counts" %in% terms2drop) {
-      try({so@assays[["RNA"]]@counts <- null.dgcmat}, silent = T)
-      try({so@assays[["SCT"]]@counts <- null.dgcmat}, silent = T)
-      try({so@assays[["integrated"]]@counts <- null.dgcmat}, silent = T)
+      try({object@assays[["RNA"]]@counts <- null.dgcmat}, silent = T)
+      try({object@assays[["SCT"]]@counts <- null.dgcmat}, silent = T)
+      try({object@assays[["integrated"]]@counts <- null.dgcmat}, silent = T)
     }
     if ("data" %in% terms2drop) {
-      try({so@assays[["RNA"]]@data <- null.dgcmat}, silent = T)
-      try({so@assays[["SCT"]]@data <- null.dgcmat}, silent = T)
-      try({so@assays[["integrated"]]@data <- null.dgcmat}, silent = T)
+      try({object@assays[["RNA"]]@data <- null.dgcmat}, silent = T)
+      try({object@assays[["SCT"]]@data <- null.dgcmat}, silent = T)
+      try({object@assays[["integrated"]]@data <- null.dgcmat}, silent = T)
     }
     if ("scale" %in% terms2drop) {
-      try({so@assays[["RNA"]]@scale.data <- matrix(NA)}, silent = T)
-      try({so@assays[["SCT"]]@scale.data <- matrix(NA)}, silent = T)
-      try({so@assays[["integrated"]]@scale.data <- matrix(NA)}, silent = T)
+      try({object@assays[["RNA"]]@scale.data <- matrix(NA)}, silent = T)
+      try({object@assays[["SCT"]]@scale.data <- matrix(NA)}, silent = T)
+      try({object@assays[["integrated"]]@scale.data <- matrix(NA)}, silent = T)
     }
-    if ("rna" %in% terms2drop) try({so@assays[["RNA"]] <- NULL}, silent = T)
-    if ("sct" %in% terms2drop) try({so@assays[["SCT"]] <- NULL}, silent = T)
-    if ("integrated" %in% terms2drop) try({so@assays[["integrated"]] <- NULL}, silent = T)
-    if ("graphs" %in% terms2drop) try({so@graphs <- NULL}, silent = T)
+    if ("rna" %in% terms2drop) try({object@assays[["RNA"]] <- NULL}, silent = T)
+    if ("sct" %in% terms2drop) try({object@assays[["SCT"]] <- NULL}, silent = T)
+    if ("integrated" %in% terms2drop) try({object@assays[["integrated"]] <- NULL}, silent = T)
+    if ("graphs" %in% terms2drop) try({object@graphs <- NULL}, silent = T)
 
-    so <- UpdateSeuratObject(so)
+    object <- UpdateSeuratObject(object)
   }
 
   # subsample ##################################################################
-  n.presubsample <- ncol(so)
+  n.presubsample <- ncol(object)
   if (subsample < 1 && is.numeric(subsample)){
     warning("subsampling data...\n")
-    so <- downsampleSeurat(so, subsample.factor = subsample)
+    object <- downsampleSeurat(object, subsample.factor = subsample)
   }
-  n.postsubsample <- ncol(so)
+  n.postsubsample <- ncol(object)
 
 
   # set resolution #############################################################
   if (!is.null(resolution) && is.numeric(resolution)){
     warning("setting cluster resolution...\n")
-    so <-   setResolution(so, resolution = resolution)
+    object <-   setResolution(object, resolution = resolution)
   }
 
   # subgroup data ##############################################################
@@ -4368,40 +4368,40 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset.data = NULL,
     subset.data <- as.data.frame(subset.list[[subset.data]]) # NA specified as "no.subset"
   }
 
-  n.presubset <- ncol(so)
+  n.presubset <- ncol(object)
   if (!is.null(subset.data) && ("data.frame" %in% class(subset.data))) {
     warning("subsetting data...\n")
-    so <- subsetSeurat(object = so, subset.df = subset.data)
+    object <- subsetSeurat(object = object, subset.df = subset.data)
   }
-  n.postsubset <- ncol(so)
+  n.postsubset <- ncol(object)
 
   # convert ENSEBLE to GENE names in Seurat object #############################
   warning("converting ENSEMBL to SYMBOL...\n")
-  gene.rep <-  checkGeneRep(e2s, as.vector(rownames(so)))
+  gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
 
   if (gene.rep == "ensembl"){
-    so <- ens2sym.so(so = so, gNames.list = e2s)
-    gene.rep <-  checkGeneRep(e2s, as.vector(rownames(so)))
+    object <- ens2sym.so(object, gNames.list = e2s)
+    gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
   }
 
   # integrated data object handling ############################################
-  all.assays <- names(so@assays)
-  all.commands <- names(so@commands)
+  all.assays <- names(object@assays)
+  all.commands <- names(object@commands)
   data.rescaled <- F
   if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
     warning("ensuring correct assays are setL...\n")
-    if (DefaultAssay(so) != "RNA") {
+    if (DefaultAssay(object) != "RNA") {
       warning("Setting default assay to 'RNA'")
-      DefaultAssay(so) <- "RNA"
+      DefaultAssay(object) <- "RNA"
     }
-    if (length(so@assays[["RNA"]]@var.features) == 0){
-      so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 3000)
+    if (length(object@assays[["RNA"]]@var.features) == 0){
+      object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = 3000)
     }
   } else if (("integrated" %in% all.assays) & !("NormalizeData.RNA" %in% all.commands) & !("ScaleData.RNA" %in% all.commands)){
-    DefaultAssay(so) <- "RNA"
-    so <-NormalizeData(so, verbose = FALSE)
-    so <- ScaleData(so, verbose = FALSE, features = rownames(so))
-    so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 3000)
+    DefaultAssay(object) <- "RNA"
+    object <-NormalizeData(object, verbose = FALSE)
+    object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+    object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = 3000)
 
     data.rescaled <- T
   }
@@ -4409,21 +4409,21 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset.data = NULL,
   # rescale if data was subset #################################################
   if (((n.presubset != n.postsubset) | (n.presubsample != n.postsubsample)) && (data.rescaled == F)){
     try({
-      if (length(so@assays[[DefaultAssay(so)]]@var.features) > 0) nVar <- length(so@assays[[DefaultAssay(so)]]@var.features) else nVar <- 3000
+      if (length(object@assays[[DefaultAssay(object)]]@var.features) > 0) nVar <- length(object@assays[[DefaultAssay(object)]]@var.features) else nVar <- 3000
     }, silent = T)
     if (!exists("nVar")) nVar <- 3000
 
-    so <-NormalizeData(so, verbose = FALSE)
-    so <- ScaleData(so, verbose = FALSE, features = rownames(so))
-    so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = nVar)
+    object <-NormalizeData(object, verbose = FALSE)
+    object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+    object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
 
     data.rescaled <- T
   }
 
   return(list(
-    so = so,
-    assay = DefaultAssay(so),
-    n.cell = ncol(so),
+    so = object,
+    assay = DefaultAssay(object),
+    n.cell = ncol(object),
     rescaled = data.rescaled
   ))
 }

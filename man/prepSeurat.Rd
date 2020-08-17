@@ -4,10 +4,10 @@
 \alias{prepSeurat}
 \title{prep Seurat}
 \usage{
-prepSeurat(so)
+prepSeurat(object)
 }
 \arguments{
-\item{so}{Seurat objects}
+\item{object}{Seurat objects}
 }
 \value{
 Seurat object

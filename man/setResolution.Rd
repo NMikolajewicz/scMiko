@@ -5,15 +5,15 @@
 \title{Set cluster resolution}
 \usage{
 setResolution(
-  so,
+  object,
   resolution,
-  assay = DefaultAssay(so),
+  assay = DefaultAssay(object),
   use.existing.clusters = T,
   ...
 )
 }
 \arguments{
-\item{so}{Seurat Object}
+\item{object}{Seurat Object}
 
 \item{resolution}{Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.}
 
