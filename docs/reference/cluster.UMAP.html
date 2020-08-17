@@ -119,6 +119,7 @@
   <span class='kw'>y.label</span> <span class='kw'>=</span> <span class='st'>"UMAP 2"</span>,
   <span class='kw'>plot.name</span> <span class='kw'>=</span> <span class='st'>"UMAP"</span>,
   <span class='kw'>include.labels</span> <span class='kw'>=</span> <span class='no'>T</span>,
+  <span class='kw'>reduction</span> <span class='kw'>=</span> <span class='st'>"umap"</span>,
   <span class='no'>...</span>
 )</pre>
 
@@ -148,6 +149,14 @@
     <tr>
       <th>include.labels</th>
       <td><p>Logical specifying wheter to plot group IDs on UMAP.</p></td>
+    </tr>
+    <tr>
+      <th>reduction</th>
+      <td><p>Character specifying which dimensional reduction to use (e.g., umap, pca). Default is 'umap'.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional arguments passed to Seurat::DimPlot().</p></td>
     </tr>
     </table>
 

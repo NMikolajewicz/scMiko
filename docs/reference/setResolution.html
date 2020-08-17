@@ -112,7 +112,13 @@
     <p>Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>setResolution</span>(<span class='no'>so</span>, <span class='no'>cluster.resolution</span>)</pre>
+    <pre class="usage"><span class='fu'>setResolution</span>(
+  <span class='no'>so</span>,
+  <span class='no'>resolution</span>,
+  <span class='kw'>assay</span> <span class='kw'>=</span> <span class='fu'>DefaultAssay</span>(<span class='no'>so</span>),
+  <span class='kw'>use.existing.clusters</span> <span class='kw'>=</span> <span class='no'>T</span>,
+  <span class='no'>...</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -122,8 +128,20 @@
       <td><p>Seurat Object</p></td>
     </tr>
     <tr>
-      <th>cluster.resolution</th>
+      <th>resolution</th>
       <td><p>Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.</p></td>
+    </tr>
+    <tr>
+      <th>assay</th>
+      <td><p>Seurat assay to check for existing clustering at specified resolution.</p></td>
+    </tr>
+    <tr>
+      <th>use.existing.clusters</th>
+      <td><p>Logical flag specifying whether to use existing clustering solution if it already exists for specified resolution.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional arguments passed to Seurat::FindClusters(...)</p></td>
     </tr>
     </table>
 

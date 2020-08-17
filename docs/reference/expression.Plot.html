@@ -115,8 +115,11 @@
     <pre class="usage"><span class='fu'>expression.Plot</span>(
   <span class='no'>so</span>,
   <span class='no'>which.gene</span>,
+  <span class='kw'>e.mat</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>f.mat</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>which.group</span> <span class='kw'>=</span> <span class='st'>"seurat_clusters"</span>,
-  <span class='kw'>which.data</span> <span class='kw'>=</span> <span class='st'>"data"</span>
+  <span class='kw'>which.data</span> <span class='kw'>=</span> <span class='st'>"data"</span>,
+  <span class='kw'>which.assay</span> <span class='kw'>=</span> <span class='fu'>DefaultAssay</span>(<span class='no'>so</span>)
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -131,12 +134,24 @@
       <td><p>query gene. Must be available in Seurat object.</p></td>
     </tr>
     <tr>
+      <th>e.mat</th>
+      <td><p>expression matrix (gene x cell). If not provided, computed from seurat object (more computationally heavy).</p></td>
+    </tr>
+    <tr>
+      <th>f.mat</th>
+      <td><p>expression fraction matrix (gene x cell). If not provided, computed from seurat object (more computationally heavy).</p></td>
+    </tr>
+    <tr>
       <th>which.group</th>
       <td><p>Group to cluster gene expression by. Must be column header in so meta data. Default is "seurat_clusters".</p></td>
     </tr>
     <tr>
       <th>which.data</th>
-      <td><p>Specifies which data to use for plot. Must be either "data" (default) or "scale".</p></td>
+      <td><p>Specifies which seurat data used to compute e.mat and f.mat. Must be either "data" (default) or "scale". Used only if e.mat and f.mat are not provided.</p></td>
+    </tr>
+    <tr>
+      <th>which.assay</th>
+      <td><p>Specifies which seurat assay to used to compute e.mat. Used only if e.mat is not provided. Default is DefaultAssay(so)</p></td>
     </tr>
     </table>
 

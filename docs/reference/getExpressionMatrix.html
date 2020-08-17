@@ -117,7 +117,8 @@
   <span class='kw'>only.variable</span> <span class='kw'>=</span> <span class='no'>F</span>,
   <span class='kw'>which.assay</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>which.data</span> <span class='kw'>=</span> <span class='st'>"scale"</span>,
-  <span class='kw'>use.additional.genes</span> <span class='kw'>=</span> <span class='fl'>NA</span>
+  <span class='kw'>use.additional.genes</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>as.dense</span> <span class='kw'>=</span> <span class='no'>F</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -133,7 +134,7 @@
     </tr>
     <tr>
       <th>which.assay</th>
-      <td><p>Seurat assay to get data frome. Default is DefaultAssay(so).</p></td>
+      <td><p>Seurat assay to get data from. Default is DefaultAssay(so).</p></td>
     </tr>
     <tr>
       <th>which.data</th>
@@ -145,6 +146,10 @@
     <tr>
       <th>use.additional.genes</th>
       <td><p>Character vector of additional genes to include (in addition to varibale, if variable flag is specificed). Default is NA.</p></td>
+    </tr>
+    <tr>
+      <th>as.dense</th>
+      <td><p>Logical to convert sparse to dense matrix. Only applies if which.data is 'data'. Default is FALSE.</p></td>
     </tr>
     </table>
 

@@ -115,6 +115,7 @@
     <pre class="usage"><span class='fu'>avgGroupExpression</span>(
   <span class='no'>so</span>,
   <span class='kw'>which.data</span> <span class='kw'>=</span> <span class='st'>"data"</span>,
+  <span class='kw'>which.assay</span> <span class='kw'>=</span> <span class='fu'>DefaultAssay</span>(<span class='no'>so</span>),
   <span class='kw'>which.center</span> <span class='kw'>=</span> <span class='st'>"mean"</span>,
   <span class='kw'>which.group</span> <span class='kw'>=</span> <span class='st'>"seurat_clusters"</span>,
   <span class='kw'>do.parallel</span> <span class='kw'>=</span> <span class='no'>F</span>
@@ -132,8 +133,12 @@
       <td><p>Character specfying which data slot. Default is "data".</p></td>
     </tr>
     <tr>
+      <th>which.assay</th>
+      <td><p>Character specigin which assay to use.</p></td>
+    </tr>
+    <tr>
       <th>which.center</th>
-      <td><p>Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sd", or "cv". If unspecified, default is "mean".</p></td>
+      <td><p>Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".</p></td>
     </tr>
     <tr>
       <th>which.group</th>

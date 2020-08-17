@@ -131,18 +131,21 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>additional arguments passed to WGCNA::cutreeDynamic()</p></td>
+      <td><p>additional arguments passed to dynamicTreeCut::cutreeDynamic()</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>mColorh, matrix specfying module membership at varying deep split parameter specifications (0:4)</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code>cutreeDynamic</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>geneTree</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='dist2hclust.html'>dist2hclust</a></span>(<span class='no'>d.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(class(d.mat) == "matrix"): object 'd.mat' not found</span></div><div class='input'><span class='co'># determine number of modules based on refrence dataset</span>
-<span class='no'>print2hide</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span>(<span class='no'>mColorh</span> <span class='kw'>&lt;-</span> <span class='fu'>optimalDS</span>(<span class='kw'>tree</span> <span class='kw'>=</span> <span class='no'>geneTree</span>, <span class='kw'>d.mat</span> <span class='kw'>=</span> <span class='no'>d.mat</span>, <span class='kw'>genes</span>  <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>a.mat</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in cutreeDynamic(dendro = tree, distM = d.mat, cutHeight = 0.998,     deepSplit = ds, pamRespectsDendro = FALSE, ...): could not find function "cutreeDynamic"</span></div><div class='input'>
+<span class='no'>geneTree</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='dist2hclust.html'>dist2hclust</a></span>(<span class='no'>d.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(any(class(d.mat) == "matrix")): object 'd.mat' not found</span></div><div class='input'><span class='co'># determine number of modules based on refrence dataset</span>
+<span class='no'>print2hide</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span>(<span class='no'>mColorh</span> <span class='kw'>&lt;-</span> <span class='fu'>optimalDS</span>(<span class='kw'>tree</span> <span class='kw'>=</span> <span class='no'>geneTree</span>, <span class='kw'>d.mat</span> <span class='kw'>=</span> <span class='no'>d.mat</span>, <span class='kw'>genes</span>  <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>a.mat</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in cutreeDynamic(dendro = tree, distM = d.mat, cutHeight = 0.998,     deepSplit = ds, pamRespectsDendro = FALSE, ...): object 'geneTree' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

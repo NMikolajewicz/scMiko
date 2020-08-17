@@ -130,7 +130,20 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Character specifying ensembl or symbol</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
+    <div class='dont-index'><p><code><a href='ens2sym.so.html'>ens2sym.so</a></code></p></div>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='no'>gene.rep</span> <span class='kw'>&lt;-</span>  <span class='fu'>checkGeneRep</span>(<span class='no'>gNames.list</span>, <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>as.vector</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>so.query</span>@<span class='kw'>assays</span><span class='kw'>[[</span><span class='no'>current.assay</span>]]@<span class='kw'>scale.data</span>)))
+
+<span class='kw'>if</span> (<span class='no'>gene.rep</span> <span class='kw'>==</span> <span class='st'>"ensembl"</span>){
+  <span class='no'>so.query</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ens2sym.so.html'>ens2sym.so</a></span>(<span class='kw'>so</span> <span class='kw'>=</span> <span class='no'>so.query</span>, <span class='kw'>gNames.list</span> <span class='kw'>=</span> <span class='no'>gNames.list</span>, <span class='kw'>convert.RNA</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+  <span class='no'>gene.rep</span> <span class='kw'>&lt;-</span>  <span class='fu'>checkGeneRep</span>(<span class='no'>gNames.list</span>, <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>as.vector</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>so.query</span>@<span class='kw'>assays</span><span class='kw'>[[</span><span class='no'>current.assay</span>]]@<span class='kw'>scale.data</span>)))
+}
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

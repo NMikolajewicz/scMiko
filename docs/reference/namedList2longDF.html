@@ -134,6 +134,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>long data.frame</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='namedList2wideDF.html'>namedList2wideDF</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
@@ -141,7 +144,8 @@
 <span class='no'>my.list</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>group.1</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"a"</span>, <span class='st'>"b"</span>, <span class='st'>"c"</span>), <span class='kw'>group.2</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"d"</span>, <span class='st'>"e"</span>, <span class='st'>"f"</span>))
 
 <span class='co'># convert named list to long data.frame</span>
-<span class='no'>my.df</span> <span class='kw'>&lt;-</span> <span class='fu'>namedList2longDF</span>(<span class='no'>my.list</span>)</div></pre>
+<span class='no'>my.df</span> <span class='kw'>&lt;-</span> <span class='fu'>namedList2longDF</span>(<span class='no'>my.list</span>)</div><div class='output co'>#&gt; <span class='error'>Error in bind_rows(my.df, data.frame(name = names(my.list)[i], value = as.vector(unlist(my.list[i])))): could not find function "bind_rows"</span></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

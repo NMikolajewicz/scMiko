@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Downsample single cell data — downsampleSeurat" />
-<meta property="og:description" content="Downsample data in Seurat object by specified factor" />
+<meta property="og:description" content="Downsample number of cells in Seurat object by specified factor" />
 
 
 
@@ -109,10 +109,10 @@
     </div>
 
     <div class="ref-description">
-    <p>Downsample data in Seurat object by specified factor</p>
+    <p>Downsample number of cells in Seurat object by specified factor</p>
     </div>
 
-    <pre class="usage"><span class='fu'>downsampleSeurat</span>(<span class='no'>so</span>, <span class='no'>subsample.factor</span>)</pre>
+    <pre class="usage"><span class='fu'>downsampleSeurat</span>(<span class='no'>so</span>, <span class='kw'>subsample.factor</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>subsample.n</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -124,6 +124,10 @@
     <tr>
       <th>subsample.factor</th>
       <td><p>Numeric [0,1]. Factor to downsample data by.</p></td>
+    </tr>
+    <tr>
+      <th>subsample.n</th>
+      <td><p>Numeric [1,ncol(so)]. Number of cells to subsample. If specified, overides subsample.factor.</p></td>
     </tr>
     </table>
 

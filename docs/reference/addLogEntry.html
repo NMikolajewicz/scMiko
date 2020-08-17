@@ -137,8 +137,19 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>data.frame</p>
+    <p>datalog data.frame</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
+    <div class='dont-index'><p><code><a href='initiateLog.html'>initiateLog</a></code></p></div>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='co'># intiate data log</span>
+<span class='no'>df.log</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='initiateLog.html'>initiateLog</a></span>(<span class='st'>"log name"</span>)
+
+<span class='co'># add new entry to log</span>
+<span class='no'>df.log</span> <span class='kw'>&lt;-</span> <span class='fu'>addLogEntry</span>(<span class='st'>"Query File (.Rdata)"</span>, (<span class='no'>input.file</span>), <span class='no'>df.log</span>, <span class='st'>"input.file"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in paste(entry, collapse = ", "): object 'input.file' not found</span></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
