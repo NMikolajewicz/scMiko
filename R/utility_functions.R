@@ -679,7 +679,7 @@ subsetSeurat <- function (object, subset.df){
     pattern <- gsub(" ", "", pattern)
     cur.field <- as.vector(unique(subset.df$field))
     match.ind <- grepl(pattern, as.character(object@meta.data[[cur.field]]))
-    object <- Seurat::subset(x = object, cells = which(match.ind))
+    object <- subset(x = object, cells = which(match.ind))
     object <- UpdateSeuratObject(object)
   }
 
@@ -4260,7 +4260,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
 #' @param species Species. One of "Mm" or "Hs".
 #' @param resolution cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
-#' @param subset Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.
+#' @param subset.data Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs".
@@ -4268,7 +4268,7 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
+prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
 
 
   warning("Checking seurat object...\n")
@@ -4351,7 +4351,7 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
   }
 
   # subgroup data ##############################################################
-  if (!is.null(subset) && is.character(subset)) {
+  if (!is.null(subset.data) && is.character(subset.data)) {
     subset.input <- read.csv(M00_subgroup.path, header = TRUE)
     colnames(subset.input) <- rmvCSVprefix(colnames(subset.input))
 
@@ -4365,13 +4365,13 @@ prepSeurat2 <- function (so, e2s, species, resolution= NULL, subset = NULL, subs
         subset.list[[subset.input$subset[i]]]$subgroups <- as.numeric(subset.list[[subset.input$subset[i]]]$subgroups)
       }
     }
-    subset <- as.data.frame(subset.list[[subset]]) # NA specified as "no.subset"
+    subset.data <- as.data.frame(subset.list[[subset.data]]) # NA specified as "no.subset"
   }
 
   n.presubset <- ncol(so)
-  if (!is.null(subset) && ("data.frame" %in% class(subset))) {
+  if (!is.null(subset.data) && ("data.frame" %in% class(subset.data))) {
     warning("subsetting data...\n")
-    so <- subsetSeurat(so, subset)
+    so <- subsetSeurat(object = so, subset.df = subset.data)
   }
   n.postsubset <- ncol(so)
 
