@@ -649,7 +649,7 @@ prepSeurat <- function (so){
 #' Subset Seurat object according to specific metadata field. Only specified metadata entries are retained, while remaining of data is omitted.
 #'
 #'
-#' @param so Seurat object
+#' @param object Seurat object
 #' @param subset.df Data.frame specifying which field (subset.df$field) to subset on, and which field entries to retain (subset.df$subgroups).
 #' @name subsetSeurat
 #' @return Seurat object
@@ -661,12 +661,12 @@ prepSeurat <- function (so){
 #' # subset data
 #' so <- subsetSeurat(so, subset.df)
 #'
-subsetSeurat <- function (so, subset.df){
+subsetSeurat <- function (object, subset.df){
 
   # check if subset input is validd
   if (is.na(unique(subset.df$field))){
     subset.flag <- FALSE
-  } else if ( unique(subset.df$field) %in% names(so@meta.data)) {
+  } else if ( unique(subset.df$field) %in% names(object@meta.data)) {
     subset.flag <- TRUE
   } else {
     subset.flag <- FALSE
@@ -678,12 +678,12 @@ subsetSeurat <- function (so, subset.df){
     pattern <- paste( as.vector(subset.df$subgroups), collapse="|")
     pattern <- gsub(" ", "", pattern)
     cur.field <- as.vector(unique(subset.df$field))
-    match.ind <- grepl(pattern, as.character(so@meta.data[[cur.field]]))
-    so <- subset(x = so, cells = which(match.ind))
-    so <- UpdateSeuratObject(so)
+    match.ind <- grepl(pattern, as.character(object@meta.data[[cur.field]]))
+    object <- Seurat::subset(x = object, cells = which(match.ind))
+    object <- UpdateSeuratObject(object)
   }
 
-  return(so)
+  return(object)
 }
 
 

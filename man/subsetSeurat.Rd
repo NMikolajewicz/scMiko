@@ -4,10 +4,10 @@
 \alias{subsetSeurat}
 \title{Subset Seurat Object}
 \usage{
-subsetSeurat(so, subset.df)
+subsetSeurat(object, subset.df)
 }
 \arguments{
-\item{so}{Seurat object}
+\item{object}{Seurat object}
 
 \item{subset.df}{Data.frame specifying which field (subset.df$field) to subset on, and which field entries to retain (subset.df$subgroups).}
 }
