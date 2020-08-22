@@ -4,10 +4,10 @@
 \alias{fixBarcodeLabel}
 \title{Fix barcode labels}
 \usage{
-fixBarcodeLabel(so)
+fixBarcodeLabel(object)
 }
 \arguments{
-\item{so}{Seurat Object}
+\item{object}{Seurat Object}
 }
 \value{
 Seurat object

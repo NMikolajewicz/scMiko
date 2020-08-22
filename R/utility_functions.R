@@ -489,33 +489,42 @@ mergeSeuratList <- function(so.list){
 #' Rename metadata entry 'CellTypes' to 'Barcode'. This is a fix implemented to correct an error from an earlier analysis pipeline. Analyses post January 2020 do not require this fix.
 #'
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
 #' @name fixBarcodeLabel
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-fixBarcodeLabel <- function (so){
+fixBarcodeLabel <- function (object){
+
   # merge CellType and Barcode, if necessary
-  meta.data.names <- names(so@meta.data)
+  meta.data.names <- names(object@meta.data)
 
   if (("CellType" %in% meta.data.names) & ("Barcode" %in% meta.data.names)){
-    if (DefaultAssay(so) == "integrated"){
-      barcode <- so@meta.data[["Barcode"]]
-      celltype <- so@meta.data[["CellType"]]
+    if (DefaultAssay(object) == "integrated"){
+      barcode <- object@meta.data[["Barcode"]]
+      celltype <- object@meta.data[["CellType"]]
       barcode[is.na(barcode)] <- celltype[is.na(barcode)]
     } else {
-      barcode <- so@meta.data[["CellType"]]
+      barcode <- object@meta.data[["CellType"]]
     }
   } else if (!("CellType" %in% meta.data.names) & ("Barcode" %in% meta.data.names)) {
-    barcode <- so@meta.data[["Barcode"]]
+    barcode <- object@meta.data[["Barcode"]]
   } else if (("CellType" %in% meta.data.names) & !("Barcode" %in% meta.data.names)) {
-    barcode <- so@meta.data[["CellType"]]
+    barcode <- object@meta.data[["CellType"]]
 
   } else {stop("Problem with CellType/Barcode metadata detected. Troubleshooting required")}
 
-  so@meta.data[["Barcode"]] <- barcode
 
-  return(so)
+  # handle missing barcodes in integrated set
+  if ("integrated" %in% names(object@assays)){
+    if ((sum(is.na(object@meta.data[["Barcode"]])) > 0) & ("subset_group" %in% colnames(object@meta.data))){
+      if ((sum(is.na(object@meta.data[["subset_group"]])) == 0)) barcode <- object@meta.data[["subset_group"]]
+    }
+  }
+
+  object@meta.data[["Barcode"]] <- barcode
+
+  return(object)
 }
 
 #' Set cluster resolution
