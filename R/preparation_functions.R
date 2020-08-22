@@ -346,7 +346,8 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     so = object,
     assay = DefaultAssay(object),
     n.cell = ncol(object),
-    rescaled = data.rescaled
+    rescaled = data.rescaled,
+    species = species
   ))
 }
 
