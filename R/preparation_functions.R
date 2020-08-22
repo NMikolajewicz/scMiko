@@ -320,6 +320,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     }
   } else if (("integrated" %in% all.assays) & !("NormalizeData.RNA" %in% all.commands) & !("ScaleData.RNA" %in% all.commands)){
     DefaultAssay(object) <- "RNA"
+    if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
     object <-NormalizeData(object, verbose = FALSE)
     object <- ScaleData(object, verbose = FALSE, features = rownames(object))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = 3000)
@@ -333,7 +334,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
       if (length(object@assays[[DefaultAssay(object)]]@var.features) > 0) nVar <- length(object@assays[[DefaultAssay(object)]]@var.features) else nVar <- 3000
     }, silent = T)
     if (!exists("nVar")) nVar <- 3000
-
+    if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
     object <-NormalizeData(object, verbose = FALSE)
     object <- ScaleData(object, verbose = FALSE, features = rownames(object))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
