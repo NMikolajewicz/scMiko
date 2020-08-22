@@ -30,7 +30,7 @@ prepSeurat2(
 
 \item{M00_subgroup.path}{Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.}
 
-\item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs".}
+\item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
