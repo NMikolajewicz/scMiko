@@ -500,7 +500,7 @@ fixBarcodeLabel <- function (object){
   meta.data.names <- names(object@meta.data)
 
   if (("CellType" %in% meta.data.names) & ("Barcode" %in% meta.data.names)){
-    if (DefaultAssay(object) == "integrated"){
+    if ("integrated" %in% names(object@assays)){
       barcode <- object@meta.data[["Barcode"]]
       celltype <- object@meta.data[["CellType"]]
       barcode[is.na(barcode)] <- celltype[is.na(barcode)]
@@ -513,14 +513,6 @@ fixBarcodeLabel <- function (object){
     barcode <- object@meta.data[["CellType"]]
 
   } else {stop("Problem with CellType/Barcode metadata detected. Troubleshooting required")}
-
-
-  # handle missing barcodes in integrated set
-  if ("integrated" %in% names(object@assays)){
-    if ((sum(is.na(object@meta.data[["Barcode"]])) > 0) & ("subset_group" %in% colnames(object@meta.data))){
-      if ((sum(is.na(object@meta.data[["subset_group"]])) == 0)) barcode <- object@meta.data[["subset_group"]]
-    }
-  }
 
   object@meta.data[["Barcode"]] <- barcode
 
