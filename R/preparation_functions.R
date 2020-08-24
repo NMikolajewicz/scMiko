@@ -375,3 +375,68 @@ prepSeurat <- function (object){
   return(object)
 }
 
+#' install missing packages from cran or bioconductor
+#'
+#' Install missing packages from cran or bioconductor, and flag any remaining packages that are not available on either repository.
+#'
+#' @param package.list Character vector of package names.
+#' @param install.missing Flag specfiying whether to install missing packages. If FALSE, return list of missing packages only. If none are missing, NULL is returned.
+#' @param prefer.repo Preffered repository for installing packages. If package is available on both repos, prefferred is use. Options are 'bioconductor' (default) or 'cran'.
+#' @name getMissingPackages
+#' @author Nicholas Mikolajewicz
+#'
+getMissingPackages <- function(package.list, install.missing = F, prefer.repo = "bioconductor"){
+
+  # prefer.repo: If available on both repositories, which repository to install from
+  # options:
+  #   bioconductor
+  #   cran
+
+  available.packages <- installed.packages()
+  which.missing <- package.list[!(package.list %in% available.packages)]
+
+  is.success <- F
+  if ((length(which.missing) > 0) & install.missing){
+
+    # check cran
+    cranList <- utils::available.packages()
+    cran.package.list <- package.list[which.missing %in% cranList[,1]]
+
+    # check bioconductor
+    if (!(require("BiocManager"))) install.packages("BiocManager")
+    bioList <- BiocManager::available()
+    bio.package.list <- package.list[which.missing %in% bioList]
+
+    # find overalp between repositories
+    overlap.packages <- intersect(cran.package.list, bio.package.list)
+
+    # not on cran or bioconductor
+    available.on.rep <- unique(c(cran.package.list, bio.package.list))
+    not.available.on.rep <- which.missing[!(which.missing %in% available.on.rep)]
+
+    if (length(not.available.on.rep) > 0) warning(paste0(paste(not.available.on.rep, collapse = ", "), " package(s) are not available on CRAN or BIOCONDUCTOR. Manual installation from source is required.\n"))
+
+    if (prefer.repo == "bioconductor"){
+      install.bc <- bio.package.list
+      install.cran <- cran.package.list[!(cran.package.list %in% overlap.packages)]
+    } else if (prefer.repo == "cran"){
+      install.bc <- bio.package.list[!(cran.package.list %in% overlap.packages)]
+      install.cran <- cran.package.list
+    }
+    if (length(install.bc) > 0) BiocManager::install(install.bc)
+    if (length(install.cran) > 0) install.packages(install.cran)
+
+    is.success <- T
+  } else {
+    is.success <- T
+    if ((!install.missing) & (length(which.missing) > 0)){
+      return(which.missing)
+    } else {
+      return(NULL)
+    }
+  }
+
+  if ((!is.success) & (install.missing)) warning("There were issues installing all the requested packages. Try installing one at a time.\n")
+
+}
+
