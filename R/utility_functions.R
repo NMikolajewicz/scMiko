@@ -69,72 +69,89 @@ ens2sym.so <- function(object, gNames.list, convert.RNA = TRUE){
 
 
   # var features
-  if ("SCT" %in% names(object@assays)){
-    warning("Converting SYMBOL to ENSEMBLE in SCT assay...\n")
-    so_temp <- object@assays[["SCT"]]@var.features
-    if ( checkGeneRep (gNames.list, so_temp) == "ensembl") object@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
-  }
+  try({
+    if ("SCT" %in% names(object@assays)){
+      warning("Converting SYMBOL to ENSEMBLE in SCT assay...\n")
+      so_temp <- object@assays[["SCT"]]@var.features
+      if ( checkGeneRep (gNames.list, so_temp) == "ensembl") object@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
+    }
+  }, silent = T)
+
 
   # scale data
-  if ("SCT" %in% names(object@assays)){
-    so_temp <- object@assays[["SCT"]]@scale.data
-    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
-      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-      object@assays[["SCT"]]@scale.data <- so_temp
-    }
-  }
-
-  # data
-  if ("SCT" %in% names(object@assays)){
-    so_temp <- object@assays[["SCT"]]@data
-    if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
-      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-      object@assays[["SCT"]]@data <- so_temp
-    }
-  }
-
-  # metadata
-  if ("SCT" %in% names(object@assays)){
-    so_m <- object@assays[["SCT"]]@meta.features
-    so_m$ENSEMBLE <- rownames(so_m)
-    if (checkGeneRep (gNames.list,  so_m$ENSEMBLE) == "ensembl") {
-      so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
-      rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
-      object@assays[["SCT"]]@meta.features <- so_m
-    }
-  }
-
-  # dimnames
-  if ("SCT" %in% names(object@assays)){
-    so_temp <- object@assays[["SCT"]]@counts@Dimnames[[1]]
-    if (checkGeneRep (gNames.list, so_temp) == "ensembl") {
-      object@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
-    }
-  }
-
-  # pca feature loading
-  if ("pca" %in% names(object@reductions)){
-    so_temp <-  object@reductions[["pca"]]@feature.loadings
-    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
-      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-      object@reductions[["pca"]]@feature.loadings <- so_temp
-    }
-  }
-
-  # vst
-  if ("SCT" %in% names(object@assays)){
-    if (checkGeneRep (gNames.list,  names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])) == "ensembl") {
-      names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
-    }
-  }
-
-  if ("SCT" %in% names(object@assays)){
-    if (!is.null(object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]])){
-      if (checkGeneRep (gNames.list,   object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]) == "ensembl") {
-        object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+  try({
+    if ("SCT" %in% names(object@assays)){
+      so_temp <- object@assays[["SCT"]]@scale.data
+      if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+        row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+        object@assays[["SCT"]]@scale.data <- so_temp
       }
     }
-  }
+  }, silent = T)
+
+  # data
+  try({
+    if ("SCT" %in% names(object@assays)){
+      so_temp <- object@assays[["SCT"]]@data
+      if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+        row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+        object@assays[["SCT"]]@data <- so_temp
+      }
+    }
+  }, silent = T)
+
+  # metadata
+  try({
+    if ("SCT" %in% names(object@assays)){
+      so_m <- object@assays[["SCT"]]@meta.features
+      so_m$ENSEMBLE <- rownames(so_m)
+      if (checkGeneRep (gNames.list,  so_m$ENSEMBLE) == "ensembl") {
+        so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
+        rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
+        object@assays[["SCT"]]@meta.features <- so_m
+      }
+    }
+  }, silent = T)
+
+  # dimnames
+  try({
+    if ("SCT" %in% names(object@assays)){
+      so_temp <- object@assays[["SCT"]]@counts@Dimnames[[1]]
+      if (checkGeneRep (gNames.list, so_temp) == "ensembl") {
+        object@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+      }
+    }
+  }, silent = T)
+
+  # pca feature loading
+  try({
+    if ("pca" %in% names(object@reductions)){
+      so_temp <-  object@reductions[["pca"]]@feature.loadings
+      if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+        row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+        object@reductions[["pca"]]@feature.loadings <- so_temp
+      }
+    }
+  }, silent = T)
+
+  # vst
+  try({
+    if ("SCT" %in% names(object@assays)){
+      if (checkGeneRep (gNames.list,  names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])) == "ensembl") {
+        names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
+      }
+    }
+  }, silent = T)
+
+  try({
+    if ("SCT" %in% names(object@assays)){
+      if (!is.null(object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]])){
+        if (checkGeneRep (gNames.list,   object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]) == "ensembl") {
+          object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+        }
+      }
+    }
+  }, silent = T)
 
   if ("SCT" %in% names(object@assays)){
     try({
@@ -166,27 +183,33 @@ ens2sym.so <- function(object, gNames.list, convert.RNA = TRUE){
   if (convert.RNA == TRUE){
     warning("Converting SYMBOL to ENSEMBLE in RNA assay...\n")
     # var features
-    so_temp <- object@assays[["RNA"]]@var.features
-    if (length(so_temp) > 0){
-      if ( checkGeneRep (gNames.list, so_temp) == "ensembl") {
-        object@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+    try({
+      so_temp <- object@assays[["RNA"]]@var.features
+      if (length(so_temp) > 0){
+        if ( checkGeneRep (gNames.list, so_temp) == "ensembl") {
+          object@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+        }
       }
-    }
+    }, silent = T)
 
 
     # data
-    so_temp <- object@assays[["RNA"]]@data
-    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
-      row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-      object@assays[["RNA"]]@data <- so_temp
-    }
+    try({
+      so_temp <- object@assays[["RNA"]]@data
+      if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+        row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+        object@assays[["RNA"]]@data <- so_temp
+      }
+    }, silent = T)
 
     # counts
-    so_temp <- object@assays[["RNA"]]@counts
-    if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
-      row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-      object@assays[["RNA"]]@counts <- so_temp
-    }
+    try({
+      so_temp <- object@assays[["RNA"]]@counts
+      if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+        row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
+        object@assays[["RNA"]]@counts <- so_temp
+      }
+    }, silent = T)
 
   }
 
@@ -194,24 +217,30 @@ ens2sym.so <- function(object, gNames.list, convert.RNA = TRUE){
     warning("Converting SYMBOL to ENSEMBLE in Integrated assay...\n")
 
     # var features
-    so_ens <- object@assays[["integrated"]]@var.features
-    if (checkGeneRep (gNames.list, so_ens) == "ensembl") {
-      object@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
-    }
+    try({
+      so_ens <- object@assays[["integrated"]]@var.features
+      if (checkGeneRep (gNames.list, so_ens) == "ensembl") {
+        object@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
+      }
+    }, silent = T)
 
     # scale data
-    so_sd <- object@assays[["integrated"]]@scale.data
-    if ( checkGeneRep (gNames.list,  row.names(so_sd)) == "ensembl") {
-      row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
-      object@assays[["integrated"]]@scale.data <- so_sd
-    }
+    try({
+      so_sd <- object@assays[["integrated"]]@scale.data
+      if ( checkGeneRep (gNames.list,  row.names(so_sd)) == "ensembl") {
+        row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
+        object@assays[["integrated"]]@scale.data <- so_sd
+      }
+    }, silent = T)
 
     # data
-    so_d <- object@assays[["integrated"]]@data
-    if (checkGeneRep (gNames.list,  row.names(so_d)) == "ensembl") {
-      row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
-      object@assays[["integrated"]]@data <- so_d
-    }
+    try({
+      so_d <- object@assays[["integrated"]]@data
+      if (checkGeneRep (gNames.list,  row.names(so_d)) == "ensembl") {
+        row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
+        object@assays[["integrated"]]@data <- so_d
+      }
+    }, silent = T)
 
   }
 
@@ -304,10 +333,10 @@ sym2ens <- function(my.symbols, my.species){
   }
 
   my.ensembl <- AnnotationDbi::select(db,
-                       keys = my.symbols,
-                       columns = c("ENSEMBL", "SYMBOL"),
-                       keytype = "SYMBOL",
-                       multiVals = first)
+                                      keys = my.symbols,
+                                      columns = c("ENSEMBL", "SYMBOL"),
+                                      keytype = "SYMBOL",
+                                      multiVals = first)
 
   return(my.ensembl)
 }
@@ -381,7 +410,7 @@ getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = N
 #' @return list of files
 #'
 getAvailableFiles <- function(directory = "Preprocessed Datasets/"){
-return(list.files(directory))
+  return(list.files(directory))
 }
 
 
@@ -642,8 +671,8 @@ getLoadPath <- function (file, directory = NULL){
 #'
 subsetSeurat <- function (object, subset.df){
 
-   # assertion
-    if (class(object) != "Seurat") stop("input must be Seurat Object")
+  # assertion
+  if (class(object) != "Seurat") stop("input must be Seurat Object")
 
   # check if subset input is validd
   if (is.na(unique(subset.df$field))){
@@ -1387,52 +1416,52 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
       } else {
         avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x, na.rm = T))
       }
-      } else if (which.center == "sum"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
-        } else {
-          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
-        }
-      } else if (which.center == "sd"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-        } else {
-          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-        }
-      } else if (which.center == "cv"){
-        if (do.parallel){
-          sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-          av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
-        } else {
-          sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-          av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
-        }
-        avg.mat[,i] <- sd.cur / abs(av.cur)
-      } else if (which.center == "fraction"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
-        } else {
-          avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
-        }
+    } else if (which.center == "sum"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
       } else {
-        stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
       }
-    }
-
-    df.avg <- as.data.frame(avg.mat)
-
-    if (which.group == "seurat_clusters"){
-      colnames(df.avg) <- paste("c", u.clusters, sep = "")
+    } else if (which.center == "sd"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+      }
+    } else if (which.center == "cv"){
+      if (do.parallel){
+        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+      } else {
+        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+      }
+      avg.mat[,i] <- sd.cur / abs(av.cur)
+    } else if (which.center == "fraction"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      } else {
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      }
     } else {
-      colnames(df.avg) <- u.clusters
+      stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
     }
-
-    df.avg <- bind_cols(data.frame(genes = gene.list), df.avg)
-
-    return(df.avg)
-
-
   }
+
+  df.avg <- as.data.frame(avg.mat)
+
+  if (which.group == "seurat_clusters"){
+    colnames(df.avg) <- paste("c", u.clusters, sep = "")
+  } else {
+    colnames(df.avg) <- u.clusters
+  }
+
+  df.avg <- bind_cols(data.frame(genes = gene.list), df.avg)
+
+  return(df.avg)
+
+
+}
 
 
 
@@ -3153,7 +3182,7 @@ getClusterCenters <- function(df, which.center = "mean"){
 #' @examples
 #'
 pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assay = DefaultAssay(so),
-                             mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
+                         mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
 
   # get data for highly variable genes (hvg)
   cur.data <- GetAssayData(so, slot = slot, assay = assay)
