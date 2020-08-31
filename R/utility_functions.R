@@ -58,167 +58,168 @@ checkGeneRep <- function(reference.genes, query.genes){
 #'
 #' Process Seurat object so that genes in Ensemble format are converted to Symbol representation.
 #'
-#' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
-#' @param query.genes vector of query genes to check representation
+#' @param object Seurat object
+#' @param gNames.list named character vector mapping ensembl (names) to gene symbols (entries)
+#' @param convert.RNA logical to convert ensembl in RNA assay to gene symbol
 #' @name ens2sym.so
 #' @author Nicholas Mikolajewicz
-#' @return Seurat object with specified gene representation.
+#' @return Seurat object with genes represented as symbols
 #'
-ens2sym.so <- function(so, gNames.list, convert.RNA = TRUE){
+ens2sym.so <- function(object, gNames.list, convert.RNA = TRUE){
 
-  warning("Converting SYMBOL to ENSEMBLE in SCT assay...\n")
+
   # var features
-  so_temp <- so@assays[["SCT"]]@var.features
-  gene.rep <- checkGeneRep (gNames.list, so_temp)
-  if (gene.rep == "ensembl") so@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
+  if ("SCT" %in% names(object@assays)){
+    warning("Converting SYMBOL to ENSEMBLE in SCT assay...\n")
+    so_temp <- object@assays[["SCT"]]@var.features
+    if ( checkGeneRep (gNames.list, so_temp) == "ensembl") object@assays[["SCT"]]@var.features <- as.vector((gNames.list[so_temp]))
+  }
 
   # scale data
-  so_temp <- so@assays[["SCT"]]@scale.data
-  gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
-  if (gene.rep == "ensembl") {
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@assays[["SCT"]]@scale.data <- so_temp
+  if ("SCT" %in% names(object@assays)){
+    so_temp <- object@assays[["SCT"]]@scale.data
+    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+      object@assays[["SCT"]]@scale.data <- so_temp
+    }
   }
 
   # data
-  so_temp <- so@assays[["SCT"]]@data
-  gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
-  if (gene.rep == "ensembl") {
-    row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-    so@assays[["SCT"]]@data <- so_temp
+  if ("SCT" %in% names(object@assays)){
+    so_temp <- object@assays[["SCT"]]@data
+    if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
+      row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
+      object@assays[["SCT"]]@data <- so_temp
+    }
   }
 
   # metadata
-  so_m <- so@assays[["SCT"]]@meta.features
-  so_m$ENSEMBLE <- rownames(so_m)
-  gene.rep <- checkGeneRep (gNames.list,  so_m$ENSEMBLE)
-  if (gene.rep == "ensembl") {
-    so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
-    rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
-    so@assays[["SCT"]]@meta.features <- so_m
+  if ("SCT" %in% names(object@assays)){
+    so_m <- object@assays[["SCT"]]@meta.features
+    so_m$ENSEMBLE <- rownames(so_m)
+    if (checkGeneRep (gNames.list,  so_m$ENSEMBLE) == "ensembl") {
+      so_m$SYMBOL <- as.vector((gNames.list[so_m$ENSEMBLE]))
+      rownames(so_m) <-  make.names(so_m$SYMBOL, unique = T)
+      object@assays[["SCT"]]@meta.features <- so_m
+    }
   }
 
   # dimnames
-  so_temp <- so@assays[["SCT"]]@counts@Dimnames[[1]]
-  gene.rep <- checkGeneRep (gNames.list, so_temp)
-  if (gene.rep == "ensembl") {
-    so@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+  if ("SCT" %in% names(object@assays)){
+    so_temp <- object@assays[["SCT"]]@counts@Dimnames[[1]]
+    if (checkGeneRep (gNames.list, so_temp) == "ensembl") {
+      object@assays[["SCT"]]@counts@Dimnames[[1]] <- as.vector((gNames.list[so_temp]))
+    }
   }
 
   # pca feature loading
-  if ("pca" %in% names(so@reductions)){
-    so_temp <-  so@reductions[["pca"]]@feature.loadings
-    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
-    if (gene.rep == "ensembl") {
+  if ("pca" %in% names(object@reductions)){
+    so_temp <-  object@reductions[["pca"]]@feature.loadings
+    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
       row.names(so_temp) <-  as.vector((gNames.list[row.names(so_temp)]))
-      so@reductions[["pca"]]@feature.loadings <- so_temp
+      object@reductions[["pca"]]@feature.loadings <- so_temp
     }
   }
 
   # vst
-  gene.rep <- checkGeneRep (gNames.list,  names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]))
-  if (gene.rep == "ensembl") {
-    names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(so@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
-  }
-
-  if (!is.null(so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]])){
-    gene.rep <- checkGeneRep (gNames.list,   so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]])
-    if (gene.rep == "ensembl") {
-      so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ so@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+  if ("SCT" %in% names(object@assays)){
+    if (checkGeneRep (gNames.list,  names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])) == "ensembl") {
+      names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]]) <- as.vector((gNames.list[names(object@assays[["SCT"]]@misc[["vst.out"]][["genes_log_gmean_step1"]])]))
     }
   }
 
-
-  gene.rep <- checkGeneRep (gNames.list,  rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]))
-  try({
-    if (gene.rep == "ensembl") {
-      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]) <- as.vector((gNames.list[rownames(so@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])]))
+  if ("SCT" %in% names(object@assays)){
+    if (!is.null(object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]])){
+      if (checkGeneRep (gNames.list,   object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]) == "ensembl") {
+        object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]] <- as.vector((gNames.list[ object@assays[["SCT"]]@misc[["vst.out"]][["umi_corrected"]]@Dimnames[[1]]]))
+      }
     }
-  }, silent = T)
+  }
 
-  try({
-    so.temp <- rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]])
-    gene.rep <- checkGeneRep (gNames.list, so.temp)
-    if (gene.rep == "ensembl") {
-      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]]) <- as.vector((gNames.list[so.temp]))
-    }
-  }, silent = T)
+  if ("SCT" %in% names(object@assays)){
+    try({
+      if (checkGeneRep (gNames.list,  rownames(object@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])) == "ensembl") {
+        rownames(object@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]]) <- as.vector((gNames.list[rownames(object@assays[["SCT"]]@misc[["vst.out"]][["gene_attr"]])]))
+      }
+    }, silent = T)
+  }
 
-  try({
-    so.temp <- rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]])
-    gene.rep <- checkGeneRep (gNames.list,  so.temp)
-    if (gene.rep == "ensembl") {
-      rownames(so@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]]) <- as.vector((gNames.list[so.temp]))
-    }
-  }, silent = T)
+  if ("SCT" %in% names(object@assays)){
+    try({
+      so.temp <- rownames(object@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]])
+      if (checkGeneRep(gNames.list, so.temp) == "ensembl") {
+        rownames(object@assays[["SCT"]]@misc[["vst.out"]][["model_pars"]]) <- as.vector((gNames.list[so.temp]))
+      }
+    }, silent = T)
+  }
+
+  if ("SCT" %in% names(object@assays)){
+    try({
+      so.temp <- rownames(object@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]])
+      if (checkGeneRep (gNames.list,  so.temp) == "ensembl") {
+        rownames(object@assays[["SCT"]]@misc[["vst.out"]][["model_pars_fit"]]) <- as.vector((gNames.list[so.temp]))
+      }
+    }, silent = T)
+  }
 
   # RNA ASSAY
-
   if (convert.RNA == TRUE){
     warning("Converting SYMBOL to ENSEMBLE in RNA assay...\n")
     # var features
-    so_temp <- so@assays[["RNA"]]@var.features
+    so_temp <- object@assays[["RNA"]]@var.features
     if (length(so_temp) > 0){
-      gene.rep <- checkGeneRep (gNames.list, so_temp)
-      if (gene.rep == "ensembl") {
-        so@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
+      if ( checkGeneRep (gNames.list, so_temp) == "ensembl") {
+        object@assays[["RNA"]]@var.features <- as.vector((gNames.list[so_temp]))
       }
     }
 
 
     # data
-    so_temp <- so@assays[["RNA"]]@data
-    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
-    if (gene.rep == "ensembl") {
+    so_temp <- object@assays[["RNA"]]@data
+    if (checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
       row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-      so@assays[["RNA"]]@data <- so_temp
+      object@assays[["RNA"]]@data <- so_temp
     }
 
     # counts
-    so_temp <- so@assays[["RNA"]]@counts
-    gene.rep <- checkGeneRep (gNames.list, row.names(so_temp))
-    if (gene.rep == "ensembl") {
+    so_temp <- object@assays[["RNA"]]@counts
+    if ( checkGeneRep (gNames.list, row.names(so_temp)) == "ensembl") {
       row.names(so_temp) <-   as.vector((gNames.list[ row.names(so_temp)]))
-      so@assays[["RNA"]]@counts <- so_temp
+      object@assays[["RNA"]]@counts <- so_temp
     }
 
   }
 
-  if ("integrated" %in% names(so@assays)){
+  if ("integrated" %in% names(object@assays)){
     warning("Converting SYMBOL to ENSEMBLE in Integrated assay...\n")
 
     # var features
-    so_ens <- so@assays[["integrated"]]@var.features
-    gene.rep <- checkGeneRep (gNames.list, so_ens)
-    if (gene.rep == "ensembl") {
-      so@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
+    so_ens <- object@assays[["integrated"]]@var.features
+    if (checkGeneRep (gNames.list, so_ens) == "ensembl") {
+      object@assays[["integrated"]]@var.features <-as.vector((gNames.list[so_ens]))
     }
 
     # scale data
-    so_sd <- so@assays[["integrated"]]@scale.data
-    gene.rep <- checkGeneRep (gNames.list,  row.names(so_sd))
-    if (gene.rep == "ensembl") {
+    so_sd <- object@assays[["integrated"]]@scale.data
+    if ( checkGeneRep (gNames.list,  row.names(so_sd)) == "ensembl") {
       row.names(so_sd) <-  as.vector((gNames.list[row.names(so_sd)]))
-      so@assays[["integrated"]]@scale.data <- so_sd
+      object@assays[["integrated"]]@scale.data <- so_sd
     }
 
     # data
-    so_d <- so@assays[["integrated"]]@data
-    gene.rep <- checkGeneRep (gNames.list,  row.names(so_d))
-    if (gene.rep == "ensembl") {
+    so_d <- object@assays[["integrated"]]@data
+    if (checkGeneRep (gNames.list,  row.names(so_d)) == "ensembl") {
       row.names(so_d) <-  as.vector((gNames.list[row.names(so_d)]))
-      so@assays[["integrated"]]@data <- so_d
+      object@assays[["integrated"]]@data <- so_d
     }
 
   }
 
   # ensure dim names are correctly specified
-  so <- updateDimNames(so)
+  object <- updateDimNames(object)
 
-
-  return(so)
+  return(object)
 }
-
 
 #' Convert gene symbol representation to Hs or Mm
 #'

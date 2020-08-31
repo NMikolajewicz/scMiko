@@ -4,15 +4,17 @@
 \alias{ens2sym.so}
 \title{Convert gene ensemble to symbol in seurat object}
 \usage{
-ens2sym.so(so, gNames.list, convert.RNA = TRUE)
+ens2sym.so(object, gNames.list, convert.RNA = TRUE)
 }
 \arguments{
-\item{reference.genes}{Named vector of genes; names are ENSEMBL, entries are SYMBOL.}
+\item{object}{Seurat object}
 
-\item{query.genes}{vector of query genes to check representation}
+\item{gNames.list}{named character vector mapping ensembl (names) to gene symbols (entries)}
+
+\item{convert.RNA}{logical to convert ensembl in RNA assay to gene symbol}
 }
 \value{
-Seurat object with specified gene representation.
+Seurat object with genes represented as symbols
 }
 \description{
 Process Seurat object so that genes in Ensemble format are converted to Symbol representation.
