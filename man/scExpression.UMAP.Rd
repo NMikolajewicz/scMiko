@@ -5,15 +5,18 @@
 \title{Cell-level gene expression projected on UMAP}
 \usage{
 scExpression.UMAP(
-  so,
+  object,
   query.gene,
   x.label = "UMAP 1",
   y.label = "",
-  plot.name = NULL
+  adjust.pt.size = T,
+  order.cells = T,
+  plot.name = NULL,
+  ...
 )
 }
 \arguments{
-\item{so}{Seurat Object}
+\item{object}{Seurat Object}
 
 \item{query.gene}{Character. Gene name to plot.}
 
@@ -21,11 +24,17 @@ scExpression.UMAP(
 
 \item{y.label}{Character. Y axis label.}
 
+\item{adjust.pt.size}{Adjust point size for plotting. Logical.}
+
+\item{order.cells}{Plot cells in order of expression. Logical.}
+
 \item{plot.name}{Character. Plot title.}
+
+\item{...}{additional parameters passed to Seurat::FeaturePlot().}
 }
 \value{
 ggplot handle
 }
 \description{
-UMAP plot with cell-level gene expression for queried gene.
+UMAP plot with cell-level gene expression for queried gene. Uses Seurat::FeaturePlot().
 }

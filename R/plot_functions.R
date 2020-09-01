@@ -29,22 +29,25 @@ cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y
 
 #' Cell-level gene expression projected on UMAP
 #'
-#' UMAP plot with cell-level gene expression for queried gene.
+#' UMAP plot with cell-level gene expression for queried gene. Uses Seurat::FeaturePlot().
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
 #' @param query.gene Character. Gene name to plot.
 #' @param x.label Character. X axis label.
 #' @param y.label Character. Y axis label.
+#' @param adjust.pt.size Adjust point size for plotting. Logical.
+#' @param order.cells Plot cells in order of expression. Logical.
 #' @param plot.name Character. Plot title.
+#' @param ... additional parameters passed to Seurat::FeaturePlot().
 #' @name scExpression.UMAP
 #' @return ggplot handle
 #'
-scExpression.UMAP <- function(so, query.gene, x.label = "UMAP 1", y.label = "", plot.name = NULL){
+scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = T, order.cells = T, plot.name = NULL, ...){
 
   if (is.null(plot.name)) plot.name <- query.gene
 
-  plt.handle <- FeaturePlot(object = so, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
-                            reduction = "umap",pt.size = TRUE, sort.cell = TRUE) +
+  plt.handle <- FeaturePlot(object = object, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
+                            reduction = "umap",pt.size = adjust.pt.size, sort.cell = order.cells, ...) +
     xlab(x.label) +
     ylab(y.label) +
     ggtitle(plot.name)
