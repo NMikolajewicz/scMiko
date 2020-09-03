@@ -180,14 +180,17 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
+#' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL){
+prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL, rmv.pattern = NULL){
 
   # print(rlang::current_env())
   # print(str(object))
+
+  if (!is.null(rmv.pattern)) scMiko::clearGlobalEnv(rmv.pattern)
 
   warning("Checking seurat object...\n")
   # assertion
@@ -437,6 +440,34 @@ getMissingPackages <- function(package.list, install.missing = F, prefer.repo = 
   }
 
   if ((!is.success) & (install.missing)) warning("There were issues installing all the requested packages. Try installing one at a time.\n")
+
+}
+
+
+
+#' Remove variables from global environment
+#'
+#' Remove variables in global environment that match a given pattern.
+#'
+#' @param pattern Character specifying name of variable(s) to remove from global environment.
+#' @param exact.match If TRUE (default), exact pattern matching is enforced. If FALSE, partial pattern matching is facilitated with grep().
+#' @name clearGlobalEnv
+#' @author Nicholas Mikolajewicz
+#' @return NULL
+#'
+clearGlobalEnv <- function(pattern, exact.match = T){
+
+  pattern <- as.character(pattern)
+
+  if (!exact.match){
+    which.match <- ls(envir=globalenv())[grep(pattern, ls(envir=globalenv()))]
+    rm(list = which.match, envir = globalenv())
+    warning(paste0("The following variable were removed from the global enviroment: ", paste(which.match, collapse = ", "), "\n"))
+  } else {
+    which.match <- ls(envir=globalenv())[which(ls(envir=globalenv()) %in% pattern)]
+    rm(list = which.match, envir = globalenv())
+    warning(paste0("The following variable were removed from the global enviroment: ", paste(which.match, collapse = ", "), "\n"))
+  }
 
 }
 
