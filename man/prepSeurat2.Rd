@@ -12,7 +12,8 @@ prepSeurat2(
   subset.data = NULL,
   subsample = 1,
   M00_subgroup.path = "M00_subgroups.csv",
-  terms2drop = NULL
+  terms2drop = NULL,
+  rmv.pattern = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ prepSeurat2(
 \item{M00_subgroup.path}{Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.}
 
 \item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".}
+
+\item{rmv.pattern}{Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
