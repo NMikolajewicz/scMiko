@@ -170,7 +170,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 
 #' prep Seurat (Extended adaptation of prepSeurat)
 #'
-#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.
+#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are re-normalized and scaled again.
 #'
 #' @param object Seurat objects
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
@@ -181,14 +181,12 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
+#' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., noramized and scaled). Default is 3000.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL, rmv.pattern = NULL){
-
-  # print(rlang::current_env())
-  # print(str(object))
+prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000){
 
   warning("Checking seurat object...\n")
   # assertion
@@ -257,7 +255,11 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
 
   # remove object from global environment
   if (!is.null(rmv.pattern)) {
-    if (tracemem(object) != tracemem(get("rmv.pattern"))) scMiko::clearGlobalEnv(rmv.pattern)
+    if (tracemem(object) != tracemem(get("rmv.pattern"))) {
+      scMiko::clearGlobalEnv(rmv.pattern)
+      try({untracemem(object)}, silent = T)
+      try({untracemem(get("rmv.pattern"))}, silent = T)
+    }
     invisible({gc()})
   }
 
@@ -312,9 +314,9 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   if (gene.rep == "ensembl"){
     # filter species-specific genes
     if (species == "Mm"){
-      object <- subset(object, features = rownames(object)[grepl("MUSG", rownames(object))])
+      object <- subset(object, features = unique(rownames(object)[grepl("MUSG", rownames(object))]))
     } else if (species == "Hs"){
-      object <- subset(object, features = rownames(object)[!(grepl("MUSG", rownames(object)))])
+      object <- subset(object, features =  unique(rownames(object)[!(grepl("MUSG", rownames(object)))]))
     }
 
     # convert ensembl to symbol
@@ -325,10 +327,14 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
 
+  # remove duplicate genes #####################################################
+  object <- rmDuplicateGenes(object)
+  invisible({gc()})
+
   # integrated data object handling ############################################
   all.assays <- names(object@assays)
   all.commands <- names(object@commands)
-  n.var.genes <- 3000
+  n.var.genes <- reprocess.n.var
   data.rescaled <- F
   if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
     warning("ensuring correct assays are set...\n")
@@ -350,19 +356,19 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     object <- ScaleData(object, verbose = FALSE, features = rownames(object))
     invisible({gc()})
     warning(paste0("finding top ", n.var.genes, " variable genes in integrated data...\n"))
-    object[[DefaultAssay(object)]]@meta.features <- data.frame(row.names = rownames(object[[DefaultAssay(object)]]))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
     invisible({gc()})
 
     data.rescaled <- T
   }
 
+
   # rescale if data was subset #################################################
-  if (((n.presubset != n.postsubset) | (n.presubsample != n.postsubsample)) && (data.rescaled == F)){
+  if ((n.presubset != n.postsubset) && (data.rescaled == F)){
     try({
-      if (length(object@assays[[DefaultAssay(object)]]@var.features) > 0) nVar <- length(object@assays[[DefaultAssay(object)]]@var.features) else nVar <- 3000
+      if (length(object@assays[[DefaultAssay(object)]]@var.features) > 0) nVar <- length(object@assays[[DefaultAssay(object)]]@var.features) else nVar <- reprocess.n.var
     }, silent = T)
-    if (!exists("nVar")) nVar <- 3000
+    if (!exists("nVar")) nVar <- reprocess.n.var
     if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
     warning("(re)normalizing data...\n")
     object <-NormalizeData(object, verbose = FALSE)
@@ -371,7 +377,6 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     object <- ScaleData(object, verbose = FALSE, features = rownames(object))
     invisible({gc()})
     warning(paste0("finding top ", nVar, " variable genes in integrated data...\n"))
-    object[[DefaultAssay(object)]]@meta.features <- data.frame(row.names = rownames(object[[DefaultAssay(object)]]))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
     invisible({gc()})
 

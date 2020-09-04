@@ -13,7 +13,8 @@ prepSeurat2(
   subsample = 1,
   M00_subgroup.path = "M00_subgroups.csv",
   terms2drop = NULL,
-  rmv.pattern = NULL
+  rmv.pattern = NULL,
+  reprocess.n.var = 3000
 )
 }
 \arguments{
@@ -34,12 +35,14 @@ prepSeurat2(
 \item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".}
 
 \item{rmv.pattern}{Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.}
+
+\item{reprocess.n.var}{Number of variable genes to use if data is reprocessed (i.e., noramized and scaled). Default is 3000.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
 }
 \description{
-Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.
+Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are re-normalized and scaled again.
 }
 \author{
 Nicholas Mikolajewicz
