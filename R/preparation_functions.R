@@ -181,7 +181,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
-#' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., noramized and scaled). Default is 3000.
+#' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
