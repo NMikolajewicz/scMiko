@@ -256,9 +256,9 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   # remove object from global environment
   if (!is.null(rmv.pattern)) {
     if (tracemem(object) != tracemem(get("rmv.pattern"))) {
-      scMiko::clearGlobalEnv(rmv.pattern)
       try({untracemem(object)}, silent = T)
       try({untracemem(get("rmv.pattern"))}, silent = T)
+      scMiko::clearGlobalEnv(rmv.pattern)
     }
     invisible({gc()})
   }
