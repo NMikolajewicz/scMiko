@@ -183,6 +183,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
 #' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.
 #' @param scale.integrated if integrated assay, specify whether data should be rescaled. Default is FALSE.
+#' @param keep.default.assay.only Specify whether to omit assays that are not default. Default is FALSE.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
@@ -389,6 +390,23 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
 
     data.reprocessed <- T
   }
+
+  # Omit assays ################################################################
+  if (keep.default.assay.only){
+
+    which.default <- DefaultAssay(object)
+    all.assays <- names(object@assays)
+    which.omit <- all.assays[!(all.assays %in% which.default)]
+
+    if (length(which.omit) > 0){
+      for (i in 1:length(which.omit)){
+        try({object@assays[[which.omit[i]]] <- NULL}, silent = T)
+      }
+    }
+    invisible({gc()})
+  }
+
+  # Return results #############################################################
 
   return(list(
     so = object,

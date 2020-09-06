@@ -40,6 +40,8 @@ prepSeurat2(
 \item{reprocess.n.var}{Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.}
 
 \item{scale.integrated}{if integrated assay, specify whether data should be rescaled. Default is FALSE.}
+
+\item{keep.default.assay.only}{Specify whether to omit assays that are not default. Default is FALSE.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
