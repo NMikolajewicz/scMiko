@@ -263,6 +263,14 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
 
+
+  # set resolution #############################################################
+  if (!is.null(resolution) && is.numeric(resolution)){
+    warning("setting cluster resolution...\n")
+    object <-   setResolution(object, resolution = resolution)
+    invisible({gc()})
+  }
+
   # subsample ##################################################################
   n.presubsample <- ncol(object)
   if (subsample < 1 && is.numeric(subsample)){
@@ -271,14 +279,6 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
   n.postsubsample <- ncol(object)
-
-
-  # set resolution #############################################################
-  if (!is.null(resolution) && is.numeric(resolution)){
-    warning("setting cluster resolution...\n")
-    object <-   setResolution(object, resolution = resolution)
-    invisible({gc()})
-  }
 
   # subgroup data ##############################################################
   if (!is.null(subset.data) && is.character(subset.data)) {
