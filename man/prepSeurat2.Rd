@@ -14,7 +14,8 @@ prepSeurat2(
   M00_subgroup.path = "M00_subgroups.csv",
   terms2drop = NULL,
   rmv.pattern = NULL,
-  reprocess.n.var = 3000
+  reprocess.n.var = 3000,
+  scale.integrated = F
 )
 }
 \arguments{
@@ -36,7 +37,9 @@ prepSeurat2(
 
 \item{rmv.pattern}{Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.}
 
-\item{reprocess.n.var}{Number of variable genes to use if data is reprocessed (i.e., noramized and scaled). Default is 3000.}
+\item{reprocess.n.var}{Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.}
+
+\item{scale.integrated}{if integrated assay, specify whether data should be rescaled. Default is FALSE.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.

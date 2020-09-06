@@ -182,11 +182,13 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
 #' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.
+#' @param scale.integrated if integrated assay, specify whether data should be rescaled. Default is FALSE.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv", terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000){
+prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
+                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, scale.integrated = F){
 
   warning("Checking seurat object...\n")
   # assertion
@@ -263,6 +265,15 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
 
+
+  # set resolution #############################################################
+  if (!is.null(resolution) && is.numeric(resolution)){
+    warning("setting cluster resolution...\n")
+    object <-   setResolution(object, resolution = resolution)
+    invisible({gc()})
+  }
+
+
   # subsample ##################################################################
   n.presubsample <- ncol(object)
   if (subsample < 1 && is.numeric(subsample)){
@@ -271,13 +282,6 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
   n.postsubsample <- ncol(object)
-
-  # set resolution #############################################################
-  if (!is.null(resolution) && is.numeric(resolution)){
-    warning("setting cluster resolution...\n")
-    object <-   setResolution(object, resolution = resolution)
-    invisible({gc()})
-  }
 
   # subgroup data ##############################################################
   if (!is.null(subset.data) && is.character(subset.data)) {
@@ -334,7 +338,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   all.assays <- names(object@assays)
   all.commands <- names(object@commands)
   n.var.genes <- reprocess.n.var
-  data.rescaled <- F
+  data.reprocessed <- F
   if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
     warning("ensuring correct assays are set...\n")
     if (DefaultAssay(object) != "RNA") {
@@ -351,19 +355,21 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     warning("(re)normalizing integrated data...\n")
     object <-NormalizeData(object, verbose = FALSE)
     invisible({gc()})
-    warning(paste0("(re)scaling ", length(rownames(object)), " genes in integrated data...\n"))
-    object <- ScaleData(object, verbose = FALSE, features = rownames(object))
-    invisible({gc()})
+    if (scale.integrated & ("integrated" %in% all.assays)){
+      warning(paste0("(re)scaling ", length(rownames(object)), " genes in integrated data...\n"))
+      object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+      invisible({gc()})
+    }
     warning(paste0("finding top ", n.var.genes, " variable genes in integrated data...\n"))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
     invisible({gc()})
 
-    data.rescaled <- T
+    data.reprocessed <- T
   }
 
 
   # rescale if data was subset #################################################
-  if ((n.presubset != n.postsubset) && (data.rescaled == F)){
+  if ((n.presubset != n.postsubset) && (data.reprocessed == F)){
     try({
       if (length(object@assays[[DefaultAssay(object)]]@var.features) > 0) nVar <- length(object@assays[[DefaultAssay(object)]]@var.features) else nVar <- reprocess.n.var
     }, silent = T)
@@ -372,21 +378,23 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     warning("(re)normalizing data...\n")
     object <-NormalizeData(object, verbose = FALSE)
     invisible({gc()})
+    if (scale.integrated & ("integrated" %in% all.assays)){
     warning(paste0("(re)scaling ", length(rownames(object)), " genes in data...\n"))
     object <- ScaleData(object, verbose = FALSE, features = rownames(object))
     invisible({gc()})
+    }
     warning(paste0("finding top ", nVar, " variable genes in integrated data...\n"))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
     invisible({gc()})
 
-    data.rescaled <- T
+    data.reprocessed <- T
   }
 
   return(list(
     so = object,
     assay = DefaultAssay(object),
     n.cell = ncol(object),
-    rescaled = data.rescaled,
+    rescaled = data.reprocessed,
     species = species
   ))
 }
