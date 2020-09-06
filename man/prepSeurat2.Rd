@@ -15,7 +15,8 @@ prepSeurat2(
   terms2drop = NULL,
   rmv.pattern = NULL,
   reprocess.n.var = 3000,
-  scale.integrated = F
+  scale.integrated = F,
+  keep.default.assay.only = F
 )
 }
 \arguments{

@@ -189,7 +189,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
 prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
-                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, scale.integrated = F){
+                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, scale.integrated = F, keep.default.assay.only = F){
 
   warning("Checking seurat object...\n")
   # assertion
