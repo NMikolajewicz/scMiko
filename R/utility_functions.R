@@ -578,8 +578,13 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
     if ("integrated" %in% names(object@assays)){
       DefaultAssay(object) <- "integrated"
       warning("Computing clusters using integrated assay...\n")
-      object <- FindNeighbors(object = object, verbose = F)
-      object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
+      object <- tryCatch({
+        object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
+      }, error = function(e){
+        object <- FindNeighbors(object = object, verbose = F)
+        object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
+        return(object)
+      })
       DefaultAssay(object) <- my.assay
     } else {
       warning(paste0("Computing clusters using ", assay, " assay...\n"))
