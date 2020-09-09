@@ -74,7 +74,7 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
 
 #' Load preprocessed data from Moffat lab sciRNA-seq3 pipeline
 #'
-#' Load preprocessed data from Moffat lab sciRNA-seq3 pipeline
+#' Load preprocessed data from Moffat lab sciRNA-seq3 pipeline. RT barcode and plate summary is stored in misc slot of resulting seurat object.
 #'
 #' @param import_set Character vector specifying expression matrix (import_set[1]), PCR barcodes (import_set[2]) and RC barcodes (import_set[3]). Expression matrix will be imported successfully if barcodes are omitted.
 #' @param subsample_factor Numeric [0,1]. Subsampling factor
@@ -167,6 +167,7 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
     return(rtBC)
   })
   rtBC <- rtBC[subsample_ind, ]
+  rtBC$plate.well.sample <- paste0("P", rtBC$Plate, ".", rtBC$Well, ".", rtBC$Sample.type)
 
 
   barcodes <- gsub(".+([ACGT]{10}$)","\\\\1",colnames(gene_count2));
@@ -174,6 +175,11 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
   idx <- match( barcodes,rtBC$rt.bc );
   rtGrp <- rtBC$Sample.type[idx];
   names(rtGrp) <- colnames(gene_count2);
+  rtPWS <- data.frame(
+    plate = rtBC$Plate[idx],
+    well = rtBC$Well[idx],
+    sample = rtBC$Sample.type[idx])
+  rtPWS.summary <- rtPWS %>% dplyr::group_by(plate, well, sample) %>% dplyr::tally()
 
   # remove .* suffix in ensembl
   rownames(gene_count2)<-gsub("\\\\..*","",as.vector( rownames(gene_count2)))
@@ -210,11 +216,16 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
 
   }
 
+  try({so@misc[["gene.info"]] <- df_gene}, silent = T)
+  try({so@misc[["cell.info"]] <- df_cell}, silent = T)
+  try({so@misc[["plate.summary"]] <- rtPWS.summary}, silent = T)
+
   # return output
   output <- list(so, gNames)
 
   return(output)
 }
+
 
 
 #' Load preprocessed count matrix (e.g., Neftel 2019 datasets)
