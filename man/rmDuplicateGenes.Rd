@@ -4,20 +4,22 @@
 \alias{rmDuplicateGenes}
 \title{Remove duplicate genes from Seurat Object}
 \usage{
-rmDuplicateGenes(so)
+rmDuplicateGenes(object, retain.graphs = T)
 }
 \arguments{
-\item{so}{Seurat Object}
+\item{object}{Seurat Object}
+
+\item{retain.graphs}{Logical specifying whether to retain graphs in subset Seurat object because Seurat::subset function inherently removed the graphs. Default is TRUE.}
 }
 \value{
-seurat object
+Seurat object
 }
 \description{
-Remove duplicate genes from Seurat Object
+Remove duplicate genes from Seurat Object.
 }
 \examples{
 
-so.query <- rmDuplicateGenes(so.query)
+so.query <- rmDuplicateGenes(so.query, retain.graphs = T)
 
 }
 \author{
