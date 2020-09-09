@@ -581,8 +581,11 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
         warning("Computing clusters using integrated assay...\n")
         object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
       }, error = function(e){
+        print(e)
         warning("Finding neighbors...\n")
-        object <- FindNeighbors(object = object, verbose = F)
+        pca.prop <- propVarPCA(object)
+        target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
+        object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
         warning("Computing clusters using integrated assay...\n")
         object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
         DefaultAssay(object) <- my.assay
@@ -594,8 +597,11 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
         warning(paste0("Computing clusters using ", assay, " assay...\n"))
         object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
       }, error = function(e){
+        print(e)
         warning("Finding neighbors...\n")
-        object <- FindNeighbors(object = object, verbose = F)
+        pca.prop <- propVarPCA(object)
+        target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
+        object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
         warning(paste0("Computing clusters using ", assay, " assay...\n"))
         object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
         return(object)
@@ -1290,41 +1296,41 @@ cleanFilterGenes <- function(genes, so, which.species){
 #'
 #' Downsample number of cells in Seurat object by specified factor
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
 #' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
-#' @param subsample.n Numeric [1,ncol(so)]. Number of cells to subsample. If specified, overides subsample.factor.
+#' @param subsample.n Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.
 #' @name downsampleSeurat
 #' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
-downsampleSeurat <- function(so, subsample.factor = 1, subsample.n = NULL){
-
+downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL){
 
   if (subsample.factor < 1){
     if (subsample.factor<0) stop("subsample.factor must be numeric between 0 and 1")
 
-    so <-  tryCatch({
+    object <-  tryCatch({
 
       if (is.null(subsample.n)){
-        n.subset <- round(subsample.factor *ncol(so))
+        n.subset <- round(subsample.factor *ncol(object))
       } else {
-        if (subsample.n > ncol(so)) {
+        if (subsample.n > ncol(object)) {
           warning(paste("subsample.n exceeded number of cells in seurat object. Data was not subsampled"))
-          subsample.n <- ncol(so)
+          subsample.n <- ncol(object)
         }
         n.subset <- subsample.n
       }
 
-      cell.ind <- sample(x = seq(1, ncol(so)), size = n.subset, replace = FALSE, prob = NULL)
-      so <- subset(so , cells = cell.ind)
+      cell.ind <- sample(x = seq(1, ncol(object)), size = n.subset, replace = FALSE, prob = NULL)
+      object <- subset(object , cells = cell.ind)
     }, error = function(e){
-      warning("Failed to downsample seurat object")
-      return(so)
+      warning("Failed to downsample seurat object. Troubleshooting required.")
+      print(e)
+      return(object)
     })
 
   }
 
-  return(so)
+  return(object)
 
 }
 
@@ -2965,29 +2971,41 @@ scaleTOM <- function(query.TOM, reference.TOM, reference.percentile = 0.95){
 
 #' Remove duplicate genes from Seurat Object
 #'
-#' Remove duplicate genes from Seurat Object
+#' Remove duplicate genes from Seurat Object.
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
+#' @param retain.graphs Logical specifying whether to retain graphs in subset Seurat object because Seurat::subset function inherently removed the graphs. Default is TRUE.
 #' @name rmDuplicateGenes
-#' @return seurat object
+#' @return Seurat object
 #' @author Nicholas Mikolajewicz
 #' @examples
 #'
-#' so.query <- rmDuplicateGenes(so.query)
+#' so.query <- rmDuplicateGenes(so.query, retain.graphs = T)
 #'
-rmDuplicateGenes <- function(so){
+rmDuplicateGenes <- function(object, retain.graphs = T){
 
   # get gene names
-  all.genes <- rownames(so)
+  all.genes <- rownames(object)
+
+  # store graphs
+  # subset function has unexpected behavior of removing graphs when subseting
+  if (retain.graphs){
+    graph.holder <- object@graphs
+  }
 
   # if duplicates exist, subset seurat object
   if (sum(duplicated(all.genes)) > 0){
-    # which.dup <- all.genes[duplicated(all.genes)]
     which.unique <- all.genes[!duplicated(all.genes)]
-    so <- subset(so, features = which.unique)
+    object <- subset(object, features = which.unique)
   }
 
-  return(so)
+  # retrieve graphs
+  if (retain.graphs){
+    object@graphs <- graph.holder
+    rm(graph.holder)
+  }
+
+  return(object)
 
 }
 
@@ -4284,3 +4302,130 @@ FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(obj
 }
 
 
+
+#' Convert sparse matrix to dense matrix
+#'
+#' Convert sparse matrix to dense matrix. Developed to handle large datasets, by constructing dense matrix block-by-block.
+#'
+#' @param mat.sparse Sparse matrix.
+#' @param block.size If large dataset, construct dense matrix column-wise block-by-block, where block size is specified by numeric block.size parameter. Default is 10000.
+#' @param transpose Logical specifying whether to transpose data.
+#' @param verbose.error Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.
+#' @author Nicholas Mikolajewicz
+#' @name sparse2dense
+#' @value dense matrix
+#' @seealso \code{\link{sparse2df}}
+#' @examples
+#'
+#' # Get sparse matrix
+#' exp.mat <- so@assays[[current.assay]]@data
+#'
+#' # convert to dense matrix
+#' mat.dense <- sparse2dense(mat.sparse, transpose = T)
+#'
+sparse2dense <- function(mat.sparse, block.size = 10000, transpose = F, verbose.error = F){
+
+  mat.dense <- tryCatch({
+    mat.dense <- as.matrix(mat.sparse)
+    if (transpose) mat.dense <- t(mat.dense)
+  }, error = function(e){
+    if (verbose.error) print(e)
+    mat.dense <- NULL
+    n.blocks <- round(ncol(mat.sparse) / block.size)+1
+    for (i in 1:(n.blocks)){
+      start.range <- ((i-1)*block.size)+1
+      end.range <- i*block.size
+      if (start.range > ncol(mat.sparse)) next
+      if (end.range > ncol(mat.sparse)) end.range <- ncol(mat.sparse)
+      if (transpose){
+        mat.dense <- rbind(mat.dense, t(as.matrix(mat.sparse[, start.range:end.range])))
+      } else {
+        mat.dense <- cbind(mat.dense, as.matrix(mat.sparse[, start.range:end.range]))
+      }
+    }
+    if (transpose){
+      colnames(mat.dense) <- rownames(mat.sparse)
+      rownames(mat.dense) <- colnames(mat.sparse)
+    } else {
+      colnames(mat.dense) <- colnames(mat.sparse)
+      rownames(mat.dense) <- rownames(mat.sparse)
+    }
+
+    return(mat.dense)
+  })
+
+  if (transpose){
+    colnames(mat.dense) <- rownames(mat.sparse)
+    rownames(mat.dense) <- colnames(mat.sparse)
+  } else {
+    colnames(mat.dense) <- colnames(mat.sparse)
+    rownames(mat.dense) <- rownames(mat.sparse)
+  }
+  rm(mat.sparse); invisible({gc()})
+
+  return(mat.dense)
+}
+
+
+#' Convert sparse matrix to data.frame
+#'
+#' Convert sparse matrix to data.frame. Developed to handle large datasets, by constructing data.frame block-by-block.
+#'
+#' @param mat.sparse Sparse matrix.
+#' @param block.size If large dataset, construct data.frame column-wise block-by-block, where block size is specified by numeric block.size parameter. Default is 10000.
+#' @param transpose Logical specifying whether to transpose data.
+#' @param verbose.error Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.
+#' @author Nicholas Mikolajewicz
+#' @name sparse2df
+#' @value dense matrix
+#' @seealso \code{\link{sparse2dense}}
+#' @examples
+#'
+#' # Get sparse matrix
+#' exp.mat <- so@assays[[current.assay]]@data
+#'
+#' # convert to data.frame
+#' df <- sparse2df(mat.sparse, transpose = T)
+#'
+sparse2df <- function(mat.sparse, block.size = 10000, transpose = F, verbose.error = F){
+
+  df <- tryCatch({
+    df <- as.data.frame(mat.sparse)
+    if (transpose) df <- t(df)
+  }, error = function(e){
+    if (verbose.error) print(e)
+    df <- NULL
+    n.blocks <- round(ncol(mat.sparse) / block.size)+1
+    for (i in 1:(n.blocks)){
+      start.range <- ((i-1)*block.size)+1
+      end.range <- i*block.size
+      if (start.range > ncol(mat.sparse)) next
+      if (end.range > ncol(mat.sparse)) end.range <- ncol(mat.sparse)
+      if (transpose){
+        df <- bind_rows(df,as.data.frame(t(as.matrix(mat.sparse[, start.range:end.range]))))
+      } else {
+        df <- bind_cols(df,as.data.frame(mat.sparse[, start.range:end.range]))
+      }
+    }
+    if (transpose){
+      colnames(df) <- rownames(mat.sparse)
+      rownames(df) <- colnames(mat.sparse)
+    } else {
+      colnames(df) <- colnames(mat.sparse)
+      rownames(df) <- rownames(mat.sparse)
+    }
+    return(df)
+  })
+
+  if (transpose){
+    colnames(df) <- rownames(mat.sparse)
+    rownames(df) <- colnames(mat.sparse)
+  } else {
+    colnames(df) <- colnames(mat.sparse)
+    rownames(df) <- rownames(mat.sparse)
+  }
+  rm(mat.sparse); invisible({gc()})
+
+  return(df)
+
+}
