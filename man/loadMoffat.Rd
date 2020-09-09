@@ -37,5 +37,5 @@ loadMoffat(
 list containing Seurat Object and named gene vector.
 }
 \description{
-Load preprocessed data from Moffat lab sciRNA-seq3 pipeline
+Load preprocessed data from Moffat lab sciRNA-seq3 pipeline. RT barcode and plate summary is stored in misc slot of resulting seurat object.
 }
