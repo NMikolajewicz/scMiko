@@ -170,7 +170,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 
 #' prep Seurat (Extended adaptation of prepSeurat)
 #'
-#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are re-normalized and scaled again.
+#' Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are normalized and (optionally) scaled again.
 #'
 #' @param object Seurat objects
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
@@ -181,19 +181,28 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
-#' @param reprocess.n.var Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.
-#' @param scale.integrated if integrated assay, specify whether data should be rescaled. Default is FALSE.
+#' @param reprocess.n.var Number of variable genes to use if data is reprocessed. Default is 3000. Note that if integrated assay is available, variable features are first identified for reprocessed data set, and subsequently merged with the variable features present in the integrated assay, thus allows for potentially more variable features than specified by this parameter.
+#' @param neighbors.reprocessed Specifies whether to compute new neighborhood graph if graphs are missing. Note that if data are subset, graphs are inherently removed. If downstream clustering is anticipated, set as TRUE. Default is FALSE.
+#' @param scale.reprocessed if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.
 #' @param keep.default.assay.only Specify whether to omit assays that are not default. Default is FALSE.
+#' @param coerce.assay.used.to.default Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
 prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
-                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, scale.integrated = F, keep.default.assay.only = F){
+                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F, keep.default.assay.only = F, coerce.assay.used.to.default = T){
 
   warning("Checking seurat object...\n")
   # assertion
   if (class(object) != "Seurat") stop("input must be Seurat Object")
+
+
+  # remove object from global environment #####################################
+  if (!is.null(rmv.pattern)) {
+    scMiko::clearGlobalEnv(rmv.pattern)
+    invisible({gc()})
+  }
 
   # general object handling ####################################################
 
@@ -215,23 +224,111 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     }
   }
 
+  # set resolution #############################################################
+  if (!is.null(resolution) && is.numeric(resolution)){
+    warning("Setting cluster resolution...\n")
+    object <-   setResolution(object, resolution = resolution)
+    invisible({gc()})
+  }
+
+  # hold graphs ################################################################
+  if (neighbors.reprocessed) graph.holder <- object@graphs
+
+  # subsample ##################################################################
+  n.presubsample <- ncol(object)
+  if (subsample < 1 && is.numeric(subsample)){
+    warning("Downsampling data...\n")
+    object <- tryCatch({
+      object = subset(object, cells = sample(Cells(object), round(ncol(object)*subsample)))
+    }, error = function(e){
+      print(e);
+      return(object)
+    }
+    )
+  }
+  n.postsubsample <- ncol(object)
+
+  # subgroup data ##############################################################
+  if (!is.null(subset.data) && is.character(subset.data)) {
+    subset.input <- read.csv(M00_subgroup.path, header = TRUE)
+    colnames(subset.input) <- rmvCSVprefix(colnames(subset.input))
+
+    subset.list <- list()
+    for (i in 1:nrow(subset.input)){
+      subset.list[[subset.input$subset[i]]] <- data.frame(
+        field = subset.input$field[i],
+        subgroups =  stringr::str_trim(unlist(strsplit(as.character(subset.input$subgroups[i]), ",")))
+      )
+      if (!is.na(subset.input$field[i]) && subset.input$field[i] == "seurat_clusters"){
+        subset.list[[subset.input$subset[i]]]$subgroups <- as.numeric(subset.list[[subset.input$subset[i]]]$subgroups)
+      }
+    }
+    subset.data <- as.data.frame(subset.list[[subset.data]]) # NA specified as "no.subset"
+  }
+
+  n.presubset <- ncol(object)
+  if (!is.null(subset.data) && ("data.frame" %in% class(subset.data))) {
+    warning("Subsetting data...\n")
+    object <- scMiko::subsetSeurat(object,subset.data)
+    invisible({gc()})
+
+  }
+  n.postsubset <- ncol(object)
+
+  # recompute neighbors if they were removed####################################
+  if (neighbors.reprocessed){
+
+    if ((n.presubset < n.postsubset) | (n.presubsample < n.postsubsample) | length(object@graphs) == 0){
+
+      # try to use original neighbor graph. If error is encountered, compute new graph.
+      object <- tryCatch({
+        which.cells.remain <- colnames(object)
+        for (i in 1:length(graph.holder)){
+          graph.name <- names(graph.holder)[i]
+          current.graph <- graph.holder[[graph.name]]
+          graph.class <- class(current.graph)
+          current.graph <- current.graph[colnames(current.graph) %in% which.cells.remain,
+                                         colnames(current.graph) %in% which.cells.remain]
+          if (canCoerce(current.graph, graph.class)) {
+            current.graph <- as(current.graph, graph.class)
+            current.graph@assay.used <- DefaultAssay(object)
+          }
+          graph.holder[[graph.name]] <- current.graph
+        }
+
+        object@graphs <- graph.holder
+        rm(graph.holder)
+        object <- suppressMessages({UpdateSeuratObject(object)})
+      }, error = function(e){
+        pca.prop <- propVarPCA(object)
+        target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
+        object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
+        object <- suppressMessages({UpdateSeuratObject(object)})
+        return(object)
+      })
+
+    }
+    rm(graph.holder); invisible({gc()})
+
+  }
+
   # trim down seurat object ####################################################
   if (!is.null(terms2drop)){
     supported.terms <- c("pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg",
-                         "counts", "data", "scale", "rna", "sct", "integrated", "graphs")
+                         "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors")
     terms2drop <- terms2drop[terms2drop %in% supported.terms]
 
     # empty sparse matrix
     null.dgcmat <- as(matrix(NA), "dgCMatrix")
 
-    if ("pca" %in% terms2drop) try({object@reductions[["pca"]] <- NULL}, silent = T)
-    if ("umap" %in% terms2drop) try({object@reductions[["umap"]] <- NULL}, silent = T)
-    if ("tsne" %in% terms2drop) try({object@reductions[["tsne"]] <- NULL}, silent = T)
-    if ("ica" %in% terms2drop) try({object@reductions[["ica"]] <- NULL}, silent = T)
-    if ("nmf" %in% terms2drop) try({object@misc[["nmf"]] <- NULL}, silent = T)
-    if ("corr" %in% terms2drop) try({object@misc[["similarity.scale"]] <- NULL}, silent = T)
-    if ("gsva" %in% terms2drop) try({object@misc[["gsva"]] <- NULL}, silent = T)
-    if ("deg" %in% terms2drop) try({object@misc[["deg"]] <- NULL}, silent = T)
+    if (("pca" %in% terms2drop) & ("pca" %in% names(object@reductions))) try({object@reductions[["pca"]] <- NULL}, silent = T)
+    if (("umap" %in% terms2drop) & ("umap" %in% names(object@reductions))) try({object@reductions[["umap"]] <- NULL}, silent = T)
+    if (("tsne" %in% terms2drop) & ("tsne" %in% names(object@reductions))) try({object@reductions[["tsne"]] <- NULL}, silent = T)
+    if (("ica" %in% terms2drop) & ("ica" %in% names(object@reductions))) try({object@reductions[["ica"]] <- NULL}, silent = T)
+    if (("nmf" %in% terms2drop) & ("nmf" %in% names(object@misc))) try({object@misc[["nmf"]] <- NULL}, silent = T)
+    if (("corr" %in% terms2drop) & ("similarity.scale" %in% names(object@misc))) try({object@misc[["similarity.scale"]] <- NULL}, silent = T)
+    if (("gsva" %in% terms2drop) & ("gsva" %in% names(object@misc))) try({object@misc[["gsva"]] <- NULL}, silent = T)
+    if (("deg" %in% terms2drop) & ("deg" %in% names(object@misc))) try({object@misc[["deg"]] <- NULL}, silent = T)
     if ("counts" %in% terms2drop) {
       try({object@assays[["RNA"]]@counts <- null.dgcmat}, silent = T)
       try({object@assays[["SCT"]]@counts <- null.dgcmat}, silent = T)
@@ -256,66 +353,12 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     object <- suppressMessages({UpdateSeuratObject(object)})
   }
 
-  # remove object from global environment
-  if (!is.null(rmv.pattern)) {
-    if (tracemem(object) != tracemem(get("rmv.pattern"))) {
-      try({untracemem(object)}, silent = T)
-      try({untracemem(get("rmv.pattern"))}, silent = T)
-      scMiko::clearGlobalEnv(rmv.pattern)
-    }
-    invisible({gc()})
-  }
-
-
-  # set resolution #############################################################
-  if (!is.null(resolution) && is.numeric(resolution)){
-    warning("setting cluster resolution...\n")
-    object <-   setResolution(object, resolution = resolution)
-    invisible({gc()})
-  }
-
-
-  # subsample ##################################################################
-  n.presubsample <- ncol(object)
-  if (subsample < 1 && is.numeric(subsample)){
-    warning("subsampling data...\n")
-    object <- downsampleSeurat(object, subsample.factor = subsample)
-    invisible({gc()})
-  }
-  n.postsubsample <- ncol(object)
-
-  # subgroup data ##############################################################
-  if (!is.null(subset.data) && is.character(subset.data)) {
-    subset.input <- read.csv(M00_subgroup.path, header = TRUE)
-    colnames(subset.input) <- rmvCSVprefix(colnames(subset.input))
-
-    subset.list <- list()
-    for (i in 1:nrow(subset.input)){
-      subset.list[[subset.input$subset[i]]] <- data.frame(
-        field = subset.input$field[i],
-        subgroups =  stringr::str_trim(unlist(strsplit(as.character(subset.input$subgroups[i]), ",")))
-      )
-      if (!is.na(subset.input$field[i]) && subset.input$field[i] == "seurat_clusters"){
-        subset.list[[subset.input$subset[i]]]$subgroups <- as.numeric(subset.list[[subset.input$subset[i]]]$subgroups)
-      }
-    }
-    subset.data <- as.data.frame(subset.list[[subset.data]]) # NA specified as "no.subset"
-  }
-
-  n.presubset <- ncol(object)
-  if (!is.null(subset.data) && ("data.frame" %in% class(subset.data))) {
-    warning("subsetting data...\n")
-    object <- scMiko::subsetSeurat(object,subset.data)
-    invisible({gc()})
-
-  }
-  n.postsubset <- ncol(object)
-
   # convert ENSEBLE to GENE names in Seurat object #############################
-  warning("converting ENSEMBL to SYMBOL...\n")
+
   gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
 
   if (gene.rep == "ensembl"){
+    warning("Converting ENSEMBL to SYMBOL...\n")
     # filter species-specific genes
     if (species == "Mm"){
       object <- subset(object, features = unique(rownames(object)[grepl("MUSG", rownames(object))]))
@@ -341,28 +384,40 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   n.var.genes <- reprocess.n.var
   data.reprocessed <- F
   if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
-    warning("ensuring correct assays are set...\n")
+    warning("Ensuring correct assays are set...\n")
     if (DefaultAssay(object) != "RNA") {
-      warning("Setting default assay to 'RNA'")
+      warning("Setting default assay to 'RNA'...\n")
       DefaultAssay(object) <- "RNA"
     }
-    if (length(object@assays[["RNA"]]@var.features) == 0){
-      object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
+    warning("Finding variable features...\n")
+    object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
+    if (length(object@assays[["integrated"]]@var.features) > 0){
+      object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
     }
-  } else if (("integrated" %in% all.assays) & !("NormalizeData.RNA" %in% all.commands) & !("ScaleData.RNA" %in% all.commands)){
-    DefaultAssay(object) <- "RNA"
-    if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
 
-    warning("(re)normalizing integrated data...\n")
-    object <-NormalizeData(object, verbose = FALSE)
-    invisible({gc()})
-    if (scale.integrated & ("integrated" %in% all.assays)){
-      warning(paste0("(re)scaling ", length(rownames(object)), " genes in integrated data...\n"))
-      object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+  } else if (("integrated" %in% all.assays) & (!("NormalizeData.RNA" %in% all.commands) | !("ScaleData.RNA" %in% all.commands))){
+    warning("Setting default assay to 'RNA'...\n")
+    DefaultAssay(object) <- "RNA"
+
+    if (!("NormalizeData.RNA" %in% all.commands)){
+      if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
+      warning("Normalizing data...\n")
+      object <-NormalizeData(object, verbose = FALSE)
       invisible({gc()})
     }
-    warning(paste0("finding top ", n.var.genes, " variable genes in integrated data...\n"))
+    if (!("ScaleData.RNA" %in% all.commands)){
+      if (scale.reprocessed & ("integrated" %in% all.assays)){
+        warning(paste0("Scaling ", length(rownames(object)), " genes in data...\n"))
+        object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+        invisible({gc()})
+      }
+    }
+
+    warning("Finding variable features...\n")
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
+    if (length(object@assays[["integrated"]]@var.features) > 0){
+      object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
+    }
     invisible({gc()})
 
     data.reprocessed <- T
@@ -376,20 +431,29 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     }, silent = T)
     if (!exists("nVar")) nVar <- reprocess.n.var
     if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
-    warning("(re)normalizing data...\n")
+    warning("Normalizing subset data...\n")
     object <-NormalizeData(object, verbose = FALSE)
     invisible({gc()})
-    if (scale.integrated & ("integrated" %in% all.assays)){
-    warning(paste0("(re)scaling ", length(rownames(object)), " genes in data...\n"))
-    object <- ScaleData(object, verbose = FALSE, features = rownames(object))
-    invisible({gc()})
+    if (scale.reprocessed & ("integrated" %in% all.assays)){
+      warning(paste0("Scaling ", length(rownames(object)), " genes in subset data...\n"))
+      object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+      invisible({gc()})
     }
-    warning(paste0("finding top ", nVar, " variable genes in integrated data...\n"))
+    warning(paste0("Finding top ", nVar, " variable genes in subset data...\n"))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
     invisible({gc()})
 
     data.reprocessed <- T
   }
+
+  # Coerce 'used assays' to default ############################################
+  if (coerce.assay.used.to.default){
+    try({object@reductions[["pca"]]@assay.used <- DefaultAssay(object)}, silent = T)
+    try({object@reductions[["tsne"]]@assay.used <- DefaultAssay(object)}, silent = T)
+    try({object@reductions[["umap"]]@assay.used <- DefaultAssay(object)}, silent = T)
+    try({object@reductions[["ica"]]@assay.used <- DefaultAssay(object)}, silent = T)
+  }
+
 
   # Omit assays ################################################################
   if (keep.default.assay.only){
@@ -399,6 +463,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     which.omit <- all.assays[!(all.assays %in% which.default)]
 
     if (length(which.omit) > 0){
+      warning(paste0("Omitting the following assays: ", paste(which.omit, collapse = ", "), "...\n"))
       for (i in 1:length(which.omit)){
         try({object@assays[[which.omit[i]]] <- NULL}, silent = T)
       }
@@ -531,6 +596,7 @@ clearGlobalEnv <- function(pattern, exact.match = T){
     rm(list = which.match, envir = globalenv())
     warning(paste0("The following variable were removed from the global enviroment: ", paste(which.match, collapse = ", "), "\n"))
   }
+  invisible({gc()})
 
 }
 
