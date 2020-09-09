@@ -15,8 +15,10 @@ prepSeurat2(
   terms2drop = NULL,
   rmv.pattern = NULL,
   reprocess.n.var = 3000,
-  scale.integrated = F,
-  keep.default.assay.only = F
+  neighbors.reprocessed = F,
+  scale.reprocessed = F,
+  keep.default.assay.only = F,
+  coerce.assay.used.to.default = T
 )
 }
 \arguments{
@@ -38,17 +40,21 @@ prepSeurat2(
 
 \item{rmv.pattern}{Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.}
 
-\item{reprocess.n.var}{Number of variable genes to use if data is reprocessed (i.e., normalized and scaled). Default is 3000.}
+\item{reprocess.n.var}{Number of variable genes to use if data is reprocessed. Default is 3000. Note that if integrated assay is available, variable features are first identified for reprocessed data set, and subsequently merged with the variable features present in the integrated assay, thus allows for potentially more variable features than specified by this parameter.}
 
-\item{scale.integrated}{if integrated assay, specify whether data should be rescaled. Default is FALSE.}
+\item{neighbors.reprocessed}{Specifies whether to compute new neighborhood graph if graphs are missing. Note that if data are subset, graphs are inherently removed. If downstream clustering is anticipated, set as TRUE. Default is FALSE.}
+
+\item{scale.reprocessed}{if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.}
 
 \item{keep.default.assay.only}{Specify whether to omit assays that are not default. Default is FALSE.}
+
+\item{coerce.assay.used.to.default}{Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.
 }
 \description{
-Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are re-normalized and scaled again.
+Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are normalized and (optionally) scaled again.
 }
 \author{
 Nicholas Mikolajewicz
