@@ -280,7 +280,7 @@ PAGA <- function(object,
 
     root.index <- getClusterRoot(object@reductions[["umap"]]@cell.embeddings[,1],
                                  object@reductions[["umap"]]@cell.embeddings[,2],
-                                 so.query@meta.data$seurat_clusters,
+                                 object@meta.data$seurat_clusters,
                                  dpt_root_cluster)
 
     root_cell <- root.index
