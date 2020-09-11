@@ -4391,7 +4391,9 @@ sparse2df <- function(mat.sparse, block.size = 10000, transpose = F, verbose.err
 
   df <- tryCatch({
     df <- as.data.frame(mat.sparse)
-    if (transpose) df <- t(df)
+    if (transpose) {
+      df <- as.data.frame(t(df))
+    }
   }, error = function(e){
     if (verbose.error) print(e)
     df <- NULL
