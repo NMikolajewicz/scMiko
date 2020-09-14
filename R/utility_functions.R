@@ -4431,3 +4431,21 @@ sparse2df <- function(mat.sparse, block.size = 10000, transpose = F, verbose.err
   return(df)
 
 }
+
+#' Non-parametric standardization of matrix
+#'
+#' Center using median and scale using median absolute deviations
+#'
+#' @param z matrix
+#' @param which.dim dimension. Default is 1 (rows). Use 2 for columns.
+#' @author Nicholas Mikolajewicz
+#' @name standardizeNonParametric
+#' @value standardized matrix
+#'
+standardizeNonParametric <- function(z, which.dim = 1) {
+  rowmed <- apply(z, which.dim, median)
+  rowmad <- apply(z, which.dim, mad)  # median absolute deviation
+  rv <- sweep(z, which.dim, rowmed,"-")  #subtracting median expression
+  rv <- sweep(rv, which.dim, rowmad, "/")  # dividing by median absolute deviation
+  return(rv)
+}
