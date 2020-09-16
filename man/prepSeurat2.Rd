@@ -18,7 +18,9 @@ prepSeurat2(
   neighbors.reprocessed = F,
   scale.reprocessed = F,
   keep.default.assay.only = F,
-  coerce.assay.used.to.default = T
+  coerce.assay.used.to.default = T,
+  barcode.recode = NULL,
+  M00_barcode_recode.path = "M00_barcode_recode.csv"
 )
 }
 \arguments{
@@ -49,6 +51,10 @@ prepSeurat2(
 \item{keep.default.assay.only}{Specify whether to omit assays that are not default. Default is FALSE.}
 
 \item{coerce.assay.used.to.default}{Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.}
+
+\item{barcode.recode}{Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.}
+
+\item{M00_barcode_recode.path}{Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.

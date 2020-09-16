@@ -186,12 +186,15 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param scale.reprocessed if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.
 #' @param keep.default.assay.only Specify whether to omit assays that are not default. Default is FALSE.
 #' @param coerce.assay.used.to.default Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.
+#' @param barcode.recode Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.
+#' @param M00_barcode_recode.path Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
 prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
-                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F, keep.default.assay.only = F, coerce.assay.used.to.default = T){
+                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F,
+                         keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
 
   warning("Checking seurat object...\n")
   # assertion
@@ -267,7 +270,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   }
 
   n.presubset <- ncol(object)
-  if (!is.null(subset.data) && ("data.frame" %in% class(subset.data))) {
+  if (!is.null(subset.data) && ("data.frame" %in% class(subset.data)) && !is.na(unique(subset.data[,1]))) {
     warning("Subsetting data...\n")
     object <- scMiko::subsetSeurat(object,subset.data)
     invisible({gc()})
@@ -471,6 +474,11 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     invisible({gc()})
   }
 
+  # Recode Barcodes ############################################################
+  if (!is.na(barcode.recode) | !is.null(barcode.recode)){
+    object <- scMiko::recodeBarcode(object, barcode.recode, M00_barcode_recode.path)
+  }
+
   # Return results #############################################################
 
   return(list(
@@ -599,4 +607,93 @@ clearGlobalEnv <- function(pattern, exact.match = T){
   invisible({gc()})
 
 }
+
+
+#' Recode (i.e., relabel) barcode metadata field in Seurat object
+#'
+#' Recode (i.e., relabel) barcode metadata field in Seurat object. If old barcode is specified as NA, treated as wildcard that captures all remaining barcodes that have not been relabeled.
+#'
+#' @param object Seurat Object
+#' @param barcode.recode Character or list specifying how to relabel barcodes.
+#' \itemize{
+#' \item "Character" - Name of barcode recoding entries in M00_barcode_recode.path (.csv file)
+#' \item "List" - Named list where names are new barcodes, entries are old barcodes (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
+#' }
+#' @param M00_barcode_recode.path Path to .csv file containing old and new barcodes. Only used if barcode.recode is character. Default is "M00_barcode_recode.csv".
+#' @name recodeBarcode
+#' @author Nicholas Mikolajewicz
+#' @return Seurat Object with relabeled 'Barcode' metadata
+#'
+recodeBarcode <- function(object, barcode.recode, M00_barcode_recode.path = "M00_barcode_recode.csv"){
+
+  # input options ##############################################################
+  # option 1 ##############
+  # named list where names are new barcodes, entries are old barcodes (can be vector of characters)
+  # e.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
+  #
+  # option 2 ##############
+  # name of barcode recoding entries specified in M00_barcode_recode.path (.csv file), with 3 columns (name, old.barcode, new.barcode)
+  # e.g., name   old.barcode   new.barcode
+  #       gbm_1  invitro       in.vitro
+  #       gbm_1  NA            in.vivo
+  #
+  # Note that if NA is specified as old name, this is equivalent to getting all remainder cells that aren't specified by other old barcodes.
+  #
+  ##############################################################################
+
+  if (exists("barcode.recode") && (((!is.null(barcode.recode)) | (!is.na(barcode.recode))) & is.character(barcode.recode))){
+
+    br.input <- read.csv(M00_barcode_recode.path, header = TRUE, stringsAsFactors  = F)
+    colnames(br.input) <- rmvCSVprefix(colnames(br.input))
+
+    br.input <- br.input[br.input$name %in% barcode.recode, ]
+    if (nrow(br.input) == 0) stop("Barcode recoding failed.\n")
+
+    br.list <- list()
+
+    new.br <- unique(br.input$new.barcode)
+    for (i in 1:length(new.br)){
+      cur.br <-  br.input[br.input$new.barcode %in% new.br[i], ]
+      if (nrow(cur.br) == 0)  next
+      for (j in 1:nrow(cur.br)){
+        br.list[[new.br[i]]] <- c( br.list[[new.br[i]]], cur.br$old.barcode[j])
+      }
+    }
+
+    barcode.recode <- br.list
+  }
+
+  if (exists("barcode.recode") && (((!is.null(barcode.recode)) | (!is.na(barcode.recode))) & is.list(barcode.recode))){
+    barcodes.old <- as.character(object@meta.data[["Barcode"]])
+    barcodes.new <- barcodes.old
+
+    recode.log <- c()
+    recode.rest <- F
+    for (i in 1:length(barcode.recode)){
+
+      if (all(!is.na(barcode.recode[[i]]))){
+        barcode.pattern <- paste(barcode.recode[[i]], collapse = "|")
+        which.match <- grep(barcode.pattern, barcodes.old)
+        recode.log <- c(recode.log, which.match)
+        barcodes.new[which.match] <- names(barcode.recode)[i]
+      } else {
+        recode.rest <- T
+        rest.ind <- i
+      }
+    }
+
+    if (recode.rest){
+      all.ind <- c(1:length(barcodes.old))
+      which.rest <- all.ind[!(all.ind %in% recode.log)]
+      barcodes.new[which.rest] <- names(barcode.recode)[rest.ind]
+    }
+
+
+    object@meta.data[["Barcode"]] <- barcodes.new
+  }
+
+  return(object)
+
+}
+
 
