@@ -700,22 +700,24 @@ subsetSeurat <- function (object, subset.df){
   # check if subset input is validd
   if (is.na(unique(subset.df$field))){
     subset.flag <- FALSE
+    warning("Invalid subsetting field provided...\n")
   } else if ( unique(subset.df$field) %in% names(object@meta.data)) {
     subset.flag <- TRUE
   } else {
     subset.flag <- FALSE
+    warning("Subsetting failed...\n")
   }
 
 
   # subset data
   if (subset.flag){
     require("Seurat")
+    cur.field <- as.vector(unique(subset.df$field))
     if (cur.field == "seurat_clusters"){
       my.cells <- colnames(object)[(as.character(object@meta.data[[cur.field]]) %in% as.vector(subset.df$subgroups))]
     } else {
       pattern <- paste( as.vector(subset.df$subgroups), collapse="|")
       pattern <- gsub(" ", "", pattern)
-      cur.field <- as.vector(unique(subset.df$field))
       match.ind.1 <- grepl(pattern, as.character(object@meta.data[[cur.field]]))
       match.ind.2 <- as.character(object@meta.data[[cur.field]]) %in% as.vector(subset.df$subgroups)
       if (sum(match.ind.1) != sum(match.ind.2)) warning("exact vs. partial matching results in inconsistent number of matches...\n")
