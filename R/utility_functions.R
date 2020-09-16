@@ -3647,18 +3647,33 @@ updateDimNames <- function(so){
 
   # ensure dim names are correctly specified
   for (i in 1:length(all.assays)){
-    c.dim <- so@assays[[all.assays[i]]]@counts@Dimnames
-    d.dim <- so@assays[[all.assays[i]]]@data@Dimnames
+    # original
+    # c.dim <- length(so@assays[[all.assays[i]]]@counts@Dimnames)
+    # d.dim <- length(so@assays[[all.assays[i]]]@data@Dimnames)
 
-    if ((length(c.dim) == 1) & (length(d.dim) == 2)){
+    # alternative
+    c.dim <- 2-sum(unlist(lapply(so@assays[[all.assays[i]]]@counts@Dimnames, is.null)))
+    d.dim <- 2-sum(unlist(lapply(so@assays[[all.assays[i]]]@counts@Dimnames, is.null)))
+
+    if ((c.dim == 1) & (d.dim == 2)){
       if ((so@assays[[all.assays[i]]]@counts@Dim[1] == so@assays[[all.assays[i]]]@data@Dim[1]) &
           (so@assays[[all.assays[i]]]@counts@Dim[2] == so@assays[[all.assays[i]]]@data@Dim[2])){
         so@assays[[all.assays[i]]]@counts@Dimnames <- so@assays[[all.assays[i]]]@data@Dimnames
       }
-    } else if ((length(d.dim) == 1) & (length(c.dim) == 2)){
+    } else if ((c.dim == 2) & (d.dim == 1)){
       if ((so@assays[[all.assays[i]]]@counts@Dim[1] == so@assays[[all.assays[i]]]@data@Dim[1]) &
           (so@assays[[all.assays[i]]]@counts@Dim[2] == so@assays[[all.assays[i]]]@data@Dim[2])){
         so@assays[[all.assays[i]]]@data@Dimnames <- so@assays[[all.assays[i]]]@counts@Dimnames
+      }
+    } else if ((c.dim == 1) & (d.dim == 1)){
+      meta.features <- so@assays[[all.assays[i]]]@meta.features
+      if ("SYMBOL" %in% colnames(meta.features)){
+        if (dim(so@assays[[all.assays[i]]]@counts)[1] == nrow(meta.features)){
+          so@assays[[all.assays[i]]]@counts@Dimnames[[1]] <- as.character(meta.features$SYMBOL)
+        }
+        if (dim( so@assays[[all.assays[i]]]@data)[1] == nrow(meta.features)){
+          so@assays[[all.assays[i]]]@data@Dimnames[[1]] <- as.character(meta.features$SYMBOL)
+        }
       }
     }
   }
