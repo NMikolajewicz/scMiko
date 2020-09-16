@@ -710,13 +710,19 @@ subsetSeurat <- function (object, subset.df){
   # subset data
   if (subset.flag){
     require("Seurat")
-    pattern <- paste( as.vector(subset.df$subgroups), collapse="|")
-    pattern <- gsub(" ", "", pattern)
-    cur.field <- as.vector(unique(subset.df$field))
-    match.ind <- grepl(pattern, as.character(object@meta.data[[cur.field]]))
-    # object <- subset(x = object, cells = which(match.ind))
-    object <- subset(x = object, cells = grep(pattern, as.character(object@meta.data[[cur.field]])))
-    # object <- object[, which(match.ind)]
+    if (cur.field == "seurat_clusters"){
+      my.cells <- colnames(object)[(as.character(object@meta.data[[cur.field]]) %in% as.vector(subset.df$subgroups))]
+    } else {
+      pattern <- paste( as.vector(subset.df$subgroups), collapse="|")
+      pattern <- gsub(" ", "", pattern)
+      cur.field <- as.vector(unique(subset.df$field))
+      match.ind.1 <- grepl(pattern, as.character(object@meta.data[[cur.field]]))
+      match.ind.2 <- as.character(object@meta.data[[cur.field]]) %in% as.vector(subset.df$subgroups)
+      if (sum(match.ind.1) != sum(match.ind.2)) warning("exact vs. partial matching results in inconsistent number of matches...\n")
+      my.cells <- grep(pattern, as.character(object@meta.data[[cur.field]]))
+    }
+
+    object <- subset(x = object, cells = my.cells)
     try({object <- UpdateSeuratObject(object)}, silent = T)
   }
 
