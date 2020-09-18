@@ -475,7 +475,7 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   }
 
   # Recode Barcodes ############################################################
-  if (!is.na(barcode.recode) | !is.null(barcode.recode)){
+  if (!is.null(barcode.recode)){
     object <- scMiko::recodeBarcode(object, barcode.recode, M00_barcode_recode.path)
   }
 
