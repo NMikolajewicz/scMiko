@@ -760,9 +760,11 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     which.ontology <- ontology
 
     if (species == "Hs"){
+      require("org.Hs.eg.db")
       go.e2g <- org.Hs.egGO
       go.g2e <- as.list(org.Hs.egGO2EG)
     } else if (species == "Mm"){
+      require("org.Mm.eg.db")
       go.e2g <- org.Mm.egGO
       go.g2e <- as.list(org.Mm.egGO2EG)
     }
