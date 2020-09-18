@@ -2637,8 +2637,8 @@ rescaleValues <- function(values, new.min = 0, new.max = 1){
   values <- values * new.range
   values <- values + new.min
 
-  stopifnot(min(values) == new.min)
-  stopifnot(max(values) == new.max)
+  if(min(values) != new.min) warning(paste0("minimum of rescaled values is not ", new.min, "\n"))
+  if(max(values) != new.max) warning(paste0("maximum of rescaled values is not ", new.max, "\n"))
 
   return(values)
 
