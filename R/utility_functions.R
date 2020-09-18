@@ -2626,16 +2626,17 @@ rescaleValues <- function(values, new.min = 0, new.max = 1){
   } else if (old.min > 0) {
     values <- values - abs(old.min)
   }
-  stopifnot( min(values) == 0)
 
   # set upper bound to one
   old.max <- (max(values))
   values <- values/old.max
-  stopifnot( max(values) == 1)
 
   new.range <- new.max - new.min
-  values <- values * new.range
-  values <- values + new.min
+  if (new.range != 0){
+    values <- values * new.range
+    values <- values + new.min
+  }
+
 
   if(min(values) != new.min) warning(paste0("minimum of rescaled values is not ", new.min, "\n"))
   if(max(values) != new.max) warning(paste0("maximum of rescaled values is not ", new.max, "\n"))
