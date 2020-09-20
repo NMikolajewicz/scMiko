@@ -1431,7 +1431,7 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
   }
 
   # clear some memory
-  rm(so)
+  rm(so); invisible({gc()})
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
@@ -1471,10 +1471,15 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
       }
       avg.mat[,i] <- sd.cur / abs(av.cur)
     } else if (which.center == "fraction"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+      e.subset <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
+      if (is.numeric(e.subset)){
+        avg.mat[,i] <- 1*(e.subset>0)
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x>0)/length(x))
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(e.subset, 1, function(x) sum(x>0)/length(x))
+        } else {
+          avg.mat[,i] <- apply(e.subset, 1, function(x) sum(x>0)/length(x))
+        }
       }
     } else {
       stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
