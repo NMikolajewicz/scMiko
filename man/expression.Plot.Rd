@@ -11,7 +11,9 @@ expression.Plot(
   f.mat = NULL,
   which.group = "seurat_clusters",
   which.data = "data",
-  which.assay = DefaultAssay(so)
+  which.assay = DefaultAssay(so),
+  x.label = NULL,
+  x.label.angle = NULL
 )
 }
 \arguments{
@@ -28,12 +30,16 @@ expression.Plot(
 \item{which.data}{Specifies which seurat data used to compute e.mat and f.mat. Must be either "data" (default) or "scale". Used only if e.mat and f.mat are not provided.}
 
 \item{which.assay}{Specifies which seurat assay to used to compute e.mat. Used only if e.mat is not provided. Default is DefaultAssay(so)}
+
+\item{x.label}{x axis title (a character). Default is which.group.}
+
+\item{x.label.angle}{rotation angle for x axis title (a numeric). Default is NULL.}
 }
 \value{
 ggplot object
 }
 \description{
-Draws violin plot of single cell data, stratified by specified group. Hierarchially-clustered dendrogram is overlaid to illustrate relationships between groups.
+Draws violin plot of single cell data, stratified by specified group. Hierarchically-clustered dendrogram is overlaid to illustrate relationships between groups.
 }
 \examples{
 

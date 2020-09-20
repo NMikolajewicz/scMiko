@@ -372,7 +372,7 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
 
 #' Violin plot of single cell gene expression
 #'
-#' Draws violin plot of single cell data, stratified by specified group. Hierarchially-clustered dendrogram is overlaid to illustrate relationships between groups.
+#' Draws violin plot of single cell data, stratified by specified group. Hierarchically-clustered dendrogram is overlaid to illustrate relationships between groups.
 #'
 #' @param so Seurat object
 #' @param which.gene query gene. Must be available in Seurat object.
@@ -381,6 +381,8 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
 #' @param which.group Group to cluster gene expression by. Must be column header in so meta data. Default is "seurat_clusters".
 #' @param which.data Specifies which seurat data used to compute e.mat and f.mat. Must be either "data" (default) or "scale". Used only if e.mat and f.mat are not provided.
 #' @param which.assay Specifies which seurat assay to used to compute e.mat. Used only if e.mat is not provided. Default is DefaultAssay(so)
+#' @param x.label x axis title (a character). Default is which.group.
+#' @param x.label.angle rotation angle for x axis title (a numeric). Default is NULL.
 #' @name expression.Plot
 #' @return ggplot object
 #' @examples
@@ -390,7 +392,9 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
 #' print(plt.sgExp.clust)
 #'
 #'
-expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL, which.group = "seurat_clusters", which.data = "data", which.assay = DefaultAssay(so)){
+expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
+                            which.group = "seurat_clusters", which.data = "data", which.assay = DefaultAssay(so),
+                            x.label = NULL, x.label.angle = NULL){
 
   # get expression data
   if (is.null(e.mat)){
@@ -417,6 +421,15 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL, which.gr
     em.frac <- f.mat
   }
 
+  if ("genes" %in% colnames(em)){
+    rownames(em) <- em$genes
+    em <- em %>% dplyr::select(-c("genes"))
+  }
+  if ("genes" %in% colnames(em.frac)){
+    rownames(em.frac) <- em.frac$genes
+    em.frac <- em.frac %>% dplyr::select(-c("genes"))
+  }
+
   # get meta data
   so.meta <- so@meta.data
 
@@ -431,13 +444,13 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL, which.gr
   em.merge <- merge(em.df, df.meta, by = "id")
 
   # get summary statistics (for clustering)
-  em.sum <- em.merge %>%
+  suppressMessages({em.sum <- em.merge %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(x.mean = mean(query, na.rm = T),
-                     x.sd = sd(query, na.rm = T))
+                     x.sd = sd(query, na.rm = T))})
   em.frac.mark <- as.data.frame(em.frac[(rownames(em.frac)) %in% (which.gene), ])
+  if (rownames(em.frac.mark) %in% which.gene) em.frac.mark <-as.data.frame(t(em.frac.mark))
   colnames(em.frac.mark) <- which.gene
-  # em.frac.mark <- t(em.frac.mark %>% select(-c("genes")))
   em.frac.mark.df <- data.frame(group = rownames(em.frac.mark), frac = em.frac.mark[,1])
 
   if (which.group == "seurat_clusters") em.frac.mark.df$group <- gsub("c", "", em.frac.mark.df$group)
@@ -455,6 +468,9 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL, which.gr
     hc <- hclust(d)                # apply hirarchical clustering
     clust.success <- T
   }, silent = T)
+
+
+  if (is.null(x.label)) x.label <- which.group
 
   if (clust.success){
     # helper function for creating dendograms
@@ -479,28 +495,50 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL, which.gr
     # reorder data according to clusters
     em.merge$group <- factor(as.character(em.merge$group), levels = (d.query.clust[["labels"]][["label"]]))
 
-    # violin plots
-    plt.em <- em.merge %>%
+    max.query <- max(em.merge$query, na.rm = T)
+    suppressMessages({em.merge.sum <- em.merge %>%
       group_by(group) %>%
-      ggplot(aes(x = group, y = query, fill = group)) +
-      geom_violin() + theme_bw() +
-      ylab("Expression") +
-      xlab(which.group)  +
+      summarize(ef = mean(query > 0),
+                ev = mean(query, na.rm = T))})
+    plt.em <- ggplot() +
+      geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +
+      coord_cartesian(ylim = c(0, 1)) +
+      geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
+      geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group)) +
+      theme_miko() +
+      xlab(x.label)  +
+      scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)") +
       theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
             legend.position = "none")
+
+    if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
+      plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
+    }
 
     # combine plots
-    plt.sgExp <-  cowplot::plot_grid(p.query.clust, plt.em, ncol = 1, align = "v", rel_heights = c(1,2))
+    plt.sgExp <-  cowplot::plot_grid(p.query.clust, plt.em, ncol = 1, align = "v", rel_heights = c(1,3))
 
   } else {
-    plt.sgExp <- em.merge %>%
+
+    max.query <- max(em.merge$query, na.rm = T)
+    em.merge.sum <- em.merge %>%
       group_by(group) %>%
-      ggplot(aes(x = group, y = query, fill = group)) +
-      geom_violin() + theme_bw() +
-      ylab("Expression") +
-      xlab(which.group)  +
+      summarize(ef = mean(query > 0),
+                ev = mean(query, na.rm = T))
+    plt.sgExp <- ggplot() +
+      geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +
+      coord_cartesian(ylim = c(0, 1)) +
+      geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
+      geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group)) +
+      theme_miko() +
+      xlab(x.label)  +
+      scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)") +
       theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
             legend.position = "none")
+
+    if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
+      plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
+    }
   }
 
   return(plt.sgExp)
