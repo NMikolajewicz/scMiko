@@ -8,7 +8,9 @@ getAnnotationPathways(
   query.genes,
   db = c("Bader"),
   ontology = c("BP"),
-  species = c("Hs")
+  species = c("Hs"),
+  msigdb.collection = "H",
+  msigdb.subcollection = NULL
 )
 }
 \arguments{
@@ -18,7 +20,8 @@ getAnnotationPathways(
 \itemize{
 \item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
 \item "Reactome"
-\item "GO"
+\item "GO" - Requires additional specification of ontology.
+\item "msigdb" - Requires additional specification of msigdb.collection, and optionally msigdb.subcollection.
 }}
 
 \item{ontology}{GO ontologies to retrieve if GO db is selected. One of:
@@ -29,6 +32,21 @@ getAnnotationPathways(
 }}
 
 \item{species}{"Mm" or "Hs". Default is "Hs".}
+
+\item{msigdb.collection}{Geneset collection (only if msigdb database used). See msigdbr() for additional details. One of:
+\itemize{
+\item "H" - Hallmark (Default)
+\item "C1" - positional genesets
+\item "C2" - curated genesets (CGP, CP)
+\item "C3" - regulatory target genesets (MIR, TFT)
+\item "C4" - computational genesets (CGN, CM)
+\item "C5" - ontology genesets (GO, GO:BP, GO:CC, GO:MF, HPO)
+\item "C6" - oncogenic signature genesets
+\item "C7" - immunologic signatures
+\item "C8" - cell type signature genesets
+}}
+
+\item{msigdb.subcollection}{Subcollection corresponding to specified msigdb collection. Possible subcollections for each collection are indicated in parantheses above.}
 }
 \value{
 Named list of vectors with gene sets (Entrez format).

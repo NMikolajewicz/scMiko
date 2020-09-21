@@ -732,6 +732,17 @@ subsetSeurat <- function (object, subset.df){
 }
 
 
+# collections (subcollections):
+# H: Hallmark
+# C1: positional genesets
+# C2: curated genesets (CGP, CP)
+# C3: regulatory target genesets (MIR, TFT)
+# C4: computational genesets (CGN, CM)
+# C5: ontology genesets (GO, GO:BP, GO:CC, GO:MF, HPO)
+# C6: oncogenic signature genesets
+# C7: immunologic signatures
+# C8: cell type signature genesets
+
 #' Returns list of annotations for given Entrez gene IDs
 #'
 #' Returns list of Reactome or GO annotations for given Entrez gene IDs
@@ -741,7 +752,8 @@ subsetSeurat <- function (object, subset.df){
 #' \itemize{
 #' \item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
 #' \item "Reactome"
-#' \item "GO"
+#' \item "GO" - Requires additional specification of ontology.
+#' \item "msigdb" - Requires additional specification of msigdb.collection, and optionally msigdb.subcollection.
 #' }
 #' @param ontology GO ontologies to retrieve if GO db is selected. One of:
 #' \itemize{
@@ -750,10 +762,24 @@ subsetSeurat <- function (object, subset.df){
 #' \item "CC" - Cellular components
 #' }
 #' @param species "Mm" or "Hs". Default is "Hs".
+#' @param msigdb.collection Geneset collection (only if msigdb database used). See msigdbr() for additional details. One of:
+#' \itemize{
+#' \item "H" - Hallmark (Default)
+#' \item "C1" - positional genesets
+#' \item "C2" - curated genesets (CGP, CP)
+#' \item "C3" - regulatory target genesets (MIR, TFT)
+#' \item "C4" - computational genesets (CGN, CM)
+#' \item "C5" - ontology genesets (GO, GO:BP, GO:CC, GO:MF, HPO)
+#' \item "C6" - oncogenic signature genesets
+#' \item "C7" - immunologic signatures
+#' \item "C8" - cell type signature genesets
+#' }
+#' @param msigdb.subcollection Subcollection corresponding to specified msigdb collection. Possible subcollections for each collection are indicated in parantheses above.
 #' @name getAnnotationPathways
 #' @return Named list of vectors with gene sets (Entrez format).
 #'
-getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP"), species = c("Hs")){
+getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP"), species = c("Hs"),
+                                  msigdb.collection = "H", msigdb.subcollection = NULL){
 
   if (db == "GO"){
 
@@ -815,11 +841,37 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     include.which <- lapply(pathways, function(x) sum(query.genes %in% unlist(x)) > 0 )
     pathways <- pathways[as.vector(unlist(include.which))]
 
+  } else if (db == "msigdb"){
+
+    if (is.null(msigdb.collection)) stop("'msigdb.collection' must be specified if using msigdb pathways\n")
+    if (!(require(msigdbr))) {
+      BiocManager::install("msigdbr");
+      library(msigdbr)
+    }
+
+    if (species == "Hs"){
+      msd.species <- "Homo sapiens"
+    } else if (species == "Mm"){
+      msd.species <- "Mus musculus"
+    }
+
+    df.msd <- msigdbr(species = msd.species, category = msigdb.collection)
+
+    if (!is.null(msigdb.subcollection)) df.msd <-df.msd[grepl(msigdb.subcollection, df.msd$gs_subcat), ]
+    if (nrow(df.msd) == 0) df.msd <- msigdbr(species = msd.species, category = msigdb.collection)
+
+    df.msd.subset <- df.msd[df.msd$entrez_gene %in% all.genes.entrez, ]
+
+    u.paths <- unique(df.msd$gs_name)
+
+    pathways <- list()
+    for (i in 1:length(u.paths)){
+      pathways[[u.paths[i]]] <- df.msd.subset$entrez_gene[df.msd.subset$gs_name %in% u.paths[i]]
+    }
   }
 
   return(pathways)
 }
-
 
 #' Map Reactome/GO term to ID
 #'
