@@ -860,7 +860,7 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     if (!is.null(msigdb.subcollection)) df.msd <-df.msd[grepl(msigdb.subcollection, df.msd$gs_subcat), ]
     if (nrow(df.msd) == 0) df.msd <- msigdbr(species = msd.species, category = msigdb.collection)
 
-    df.msd.subset <- df.msd[df.msd$entrez_gene %in% all.genes.entrez, ]
+    df.msd.subset <- df.msd[df.msd$entrez_gene %in% query.genes, ]
 
     u.paths <- unique(df.msd$gs_name)
 
