@@ -316,6 +316,13 @@ PAGA <- function(object,
   umap$cluster <- object@meta.data[["seurat_clusters"]]
   umap$cells <- colnames(object)
 
+  # extract pseudotimes
+  # py_run_string(paste0("r.alpha.uns['iroot'] = ", as.integer(root_cell)))
+  # sc$tl$dpt(adata = alpha)
+  # df.meta.py <- alpha$obs
+  # df.meta.r <- py_to_r(df.meta.py)
+  # pseudotime <- df.meta.r$dpt_pseudotime
+
   # store results
   paga <- list(
     connectivities = connectivities,
@@ -331,6 +338,7 @@ PAGA <- function(object,
     fr.map = paga.fr,
     distance =  py_to_r(py_get_item(alpha$obsp, "distances")),
     AnnData = alpha
+    # df.meta.r = df.meta.r
   )
 
   paga$edges.all <- tibble(
