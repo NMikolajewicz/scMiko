@@ -4532,3 +4532,19 @@ standardizeNonParametric <- function(z, which.dim = 1) {
   rv <- sweep(rv, which.dim, rowmad, "/")  # dividing by median absolute deviation
   return(rv)
 }
+
+
+#' Sort factor levels in numerical order
+#'
+#' Sort factor levels in numerical order
+#'
+#' @param factor factor with numerical entries.
+#' @author Nicholas Mikolajewicz
+#' @name orderedFactor
+#' @value ordered factor
+#'
+orderedFactor <- function(f){
+  f <- factor(f, levels = unique(f)[order(as.numeric(unique(f)))])
+  return(f)
+}
+
