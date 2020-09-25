@@ -103,56 +103,56 @@
 #'  )
 #'
 #'
-PAGA <- function(object,
-                 assay = "RNA",
-                 slim = FALSE,
-                 seurat_grouping = "seurat_clusters",
-                 set_ident = FALSE,
-                 clustering_algorithm = "leiden",
-                 reduction_name = "umap",
-                 reduction_key = "umap_",
-                 edge_filter_weight = 0.10,
+PAGA <-function(object,
+                assay = "RNA",
+                slim = FALSE,
+                seurat_grouping = "seurat_clusters",
+                set_ident = FALSE,
+                clustering_algorithm = "leiden",
+                reduction_name = "umap",
+                reduction_key = "umap_",
+                edge_filter_weight = 0.10,
 
-                 neighbors_n_neighbors = 15,
-                 neighbors_n_pcs = NULL,
-                 neighbors_use_rep = "pca",
-                 neighbors_knn = TRUE,
-                 neighbors_random_state = 0,
-                 neighbors_method = 'umap',
-                 neighbors_metric = 'euclidean',
+                neighbors_n_neighbors = 15,
+                neighbors_n_pcs = NULL,
+                neighbors_use_rep = "pca",
+                neighbors_knn = TRUE,
+                neighbors_random_state = 0,
+                neighbors_method = 'umap',
+                neighbors_metric = 'euclidean',
 
-                 clustering_resolution = 1.0,
-                 clustering_restrict_to=NULL,
-                 clustering_random_state=0,
-                 clustering_key_added=NULL,
-                 clustering_adjacency=NULL,
-                 clustering_directed=TRUE,
-                 clustering_use_weights=TRUE,
-                 clustering_n_iterations=-1,
-                 clustering_partition_type=NULL,
+                clustering_resolution = 1.0,
+                clustering_restrict_to=NULL,
+                clustering_random_state=0,
+                clustering_key_added=NULL,
+                clustering_adjacency=NULL,
+                clustering_directed=TRUE,
+                clustering_use_weights=TRUE,
+                clustering_n_iterations=-1,
+                clustering_partition_type=NULL,
 
-                 paga_show = FALSE,
-                 paga_plot = FALSE,
-                 paga_add_pos = TRUE,
-                 paga_threshold=0.01,
-                 paga_layout=NULL,
-                 paga_init_pos=NULL,
-                 paga_root=0.0,
-                 paga_single_component=NULL,
-                 paga_random_state=0.0,
+                paga_show = FALSE,
+                paga_plot = FALSE,
+                paga_add_pos = TRUE,
+                paga_threshold=0.01,
+                paga_layout=NULL,
+                paga_init_pos=NULL,
+                paga_root=0.0,
+                paga_single_component=NULL,
+                paga_random_state=0.0,
 
-                 umap_min_dist=0.5,
-                 umap_spread=1.0,
-                 umap_n_components=3,
-                 umap_alpha=1.0,
-                 umap_gamma=1.0,
-                 umap_negative_sample_rate=5,
-                 umap_init_pos='spectral',
+                umap_min_dist=0.5,
+                umap_spread=1.0,
+                umap_n_components=3,
+                umap_alpha=1.0,
+                umap_gamma=1.0,
+                umap_negative_sample_rate=5,
+                umap_init_pos='spectral',
 
-                 dpt_root_cell = NULL,
-                 dpt_root_cluster = NULL,
-                 dpt_auto_root = "min",
-                 dpt_auto_reduction = "dm"){
+                dpt_root_cell = NULL,
+                dpt_root_cluster = NULL,
+                dpt_auto_root = "min",
+                dpt_auto_reduction = "dm"){
 
   if (isTRUE(slim)){
     DefaultAssay(object) <- assay
@@ -249,12 +249,6 @@ PAGA <- function(object,
              gamma=as.numeric(umap_gamma),
              negative_sample_rate=as.integer(umap_negative_sample_rate))
 
-  # Fruchterman & Reingold algorithm visualization  ######################
-  sc$tl$draw_graph(alpha)
-
-  paga.fr <- data.frame(py_to_r(alpha$obsm['X_draw_graph_fr']))
-  # paga.fr %>% ggplot(aes(X1, X2)) + geom_point()
-
   # DPT ######################
   sc$tl$diffmap(adata = alpha)
   paga.dm <- data.frame(py_to_r(alpha$obsm['X_umap']))
@@ -262,6 +256,9 @@ PAGA <- function(object,
   if (is.null(dpt_root_cell) & is.null(dpt_root_cluster)){
 
     if (dpt_auto_reduction == "fr"){
+      # Fruchterman & Reingold algorithm visualization  ######################
+      sc$tl$draw_graph(alpha)
+      paga.fr <- data.frame(py_to_r(alpha$obsm['X_draw_graph_fr']))
       if (dpt_auto_root == "min"){
         root_cell <- which.min(paga.fr$X1)
       } else if (dpt_auto_root == "max"){
@@ -285,6 +282,9 @@ PAGA <- function(object,
 
     root_cell <- root.index
   }
+
+
+  if (!exists("paga.fr")) paga.fr <- NULL
 
   # get data ############
   paga.obj.py <-  py_get_item(alpha$uns, "paga")
@@ -316,13 +316,6 @@ PAGA <- function(object,
   umap$cluster <- object@meta.data[["seurat_clusters"]]
   umap$cells <- colnames(object)
 
-  # extract pseudotimes
-  # py_run_string(paste0("r.alpha.uns['iroot'] = ", as.integer(root_cell)))
-  # sc$tl$dpt(adata = alpha)
-  # df.meta.py <- alpha$obs
-  # df.meta.r <- py_to_r(df.meta.py)
-  # pseudotime <- df.meta.r$dpt_pseudotime
-
   # store results
   paga <- list(
     connectivities = connectivities,
@@ -338,7 +331,6 @@ PAGA <- function(object,
     fr.map = paga.fr,
     distance =  py_to_r(py_get_item(alpha$obsp, "distances")),
     AnnData = alpha
-    # df.meta.r = df.meta.r
   )
 
   paga$edges.all <- tibble(
@@ -375,6 +367,7 @@ PAGA <- function(object,
 
   return(object)
 }
+
 
 #' @title PAGAplot
 #'
