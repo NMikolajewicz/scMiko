@@ -16,6 +16,8 @@
 #'
 cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap", ...){
 
+  if (group.by == "seurat_clusters") so@meta.data[["seurat_clusters"]] <- orderedFactor(so@meta.data[["seurat_clusters"]])
+
   plt.handle <- DimPlot(so, group.by = group.by, label = include.labels,reduction = reduction, ...)  +
     ggtitle(label = plot.name) +
     xlab(x.label) + ylab(y.label)
