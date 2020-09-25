@@ -4544,7 +4544,7 @@ standardizeNonParametric <- function(z, which.dim = 1) {
 #' @value ordered factor
 #'
 orderedFactor <- function(f){
-  f <- factor(f, levels = unique(f)[order(as.numeric(unique(f)))])
+  f <- factor(f, levels = unique(f)[order(as.numeric(unique(as.character(f))))])
   return(f)
 }
 
