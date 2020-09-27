@@ -94,7 +94,7 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
 #' @name loadMoffat
 #' @return list containing Seurat Object and named gene vector.
 #'
-loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_include, dir) {
+loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_include, dir) {
 
   # load gene count matrix
   import_set_path <- paste(dir, import_set, sep ="")
@@ -167,6 +167,7 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
     return(rtBC)
   })
   rtBC <- rtBC[subsample_ind, ]
+  if (is.null(rtBC$Plate)) rtBC$Plate <- ""
   rtBC$plate.well.sample <- paste0("P", rtBC$Plate, ".", rtBC$Well, ".", rtBC$Sample.type)
 
 
@@ -225,7 +226,6 @@ loadMoffat <- function(import_set, subsample_factor, input_organisms, organism_i
 
   return(output)
 }
-
 
 
 #' Load preprocessed count matrix (e.g., Neftel 2019 datasets)
