@@ -124,16 +124,19 @@ QC.violinPlot <- function(so, plt.log.flag = T){
 
 #' QC scatter plots
 #'
-#' Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell.
+#' Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell. Cellular density is computed and overlayed as color on scatter plot.
 #'
 #' @param so Seurat Object
+#' @param legend.width numeric specifying legend width (in cm)
+#' @param ... additional parameters passed to scMiko::getDensity().
 #' @name QC.scatterPlot
 #' @return ggplot handle
 #'
-QC.scatterPlot <- function(so){
+QC.scatterPlot <- function(so, legend.width = 1, ...){
 
   df.meta <- so@meta.data
 
+  # correlations
   rho1p <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$percent.mt, method = "pearson"), 2)
   rho1s <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$percent.mt, method = "spearman"), 2)
   rho2p <- signif(cor(x = df.meta$nFeature_RNA, y =  df.meta$percent.mt, method = "pearson"), 2)
@@ -141,12 +144,26 @@ QC.scatterPlot <- function(so){
   rho3p <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$nFeature_RNA, method = "pearson"), 2)
   rho3s <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$nFeature_RNA, method = "spearman"), 2)
 
-  plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt)) + geom_point() + theme_miko() +
-    xlab("UMI/cell") + ylab("Mitochondrial Content (%)") + labs(title = paste0("r = ", rho1p, "; rho = ", rho1s))
-  plt.handle2 <- df.meta %>% ggplot(aes(x = nFeature_RNA, y = percent.mt)) + geom_point() + theme_miko() +
-    xlab("Genes/cell") + ylab("Mitochondrial Content (%)")  + labs(title = paste0("r = ", rho2p, "; rho = ", rho2s))
-  plt.handle3 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA)) + geom_point() + theme_miko() +
-    xlab("UMI/cell") + ylab("Genes/cell")  + labs(title = paste0("r = ", rho3p, "; rho = ", rho3s))
+  # cell densities
+  df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100, ...)
+  df.meta$density2 <- getDensity(df.meta$nFeature_RNA, df.meta$percent.mt, n = 100, ...)
+  df.meta$density3 <- getDensity(df.meta$nCount_RNA, df.meta$nFeature_RNA, n = 100, ...)
+
+  # construct plots
+  plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
+    xlab("UMI/cell") + ylab("Mitochondrial Content (%)") +
+    labs(title = paste0("r = ", rho1p, "; rho = ", rho1s)) + scale_color_viridis("Density") +
+    theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
+
+  plt.handle2 <- df.meta %>% ggplot(aes(x = nFeature_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
+    xlab("Genes/cell") + ylab("Mitochondrial Content (%)")  +
+    labs(title = paste0("r = ", rho2p, "; rho = ", rho2s)) + scale_color_viridis("Density") +
+    theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
+
+  plt.handle3 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = density1)) + geom_point() + theme_miko(legend = T) +
+    xlab("UMI/cell") + ylab("Genes/cell")  +
+    labs(title = paste0("r = ", rho3p, "; rho = ", rho3s)) + scale_color_viridis("Density") +
+    theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
 
   plt.QC_scatter <- cowplot::plot_grid(plt.handle1, plt.handle2, plt.handle3, ncol = 3)
 

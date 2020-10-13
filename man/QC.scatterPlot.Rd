@@ -4,14 +4,18 @@
 \alias{QC.scatterPlot}
 \title{QC scatter plots}
 \usage{
-QC.scatterPlot(so)
+QC.scatterPlot(so, legend.width = 1, ...)
 }
 \arguments{
 \item{so}{Seurat Object}
+
+\item{legend.width}{numeric specifying legend width (in cm)}
+
+\item{...}{additional parameters passed to scMiko::getDensity().}
 }
 \value{
 ggplot handle
 }
 \description{
-Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell.
+Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell. Cellular density is computed and overlayed as color on scatter plot.
 }
