@@ -4548,3 +4548,36 @@ orderedFactor <- function(f){
   return(f)
 }
 
+
+
+#' Get local density (z) of bivariate relationship (x,y)
+#'
+#' Get local density (z) of bivariate relationship (x,y)
+#'
+#' @param x numeric (equal length as y)
+#' @param y numeric
+#' @param ... additional parameters passed to MASS::kde2d
+#' @author Nicholas Mikolajewicz
+#' @name getDensity
+#' @value density values
+#' @examples
+#' @author Kamil Slowikowski (https://slowkow.com/notes/ggplot2-color-by-density/)
+#'
+#' # get data and compute densities
+#' df.meta <- so@meta.data
+#' df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100)
+#'
+#' # generate scatter plot with overlated density values
+#' plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
+#'    xlab("UMI/cell") + ylab("Mitochondrial Content (%)") +
+#'    labs(title = paste0("r = ", rho1p, "; rho = ", rho1s)) + scale_color_viridis("Density") +
+#'    theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
+#'
+getDensity <- function(x, y, ...) {
+  dens <- MASS::kde2d(x, y, ...)
+  ix <- findInterval(x, dens$x)
+  iy <- findInterval(y, dens$y)
+  ii <- cbind(ix, iy)
+  return(dens$z[ii])
+}
+
