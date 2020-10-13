@@ -132,17 +132,26 @@ QC.violinPlot <- function(so, plt.log.flag = T){
 #'
 QC.scatterPlot <- function(so){
 
-  # Generate QC scatterplots
+  df.meta <- so@meta.data
 
-  plt.handle1 <- FeatureScatter(so, feature1 = "nCount_RNA", feature2 = "percent.mt") +
-    xlab("UMI/cell") + ylab("Mitochondrial Content (%)")
-  plt.handle2 <- FeatureScatter(so, feature1 = "nFeature_RNA", feature2 = "percent.mt") +
-    xlab("Genes/cell") + ylab("Mitochondrial Content (%)")
-  plt.handle3 <- FeatureScatter(so, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", span = TRUE) +
-    xlab("UMI/cell") + ylab("Genes/cell")
+  rho1p <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$percent.mt, method = "pearson"), 2)
+  rho1s <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$percent.mt, method = "spearman"), 2)
+  rho2p <- signif(cor(x = df.meta$nFeature_RNA, y =  df.meta$percent.mt, method = "pearson"), 2)
+  rho2s <- signif(cor(x = df.meta$nFeature_RNA, y =  df.meta$percent.mt, method = "spearman"), 2)
+  rho3p <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$nFeature_RNA, method = "pearson"), 2)
+  rho3s <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$nFeature_RNA, method = "spearman"), 2)
 
-  plt.QC_scatter <- CombinePlots(plots = list(plt.handle1, plt.handle2,plt.handle3), ncol = 3, legend = 'none')
+  plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt)) + geom_point() + theme_miko() +
+    xlab("UMI/cell") + ylab("Mitochondrial Content (%)") + labs(title = paste0("r = ", rho1p, "; rho = ", rho1s))
+  plt.handle2 <- df.meta %>% ggplot(aes(x = nFeature_RNA, y = percent.mt)) + geom_point() + theme_miko() +
+    xlab("Genes/cell") + ylab("Mitochondrial Content (%)")  + labs(title = paste0("r = ", rho2p, "; rho = ", rho2s))
+  plt.handle3 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA)) + geom_point() + theme_miko() +
+    xlab("UMI/cell") + ylab("Genes/cell")  + labs(title = paste0("r = ", rho3p, "; rho = ", rho3s))
+
+  plt.QC_scatter <- cowplot::plot_grid(plt.handle1, plt.handle2, plt.handle3, ncol = 3)
+
   return(plt.QC_scatter)
+
 }
 
 
