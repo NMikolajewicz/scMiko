@@ -4567,7 +4567,7 @@ orderedFactor <- function(f){
 #' df.meta <- so@meta.data
 #' df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100)
 #'
-#' # generate scatter plot with overlated density values
+#' # generate scatter plot with overlayed density values
 #' plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
 #'    xlab("UMI/cell") + ylab("Mitochondrial Content (%)") +
 #'    labs(title = paste0("r = ", rho1p, "; rho = ", rho1s)) + scale_color_viridis("Density") +
