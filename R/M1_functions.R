@@ -402,10 +402,16 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 
   # filter dataset
   if ((unmatch.low == 0) & (unmatch.high == 1)){
-    so <- subset(so, subset = ((nFeature_RNA <= RNA.upperlimit) & (nFeature_RNA >= RNA.lowerlimit) & (percent.mt <= mt.upperlimit)))
+    so <- subset(so, subset = ((nFeature_RNA <= RNA.upperlimit) &
+                                 (nFeature_RNA >= RNA.lowerlimit) &
+                                 (percent.mt <= mt.upperlimit)))
   } else {
     so <- subset(so,
-                 subset = ((nFeature_RNA < RNA.upperlimit) & (nFeature_RNA >= RNA.lowerlimit) & (percent.mt <= mt.upperlimit) & (unmatched.rate >= unmatch.low) & (unmatched.rate <= unmatch.high)))
+                 subset = ((nFeature_RNA < RNA.upperlimit) &
+                             (nFeature_RNA >= RNA.lowerlimit) &
+                             (percent.mt <= mt.upperlimit) &
+                             (unmatched.rate >= unmatch.low) &
+                             (unmatched.rate <= unmatch.high)))
   }
 
   # determine filtered UMI count
@@ -456,12 +462,13 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @param return.only.var.genes If method = SCT, logical that specifies whether only variable genes are retrieved.
 #' @param mean.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature means.
 #' @param dispersion.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.
+#' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE.
 #' @param assay Name of assay to pull the count data from; default is 'RNA'
 #' @name scNormScale
 #' @return Seurat Object
 #'
 scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
-                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), assay = "RNA"){
+                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA"){
 
 
   # enable parallelization
@@ -494,20 +501,22 @@ scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.
     # apply sctransform (regularized negative binomial regression)
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
     if (is.null(vars2regress)){
-      so <- SCTransform(so,
+      so <- SCTransform(object = so,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,
-                        assay = assay)
+                        assay = assay,
+                        conserve.memory = conserve.memory)
     } else {
-      so <- SCTransform(so,
+      so <- SCTransform(object = so,
                         vars.to.regress = vars2regress,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,
-                        assay = assay)
+                        assay = assay,
+                        conserve.memory = conserve.memory)
     }
 
 

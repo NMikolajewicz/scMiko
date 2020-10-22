@@ -4581,3 +4581,84 @@ getDensity <- function(x, y, ...) {
   return(dens$z[ii])
 }
 
+
+
+#' Parallelized correlation
+#'
+#' Parallelized correlation
+#'
+#' @param max matrix
+#' @param method Correlation method, a character. Options: 'pearson' or 'spearman'.
+#' @param do.par Logical indicating whether to use parallel implementation. Default is T.
+#' @param n.workers number of workers to use for parallel computation.
+#' @name parCor
+#' @value correlation matrix
+#' @examples
+#' @author Nicholas Mikolajewicz
+#'
+parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
+
+  # check if eligible method
+  stopifnot(method %in% c("spearman", "pearson"))
+
+  # get necessary packages
+  require("doParallel")
+  require("data.table")
+  require("WGCNA")
+
+  # pre-rank matrix (if spearman)
+  if (method == "spearman"){
+    warning("pre-ranking matrix...\n")
+    mat <- apply(mat, 2, function(x) rank(x))
+  }
+
+  # parallelize
+  if (do.par){
+
+    # specify n.workers and initiate clusters
+    warning("initiating clusters...\n")
+    cl <- parallel::makeCluster(n.workers)
+    doParallel::registerDoParallel(cl)
+
+    # chunk sizes
+    chunk.ranges <- seq(1, ncol(mat), by = round(ncol(mat) / n.workers) +1)
+    if (max(chunk.ranges) < ncol(mat)) chunk.ranges <- c(chunk.ranges, ncol(mat))
+
+    # compute correlations
+    warning("computing correlations...\n")
+    res <- foreach(i = 1:(length(chunk.ranges)-1),
+                   .combine = rbind,
+                   .multicombine = TRUE,
+                   .inorder = FALSE,
+                   .packages = c('data.table', 'doParallel', 'WGCNA')) %dopar% {
+                     start.ind <- chunk.ranges[i]
+                     if (i == (length(chunk.ranges)-1)){
+                       end.ind <- chunk.ranges[i+1]
+                     } else {
+                       end.ind <- chunk.ranges[i+1] - 1
+                     }
+
+                     WGCNA::cor(x = mat[,start.ind:end.ind], y = mat, method = 'pearson')
+                   }
+
+    stopCluster(cl)
+
+  } else {
+
+    # fast correlation implementation (no parallelized)
+    fast_cor <- function(m) {
+      m <- t(m)
+      m <- m - rowMeans(m)           # center
+      m <- m / sqrt(rowSums(m^2))    # scale
+      tcrossprod(m)                  # cross-product
+    }
+
+    # compute correlation
+    warning("computing correlations...\n")
+    res <- fast_cor(mat)
+
+  }
+
+  return(res)
+
+}
