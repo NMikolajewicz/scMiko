@@ -2823,7 +2823,7 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
       geom_point(size = 3) +
       xlab("N Links (Log)") +
       ylab("N Nodes (Log)") +
-      ggtitle(paste0("Node Linkages\nSoft Power = ", power.cur)) +
+      labs(title = "Node Linkages", subtitle = paste0("Soft Power = ", power.cur)) +
       theme_classic() +
       stat_fit_glance(method = "lm",
                       label.y = "bottom",
