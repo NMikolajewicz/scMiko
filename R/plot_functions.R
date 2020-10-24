@@ -329,7 +329,7 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 
 
   # binarize expression
-  exp.mat <- getExpressionMatrix.dev(so, only.variable = only.variable, which.data = "data")
+  exp.mat <- getExpressionMatrix(so, only.variable = only.variable, which.data = which.data)
 
   # get subset of genes if specified
   if (!is.null(which.genes)){
