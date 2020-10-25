@@ -4662,3 +4662,97 @@ parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
   return(res)
 
 }
+
+
+#' Run gene-set enrichment analysis (GSEA)
+#'
+#' Run gene-set enrichment analysis (GSEA)
+#'
+#' @param gene Character vector of gene names
+#' @param value Numeric vector of values used to rank genes (e.g., logFC, expression, etc.). Must be same length as gene argument.
+#' @param species Species. One of "Mm" (mouse) or "Hs" (human)
+#' @param my.entrez Data.frame with SYMBOL and ENTREZID columns. Used to relate gene symbols to Entrez IDs. Retrieved internally unless explicitly provided.
+#' @param my.pathway Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.
+#' @param min.size Minimum gene set size. Default is 3.
+#' @param max.size Minimum gene set size. Default is 300.
+#' @param do.plot Logical to return dotplot visualizing top GSEA ranked pathways. Default is T.
+#' @param plot.top.n Numeric specifying how many top pathways to visualize. Default is 10.
+#' @value list of enrichent results
+#' @examples
+#' @author Nicholas Mikolajewicz
+#'
+runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathway = NULL, min.size = 3,
+                    max.size = 300, do.plot = T, plot.top.n = 10){
+
+
+  suppressMessages({
+    suppressWarnings({
+
+
+      if (is.null(my.entrez)){
+        # get entrez to gene symbol mapping
+        my.symbol <-gene
+        my.entrez <- sym2entrez(my.symbol, my.species = species )
+        my.entrez <- my.entrez[complete.cases(my.entrez), ]
+      }
+
+      if (is.null(my.pathway)){
+        # get pathways
+        my.pathway <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = db, ontology = "BP", species = species)
+      }
+
+      # prep genelist
+      gene.list <- value
+      names(gene.list) <- gene
+      match.ind <- match(names(gene.list), my.entrez$SYMBOL)
+      names(gene.list) <- as.character(my.entrez$ENTREZID[match.ind])
+      gene.list = sort(gene.list, decreasing = TRUE)
+
+      # clean list
+      df.ent <- data.frame(names = names(gene.list), values = as.vector(gene.list))
+      df.ent <- df.ent[complete.cases(df.ent), ]
+      df.ent <- df.ent[!is.infinite(df.ent$values), ]
+      gene.list.clean <- df.ent$values
+      names(gene.list.clean) <- df.ent$names
+
+      # pathway gsea enrichment
+
+      # fgseaMultilevel {fgsea}
+      gse.pathway <- fgsea::fgsea(my.pathway, gene.list.clean, nperm=1000, minSize = min.size, maxSize=max.size)
+
+      # make human readable
+      gse.pathway <- gse.pathway
+      gse.pathway$set <- lapply(gse.pathway$leadingEdge,
+                                mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
+      gse.pathway$set <- lapply(gse.pathway$set, paste,collapse = ", ")
+      gse.pathway <- gse.pathway %>% dplyr::select(-c("leadingEdge"))
+
+      if (do.plot){
+        # get top GSEA
+        gse.pathway.top <- bind_rows((gse.pathway %>% dplyr::filter(NES > 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n],
+                                     (gse.pathway %>% dplyr::filter(NES < 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n])
+
+        # plot
+        gse.pathway.top$path.trun <- stringr::str_trunc(gse.pathway.top$pathway, 40)
+        plt.gsea <- gse.pathway.top %>%
+          ggplot(aes(x = NES, y = reorder(path.trun, NES), fill = -log1p(pval), size = -log1p(pval))) +
+          geom_point(pch=21) +
+          theme_miko(legend = T) +
+          xlab("NES") + ylab("") +
+          labs(title = "GSEA", fill = "-log(p)", size =  "-log(p)") +
+          geom_vline(xintercept = 0, linetype = "dashed") +
+          viridis::scale_fill_viridis(option ="B")
+
+        return(list(
+          gse.pathway = gse.pathway,
+          gse.pathway.top = gse.pathway.top,
+          plt.gsea = plt.gsea
+        ))
+      } else {
+        return(gse.pathway)
+      }
+
+    })
+  })
+
+}
