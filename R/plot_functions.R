@@ -767,3 +767,20 @@ discretePalette <- function(gg, fc, n.groups){
 }
 
 
+#' Automatically determine optimal point size for geom_point()
+#'
+#' Automatically determine optimal point size for geom_point()
+#'
+#' @param n.points Number of data points
+#' @param scale.factor scaling constant used to determine optimal point size.
+#' @name autoPointSize
+#' @return optimal point size
+#' @examples
+#'
+#'  gg.plot <-  df.umap %>% dplyr::arrange(get(module.names[i])) %>%
+#'       ggplot(aes(x = x, y = y, color = get(module.names[i]))) +
+#'       geom_point(size = autoPointSize(nrow(df.umap)))
+#'
+autoPointSize <- function(n.points, scale.factor = 1583){
+  min(scale.factor/n.points, 1)
+}

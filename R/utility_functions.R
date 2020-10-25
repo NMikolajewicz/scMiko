@@ -1487,19 +1487,19 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
+  warning("\nComputing measures of centrality...")
   for (i in 1:length(u.clusters)){
-    warning("\nComputing measures of centrality...")
     if (which.center == "mean"){
       if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
       }
     } else if (which.center == "median"){
       if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x, na.rm = T))
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(median(expm1(x), na.rm = T)+1))
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) median(x, na.rm = T))
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(median(expm1(x), na.rm = T)+1))
       }
     } else if (which.center == "sum"){
       if (do.parallel){
@@ -1509,17 +1509,17 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
       }
     } else if (which.center == "sd"){
       if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
+        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
       }
     } else if (which.center == "cv"){
       if (do.parallel){
-        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
       } else {
-        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sd(x, na.rm = T))
-        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) mean(x, na.rm = T))
+        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
       }
       avg.mat[,i] <- sd.cur / abs(av.cur)
     } else if (which.center == "fraction"){
