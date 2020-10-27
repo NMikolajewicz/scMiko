@@ -11,7 +11,8 @@ getSoftThreshold2(
   nBreaks = 20,
   removeFirst = T,
   rescale.adjacency = F,
-  n.cores = 4
+  n.cores = 4,
+  r2.target = 0.9
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ getSoftThreshold2(
 \item{rescale.adjacency}{Logical indicating if s.mat should be rescaled to [0,1]}
 
 \item{n.cores}{Number of cores to use for parallelization. Default is 4.}
+
+\item{r2.target}{Retrieves soft power that corresponds to network topology corresponding to r2 >= r2.target. Default is 0.9.}
 
 \item{networkType}{Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.}
 }
