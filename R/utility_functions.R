@@ -2678,27 +2678,35 @@ sim2adj <- function(s.mat, soft.power, network.type){
 #'
 rescaleValues <- function(values, new.min = 0, new.max = 1){
 
-  # set lower bound to zero
-  old.min <- min(values)
-  if (old.min < 0) {
-    values <- values + abs(old.min)
-  } else if (old.min > 0) {
-    values <- values - abs(old.min)
-  }
+  is.success <- F
 
-  # set upper bound to one
-  old.max <- (max(values))
-  values <- values/old.max
+  try({
 
-  new.range <- new.max - new.min
-  if (new.range != 0){
-    values <- values * new.range
-    values <- values + new.min
-  }
+    # set lower bound to zero
+    old.min <- min(values, na.rm = T)
+    if (old.min < 0) {
+      values <- values + abs(old.min)
+    } else if (old.min > 0) {
+      values <- values - abs(old.min)
+    }
 
+    # set upper bound to one
+    old.max <- (max(values, na.rm = T))
+    values <- values/old.max
 
-  if(min(values) != new.min) warning(paste0("minimum of rescaled values is not ", new.min, "\n"))
-  if(max(values) != new.max) warning(paste0("maximum of rescaled values is not ", new.max, "\n"))
+    new.range <- new.max - new.min
+    if (new.range != 0){
+      values <- values * new.range
+      values <- values + new.min
+    }
+
+    if(min(values) != new.min) warning(paste0("minimum of rescaled values is not ", new.min, "\n"))
+    if(max(values) != new.max) warning(paste0("maximum of rescaled values is not ", new.max, "\n"))
+
+    is.success <- T
+  }, silent = T)
+
+  if (!is.success) values <- new.max * values / max(values, na.rm = T)
 
   return(values)
 
@@ -2753,6 +2761,7 @@ BaCo <- function(X){
 #' @param removeFirst Logical specifying whether the first bin should be removed from the connectivity histogram. Default is True.
 #' @param rescale.adjacency Logical indicating if s.mat should be rescaled to [0,1]
 #' @param n.cores Number of cores to use for parallelization. Default is 4.
+#' @param r2.target Retrieves soft power that corresponds to network topology corresponding to r2 >= r2.target. Default is 0.9.
 #' @name getSoftThreshold2
 #' @seealso \code{\link{getConnectivity}}
 #' @return named list containing power estimates, r2 estimates, distribution plots, optimiation plot and results data.frame.
@@ -2768,7 +2777,7 @@ BaCo <- function(X){
 #' # visualize node-linkage density plots
 #' cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5)
 
-getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), network.type = "signed", nBreaks = 20, removeFirst = T, rescale.adjacency = F, n.cores = 4){
+getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), network.type = "signed", nBreaks = 20, removeFirst = T, rescale.adjacency = F, n.cores = 4, r2.target = 0.9){
 
 
   plt.sf.list <- list()
@@ -2856,11 +2865,21 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
   # store powers and r2
   df.r2.sf <- data.frame(sf = powers, r2 = r2.sf)
 
+  # get best power estimate
+  r2.target <- -1*abs(r2.target) # ensure correct sign
+  if (sum(df.r2.sf$r2 < r2.target) > 0){
+    best.power <- df.r2.sf$sf[which(df.r2.sf$r2 < r2.target)[1]]
+    r2.opt <- df.r2.sf$r2[which(df.r2.sf$r2 < r2.target)[1]]
+  } else {
+    best.power <-  df.r2.sf$sf[which.min(df.r2.sf$r2)]
+    r2.opt <- df.r2.sf$r2[which.min(df.r2.sf$r2)]
+  }
+
   # optimizatio plot
   plt.opt.sf <- df.r2.sf %>%
     ggplot(aes(x = sf, y = r2)) +
-    geom_hline(yintercept = df.r2.sf$r2[which.min(df.r2.sf$r2)], color = "tomato") +
-    geom_vline(xintercept = df.r2.sf$sf[which.min(df.r2.sf$r2)], color = "tomato") +
+    geom_hline(yintercept = r2.opt, color = "tomato") +
+    geom_vline(xintercept = best.power, color = "tomato") +
     geom_smooth(method = "loess", color = "black", fill = "grey") +
     geom_point(size = 3) +
     xlab("Soft Power") +
@@ -2868,12 +2887,12 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
     geom_hline(yintercept = 0, linetype = "dashed") +
     theme_classic() +
     labs(title = "Soft Power Optimization",
-         subtitle = paste0("Optimal power = ", df.r2.sf$sf[which.min(df.r2.sf$r2)], ", r2 = ", signif(df.r2.sf$r2[which.min(df.r2.sf$r2)], 3)))
+         subtitle = paste0("Optimal power = ", best.power, ", r2 = ", signif(r2.opt, 3)))
 
   # store results
   output <- list(
-    powerEstimate = df.r2.sf$sf[which.min(df.r2.sf$r2)],
-    r2Estimate = df.r2.sf$r2[which.min(df.r2.sf$r2)],
+    powerEstimate = best.power,
+    r2Estimate =r2.opt,
     distribution.plot = plt.sf.list,
     optimization.plot = plt.opt.sf,
     results = df.r2.sf
