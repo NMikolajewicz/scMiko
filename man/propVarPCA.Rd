@@ -4,7 +4,12 @@
 \alias{propVarPCA}
 \title{Variance explained by each principal component.}
 \usage{
-propVarPCA(so)
+propVarPCA(so, reduction.name = "pca")
+}
+\arguments{
+\item{so}{Seurat Object}
+
+\item{reduction.name}{Name of reduction to use. Default is 'pca'.}
 }
 \value{
 data.frame summarize proportion of variance explained by each principal component

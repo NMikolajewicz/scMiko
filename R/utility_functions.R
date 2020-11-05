@@ -2785,8 +2785,8 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
   r2.sf <- c()
 
   # start cluster
-  cl <- makeCluster(n.cores)
-  registerDoParallel(cl)
+  cl <- parallel::makeCluster(n.cores)
+  doParallel::registerDoParallel(cl)
 
   sf.list <- list()
 
@@ -2799,6 +2799,8 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
 
     # get connectivity for specified power
     net.connectivity.df <- getConnectivity(a.cur, rownames(a.cur), flag.top.n = 20)
+
+    rm(a.cur); invisible({gc()});
 
     # nBreaks <- 20
     # removeFirst <- T
@@ -2821,12 +2823,12 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
     log.p.dk <- as.numeric(log10(p.dk + 1e-09))
     lm1 <- lm(log.p.dk ~ log.dk)
 
-    r2.sf[i] <- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])
+    r2.sf.current <- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])
 
     df.sf <- data.frame(x = log.dk, y = log.p.dk)
 
     # store node linkage distribution plot
-    plt.sf.list[[as.character(power.cur)]] <- df.sf %>%
+    plt.sf.current <- df.sf %>%
       ggplot(aes(x=x, y=y)) +
       geom_smooth(method = "lm", color = "tomato", fill = "tomato") +
       geom_point(size = 3) +
@@ -2842,24 +2844,25 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
                       parse = TRUE)
 
 
-    sf.list[[i]] <- list(
-      r2 = r2.sf[i],
+
+    sf.list <- list(
+      r2 = r2.sf.current,
       df = df.sf,
-      plt = plt.sf.list[[as.character(power.cur)]]
+      plt = plt.sf.current
     )
 
     return(sf.list)
 
   }
 
-  stopCluster(cl)
+  parallel::stopCluster(cl)
 
   # unpack results
   r2.sf <- c(); plt.sf.list <- list();
   for (i in 1:length(sf.list)){
     power.cur <- powers[i]
-    r2.sf[i] <- sf.list[[i]][[i]][["r2"]]
-    plt.sf.list[[as.character(power.cur)]] <- sf.list[[i]][[i]][["plt"]]
+    r2.sf[i] <- sf.list[[i]][["r2"]]
+    plt.sf.list[[as.character(power.cur)]] <- sf.list[[i]][["plt"]]
   }
 
   # store powers and r2
@@ -3564,14 +3567,15 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, pseudoti
 #'
 #' For given Seurat Object, retrieve principal components and compute proportion of explained variance.
 #'
-#' @param so
+#' @param so Seurat Object
+#' @param reduction.name Name of reduction to use. Default is 'pca'.
 #' @return data.frame summarize proportion of variance explained by each principal component
 #' @author Nicholas Mikolajewicz
 #' @name propVarPCA
-propVarPCA <- function(so){
+propVarPCA <- function(so, reduction.name = "pca"){
 
   # get pca reduction
-  pc.std <- so@reductions[["pca"]]@stdev
+  pc.std <- so@reductions[[reduction.name]]@stdev
 
   # variance explained
   pc.var <- pc.std^2
