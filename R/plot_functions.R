@@ -474,7 +474,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
   # get summary statistics (for clustering)
   suppressMessages({em.sum <- em.merge %>%
     dplyr::group_by(group) %>%
-    dplyr::summarise(x.mean = mean(query, na.rm = T),
+    dplyr::summarise(x.mean = (mean((query), na.rm = T)),
                      x.sd = sd(query, na.rm = T))})
   em.frac.mark <- as.data.frame(em.frac[(rownames(em.frac)) %in% (which.gene), ])
   if (rownames(em.frac.mark) %in% which.gene) em.frac.mark <-as.data.frame(t(em.frac.mark))
@@ -524,18 +524,22 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
     em.merge$group <- factor(as.character(em.merge$group), levels = (d.query.clust[["labels"]][["label"]]))
 
     max.query <- max(em.merge$query, na.rm = T)
+    em.merge$query.norm <- rescaleValues(values = em.merge$query, new.min = 0, new.max = 1)
+
     suppressMessages({em.merge.sum <- em.merge %>%
       group_by(group) %>%
       summarize(ef = mean(query > 0),
-                ev = mean(query, na.rm = T))})
+                ev = mean(query.norm, na.rm = T))})
+
+
     plt.em <- ggplot() +
       geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +
       coord_cartesian(ylim = c(0, 1)) +
-      geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
-      geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group)) +
+      geom_violin(data = em.merge, aes(x = group, y = query.norm, fill = group)) +
+      geom_point(data = em.merge.sum, aes(x = group, y = (ev), fill = group)) +
       theme_miko() +
       xlab(x.label)  +
-      scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)") +
+      scale_y_continuous(sec.axis = sec_axis(~., name = "Normalized Expression (violin)"), name = "Expressing Fraction (bar)") +
       theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
             legend.position = "none")
 
