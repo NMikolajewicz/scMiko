@@ -527,8 +527,8 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
     em.merge$query.norm <- rescaleValues(values = em.merge$query, new.min = 0, new.max = 1)
 
     suppressMessages({em.merge.sum <- em.merge %>%
-      group_by(group) %>%
-      summarize(ef = mean(query > 0),
+      dplyr::group_by(group) %>%
+      dplyr::summarize(ef = mean(query > 0),
                 ev = mean(query.norm, na.rm = T))})
 
 
@@ -554,8 +554,8 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
     max.query <- max(em.merge$query, na.rm = T)
     em.merge.sum <- em.merge %>%
-      group_by(group) %>%
-      summarize(ef = mean(query > 0),
+      dplyr::group_by(group) %>%
+      dplyr::summarize(ef = mean(query > 0),
                 ev = mean(query, na.rm = T))
     plt.sgExp <- ggplot() +
       geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +

@@ -3279,8 +3279,8 @@ getClusterCenters <- function(df, which.center = "mean"){
 
   # compute cluster centers
   df.centers <- df %>%
-    group_by(cluster) %>%
-    summarize(x.center = get.center(x, which.center),
+    dplyr::group_by(cluster) %>%
+    dplyr::summarize(x.center = get.center(x, which.center),
               y.center = get.center(y, which.center))
 
   return(df.centers)
@@ -3390,7 +3390,7 @@ inferInitialTrajectory <- function (space, k) {
   pts_space <- (1 - pts$pct) * centers[pts$i, ] + pts$pct *
     centers[pts$j, ]
   pts$dist <- rowMeans(RANN::nn2(space, pts_space, k = 10)$nn.dist)
-  dendis <- pts %>% group_by(i, j) %>% summarise(dist = mean(dist)) %>%
+  dendis <- pts %>% dplyr::group_by(i, j) %>% dplyr::summarise(dist = mean(dist)) %>%
     ungroup()
   density_dist <- matrix(0, nrow = k, ncol = k)
   density_dist[cbind(dendis$i, dendis$j)] <- dendis$dist
@@ -4777,5 +4777,57 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 
     })
   })
+
+}
+
+
+#' Run hypergeometric gene enrichment analysis.
+#'
+#' Run hypergeometric gene enrichment analysis.
+#'
+#' @param gene.list Named list of genesets to run enrichment on (symbol format).
+#' @param gene.universe Gene universe (symbol format)
+#' @param species Species. One of "Mm" (mouse) or "Hs" (human)
+#' @param pathway.db Name of databse to get annotation genelists from. Default is "Bader". See scMiko::getAnnotationPathways() for options.
+#' @param n.workers Number of workers for parallelization. Default is 16.
+#' @value enrichment results
+#' @examples
+#' @author Nicholas Mikolajewicz
+#'
+runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16){
+
+  my.symbol <- gene.universe
+  my.entrez <- sym2entrez(my.symbol, my.species = species )
+  my.entrez <- my.entrez[complete.cases(my.entrez), ]
+  pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = "BP", species = species)
+
+  g2e.list <- my.entrez$ENTREZID
+  names(g2e.list) <- my.entrez$SYMBOL
+  e2g.list <- names(g2e.list)
+  names(e2g.list) <- g2e.list
+
+  gene.universe <- unique(gene.universe)
+  gene.universe <- unique(g2e.list[gene.universe])
+
+  cl <- parallel::makeCluster(n.workers)
+  doParallel::registerDoParallel(cl)
+
+  res.h.list <- list()
+  res.h.list <- foreach(i = 1:length(gene.list), .packages = c("dplyr", "fgsea"))  %dopar% {
+
+    if (!is.null(g2e.list)){
+      current.genes <- unique(g2e.list[gene.list[[i]]])
+    } else {
+      current.genes <- unique(gene.list[[i]])
+    }
+    res.hyper <-  fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 2, maxSize = Inf)
+    return(res.hyper)
+
+  }
+
+  parallel::stopCluster(cl)
+  names(res.h.list) <- names(gene.list)
+
+  return(res.h.list)
 
 }
