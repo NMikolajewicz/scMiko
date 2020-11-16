@@ -4,7 +4,15 @@
 \alias{runHG}
 \title{Run hypergeometric gene enrichment analysis.}
 \usage{
-runHG(gene.list, gene.universe, species, pathway.db = "Bader", n.workers = 16)
+runHG(
+  gene.list,
+  gene.universe,
+  species,
+  pathway.db = "Bader",
+  n.workers = 16,
+  my.pathway = NULL,
+  my.pathway.representation = "ENTREZ"
+)
 }
 \arguments{
 \item{gene.list}{Named list of genesets to run enrichment on (symbol format).}
@@ -16,6 +24,10 @@ runHG(gene.list, gene.universe, species, pathway.db = "Bader", n.workers = 16)
 \item{pathway.db}{Name of databse to get annotation genelists from. Default is "Bader". See scMiko::getAnnotationPathways() for options.}
 
 \item{n.workers}{Number of workers for parallelization. Default is 16.}
+
+\item{my.pathway}{Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.}
+
+\item{my.pathway.representation}{If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.}
 }
 \description{
 Run hypergeometric gene enrichment analysis.

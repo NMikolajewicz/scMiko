@@ -4790,16 +4790,23 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @param species Species. One of "Mm" (mouse) or "Hs" (human)
 #' @param pathway.db Name of databse to get annotation genelists from. Default is "Bader". See scMiko::getAnnotationPathways() for options.
 #' @param n.workers Number of workers for parallelization. Default is 16.
+#' @param my.pathway Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.
+#' @param my.pathway.representation If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.
 #' @value enrichment results
 #' @examples
 #' @author Nicholas Mikolajewicz
 #'
-runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16){
+runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ"){
 
   my.symbol <- gene.universe
   my.entrez <- sym2entrez(my.symbol, my.species = species )
   my.entrez <- my.entrez[complete.cases(my.entrez), ]
-  pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = "BP", species = species)
+
+  if (is.null(my.pathway)){
+    pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = "BP", species = species)
+  } else {
+    pathways <- my.pathway
+  }
 
   g2e.list <- my.entrez$ENTREZID
   names(g2e.list) <- my.entrez$SYMBOL
@@ -4815,11 +4822,16 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   res.h.list <- list()
   res.h.list <- foreach(i = 1:length(gene.list), .packages = c("dplyr", "fgsea"))  %dopar% {
 
-    if (!is.null(g2e.list)){
-      current.genes <- unique(g2e.list[gene.list[[i]]])
+    if (my.pathway.representation == "ENTREZ"){
+      if (!is.null(g2e.list)){
+        current.genes <- unique(g2e.list[gene.list[[i]]])
+      } else {
+        current.genes <- unique(gene.list[[i]])
+      }
     } else {
       current.genes <- unique(gene.list[[i]])
     }
+
     res.hyper <-  fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 2, maxSize = Inf)
     return(res.hyper)
 
