@@ -4843,3 +4843,31 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   return(res.h.list)
 
 }
+
+
+
+#' Convert gene ensembl to symbol
+#'
+#' Gene ensemble id is converted to symbol using org.Hs.eg.db or org.Mm.eg.db annotation databases.
+#'
+#' @param my.ensembl Character. Vector of ENSEMBL ids.
+#' @param my.species Character. Species, one of "Mm" or "Hs".
+#' @name sym2ens
+#' @author Nicholas Mikolajewicz
+#' @return data.frame mapping gene Ensemble to Symbol
+#'
+ensembl2sym <- function(my.ensembl, my.species){
+
+  my.ensembl <- as.vector(my.ensembl)
+  if (my.species == "Hs"){
+    db <- org.Hs.eg.db::org.Hs.eg.db
+  } else if (my.species == "Mm"){
+    db <- org.Mm.eg.db::org.Mm.eg.db
+  }
+  my.symbol <- AnnotationDbi::select(db,
+                                     keys = my.ensembl,
+                                     columns = c("ENSEMBL", "SYMBOL"),
+                                     keytype = "ENSEMBL")
+  return(my.symbol)
+}
+
