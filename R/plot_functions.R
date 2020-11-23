@@ -145,9 +145,12 @@ QC.scatterPlot <- function(so, legend.width = 1, ...){
   rho3s <- signif(cor(x = df.meta$nCount_RNA, y =  df.meta$nFeature_RNA, method = "spearman"), 2)
 
   # cell densities
-  df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100, ...)
-  df.meta$density2 <- getDensity(df.meta$nFeature_RNA, df.meta$percent.mt, n = 100, ...)
-  df.meta$density3 <- getDensity(df.meta$nCount_RNA, df.meta$nFeature_RNA, n = 100, ...)
+  df.meta$density1 <- tryCatch({getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100, ...)},
+                               error = function(e) {return(1)})
+  df.meta$density2 <- tryCatch({getDensity(df.meta$nFeature_RNA, df.meta$percent.mt, n = 100, ...)},
+                               error = function(e) {return(1)})
+  df.meta$density3 <- tryCatch({getDensity(df.meta$nCount_RNA, df.meta$nFeature_RNA, n = 100, ...)},
+                               error = function(e) {return(1)})
 
   # construct plots
   plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
