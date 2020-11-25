@@ -4871,3 +4871,123 @@ ensembl2sym <- function(my.ensembl, my.species){
   return(my.symbol)
 }
 
+
+
+
+
+#' Clean clusters
+#'
+#' Filter cells that exceed N median absolute deviations from cluster center in UMAP coordinate space. Assumes that Seurat::FindClusters() has already been run.
+#'
+#' @param object Seurat object.
+#' @param mad.threshold Filter threshold. Represents minimal number of median absolute deviations from median required to omit cell from object. Default is 3.
+#' @param return.plots Logical indicating whether to return plots. If true, returns list containin object along with ggplot handles. If false, only filtered object is returned.
+#' @param verbose Logical indicating whether to print progress messages.
+#' @name cleanCluster
+#' @author Nicholas Mikolajewicz
+#' @return list (return.plots == T) or seurat object (return.plots == F)
+#'
+cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = T){
+
+  # assertion
+  if (!("seurat_clusters" %in% colnames(object@meta.data))) stop("Cluster data not found. Run FindCluster() prior to Seurat::cleanClusters()")
+
+  # get unique clusters
+  u.cluster <- unique(as.character(object@meta.data[["seurat_clusters"]]))
+  u.cluster <- u.cluster[order(as.numeric(u.cluster))]
+
+  # get umap data
+  df.umap <- data.frame(so.query@reductions[["umap"]]@cell.embeddings)
+  colnames(df.umap) <- c("x", "y")
+  df.umap$cluster <- object@meta.data[["seurat_clusters"]]
+  df.umap$cells <- rownames(df.umap)
+
+  # clean clusters...
+  if (verbose) message("Cleaning clusters...")
+  if (return.plots) plot.list <- list()
+  remove.which <- c()
+  for (i in 1:length(u.cluster)){
+
+    cluster.id <- u.cluster[i]
+    df.umap.current <- df.umap[df.umap$cluster %in% cluster.id, ]
+
+    # cluster centers
+    df.center <- data.frame(
+      median.x = median(df.umap.current$x, na.rm = T),
+      median.y = median(df.umap.current$y, na.rm = T)
+    )
+
+    # calculate distances from center
+    df.umap.current$dist <- sqrt(((df.umap.current$x - df.center$median.x)^2) + ((df.umap.current$y - df.center$median.y)^2))
+
+    # filter cells
+    median.dist = median(df.umap.current$dist, na.rm = T)
+    mad.dist = mad(df.umap.current$dist, na.rm = T)
+    df.umap.current$do.color <- "black"
+    df.umap.current$do.color[df.umap.current$dist >  ( median.dist + (mad.dist * mad.threshold))] <- "tomato"
+    current.cells.omitted <- df.umap.current$cells[df.umap.current$do.color == "tomato"]
+    remove.which <- c(remove.which, current.cells.omitted)
+
+    # get filtering statistics
+    n.omitted <- sum(df.umap.current$do.color == "tomato")
+    n.retained <- sum(df.umap.current$do.color == "black")
+    p.omitted <- round(100*n.omitted/(n.omitted + n.retained), 3)
+
+    if (return.plots){
+      plt.umap <-  ggplot() +
+        geom_point(data =df.umap.current, aes(x = x, y = y), color = df.umap.current$do.color) +
+        geom_point(data = df.center, aes(x = median.x, y = median.y), color ="tomato", size = 4, shape = 4) +
+        xlab("UMAP 1") + ylab("UMAP 2") +
+        theme_miko() +
+        labs(caption = "x = center; black = retain; red = omit", title = "",
+             subtitle = paste0(p.omitted, "% cells omitted"))
+
+      plt.hist <- df.umap.current %>%
+        ggplot(aes(x = (dist))) +
+        geom_histogram(bins = 30) +
+        theme_miko() +
+        geom_vline(xintercept = median.dist, color  = "tomato") +
+        geom_vline(xintercept = median.dist + (mad.dist * mad.threshold), linetype = "dashed", color  = "tomato") +
+        xlab("Distance from center (euclidean)") + ylab("Count") +
+        labs(title = paste0("Cluster", cluster.id), subtitle = "Distance from center distribution", caption = c("solid line: median, dashed line = filter threshold"))
+
+      plot.list[[paste0("c", cluster.id)]] <- cowplot::plot_grid(plt.hist, plt.umap)
+    }
+  }
+
+  # final filter tally
+  n.cells.all <- ncol(object)
+  p.omitted.all <- round(100*length(remove.which) / n.cells.all, 3)
+
+  # get before plot
+  if (return.plots){
+    original.plot <- cluster.UMAP(object) +
+      labs(title = "Pre-filtering", subtitle = "") +
+      theme_miko()
+  }
+
+  # subset object to return
+  keep.which <- colnames(object)[!(colnames(object) %in% remove.which)]
+  object <- object[ ,(colnames(object) %in% keep.which)]
+
+  if (return.plots){
+    cleaned.plot <- cluster.UMAP(object) +
+      labs(title = "Post-filtering", subtitle = paste0(p.omitted.all, "% cells omitted")) +
+      theme_miko()
+    plot.all <- cowplot::plot_grid(original.plot, cleaned.plot, ncol = 2)
+  }
+
+  # return cleaned object
+  if (return.plots){
+    return(list(
+      object = object,
+      cluster.plots = plot.list,
+      pre_post.plot = plot.all
+    ))
+  } else {
+    return(object)
+  }
+
+}
+
+
