@@ -11,7 +11,7 @@ cleanCluster(object, mad.threshold = 3, return.plots = F, verbose = T)
 
 \item{mad.threshold}{Filter threshold. Represents minimal number of median absolute deviations from median required to omit cell from object. Default is 3.}
 
-\item{return.plots}{Logical indicating whether to return plots. If true, returns list containin object along with ggplot handles. If false, only filtered object is returned.}
+\item{return.plots}{Logical indicating whether to return plots. If true, returns list containing object along with ggplot handles. If false, only filtered object is returned.}
 
 \item{verbose}{Logical indicating whether to print progress messages.}
 }

@@ -4583,8 +4583,8 @@ orderedFactor <- function(f){
 #' @author Nicholas Mikolajewicz
 #' @name getDensity
 #' @value density values
-#' @examples
 #' @author Kamil Slowikowski (https://slowkow.com/notes/ggplot2-color-by-density/)
+#' @examples
 #'
 #' # get data and compute densities
 #' df.meta <- so@meta.data
@@ -4881,7 +4881,7 @@ ensembl2sym <- function(my.ensembl, my.species){
 #'
 #' @param object Seurat object.
 #' @param mad.threshold Filter threshold. Represents minimal number of median absolute deviations from median required to omit cell from object. Default is 3.
-#' @param return.plots Logical indicating whether to return plots. If true, returns list containin object along with ggplot handles. If false, only filtered object is returned.
+#' @param return.plots Logical indicating whether to return plots. If true, returns list containing object along with ggplot handles. If false, only filtered object is returned.
 #' @param verbose Logical indicating whether to print progress messages.
 #' @name cleanCluster
 #' @author Nicholas Mikolajewicz
@@ -4897,7 +4897,7 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
   u.cluster <- u.cluster[order(as.numeric(u.cluster))]
 
   # get umap data
-  df.umap <- data.frame(so.query@reductions[["umap"]]@cell.embeddings)
+  df.umap <- data.frame(object@reductions[["umap"]]@cell.embeddings)
   colnames(df.umap) <- c("x", "y")
   df.umap$cluster <- object@meta.data[["seurat_clusters"]]
   df.umap$cells <- rownames(df.umap)
@@ -4990,4 +4990,559 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
 
 }
 
+#' Specify inputs for variance decomposition analysis
+#'
+#' Step 2 of variance decomposition analysis (see examples). Given Seurat object and vd_Formula output, input list for variance decomposition are generated.
+#'
+#' @param object Seurat object.
+#' @param vd_model.list Output from vd_Formula.
+#' @param Features Features to include in analysis. If specified, pct.min and variable features are ignored.
+#' @param pct.min Minimal expressing fraction for genes to be included in analysis. Default is 0.
+#' @param variable.features Logical specifying whether to use variable features only. If true, looks for variable features within provided Seurat object.
+#' @param subsample.factor Numeric [0,1] specfying how to subsample (i.e., downsample) data. Default is 1 (no subsampling)
+#' @name vd_Inputs
+#' @author Nicholas Mikolajewicz
+#' @return list of inputs for vd_Run() function.
+#' @seealso \code{\link{vd_Run}}
+#' @examples
+#'
+#'parameter.list <- list(
+#'  covariates = c( "cluster", "percent.mt", "batch", "cycle", "seq.coverage"),
+#'  interactions = c("batch:cluster")
+#')
+#'
+#'# step 1: model formulation
+#'vd_model.list <- vd_Formula(object = so.query,
+#'                            covariates = parameter.list$covariates,
+#'                            interactions = parameter.list$interactions)
+#'
+#'# step 2: prep model inputs
+#'vd_inputs.list <- vd_Inputs(object = so.query, vd_model.list = vd_model.list, features = NULL,
+#'                            pct.min =  0.9, variable.features = F, subsample.factor = 1)
+#'
+#'# step 3: run variance decomposition
+#'vd_results.list <- vd_Run(vd_inputs.list, n.workers = 20)
+#'
+#'# step 4 (optional): visualize UMAP distribution of covariates
+#'plt.umap.list <- vd_UMAP(object = so.query, vd_model.list = vd_model.list)
+#'
+#'# step 5 (optional): visualize decomposition
+#'res.var2 <- vd_results.list$varPart.format1
+#'plt.var <- plotVarPart( res.var2 ) +
+#'  theme_miko() +
+#'  labs(title = "Variance Decomposition", subtitle = "Linear Mixed-Effects Model")  +
+#'  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#'
+vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, variable.features = F, subsample.factor = 1){
 
+  # if features is specified, pct.min and variable features are ignored.
+
+  # prep expression matrix
+  e.mat <- object@assays[[DefaultAssay(object)]]@data
+
+  if (is.null(features)){
+    p.mat <- e.mat > 0
+    p.exp <- rowSums(p.mat)/ncol(p.mat)
+    which.gene <- which(p.exp > pct.min)
+    e.mat.sub <- as.matrix(e.mat[which.gene, ])
+  } else {
+    if (sum(features %in% rownames(e.mat)) > 0){
+      e.mat.sub <- as.matrix(e.mat[rownames(e.mat) %in% features, ])
+    } else{
+      stop("Specified features are not found in object. Cannot perform variance decomposition.")
+    }
+  }
+
+
+  # use variable genes
+  if ((length(object@assays[[DefaultAssay(object)]]@var.features) > 0) & (variable.features)& (is.null(features))){
+    var.genes <- object@assays[[DefaultAssay(object)]]@var.features
+    which.genes.match <- rownames(e.mat.sub) %in% var.genes
+    if (sum(which.genes.match) > 0){
+      e.mat.sub <- e.mat.sub[which.genes.match, ]
+    }
+  }
+
+  # subsample matrix
+  if ((subsample.factor < 1) & (subsample.factor > 0)){
+    subsample.ind <- sample(seq(1, ncol(e.mat.sub)), round(subsample.factor * ncol(e.mat.sub)))
+    e.mat.sub <- e.mat.sub[ ,subsample.ind]
+    df.meta.sub <- df.meta.sub[subsample.ind ,]
+  }
+
+  fitVarPartModel2 <- function( exprObj, formula, data){
+
+    # exprObj = e.mat.sub[ ,subsample.ind]
+    # formula = form
+    # data = df.meta.sub[ subsample.ind,]
+    REML=FALSE
+    useWeights=TRUE
+    weightsMatrix=NULL
+    showWarnings=TRUE
+    fxn=identity
+    colinearityCutoff=.999
+    control = lme4::lmerControl(calc.derivs=FALSE, check.rankX="stop.deficient" )
+
+    # nested helper function
+    exprIter = function( exprObj, weights, useWeights = TRUE, scale=TRUE, iterCount = "icount"){
+
+      n_features = nrow(exprObj)
+
+      if( iterCount == 'icount2'){
+        xit <- icount2( n_features )
+      }else{
+        xit <- icount( n_features )
+      }
+
+      nextEl <- function() {
+        j <- nextElem(xit)
+
+        if( is.null(j) || j > n_features){
+          res = NULL
+        }else{
+          if( useWeights && !is.null(weights) ){
+            # scale weights to have mean of 1, otherwise it affects the residual variance too much
+            if(scale){
+              w = weights[j,] /  mean(weights[j,])
+            }else{
+              w = weights[j,]
+            }
+          }else{
+            w = NULL
+          }
+
+          res = list(E = exprObj[j,], weights = w, n_iter = j, max_iter = n_features)
+        }
+        res
+      }
+      it <- list(nextElem = nextEl)
+      class(it) <- c("abstractiter", "iter")
+      it
+    }
+
+    formula = stats::as.formula( formula )
+
+    # only retain columns used in the formula
+    data = data[, colnames(data) %in% unique(all.vars(formula)), drop=FALSE]
+
+    # check dimensions of reponse and covariates
+    if( ncol(exprObj) != nrow(data) ){
+      stop( "the number of samples in exprObj (i.e. cols) must be the same as in data (i.e rows)" )
+    }
+
+    # check if all genes have variance
+    if( ! is(exprObj, "sparseMatrix")){
+      # check if values are NA
+      countNA = sum(is.nan(exprObj)) + sum(!is.finite(exprObj))
+      if( countNA > 0 ){
+        stop("There are ", countNA, " NA/NaN/Inf values in exprObj\nMissing data is not allowed")
+      }
+
+      rv = apply( exprObj, 1, var)
+    }else{
+      rv = c()
+      for( i in seq_len(nrow(exprObj)) ){
+        rv[i] = var( exprObj[i,])
+      }
+    }
+    if( any( rv == 0) ){
+      idx = which(rv == 0)
+      stop(paste("Response variable", idx[1], 'has a variance of 0'))
+    }
+
+    # if weightsMatrix is not specified, set useWeights to FALSE
+    if( useWeights && is.null(weightsMatrix) ){
+      # warning("useWeights was ignored: no weightsMatrix was specified")
+      useWeights = FALSE
+    }
+
+    # if useWeights, and (weights and expression are the same size)
+    if( useWeights && !identical( dim(exprObj), dim(weightsMatrix)) ){
+      stop( "exprObj and weightsMatrix must be the same dimensions" )
+    }
+
+    # If samples names in exprObj (i.e. columns) don't match those in data (i.e. rows)
+    if( ! identical(colnames(exprObj), rownames(data)) ){
+      warning( "Sample names of responses (i.e. columns of exprObj) do not match\nsample names of metadata (i.e. rows of data).  Recommend consistent\nnames so downstream results are labeled consistently." )
+    }
+
+    form = paste( "responsePlaceholder$E", paste(as.character( formula), collapse=''))
+
+    responsePlaceholder = nextElem(exprIter(exprObj, weightsMatrix, useWeights))
+    possibleError <- tryCatch( lmer( eval(parse(text=form)), data=data,...,control=control ), error = function(e) e)
+
+    # detect error when variable in formula does not exist
+    if( inherits(possibleError, "error") ){
+      err = grep("object '.*' not found", possibleError$message)
+      if( length(err) > 0 ){
+        stop("Variable in formula is not found: ", gsub("object '(.*)' not found", "\\1", possibleError$message) )
+      }
+    }
+
+    # fit first model to initialize other model fits - this make the other models converge faster
+    responsePlaceholder = nextElem(exprIter(exprObj, weightsMatrix, useWeights))
+    fitInit <- lmer( eval(parse(text=form)), data=data, REML=REML, control=control )
+
+    # specify gene explicitly in data
+    data2 = data.frame(data, expr=responsePlaceholder$E, check.names=FALSE)
+    form = paste( "expr", paste(as.character( formula), collapse=''))
+
+    input.data <- list(
+      E = exprObj,
+      weights = matrix(data = 1, nrow = nrow(exprObj), ncol = ncol(exprObj))
+    )
+
+    return(list(
+      input.data = input.data,
+      data = data2,
+      form =  form,
+      REML =  REML,
+      theta =  fitInit@theta,
+      fxn = fxn,
+      control = control,
+      na.action=stats::na.exclude
+    ))
+  }
+
+  # get model parameter list
+  par.list <- fitVarPartModel2( exprObj = e.mat.sub, formula = vd_model.list$formula, data = vd_model.list$data)
+
+  return(par.list)
+
+}
+
+
+#' Perform Variance Decomposition Analysis
+#'
+#' Step 3 of variance decomposition analysis (see examples).
+#'
+#' @param vd_inputs.list Output from scMiko::vd_Input() function.
+#' @param n.workers Number of workers to use (for parallel implementation; uses foreach package)
+#' @name vd_Run
+#' @author Nicholas Mikolajewicz
+#' @return List of results summarizing variance explained by each model covariate.
+#' @seealso \code{\link{vd_Input}}
+#' @examples
+#'
+#'parameter.list <- list(
+#'  covariates = c( "cluster", "percent.mt", "batch", "cycle", "seq.coverage"),
+#'  interactions = c("batch:cluster")
+#')
+#'
+#'# step 1: model formulation
+#'vd_model.list <- vd_Formula(object = so.query,
+#'                            covariates = parameter.list$covariates,
+#'                            interactions = parameter.list$interactions)
+#'
+#'# step 2: prep model inputs
+#'vd_inputs.list <- vd_Inputs(object = so.query, vd_model.list = vd_model.list, features = NULL,
+#'                            pct.min =  0.9, variable.features = F, subsample.factor = 1)
+#'
+#'# step 3: run variance decomposition
+#'vd_results.list <- vd_Run(vd_inputs.list, n.workers = 20)
+#'
+#'# step 4 (optional): visualize UMAP distribution of covariates
+#'plt.umap.list <- vd_UMAP(object = so.query, vd_model.list = vd_model.list)
+#'
+#'# step 5 (optional): visualize decomposition
+#'res.var2 <- vd_results.list$varPart.format1
+#'plt.var <- plotVarPart( res.var2 ) +
+#'  theme_miko() +
+#'  labs(title = "Variance Decomposition", subtitle = "Linear Mixed-Effects Model")  +
+#'  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#'
+vd_Run <- function(vd_inputs.list, n.workers = 20){
+
+  require(foreach);
+  require(lme4);
+
+  # initiate clusters
+  cl <- parallel::makeCluster(n.workers)
+  doParallel::registerDoParallel(cl)
+
+  # determine chunk size
+  chunk.size <- ceiling(nrow(vd_inputs.list$input.data$E) / n.workers)
+  fxn <- vd_inputs.list$fxn
+  chunk.start <- seq(1, n.workers*chunk.size, by = chunk.size)
+
+  res <- foreach(j = 1:(length(chunk.start)-1), .packages = c("lme4"))  %dopar% {
+
+    seq.range <- (chunk.start[j]:(chunk.start[j+1]-1))
+    if (max(seq.range) > nrow(vd_inputs.list$input.data$weights)) seq.range <- (chunk.start[j]: nrow(vd_inputs.list$input.data$weights))
+    E.cur <- vd_inputs.list$input.data$E[seq.range,]
+    W.cur <- vd_inputs.list$input.data$weights[seq.range,]
+    data3 <- vd_inputs.list$data
+    res.cur <- list()
+    which.gene <- c()
+    for (k in 1:nrow(E.cur) ){
+
+      try({
+        data3$expr <- E.cur[k,]
+        res.cur[[rownames(E.cur)[k]]] <- fxn( lmer( eval(parse(text=vd_inputs.list$form)), data=data3, REML=F,
+                                                    weights=W.cur[k,],
+                                                    control=vd_inputs.list$control,na.action= vd_inputs.list$na.action,
+                                                    start = list( theta = vd_inputs.list$theta)))
+        which.gene <- c(which.gene, rownames(E.cur)[k])
+
+      }, silent = T)
+
+    }
+
+    return(list(res.cur, which.gene))
+
+  }
+
+  stopCluster(cl)
+
+  # unpack results
+  res.var <-list()
+  for (i in 1:length(res)){
+    res.var <- c(res.var, res[[i]][[1]])
+  }
+
+  # helper function to extract results
+  extractVarPart2 <- function( modelList, showWarnings=TRUE,... ){
+
+    # get results from first model to enumerate all variables present
+    # singleResult = calcVarPart( modelList[[1]], showWarnings=showWarnings,... )
+
+    # for each model fit, get R^2 values
+    entry <- 1
+    varPart <- lapply( modelList, function( entry )
+      calcVarPart( entry, showWarnings=showWarnings,... )
+    )
+
+    varPartMat <- data.frame(matrix(unlist(varPart), nrow=length(varPart), byrow=TRUE))
+    colnames(varPartMat) <- names(varPart[[1]])
+    rownames(varPartMat) <- names(modelList)
+
+    modelType = ifelse(class(modelList[[1]])[1] == "lm", "anova", "linear mixed model")
+
+    new("varPartResults", varPartMat, type=modelType, method="Variance explained (%)")
+
+  }
+
+  # extract results
+  res.var2 <- extractVarPart2(res.var)
+
+  # convert to data.frame
+  df.var <- as.data.frame(res.var2)
+  df.var$gene <- rownames(df.var)
+
+  return(list(
+    varPart.format1 = res.var2,
+    varPart.format2 = df.var)
+  )
+
+}
+
+
+#' Specify model formula for variance decomposition.
+#'
+#' Step 1 of variance decomposition analysis (see examples).
+#'
+#' @param object Seurat Object
+#' @param covariates vector of model covariates
+#' @param interactions vector of interaction terms.
+#' @name vd_Formula
+#' @author Nicholas Mikolajewicz
+#' @return List containing model formula and data.frame of covariates.
+#' @seealso \code{\link{vd_Run}}
+#' @examples
+#'
+#'parameter.list <- list(
+#'  covariates = c( "cluster", "percent.mt", "batch", "cycle", "seq.coverage"),
+#'  interactions = c("batch:cluster")
+#')
+#'
+#'# step 1: model formulation
+#'vd_model.list <- vd_Formula(object = so.query,
+#'                            covariates = parameter.list$covariates,
+#'                            interactions = parameter.list$interactions)
+#'
+#'# step 2: prep model inputs
+#'vd_inputs.list <- vd_Inputs(object = so.query, vd_model.list = vd_model.list, features = NULL,
+#'                            pct.min =  0.9, variable.features = F, subsample.factor = 1)
+#'
+#'# step 3: run variance decomposition
+#'vd_results.list <- vd_Run(vd_inputs.list, n.workers = 20)
+#'
+#'# step 4 (optional): visualize UMAP distribution of covariates
+#'plt.umap.list <- vd_UMAP(object = so.query, vd_model.list = vd_model.list)
+#'
+#'# step 5 (optional): visualize decomposition
+#'res.var2 <- vd_results.list$varPart.format1
+#'plt.var <- plotVarPart( res.var2 ) +
+#'  theme_miko() +
+#'  labs(title = "Variance Decomposition", subtitle = "Linear Mixed-Effects Model")  +
+#'  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#'
+vd_Formula <- function(object, covariates = NULL, interactions  = NULL){
+
+  if(class(object) != "Seurat") stop("Seurat object must be provided as input.")
+  df.meta <- object@meta.data
+
+  # get model covariates
+  if (!is.null(covariates)){
+    covariate.names <- covariates
+  } else {
+    stop("Covariates specification is missing. ")
+  }
+
+  # get model interactions
+  if (!is.null(interactions)){
+    interaction.names <- interactions
+  } else {
+    interaction.names <- c()
+  }
+
+
+  # check which.available
+  covariates.av <- covariate.names[covariate.names %in% colnames(df.meta)]
+
+  # check if interactions are available
+  df.interaction.pairs <- NULL
+  if (length(interaction.names) > 0){
+    for (i in 1:length(interaction.names)){
+      cov.int <- c(unlist(strsplit(interaction.names[i], ":")))
+      if(all(cov.int %in% covariates.av)){
+        df.interaction.pairs <- bind_rows(
+          data.frame(v1 = cov.int[1], v2 = cov.int[2])
+        )
+      }
+    }
+  }
+
+  if (!is.null(df.interaction.pairs)){
+    do.interaction <- T
+  } else {
+    do.interaction <- F
+  }
+
+
+  append.term <- function(func, term){
+    if (length(func) == 0){
+      func <- paste0("~ ",term)
+    } else {
+      func <- paste0(func, " + ", term)
+    }
+    return(func)
+  }
+
+  # variable types
+  df.var.type <- NULL
+  form <- c()
+  for (i in 1:length(covariates.av)){
+
+    var.current <-  df.meta[ ,covariates.av[i]]
+    if ((is.numeric(var.current)) | (is.integer(var.current))){
+      df.var.type <- bind_rows(df.var.type,
+                               data.frame(
+                                 variable = covariates.av[i],
+                                 type = "continuous"
+                               ))
+
+      form <- append.term(form, covariates.av[i])
+    } else if ((is.character(var.current)) | (is.factor(var.current))){
+      df.var.type <- bind_rows(df.var.type,
+                               data.frame(
+                                 variable = covariates.av[i],
+                                 type = "categorical"
+                               ))
+      form <- append.term(form, paste0("(1|", covariates.av[i], ")"))
+    }
+
+
+  }
+
+  # append interaction terms
+  for (i in 1:nrow(df.interaction.pairs)){
+
+    term.current <-  paste0(df.interaction.pairs[i,1], ":", df.interaction.pairs[i,2])
+    form <- append.term(form,  paste0("(1|", term.current, ")"))
+
+  }
+
+  # specify model formula
+  form2 <- as.formula(form)
+
+  # get covariate data
+  df.meta <- object@meta.data
+  df.meta.sub <- df.meta[ ,covariates.av]
+
+  return(
+    list(
+      formula = form2,
+      data = df.meta.sub,
+      variable.type = df.var.type
+    )
+  )
+
+}
+
+
+#' Generate UMAPs with each variance decomposition covariate overlaid.
+#'
+#' Generate UMAPs with each variance decomposition covariate overlaid.
+#'
+#' @param object Seurat Object
+#' @param vd_model.list Output from vd_Formula().
+#' @name vd_UMAP
+#' @author Nicholas Mikolajewicz
+#' @return List ggplot handles, one for each model covariate.
+#' @seealso \code{\link{vd_Run}}
+#' @examples
+#'
+#'parameter.list <- list(
+#'  covariates = c( "cluster", "percent.mt", "batch", "cycle", "seq.coverage"),
+#'  interactions = c("batch:cluster")
+#')
+#'
+#'# step 1: model formulation
+#'vd_model.list <- vd_Formula(object = so.query,
+#'                            covariates = parameter.list$covariates,
+#'                            interactions = parameter.list$interactions)
+#'
+#'# step 2: prep model inputs
+#'vd_inputs.list <- vd_Inputs(object = so.query, vd_model.list = vd_model.list, features = NULL,
+#'                            pct.min =  0.9, variable.features = F, subsample.factor = 1)
+#'
+#'# step 3: run variance decomposition
+#'vd_results.list <- vd_Run(vd_inputs.list, n.workers = 20)
+#'
+#'# step 4 (optional): visualize UMAP distribution of covariates
+#'plt.umap.list <- vd_UMAP(object = so.query, vd_model.list = vd_model.list)
+#'
+#'# step 5 (optional): visualize decomposition
+#'res.var2 <- vd_results.list$varPart.format1
+#'plt.var <- plotVarPart( res.var2 ) +
+#'  theme_miko() +
+#'  labs(title = "Variance Decomposition", subtitle = "Linear Mixed-Effects Model")  +
+#'  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#'
+vd_UMAP <- function(object, vd_model.list){
+
+  df.var.type <- vd_model.list$variable.type
+  plt.umap.list <- list()
+  for (i in 1:nrow(df.var.type)){
+
+
+    field.name <-df.var.type$variable[i]
+    var.type <- df.var.type$type[i]
+
+    if (var.type == "categorical"){
+      plt.umap.list[[field.name]] <-  cluster.UMAP(object, group.by = field.name) + theme_miko(legend = T) +
+        labs(title = field.name, subtitle = "UMAP")
+    } else if (var.type == "continuous"){
+      plt.umap.list[[field.name]] <-  FeaturePlot(object, feature = field.name,
+                                                  cols = c("lightgrey", "darkgreen")) +
+        theme_miko(legend = T) +
+        labs(title = field.name, subtitle = "UMAP") +
+        xlab("UMAP 1") + ylab("UMAP 2")
+    }
+
+  }
+
+  return(plt.umap.list)
+
+}

@@ -16,18 +16,21 @@ getDensity(x, y, ...)
 \description{
 Get local density (z) of bivariate relationship (x,y)
 }
-\author{
-Nicholas Mikolajewicz
-
-Kamil Slowikowski (https://slowkow.com/notes/ggplot2-color-by-density/)
+\examples{
 
 # get data and compute densities
 df.meta <- so@meta.data
 df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100)
 
 # generate scatter plot with overlayed density values
-plt.handle1 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
-   xlab("UMI/cell") + ylab("Mitochondrial Content (%)") +
+plt.handle1 <- df.meta \%>\% ggplot(aes(x = nCount_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
+   xlab("UMI/cell") + ylab("Mitochondrial Content (\%)") +
    labs(title = paste0("r = ", rho1p, "; rho = ", rho1s)) + scale_color_viridis("Density") +
    theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
+
+}
+\author{
+Nicholas Mikolajewicz
+
+Kamil Slowikowski (https://slowkow.com/notes/ggplot2-color-by-density/)
 }
