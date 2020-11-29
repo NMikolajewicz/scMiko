@@ -5042,7 +5042,7 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
 
   if (is.null(features)){
     p.mat <- e.mat > 0
-    p.exp <- rowSums(p.mat)/ncol(p.mat)
+    p.exp <- BiocGenerics::rowSums(p.mat)/ncol(p.mat)
     which.gene <- which(p.exp > pct.min)
     e.mat.sub <- as.matrix(e.mat[which.gene, ])
   } else {
@@ -5265,15 +5265,29 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
   fxn <- vd_inputs.list$fxn
   chunk.start <- seq(1, n.workers*chunk.size, by = chunk.size)
 
-  res <- foreach(j = 1:(length(chunk.start)-1), .packages = c("lme4"))  %dopar% {
+  res <- foreach(j = 1:(length(chunk.start)), .packages = c("lme4"))  %dopar% {
 
-    seq.range <- (chunk.start[j]:(chunk.start[j+1]-1))
+    if (j < length(chunk.start)){
+      seq.range <- (chunk.start[j]:(chunk.start[j+1]-1))
+    } else if (j == length(chunk.start)){
+      seq.range <- (chunk.start[j]:(chunk.start[j] + chunk.size))
+    }
+
     if (max(seq.range) > nrow(vd_inputs.list$input.data$weights)) seq.range <- (chunk.start[j]: nrow(vd_inputs.list$input.data$weights))
     E.cur <- vd_inputs.list$input.data$E[seq.range,]
     W.cur <- vd_inputs.list$input.data$weights[seq.range,]
     data3 <- vd_inputs.list$data
     res.cur <- list()
     which.gene <- c()
+
+    if (class(E.cur) == "numeric"){
+      E.cur <- t(as.matrix(E.cur))
+      rownames(E.cur) <- rownames(vd_inputs.list$input.data$E)[seq.range]
+      W.cur <- t(as.matrix(W.cur))
+      rownames(W.cur) <- rownames(vd_inputs.list$input.data$weights)[seq.range]
+    }
+
+
     for (k in 1:nrow(E.cur) ){
 
       try({
@@ -5292,7 +5306,7 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
 
   }
 
-  stopCluster(cl)
+  parallel::stopCluster(cl)
 
   # unpack results
   res.var <-list()
