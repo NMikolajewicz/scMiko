@@ -5319,6 +5319,8 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
   # helper function to extract results
   extractVarPart2 <- function( modelList, showWarnings=TRUE,... ){
 
+    require("variancePartition")
+
     # get results from first model to enumerate all variables present
     # singleResult = calcVarPart( modelList[[1]], showWarnings=showWarnings,... )
 

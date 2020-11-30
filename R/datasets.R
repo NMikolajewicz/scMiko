@@ -92,3 +92,55 @@
 #' data(baderPathways)
 #'
 "baderPathways"
+
+
+#' Ligand-Receptor Database
+#'
+#' List of ligand-receptor pairs consolidated from iTalk, SCSR, Phantom5, NATMI and Moffat Lab (in house).
+#'
+#' @docType data
+#' @name LR.db
+#' @author Magali Aguilera Uribe
+#' @usage {
+#' data(LR.db)
+#'
+#'
+#' # To update list:
+#'
+#' # import data
+#' load("C:/Users/Owner/Dropbox/PDF Projects - JM/Data/scRNA-seq/01_sci-RNA-seq3_Hong_Kevin_Jason/NM_HH/Data/Gene_Sets/LR.db_Magali_301120.RData")
+#'
+#' # parse databases
+#' list.source <- strsplit(LR.db$Which_db, " ") # LR.db$Which_db
+#' names(list.source) <- LR.db$Pair
+#'
+#' all.db <- unique(unlist(list.source))
+#' db.list <- list()
+#' for (i in 1:length(all.db)){
+#'   db.list[[all.db[i]]] <- names(list.source)[unlist(lapply(list.source, function(x) all.db[i] %in% x))]
+#' }
+#'
+#' # upset plot
+#' plt.upset <- upset.Plot(gene.sets = db.list, row.title = "", column.title = "")
+#'
+#' LR.df <- LR.db
+#' LR.list <- db.list
+#' LR.upset.plot <- plt.upset
+#' LR.db <- list(
+#'   LR.df = LR.df,
+#'   LR.list = LR.list,
+#'   LR.upset.plot = LR.upset.plot
+#' )
+#'
+#' output.dir <- "C:/Users/Owner/Dropbox/PDF Projects - JM/R Packages/scMiko/data/"
+#' save(LR.db, file=getLoadPath("LR.db.rda", output.dir))
+#' }
+#'
+#' @format A list containing LR database
+#'
+#' @keywords ligand-receptor pairs, communication network
+#'
+#' @examples
+#' data(LR.db)
+#'
+"LR.db"
