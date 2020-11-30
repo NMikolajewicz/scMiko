@@ -5035,6 +5035,8 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
 #'
 vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, variable.features = F, subsample.factor = 1){
 
+  require(lme4);
+
   # if features is specified, pct.min and variable features are ignored.
 
   # prep expression matrix
