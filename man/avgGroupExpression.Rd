@@ -10,7 +10,8 @@ avgGroupExpression(
   which.assay = DefaultAssay(so),
   which.center = "mean",
   which.group = "seurat_clusters",
-  do.parallel = F
+  do.parallel = F,
+  verbose = T
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ avgGroupExpression(
 \item{which.group}{Character specfying group field in Seurat metadata. Default is "seurat_clusters".}
 
 \item{do.parallel}{Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.}
+
+\item{verbose}{Logical}
 }
 \value{
 data.frame (gene rows, group columns)
