@@ -1450,11 +1450,12 @@ aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 #' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
 #' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
+#' @param verbose Logical
 #' @name avgGroupExpression
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
+avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F, verbose = T){
   # which.center options: "mean", "fraction", "median", "sum", "sd", "cv"
 
   # inititate parallel processes
@@ -1487,54 +1488,65 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
-  warning("\nComputing measures of centrality...")
+  if (verbose) message("Computing measures of centrality...")
   for (i in 1:length(u.clusters)){
-    if (which.center == "mean"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+
+    current.mat <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
+    if (is.numeric(current.mat)){
+      if (which.center %in% c("mean", "median")){
+        avg.mat[,i] <- current.mat
       } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-      }
-    } else if (which.center == "median"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(median(expm1(x), na.rm = T)+1))
-      } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(median(expm1(x), na.rm = T)+1))
-      }
-    } else if (which.center == "sum"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
-      } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) sum(x, na.rm = T))
-      }
-    } else if (which.center == "sd"){
-      if (do.parallel){
-        avg.mat[,i] <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-      } else {
-        avg.mat[,i] <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-      }
-    } else if (which.center == "cv"){
-      if (do.parallel){
-        sd.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-        av.cur <- future_apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-      } else {
-        sd.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-        av.cur <- apply(exp.mat.complete[ ,cluster.membership %in% u.clusters[i]], 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-      }
-      avg.mat[,i] <- sd.cur / abs(av.cur)
-    } else if (which.center == "fraction"){
-      e.subset <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
-      if (is.numeric(e.subset)){
-        avg.mat[,i] <- 1*(e.subset>0)
-      } else {
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(e.subset, 1, function(x) sum(x>0)/length(x))
-        } else {
-          avg.mat[,i] <- apply(e.subset, 1, function(x) sum(x>0)/length(x))
-        }
+        avg.mat[,i] <- NA
       }
     } else {
-      stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
+
+      if (which.center == "mean"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+        } else {
+          avg.mat[,i] <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+        }
+      } else if (which.center == "median"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
+        } else {
+          avg.mat[,i] <- apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
+        }
+      } else if (which.center == "sum"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(current.mat, 1, function(x) sum(x, na.rm = T))
+        } else {
+          avg.mat[,i] <- apply(current.mat, 1, function(x) sum(x, na.rm = T))
+        }
+      } else if (which.center == "sd"){
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        } else {
+          avg.mat[,i] <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        }
+      } else if (which.center == "cv"){
+        if (do.parallel){
+          sd.cur <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+          av.cur <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+        } else {
+          sd.cur <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+          av.cur <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+        }
+        avg.mat[,i] <- sd.cur / abs(av.cur)
+      } else if (which.center == "fraction"){
+        e.subset <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
+        if (is.numeric(e.subset)){
+          avg.mat[,i] <- 1*(e.subset>0)
+        } else {
+          if (do.parallel){
+            avg.mat[,i] <- future_apply(e.subset, 1, function(x) sum(x>0)/length(x))
+          } else {
+            avg.mat[,i] <- apply(e.subset, 1, function(x) sum(x>0)/length(x))
+          }
+        }
+      } else {
+        stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
+      }
     }
   }
 
@@ -1552,9 +1564,6 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
 
 }
-
-
-
 
 #' Over-representation enrichment of GO terms using weighted fisher method
 #'
