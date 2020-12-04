@@ -1488,7 +1488,7 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
-  if (verbose) message("Computing measures of centrality...")
+  if (verbose) message(paste0("Computing ", which.center, "..."))
   for (i in 1:length(u.clusters)){
 
     current.mat <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
@@ -5571,5 +5571,43 @@ vd_UMAP <- function(object, vd_model.list){
   }
 
   return(plt.umap.list)
+
+}
+
+
+
+#' Assign column entries in data.frame to row names.
+#'
+#' Assign column entries in data.frame to row names.
+#'
+#' @param df data.frame
+#' @param col Character specifying column name in df.
+#' @name col2rowname
+#' @author Nicholas Mikolajewicz
+#' @return df
+#' @examples
+#'
+#' f.mat <-aggGroupExpression(
+#' so = so.query,
+#'   which.data = "data",
+#'   which.assay = DefaultAssay(so.query),
+#'   which.center = "fraction",
+#'   which.group = "seurat_clusters",
+#'   do.parallel = F
+#' )
+#'
+#' f.mat <- col2rowname(f.mat, col = "genes")
+#'
+col2rowname <- function(df, col){
+
+  df <- as.data.frame(df)
+  if (!(col) %in% colnames(df)) {
+    warning("The provided col argument is a not a valid column name. Returning unmodified data.frame.")
+    return(df)
+  } else {
+    rownames(df) <- make.unique(df[,col])
+    df <- df %>% dplyr::select(-c(all_of(col)))
+    return(df)
+  }
 
 }
