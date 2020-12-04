@@ -5284,6 +5284,8 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
       seq.range <- (chunk.start[j]:(chunk.start[j] + chunk.size))
     }
 
+    if (min(seq.range) > nrow(vd_inputs.list$input.data$weights)) return(list(res.cur = list(), which.gene = c()))
+
     if (max(seq.range) > nrow(vd_inputs.list$input.data$weights)) seq.range <- (chunk.start[j]: nrow(vd_inputs.list$input.data$weights))
     E.cur <- vd_inputs.list$input.data$E[seq.range,]
     W.cur <- vd_inputs.list$input.data$weights[seq.range,]
