@@ -4,7 +4,13 @@
 \alias{theme_miko}
 \title{scMiko Theme}
 \usage{
-theme_miko(style = "bw", legend = F, grid = F, bold.title = T)
+theme_miko(
+  style = "bw",
+  legend = F,
+  grid = F,
+  bold.title = T,
+  center.title = F
+)
 }
 \arguments{
 \item{style}{Choise of 'theme_classic' or 'theme_bw' called using 'classic' or 'bw', respectively. Default is 'bw'}
@@ -14,6 +20,8 @@ theme_miko(style = "bw", legend = F, grid = F, bold.title = T)
 \item{grid}{Logical to include grid. Default is F.}
 
 \item{bold.title}{Logical to bold title. Default is T.}
+
+\item{center.title}{Logical to center justify title. Default is F.}
 }
 \value{
 ggplot2 theme object

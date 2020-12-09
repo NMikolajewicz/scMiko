@@ -688,12 +688,13 @@ upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 #' @param legend Logical to include legend. Default is F.
 #' @param grid Logical to include grid. Default is F.
 #' @param bold.title Logical to bold title. Default is T.
+#' @param center.title Logical to center justify title. Default is F.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples
 #'
 #'
-theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T){
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F){
 
   if (style == "bw"){
     tm <- theme_bw()
@@ -706,6 +707,12 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T){
   if (!grid) tm <- tm + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
   if (bold.title) tm <- tm + theme( plot.title = element_text(face = "bold"))
+
+  if (center.title){
+    tm <- tm +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.subtitle = element_text(hjust = 0.5))
+  }
 
   return(tm)
 
