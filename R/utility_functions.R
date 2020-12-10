@@ -5485,11 +5485,13 @@ vd_Formula <- function(object, covariates = NULL, interactions  = NULL){
   }
 
   # append interaction terms
+  if (!is.null(df.interaction.pairs)){
   for (i in 1:nrow(df.interaction.pairs)){
 
     term.current <-  paste0(df.interaction.pairs[i,1], ":", df.interaction.pairs[i,2])
     form <- append.term(form,  paste0("(1|", term.current, ")"))
 
+  }
   }
 
   # specify model formula
