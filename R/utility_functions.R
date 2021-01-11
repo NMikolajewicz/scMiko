@@ -3321,9 +3321,11 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
                          mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
 
   # get data for highly variable genes (hvg)
-  cur.data <- GetAssayData(so, slot = slot, assay = assay)
-  match.ind <- which(rownames(cur.data) %in% top_hvg)
-  dat_use <- as.data.frame(t(GetAssayData(so, slot = slot, assay = assay)[match.ind,]))
+  cur.data <- Seurat::GetAssayData(so, slot = slot, assay = assay)
+  # cur.data <-  as.matrix(as.data.frame(cur.data))
+  match.ind <- which(rownames(cur.data) %in% hvg)
+  dat_use <- as.data.frame(t(Seurat::GetAssayData(so, slot = slot, assay = assay)[match.ind,]))
+  rm(cur.data)
 
   # merge expression data and pseudotime
   dat_use_df <- cbind(pseudotimes, dat_use)
@@ -3332,28 +3334,30 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
 
   # Define training, testing and validation sets
   colnames(dat_use_df) <- make.names(colnames(dat_use_df) , unique = TRUE, allow_ = TRUE)
-  dat_split <- initial_split(dat_use_df)
-  dat_train <- training(dat_split)
-  dat_val <- testing(dat_split)
+  dat_split <- rsample::initial_split(dat_use_df)
+  dat_train <- rsample::training(dat_split)
+  dat_val <- rsample::testing(dat_split)
 
   # Train Model
-  model <- rand_forest(mtry =mtry, trees = trees, min_n = min_n, mode = mode) %>%
+  model <- parsnip::rand_forest(mtry =mtry, trees = trees, min_n = min_n, mode = mode) %>%
     set_engine("ranger", importance =importance, num.threads = num.threads) %>%
     fit(pseudotime ~ ., data = dat_train)
 
   # Evaluate Model
   val_results <- dat_val %>%
-    mutate(estimate = predict(model, .[,-1]) %>% pull()) %>%
-    select(truth = pseudotime, estimate)
-  model.metrics <- metrics(data = val_results, truth, estimate)
+    dplyr::mutate(estimate = predict(model, .[,-1]) %>%
+                    pull()) %>%
+    dplyr::select(truth = pseudotime, estimate)
+  model.metrics <- yardstick::metrics(data = val_results, truth, estimate)
 
   # store results
-  # model.list[[lineage.name]] <- model
-  # results.list[[lineage.name]] <- val_results
   df.metrics <- data.frame(lineage = lineage.name,
                            rmse = signif(model.metrics[[".estimate"]][1],3),
                            rsq = signif(model.metrics[[".estimate"]][2],3),
                            mae = signif(model.metrics[[".estimate"]][3],3))
+
+  rm(model.metrics);
+  invisible({gc()})
 
   output <- list(
     model = model,
@@ -3362,6 +3366,7 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
   )
 
   return(output)
+
 
 }
 
