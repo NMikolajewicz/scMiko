@@ -689,12 +689,15 @@ upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 #' @param grid Logical to include grid. Default is F.
 #' @param bold.title Logical to bold title. Default is T.
 #' @param center.title Logical to center justify title. Default is F.
+#' @param x.axis.rotation rotation angle (e.g., 45)
+#' @param fill.palette palette from ggthemes (e.g., "ptol"). Default is NA.
+#' @param color.palette palette from ggthemes (e.g., "ptol"). Default is NA.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples
 #'
 #'
-theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F){
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA){
 
   if (style == "bw"){
     tm <- theme_bw()
@@ -712,6 +715,20 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
     tm <- tm +
       theme(plot.title = element_text(hjust = 0.5)) +
       theme(plot.subtitle = element_text(hjust = 0.5))
+  }
+
+  if (x.axis.rotation != 0){
+    try({tm <- tm + theme(axis.text.x = element_text(angle = 45, hjust = 1))}, silent = T)
+  }
+
+  if (!is.na(fill.palette)){
+    require(ggthemes)
+    try({tm <- tm + do.call(paste0("scale_fill_", "ptol"), args = list())}, silent =  T)
+  }
+
+  if (!is.na(color.palette)){
+    require(ggthemes)
+    try({tm <- tm + do.call(paste0("scale_colour_", "ptol"), args = list())}, silent =  T)
   }
 
   return(tm)

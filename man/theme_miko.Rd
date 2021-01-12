@@ -9,7 +9,10 @@ theme_miko(
   legend = F,
   grid = F,
   bold.title = T,
-  center.title = F
+  center.title = F,
+  x.axis.rotation = 0,
+  fill.palette = NA,
+  color.palette = NA
 )
 }
 \arguments{
@@ -22,6 +25,12 @@ theme_miko(
 \item{bold.title}{Logical to bold title. Default is T.}
 
 \item{center.title}{Logical to center justify title. Default is F.}
+
+\item{x.axis.rotation}{rotation angle (e.g., 45)}
+
+\item{fill.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
+
+\item{color.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
 }
 \value{
 ggplot2 theme object
