@@ -3320,11 +3320,25 @@ getClusterCenters <- function(df, which.center = "mean"){
 pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assay = DefaultAssay(so),
                          mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
 
+
+  require("parsnip")
+  require("yardstick")
+
   # get data for highly variable genes (hvg)
   cur.data <- Seurat::GetAssayData(so, slot = slot, assay = assay)
   # cur.data <-  as.matrix(as.data.frame(cur.data))
   match.ind <- which(rownames(cur.data) %in% hvg)
-  dat_use <- as.data.frame(t(Seurat::GetAssayData(so, slot = slot, assay = assay)[match.ind,]))
+  # dat_use <- as.data.frame(t(Seurat::GetAssayData(so, slot = slot, assay = assay)[match.ind,]))
+  is.success <- F
+  try({
+    dat_use <- as.data.frame(t(cur.data[match.ind,]))
+    is.success <- T
+  }, silent = T)
+
+  if (!is.success){
+    dat_use <- as.data.frame(t(as.matrix(cur.data[match.ind,])))
+  }
+
   rm(cur.data)
 
   # merge expression data and pseudotime
