@@ -11,7 +11,11 @@ runHG(
   pathway.db = "Bader",
   n.workers = 16,
   my.pathway = NULL,
-  my.pathway.representation = "ENTREZ"
+  my.pathway.representation = "ENTREZ",
+  min.size = 1,
+  max.size = 300,
+  e2s = F,
+  go.ontology = "BP"
 )
 }
 \arguments{
@@ -28,6 +32,14 @@ runHG(
 \item{my.pathway}{Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.}
 
 \item{my.pathway.representation}{If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.}
+
+\item{min.size}{min geneset size. Default is 1.}
+
+\item{max.size}{max geneset size. Default is 300.}
+
+\item{e2s}{entrez to symbol mapping (computationally demanding). Default False.}
+
+\item{go.ontology}{BP, MF or CC. Ignored if pathway.db != "GO".}
 }
 \description{
 Run hypergeometric gene enrichment analysis.

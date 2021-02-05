@@ -4820,21 +4820,36 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @param n.workers Number of workers for parallelization. Default is 16.
 #' @param my.pathway Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.
 #' @param my.pathway.representation If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.
+#' @param min.size min geneset size. Default is 1.
+#' @param max.size max geneset size. Default is 300.
+#' @param e2s entrez to symbol mapping (computationally demanding). Default False.
+#' @param go.ontology BP, MF or CC. Ignored if pathway.db != "GO".
 #' @value enrichment results
 #' @examples
 #' @author Nicholas Mikolajewicz
 #'
-runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ"){
+runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 1, max.size = 300, e2s = F, go.ontology = "BP"){
 
-  my.symbol <- gene.universe
-  my.entrez <- sym2entrez(my.symbol, my.species = species )
-  my.entrez <- my.entrez[complete.cases(my.entrez), ]
+  suppressMessages({
+    suppressWarnings({
 
+      require("foreach")
+
+      my.symbol <- gene.universe
+      my.entrez <- sym2entrez(my.symbol, my.species = species )
+      my.entrez <- my.entrez[complete.cases(my.entrez), ]
+
+    })})
+
+  message("Preparing pathway genesets...")
   if (is.null(my.pathway)){
-    pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = "BP", species = species)
+    pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = go.ontology, species = species)
   } else {
     pathways <- my.pathway
   }
+
+  pathway.size <- unlist(lapply(pathways, length))
+  pathways <- pathways[(pathway.size >= min.size) & (pathway.size <= max.size)]
 
   g2e.list <- my.entrez$ENTREZID
   names(g2e.list) <- my.entrez$SYMBOL
@@ -4847,8 +4862,9 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   cl <- parallel::makeCluster(n.workers)
   doParallel::registerDoParallel(cl)
 
+  message("Running hypergeometric enrichment...")
   res.h.list <- list()
-  res.h.list <- foreach(i = 1:length(gene.list), .packages = c("dplyr", "fgsea"))  %dopar% {
+  res.h.list <- foreach(i = 1:length(gene.list), .packages = c("dplyr", "fgsea", "plyr"))  %dopar% {
 
     if (my.pathway.representation == "ENTREZ"){
       if (!is.null(g2e.list)){
@@ -4860,7 +4876,17 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
       current.genes <- unique(gene.list[[i]])
     }
 
-    res.hyper <-  fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 2, maxSize = Inf)
+    res.hyper <-  fgsea::fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 2, maxSize = Inf)
+
+    if (e2s){
+      suppressMessages({
+        suppressWarnings({
+          res.hyper$overlapGenes <- lapply(res.hyper$overlapGenes,
+                                           mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
+          res.hyper$overlapGenes <- lapply(res.hyper$overlapGenes, paste,collapse = ", ")
+        })})
+    }
+
     return(res.hyper)
 
   }

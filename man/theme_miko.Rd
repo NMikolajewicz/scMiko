@@ -12,7 +12,10 @@ theme_miko(
   center.title = F,
   x.axis.rotation = 0,
   fill.palette = NA,
-  color.palette = NA
+  color.palette = NA,
+  legend.color.size = NA,
+  legend.fill.size = NA,
+  do.minimal = F
 )
 }
 \arguments{
@@ -31,6 +34,12 @@ theme_miko(
 \item{fill.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
 
 \item{color.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
+
+\item{legend.color.size}{specify size of points in color legend.}
+
+\item{legend.fill.size}{specify size of points in fill legend.}
+
+\item{do.minimal}{Remove graph elements to get minimal plot.}
 }
 \value{
 ggplot2 theme object

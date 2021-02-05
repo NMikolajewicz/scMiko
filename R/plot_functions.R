@@ -692,12 +692,15 @@ upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 #' @param x.axis.rotation rotation angle (e.g., 45)
 #' @param fill.palette palette from ggthemes (e.g., "ptol"). Default is NA.
 #' @param color.palette palette from ggthemes (e.g., "ptol"). Default is NA.
+#' @param legend.color.size specify size of points in color legend.
+#' @param legend.fill.size specify size of points in fill legend.
+#' @param do.minimal Remove graph elements to get minimal plot.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples
 #'
 #'
-theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA){
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA, legend.color.size = NA, legend.fill.size = NA, do.minimal = F){
 
   if (style == "bw"){
     tm <- theme_bw()
@@ -718,20 +721,45 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
   }
 
   if (x.axis.rotation != 0){
-    try({tm <- tm + theme(axis.text.x = element_text(angle = 45, hjust = 1))}, silent = T)
+    try({tm <- tm + theme(axis.text.x = element_text(angle = x.axis.rotation, hjust = 1))}, silent = T)
   }
 
+
+  if (!is.na(legend.color.size)){
+    tm <- tm + guides(color = guide_legend(override.aes = list(size=legend.point.size)))
+  }
+
+  if (!is.na(legend.fill.size)){
+    tm <- tm + guides(fill = guide_legend(override.aes = list(size=legend.point.size)))
+  }
+
+  if (do.minimal){
+    tm <- tm +  theme(
+      panel.border = element_blank(),
+      axis.text = element_blank(),
+      panel.grid = element_blank(),
+      axis.ticks = element_blank()
+    ) + xlab("") + ylab("")
+  }
+
+
+  tm.list <- list()
+  list.ind <- 1
   if (!is.na(fill.palette)){
     require(ggthemes)
-    try({tm <- tm + do.call(paste0("scale_fill_", "ptol"), args = list())}, silent =  T)
+    tm.list[[list.ind]] <- do.call(paste0("scale_fill_", fill.palette), args = list())
+    list.ind <- list.ind + 1
   }
 
   if (!is.na(color.palette)){
     require(ggthemes)
-    try({tm <- tm + do.call(paste0("scale_colour_", "ptol"), args = list())}, silent =  T)
+    tm.list[[list.ind]] <- do.call(paste0("scale_colour_", color.palette), args = list())
+    list.ind <- list.ind + 1
   }
 
-  return(tm)
+  tm.list[[list.ind]] <- tm
+
+  return(tm.list)
 
 }
 
