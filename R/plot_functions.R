@@ -726,11 +726,11 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
 
 
   if (!is.na(legend.color.size)){
-    tm <- tm + guides(color = guide_legend(override.aes = list(size=legend.point.size)))
+    tm <- tm + guides(color = guide_legend(override.aes = list(size=legend.color.size)))
   }
 
   if (!is.na(legend.fill.size)){
-    tm <- tm + guides(fill = guide_legend(override.aes = list(size=legend.point.size)))
+    tm <- tm + guides(fill = guide_legend(override.aes = list(size=legend.fill.size)))
   }
 
   if (do.minimal){
