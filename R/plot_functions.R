@@ -692,15 +692,12 @@ upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 #' @param x.axis.rotation rotation angle (e.g., 45)
 #' @param fill.palette palette from ggthemes (e.g., "ptol"). Default is NA.
 #' @param color.palette palette from ggthemes (e.g., "ptol"). Default is NA.
-#' @param legend.color.size specify size of points in color legend.
-#' @param legend.fill.size specify size of points in fill legend.
-#' @param do.minimal Remove graph elements to get minimal plot.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples
 #'
 #'
-theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA, legend.color.size = NA, legend.fill.size = NA, do.minimal = F){
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA){
 
   if (style == "bw"){
     tm <- theme_bw()
@@ -725,22 +722,22 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
   }
 
 
-  if (!is.na(legend.color.size)){
-    tm <- tm + guides(color = guide_legend(override.aes = list(size=legend.color.size)))
-  }
-
-  if (!is.na(legend.fill.size)){
-    tm <- tm + guides(fill = guide_legend(override.aes = list(size=legend.fill.size)))
-  }
-
-  if (do.minimal){
-    tm <- tm +  theme(
-      panel.border = element_blank(),
-      axis.text = element_blank(),
-      panel.grid = element_blank(),
-      axis.ticks = element_blank()
-    ) + xlab("") + ylab("")
-  }
+  # if (!is.na(legend.color.size)){
+  #   tm <- tm + guides(color = guide_legend(override.aes = list(size=legend.color.size)))
+  # }
+  #
+  # if (!is.na(legend.fill.size)){
+  #   tm <- tm + guides(fill = guide_legend(override.aes = list(size=legend.fill.size)))
+  # }
+  #
+  # if (do.minimal){
+  #   tm <- tm +  theme(
+  #     panel.border = element_blank(),
+  #     axis.text = element_blank(),
+  #     panel.grid = element_blank(),
+  #     axis.ticks = element_blank()
+  #   ) + xlab("") + ylab("")
+  # }
 
 
   tm.list <- list()
