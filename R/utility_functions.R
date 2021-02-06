@@ -1302,7 +1302,7 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
   geneSets <- list()
 
   if (dev.directory.flag){
-    input.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/Data/scRNA-seq/01_sci-RNA-seq3_Hong_Kevin_Jason/NM_HH/Data/Reference Datasets/"
+    input.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/Data/scRNA-seq/01_sci-RNA-seq3_Hong_Kevin_Jason/NM_HH/Data/Reference_Datasets/"
     output.dir <- "D:/Users/Nick/Dropbox/PDF Projects - JM/R Packages/scMiko/data/"
   } else {
     input.dir <- dir
