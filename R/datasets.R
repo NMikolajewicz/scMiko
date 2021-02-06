@@ -31,14 +31,19 @@
 #' \item{universal_literaturePanel}{universal marker panels obtained from literature review}
 #' \item{cancer_literaturePanel}{cancer marker panels obtained from literature review}
 #' \item{AnimalTFDB (\href{http://bioinfo.life.hust.edu.cn/AnimalTFDB/#!/}{link})}{Animal transcription factor database. List of human and murine transcription factors}
-
+#' \item{Richards_NatureCancer_2021_sc (\href{https://www.nature.com/articles/s43018-020-00154-9#Sec47/}{link})}{Glioblastoma stem cell injury response and developmental genesets. Single cell derived. }
+#' \item{Richards_NatureCancer_2021_bulk (\href{https://www.nature.com/articles/s43018-020-00154-9#Sec47/}{link})}{Glioblastoma stem cell injury response and developmental genesets. Bulk RNA derived. }
+#' \item{Cahoy_JNeurosci}{Neural cell gene panels}
+#' \item{Liddelow_Nature_2017}{Astrocyte gene panels}
+#' \item{Zhong_Nature_2018}{Neural cell gene panels}
+#' \item{Verhaak_CancerCell_2010}{Verhaak GBM-subtype genesets}
 #' }
 #'
 #' @keywords genesets, cell annotation, module scoring
 #'
 #' @examples
 #' data(geneSets)
-#' CancerSEA_Hs <- geneSets[["CancerSEA_Hs"]]
+#' Verhaak_CancerCell_2010 <- geneSets[["Verhaak_CancerCell_2010"]]
 #'
 "geneSets"
 
