@@ -9,6 +9,7 @@
 #' @param n.workers Number of workers for parallelized implementation. Default is 1.
 #' @param n.repeats Number of fitting repeats (best fit taken). Default is 5.
 #' @param n.iterations Number of fitting iterations per a repeat. Default is 1000.
+#' @param posterior.p Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
@@ -46,7 +47,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000,  ...){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, ...){
 
   suppressMessages({
     suppressWarnings({
@@ -115,7 +116,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         if (single.comp & is.norm){
           class.prediction[[which.class]] <- character()
         } else {
-          class.prediction[[which.class]] <- colnames(auc.val)[best.mix[["posterior"]][ ,which.max(best.mix[["mu"]])] > 0.9]
+          class.prediction[[which.class]] <- colnames(auc.val)[best.mix[["posterior"]][ ,which.max(best.mix[["mu"]])] > posterior.p]
         }
 
       }

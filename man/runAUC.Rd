@@ -11,6 +11,7 @@ runAUC(
   n.workers = 1,
   n.repeats = 5,
   n.iterations = 1000,
+  posterior.p = 0.9,
   ...
 )
 }
@@ -26,6 +27,8 @@ runAUC(
 \item{n.repeats}{Number of fitting repeats (best fit taken). Default is 5.}
 
 \item{n.iterations}{Number of fitting iterations per a repeat. Default is 1000.}
+
+\item{posterior.p}{Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }
