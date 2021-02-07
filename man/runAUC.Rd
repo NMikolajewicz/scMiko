@@ -4,7 +4,15 @@
 \alias{runAUC}
 \title{Run AUCell classification}
 \usage{
-runAUC(object, genelist, assay = DefaultAssay(object), n.workers = 1, ...)
+runAUC(
+  object,
+  genelist,
+  assay = DefaultAssay(object),
+  n.workers = 1,
+  n.repeats = 5,
+  n.iterations = 1000,
+  ...
+)
 }
 \arguments{
 \item{object}{Seurat object}
@@ -14,6 +22,10 @@ runAUC(object, genelist, assay = DefaultAssay(object), n.workers = 1, ...)
 \item{assay}{Assay used for expression matrix.}
 
 \item{n.workers}{Number of workers for parallelized implementation. Default is 1.}
+
+\item{n.repeats}{Number of fitting repeats (best fit taken). Default is 5.}
+
+\item{n.iterations}{Number of fitting iterations per a repeat. Default is 1000.}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }

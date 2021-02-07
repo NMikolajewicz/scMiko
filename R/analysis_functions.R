@@ -7,6 +7,8 @@
 #' @param genelist Named list of genesets.
 #' @param assay Assay used for expression matrix.
 #' @param n.workers Number of workers for parallelized implementation. Default is 1.
+#' @param n.repeats Number of fitting repeats (best fit taken). Default is 5.
+#' @param n.iterations Number of fitting iterations per a repeat. Default is 1000.
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
@@ -44,7 +46,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, ...){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000,  ...){
 
   suppressMessages({
     suppressWarnings({
@@ -56,7 +58,8 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
       n.auc.cores <- n.workers
       cells_rankings <- AUCell_buildRankings(so.e.mat, plotStats = F, nCores = n.auc.cores, verbose = F)
-      cells_AUC <- AUCell_calcAUC(geneSets = genelist, rankings = cells_rankings, aucMaxRank=nrow(cells_rankings)*0.05,verbose = F, nCores = n.auc.cores)
+      cells_AUC <- AUCell_calcAUC(geneSets = genelist, rankings = cells_rankings,
+                                  aucMaxRank=nrow(cells_rankings)*0.05,verbose = F, nCores = n.auc.cores)
 
       auc.val <- getAUC(cells_AUC)
 
@@ -67,9 +70,9 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         which.class <- rownames(auc.val)[i]
 
         best.mix <- NULL
-        for (j in 1:5){
+        for (j in 1:n.repeats){
           mixmdl = tryCatch(mixtools::normalmixEM(auc.val[which.ind, ],
-                                                  k = 2, maxit = 1000, maxrestarts = 10, verb = FALSE), error = function(e) {
+                                                  k = 2, maxit = n.iterations, maxrestarts = 10, verb = FALSE), error = function(e) {
                                                     # print("EM algorithm did not converge")
                                                     mixmdl = NULL
                                                   })
