@@ -4,7 +4,7 @@
 \alias{runAUC}
 \title{Run AUCell classification}
 \usage{
-runAUC(object, genelist, assay = DefaultAssay(object), n.workers = 1)
+runAUC(object, genelist, assay = DefaultAssay(object), n.workers = 1, ...)
 }
 \arguments{
 \item{object}{Seurat object}
@@ -14,6 +14,8 @@ runAUC(object, genelist, assay = DefaultAssay(object), n.workers = 1)
 \item{assay}{Assay used for expression matrix.}
 
 \item{n.workers}{Number of workers for parallelized implementation. Default is 1.}
+
+\item{...}{additional parameters passed to geom_point(...)}
 }
 \value{
 list of results along with ggplot handles visualizing class predictions overlaid on UMAP.

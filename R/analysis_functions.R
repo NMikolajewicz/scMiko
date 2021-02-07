@@ -7,6 +7,7 @@
 #' @param genelist Named list of genesets.
 #' @param assay Assay used for expression matrix.
 #' @param n.workers Number of workers for parallelized implementation. Default is 1.
+#' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
 #' @author Nicholas Mikolajewicz
@@ -43,7 +44,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, ...){
 
   suppressMessages({
     suppressWarnings({
@@ -175,7 +176,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
         plt.umap.list[[which.set]] <- df.auc.umap2 %>%
           ggplot(aes(x = x, y = y, color = auc)) +
-          geom_point() +
+          geom_point(...) +
           labs(x = "UMAP 1", y = "UMAP 2", caption = "AUCell-based scoring", title = which.set, subtitle = "AUC scores") +
           theme_miko(center.title = T, legend = T) +
           scale_color_gradient2(high = "red")
@@ -184,7 +185,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plt.auc.umap <- df.auc.umap %>%
         dplyr::arrange(-as.numeric(class.auc)) %>%
         ggplot(aes(x = x, y = y, color = class.auc)) +
-        geom_point() +
+        geom_point(...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "Original AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
@@ -193,7 +194,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plt.nm.umap <- df.auc.umap %>%
         dplyr::arrange(-as.numeric(class.nm)) %>%
         ggplot(aes(x = x, y = y, color = class.nm)) +
-        geom_point() +
+        geom_point(...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "NM-modified AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
@@ -202,7 +203,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
       plt.max.umap <- df.auc.umap %>%
         ggplot(aes(x = x, y = y, color = class.max.score)) +
-        geom_point() +
+        geom_point(...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max AUCell score", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
