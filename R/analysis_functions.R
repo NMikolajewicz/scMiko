@@ -89,7 +89,14 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
         }
 
-        shap <- shapiro.test(auc.val[which.ind, ])
+        cur.auc.vals <- auc.val[which.ind, ]
+        if (length(cur.auc.vals) > 5000){
+          cur.auc.vals0 <- sample(cur.auc.vals,5000, replace = F)
+          shap <- shapiro.test(cur.auc.vals0)
+        } else {
+          shap <- shapiro.test(cur.auc.vals)
+        }
+
         if (shap[["p.value"]]<0.05){
           is.norm <- F
         } else {
