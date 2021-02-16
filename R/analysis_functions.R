@@ -107,11 +107,15 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         loglik_1 <- sum(dnorm(auc.val[which.ind, ], mean(auc.val[which.ind, ]), sd(auc.val[which.ind, ]), log = TRUE))
         loglik_2 <- mixmdl[["loglik"]]
 
-        if (loglik_1 < loglik_2){
-          single.comp <- T
-        } else {
-          single.comp <- F
-        }
+        single.comp <- F
+        try({
+          if (loglik_1 < loglik_2){
+            single.comp <- T
+          } else {
+            single.comp <- F
+          }
+        }, silent = T)
+
 
         if (single.comp & is.norm){
           class.prediction[[which.class]] <- character()
