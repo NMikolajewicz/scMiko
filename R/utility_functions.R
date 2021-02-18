@@ -5660,3 +5660,61 @@ col2rowname <- function(df, col){
   }
 
 }
+
+
+#' Get UMAP data and plot from Seurat object.
+#'
+#' Get UMAP data and plot from Seurat object.
+#'
+#' @param object Seurat Object.
+#' @param umap.key Character UMAP key slot in seurat object. Default is "umap"
+#' @param node.type "point" or "text"
+#' @param meta.features character vector specifying which meta features to retrieve. Default is seurat_clusters
+#' @name getUMAP
+#' @author Nicholas Mikolajewicz
+#' @return list containing UMAP data.frame and ggplot handle
+#' @examples
+#'
+#' wnnUMAP.list <- getUMAP(so.gene, umap.key = "wnn.umap", node.type = "text")
+#'
+#' df.wnn.umap <- wnnUMAP.list$df.umap
+#' plt.wnn.umap <- wnnUMAP.list$plt.umap
+#'
+getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters"){
+
+  # node.type "text" or "point"
+
+  df.umap <- data.frame(object@reductions[[umap.key]]@cell.embeddings)
+  colnames(df.umap) <- c("x", "y")
+  df.umap$var <- rownames(df.umap)
+
+  for (i in 1:length(meta.features)){
+    if (meta.features[i] %in% colnames(object@meta.data)){
+      df.umap[ ,meta.features[i]]<- object@meta.data[[meta.features[i]]]
+    }
+  }
+
+  if ("seurat_clusters" %in% meta.features){
+    plt.umap = df.umap %>%
+      ggplot(aes(x = x, y = y, label = var, color = seurat_clusters)) +
+      theme_miko(legend = T)
+  } else {
+    plt.umap = df.umap %>%
+      ggplot(aes(x = x, y = y, label = var)) +
+      theme_miko(legend = F)
+  }
+
+
+  if (node.type == "text"){
+    plt.umap <- plt.umap +  geom_text(size = 2)
+  } else if (node.type == "point"){
+    plt.umap <- plt.umap +  geom_point()
+  }
+
+  return(
+    list(
+      df.umap = df.umap,
+      plt.umap = plt.umap
+    )
+  )
+}
