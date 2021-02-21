@@ -5746,7 +5746,7 @@ require("RColorBrewer")
   if (is.null(labels) & is.null(n)){
     message("'Error: 'labels' or 'n' were not specified. Color palette was not generated.")
     return(NULL)
-  } else if (!is.null(labels) & !is.null(n)){
+  } else if (!is.null(labels)){
     n <- length(labels)
   }
 
