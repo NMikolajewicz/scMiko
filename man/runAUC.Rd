@@ -12,6 +12,7 @@ runAUC(
   n.repeats = 5,
   n.iterations = 1000,
   posterior.p = 0.9,
+  mixture.analysis = T,
   ...
 )
 }
@@ -29,6 +30,8 @@ runAUC(
 \item{n.iterations}{Number of fitting iterations per a repeat. Default is 1000.}
 
 \item{posterior.p}{Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).}
+
+\item{mixture.analysis}{logical to perform mixture analysis. Default = T (computationally intensive).}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }

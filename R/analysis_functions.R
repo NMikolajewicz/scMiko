@@ -10,6 +10,7 @@
 #' @param n.repeats Number of fitting repeats (best fit taken). Default is 5.
 #' @param n.iterations Number of fitting iterations per a repeat. Default is 1000.
 #' @param posterior.p Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).
+#' @param mixture.analysis logical to perform mixture analysis. Default = T (computationally intensive).
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
@@ -47,7 +48,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, ...){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, mixture.analysis = T, ...){
 
   suppressMessages({
     suppressWarnings({
@@ -70,7 +71,12 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         which.ind <- i
         which.class <- rownames(auc.val)[i]
 
+
         best.mix <- NULL
+        mixmdl <- NULL
+
+        if (mixture.analysis){
+
         for (j in 1:n.repeats){
           mixmdl = tryCatch(mixtools::normalmixEM(auc.val[which.ind, ],
                                                   k = 2, maxit = n.iterations, maxrestarts = 10, verb = FALSE), error = function(e) {
@@ -90,6 +96,9 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
         }
 
+
+
+
         cur.auc.vals <- auc.val[which.ind, ]
         if (length(cur.auc.vals) > 5000){
           cur.auc.vals0 <- sample(cur.auc.vals,5000, replace = F)
@@ -104,8 +113,17 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
           is.norm <- T
         }
 
-        loglik_1 <- sum(dnorm(auc.val[which.ind, ], mean(auc.val[which.ind, ]), sd(auc.val[which.ind, ]), log = TRUE))
         loglik_2 <- mixmdl[["loglik"]]
+        loglik_1 <- sum(dnorm(auc.val[which.ind, ], mean(auc.val[which.ind, ]), sd(auc.val[which.ind, ]), log = TRUE))
+
+        } else {
+          is.norm <- T
+          loglik_2 <- NULL
+          loglik_1 <- NULL
+        }
+
+
+
 
         single.comp <- F
         try({
@@ -235,7 +253,8 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plot.auc = plt.auc.umap,  # auc-based approach (+rejection)
       plot.nm = plt.nm.umap, # loglikelihood and normality test-based classification (+rejection)
       plot.max.score = plt.max.umap, # max score across genesets (-rejection)
-      plot.list = plt.umap.list
+      plot.list = plt.umap.list,
+      class.prediction = class.prediction
     )
   )
 
