@@ -5670,6 +5670,7 @@ col2rowname <- function(df, col){
 #' @param umap.key Character UMAP key slot in seurat object. Default is "umap"
 #' @param node.type "point" or "text"
 #' @param meta.features character vector specifying which meta features to retrieve. Default is seurat_clusters
+#' @param ... additional parameters to geom_point or geom_text
 #' @name getUMAP
 #' @author Nicholas Mikolajewicz
 #' @return list containing UMAP data.frame and ggplot handle
@@ -5680,7 +5681,7 @@ col2rowname <- function(df, col){
 #' df.wnn.umap <- wnnUMAP.list$df.umap
 #' plt.wnn.umap <- wnnUMAP.list$plt.umap
 #'
-getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters"){
+getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters", ...){
 
   # node.type "text" or "point"
 
@@ -5706,9 +5707,9 @@ getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.feature
 
 
   if (node.type == "text"){
-    plt.umap <- plt.umap +  geom_text(size = 2)
+    plt.umap <- plt.umap +  geom_text(size = 2, ...)
   } else if (node.type == "point"){
-    plt.umap <- plt.umap +  geom_point()
+    plt.umap <- plt.umap +  geom_point(...)
   }
 
   return(
@@ -5717,4 +5718,51 @@ getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.feature
       plt.umap = plt.umap
     )
   )
+}
+
+
+#' Generate categorical ColorBrewer palette.
+#'
+#' Generate categorical ColorBrewer palette. Specify one of 'labels' or 'n' to generate categorical color palette for use with 'scale_fill_manual(values = col.pal)' and 'scale_color_manual(values = col.pal)'
+#'
+#' @param labels vector of category names that if specified will have color assigned to. Default is NULL.
+#' @param n number of colors. Default is NULL. Ignored if 'labels' is specified.
+#' @param palette Name of palette. Default: "Spectral"
+#' @name categoricalColPal
+#' @author Nicholas Mikolajewicz
+#' @return Vector of colors. Named if labels provided.
+#' @examples
+#'
+#' # generate color palette
+#' col.pal <- categoricalColPal(n = 10)
+#'
+#' # add to ggplot handle
+#' gg.plt <- gg.plt + scale_fill_manual(values = col.pal)
+#'
+categoricalColPal <- function(labels = NULL, n = NULL, palette = "Spectral"){
+
+require("RColorBrewer")
+
+  if (is.null(labels) & is.null(n)){
+    message("'Error: 'labels' or 'n' were not specified. Color palette was not generated.")
+    return(NULL)
+  } else if (!is.null(labels) & !is.null(n)){
+    n <- length(labels)
+  }
+
+  all.pal <- brewer.pal.info
+
+  if (palette %in% rownames(all.pal)){
+    col.pal <- colorRampPalette(RColorBrewer::brewer.pal(all.pal[palette, "maxcolors"], palette))(n)
+  } else {
+    message("Error: Specified palette must belong to RColorBrewer. See brewer.pal.info for available palettes.")
+    return(NULL)
+  }
+
+  if (!is.null(labels)){
+    names(col.pal) <- labels
+  }
+
+  return(col.pal)
+
 }
