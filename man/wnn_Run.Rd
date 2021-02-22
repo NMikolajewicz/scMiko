@@ -31,7 +31,7 @@ wnn_Run(
 
 \item{do.center}{Logical to center expression. Default is F.}
 
-\item{normalize.margin}{If specifies, normalize across rows/cells (1) or columns/genes (2)}
+\item{normalize.margin}{If specified, normalize across rows/cells (1) or columns/genes (2)}
 
 \item{pca.thres}{Variance explained threshold for PC component inclusion. Default is 0.9.}
 

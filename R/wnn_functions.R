@@ -9,7 +9,7 @@
 #' @param umap.min.dist This controls how tightly the embedding is allowed compress points together. Larger values ensure embedded points are moreevenly distributed, while smaller values allow the algorithm to optimise more accurately with regard to local structure. Sensible values are in the range 0.001 to 0.5. Default: 0.1
 #' @param do.scale Logical to scale expression. Default is F.
 #' @param do.center Logical to center expression. Default is F.
-#' @param normalize.margin If specifies, normalize across rows/cells (1) or columns/genes (2)
+#' @param normalize.margin If specified, normalize across rows/cells (1) or columns/genes (2)
 #' @param pca.thres Variance explained threshold for PC component inclusion. Default is 0.9.
 #' @param cres Cluster resolution for integrated network. Default is 1.
 #' @param min.pct Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.
