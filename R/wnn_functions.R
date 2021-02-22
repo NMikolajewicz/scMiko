@@ -17,7 +17,7 @@
 #' @name wnn_Run
 #' @author Nicholas Mikolajewicz
 #' @return list of integrated results
-wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, pca.thres = 0.9, cres = 1,  min.pct = 0.25, split.var = "seurat_clusters" ){
+wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cres = 1,  min.pct = 0.25, split.var = "seurat_clusters" ){
 
   suppressMessages({
     suppressWarnings({

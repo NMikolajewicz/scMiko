@@ -11,6 +11,7 @@ wnn_Run(
   umap.min.dist = 0.1,
   do.scale = F,
   do.center = F,
+  normalize.margin = NA,
   pca.thres = 0.9,
   cres = 1,
   min.pct = 0.25,
@@ -30,6 +31,8 @@ wnn_Run(
 
 \item{do.center}{Logical to center expression. Default is F.}
 
+\item{normalize.margin}{If specifies, normalize across rows/cells (1) or columns/genes (2)}
+
 \item{pca.thres}{Variance explained threshold for PC component inclusion. Default is 0.9.}
 
 \item{cres}{Cluster resolution for integrated network. Default is 1.}
@@ -37,8 +40,6 @@ wnn_Run(
 \item{min.pct}{Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.}
 
 \item{split.var}{Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.}
-
-\item{normalize.margin}{If specifies, normalize across rows/cells (1) or columns/genes (2)}
 }
 \value{
 list of integrated results
