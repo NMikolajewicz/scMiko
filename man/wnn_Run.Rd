@@ -13,9 +13,11 @@ wnn_Run(
   do.center = F,
   normalize.margin = NA,
   pca.thres = 0.9,
-  cres = 1,
+  cluster.resolution = 1,
+  cluster.algorithm = 3,
   min.pct = 0.25,
-  split.var = "seurat_clusters"
+  split.var = "seurat_clusters",
+  neighborhood.membership = T
 )
 }
 \arguments{
@@ -35,11 +37,15 @@ wnn_Run(
 
 \item{pca.thres}{Variance explained threshold for PC component inclusion. Default is 0.9.}
 
-\item{cres}{Cluster resolution for integrated network. Default is 1.}
+\item{cluster.resolution}{Cluster resolution for integrated network. Default is 1.}
+
+\item{cluster.algorithm}{Algorithm for modularity optimization (1 = original Louvain algorithm; 2 = Louvain algorithm with multilevel refinement; 3 = SLM algorithm; 4 = Leiden algorithm). See Seurat:FindClusters() for details. Default: 3.}
 
 \item{min.pct}{Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.}
 
 \item{split.var}{Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.}
+
+\item{neighborhood.membership}{Logical whether to return list of local neighborhoods. Default: T.}
 }
 \value{
 list of integrated results

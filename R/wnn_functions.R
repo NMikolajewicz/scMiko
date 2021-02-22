@@ -11,13 +11,15 @@
 #' @param do.center Logical to center expression. Default is F.
 #' @param normalize.margin If specified, normalize across rows/cells (1) or columns/genes (2)
 #' @param pca.thres Variance explained threshold for PC component inclusion. Default is 0.9.
-#' @param cres Cluster resolution for integrated network. Default is 1.
+#' @param cluster.resolution Cluster resolution for integrated network. Default is 1.
+#' @param cluster.algorithm Algorithm for modularity optimization (1 = original Louvain algorithm; 2 = Louvain algorithm with multilevel refinement; 3 = SLM algorithm; 4 = Leiden algorithm). See Seurat:FindClusters() for details. Default: 3.
 #' @param min.pct Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.
 #' @param split.var Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.
+#' @param neighborhood.membership Logical whether to return list of local neighborhoods. Default: T.
 #' @name wnn_Run
 #' @author Nicholas Mikolajewicz
 #' @return list of integrated results
-wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cres = 1,  min.pct = 0.25, split.var = "seurat_clusters" ){
+wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cluster.resolution = 1,  cluster.algorithm = 3, min.pct = 0.25, split.var = "seurat_clusters", neighborhood.membership = T){
 
   suppressMessages({
     suppressWarnings({
@@ -27,6 +29,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   require(pbapply)
   require(future)
   require(future.apply)
+      require(Matrix)
 
   wnn_Sweep <- function (x, MARGIN, STATS, FUN = "-", check.margin = TRUE,  ...){
     if (any(grepl(pattern = "X", x = names(x = formals(fun = sweep))))) {
@@ -730,7 +733,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
 
   message("Finding clusters...")
-  so.gene2 <- FindClusters(so.gene2, graph.name = "wsnn", algorithm = 1, resolution = cres, verbose = T)
+  so.gene2 <- FindClusters(so.gene2, graph.name = "wsnn", algorithm = cluster.algorithm, resolution = cluster.resolution, verbose = T)
 
   wnnUMAP.list <- getUMAP(so.gene2, umap.key = "wnn.umap", node.type = "point", size = 0.01)
 
@@ -745,13 +748,14 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   gname <- so.gene2@neighbors[["weighted.nn"]]@cell.names
   wmat <- so.gene2@neighbors[["weighted.nn"]]@nn.dist
   nmat <- so.gene2@neighbors[["weighted.nn"]]@nn.idx
-  message("Getting neighborhoods...")
+
   neighborhood.list2 <- list()
-  for (i in 1:length(gname)){
-    neighborhood.list2[[gname[i]]] <- gname[nmat[i,]]
+  if (neighborhood.membership){
+    message("Getting neighborhoods...")
+    for (i in 1:length(gname)){
+      neighborhood.list2[[gname[i]]] <- gname[nmat[i,]]
+    }
   }
-
-
 
   return(
     list(
