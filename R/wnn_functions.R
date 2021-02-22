@@ -4,16 +4,24 @@
 #' Run WNN Multi-Modal Integration. Modified wrapper for seurat WNN workflow.
 #'
 #' @param object Seurat object or list of expression matrices. If seurat object, expression matrices are extracted. If list, assumes that expression matrix entries have column-wise genes and row-wise cells.
+#' @param wnn.knn the number of multimodal neighbors to compute. 20 by default
+#' @param umap.knn This determines the number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50. Default: 20
+#' @param umap.min.dist This controls how tightly the embedding is allowed compress points together. Larger values ensure embedded points are moreevenly distributed, while smaller values allow the algorithm to optimise more accurately with regard to local structure. Sensible values are in the range 0.001 to 0.5. Default: 0.1
 #' @param do.scale Logical to scale expression. Default is F.
 #' @param do.center Logical to center expression. Default is F.
+#' @param normalize.margin If specifies, normalize across rows/cells (1) or columns/genes (2)
 #' @param pca.thres Variance explained threshold for PC component inclusion. Default is 0.9.
 #' @param cres Cluster resolution for integrated network. Default is 1.
-#' @param min.pct Minimum expression fraction for inclusion in network integration. Default is 0.25.
-#' @param split.var Grouping variable for expression fraction filter. Default is 'seurat_clusters'
-#' @name runWNN
+#' @param min.pct Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.
+#' @param split.var Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.
+#' @name wnn_Run
 #' @author Nicholas Mikolajewicz
 #' @return list of integrated results
-runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres = 1,  min.pct = 0.25, split.var = "seurat_clusters" ){
+wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, pca.thres = 0.9, cres = 1,  min.pct = 0.25, split.var = "seurat_clusters" ){
+
+  suppressMessages({
+    suppressWarnings({
+
 
   require(Seurat)
   require(pbapply)
@@ -66,10 +74,6 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
     }
     return(n.ob)
   }
-
-
-
-
 
   wnn_AnnoyNN <- function (data, query = data, metric = "euclidean", n.trees = 50,
                            k, search.k = -1, include.distance = TRUE, index = NULL){
@@ -512,6 +516,8 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
                                     verbose = verbose)
     select_nn <- Indices(object = weighted.nn)
     select_nn_dist <- Distances(object = weighted.nn)
+
+
     if (weighted.graph) {
       if (verbose) {
         message("Constructing multimodal KNN graph")
@@ -536,7 +542,7 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
       diag(x = nn.matrix) <- 1
     }
     rownames(x = nn.matrix) <- colnames(x = nn.matrix) <- colnames(x = object)
-    nn.matrix <- nn.matrix + t(x = nn.matrix) - t(x = nn.matrix) *
+    nn.matrix <- nn.matrix + Matrix::t(x = nn.matrix) - Matrix::t(x = nn.matrix) *
       nn.matrix
     nn.matrix <- as.Graph(x = nn.matrix)
     slot(object = nn.matrix, name = "assay.used") <- first.assay
@@ -559,9 +565,13 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
     return(object)
   }
 
+    })
+  }
+  )
 
   if (class(object) == "Seurat"){
 
+    message("Preparing expression matrices...")
     which.rep <- getExpressedGenes(object = object, min.pct = min.pct, group = split.var, group.boolean = "OR")
 
     # split seurat objects #########################################################
@@ -587,6 +597,7 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
   invisible({gc()})
 
   # assemble seurat object #######################################################
+  message("Preparing integration object...")
   for (i in 1:length(exp.list)){
     set.name <- names(exp.list)[i]
     if (i == 1){
@@ -599,11 +610,17 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
 
 
   # normalize, scale and dimensionally reduce data ###############################
+  message("Running PCA...")
   for (i in 1:length(exp.list)){
     set.name <- names(exp.list)[i]
     DefaultAssay(so.gene) <- set.name
     pca.name <- paste0("pc_", set.name)
     VariableFeatures(so.gene) <- rownames(so.gene[[set.name]])
+
+    if (!is.na(normalize.margin)){
+      so.gene <- Seurat::NormalizeData(so.gene, margin = normalize.margin, normalization.method = "CLR", verbose = F)
+    }
+
     so.gene <- ScaleData(so.gene, do.scale =do.scale, do.center = do.center)
 
     nDim <- 50
@@ -613,7 +630,7 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
   }
 
   # get optimal PCA number #######################################################
-
+  message("Identifying optimal number of PCs...")
   # pca.thres <- 0.9
   nDim.optimal <- c()
   for (i in 1:length(exp.list)){
@@ -636,13 +653,12 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
 
 
   # weighted nearest neighbor analysis ###########################################
-  wnn.knn <- 20 # 20 default
 
   n.run <- length(red.lists)
   x.constant <- 1e-4 # 1e-4 default
   k.range <- 200 # 200 default
 
-
+  message("Integrating object...")
   # Run 1 ######
   so.gene <- wnn_FindMultiModalNeighbors(
     object = so.gene, reduction.list = red.lists[1:n.run], k.nn = wnn.knn,  #  round(0.005 * ncol(so.gene))
@@ -651,6 +667,11 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
     cross.contant.list =  as.list(rep(x.constant, length(red.lists[1:n.run]))),
     knn.graph.name = "wknn", snn.graph.name = "wsnn", weighted.nn.name = "weighted.nn"
   )
+
+
+  do.filter = F
+
+  if (do.filter){
 
   # Flag ill-connected genes and filter out
   graph.holder <- so.gene@graphs
@@ -690,30 +711,41 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
   so.gene2 <- UpdateSeuratObject(so.gene2)
 
 
-  so.gene2 <- RunUMAP(so.gene2, graph = "wknn",
-                      reduction.name = "wnn.umap", reduction.key = "wnnUMAP_"
-  )
+  } else {
+    so.gene2 <- so.gene
+    rm(so.gene)
+  }
 
-  so.gene2 <- FindClusters(so.gene2, graph.name = "wsnn", algorithm = 1, resolution = cres, verbose = FALSE)
-  # DimPlot(so.gene2, reduction = 'wnn.umap', label = TRUE, repel = TRUE, label.size = 2.5) + NoLegend()
+  message("Embedding UMAP...")
+
+  so.gene2 <- tryCatch({
+    so.gene2 <- RunUMAP(so.gene2, nn.name = "weighted.nn",
+                        min.dist = umap.min.dist, n.neighbors = umap.knn,
+                        reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+  }, error = function(e){
+    so.gene2 <- RunUMAP(so.gene2, graph = "wknn", min.dist = umap.min.dist,
+                        reduction.name = "wnn.umap", reduction.key = "wnnUMAP_" )
+    return(so.gene2)
+  })
+
+
+  message("Finding clusters...")
+  so.gene2 <- FindClusters(so.gene2, graph.name = "wsnn", algorithm = 1, resolution = cres, verbose = T)
 
   wnnUMAP.list <- getUMAP(so.gene2, umap.key = "wnn.umap", node.type = "point", size = 0.01)
-
-  # wnnUMAP.list[["plt.umap"]]
 
   df.wnn.umap <- wnnUMAP.list$df.umap
   plt.wnn.umap <- wnnUMAP.list$plt.umap
   plt.wnn.umap <- plt.wnn.umap +
     xlab("wnnUMAP 1") + ylab("wnnUMAP 2") +
     labs(title = "Gene Regulatory Network", subtitle = "Weighted nearest-neighbor analysis")
-  # plt.wnn.umap
 
   # get nearest neighbor neighborhood ############################################
 
-  gname <- so.gene@neighbors[["weighted.nn"]]@cell.names
-  wmat <- so.gene@neighbors[["weighted.nn"]]@nn.dist
-  nmat <- so.gene@neighbors[["weighted.nn"]]@nn.idx
-
+  gname <- so.gene2@neighbors[["weighted.nn"]]@cell.names
+  wmat <- so.gene2@neighbors[["weighted.nn"]]@nn.dist
+  nmat <- so.gene2@neighbors[["weighted.nn"]]@nn.idx
+  message("Getting neighborhoods...")
   neighborhood.list2 <- list()
   for (i in 1:length(gname)){
     neighborhood.list2[[gname[i]]] <- gname[nmat[i,]]
@@ -724,6 +756,7 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
   return(
     list(
       so.gene = so.gene2,
+      exp.list = exp.list,
       wnnUMAP.list = wnnUMAP.list,
       df.wnn.umap = df.wnn.umap,
       plt.wnn.umap = plt.wnn.umap,
@@ -732,6 +765,83 @@ runWNN <- function (object, do.scale = F, do.center = F, pca.thres = 0.9, cres =
     )
   )
 
+
+}
+
+
+
+#' Compute network component UMAPs and visualize component weights.
+#'
+#' Compute network component UMAPs and visualize component weights.
+#'
+#' @param object wnn integrated seurat object (wnn_Run output)
+#' @param exp.list List of expression matrices (wnn_Run list input)
+#' @param dim.lists List of PC numbers (wnn_Run output)
+#' @param plt.wnn.umap ggplot handle for integrated network umap (wnn_Run output)
+#' @param umap.min.dist min.dist for umap embedding. See RunUMAP(). Default: 0.1
+#' @param umap.n.neighbors n.neighbor for umap embedding. See RunUMAP(). Default: 20
+#' @name wnn_Components
+#' @author Nicholas Mikolajewicz
+#' @return list of ggplot handle and object
+wnn_Components <- function(object, exp.list, dim.lists, plt.wnn.umap, umap.min.dist = 0.1, umap.n.neighbors = 20){
+
+
+  # get component umaps ##########################################################
+  # umap.min.dist <- 0.100
+  # umap.n.neighbors <- 20
+
+  which.node.type <- "point"
+  # umap.lists <- list()
+  plt.umap.list <- list()
+
+  message("Embedding UMAPs...")
+  for (i in 1:length(exp.list)){
+    set.name <- names(exp.list)[i]
+
+    pca.reduction.name <- paste0("pc_", set.name)
+    # red.lists[[i]] <- pca.name
+
+    # pca.reduction.name <- red.lists[[i]] #; analysis.parameters[[names(nDim.optimal)[i]]][["reduction.name"]]
+    umap.reduction.name1 <- paste0(tolower(set.name), ".umap")
+    umap.reduction.name2 <- paste0(tolower(set.name), "UMAP_")
+
+    object <- RunUMAP(object, reduction = pca.reduction.name, dims = dim.lists[[set.name]], assay = set.name,
+                        reduction.name = umap.reduction.name1, reduction.key = umap.reduction.name2,
+                        min.dist = umap.min.dist, n.neighbors = umap.n.neighbors)
+
+    UMAP.list.current <- getUMAP(object, umap.key = umap.reduction.name1, node.type = which.node.type, size = 0.01)
+
+    plt.umap.current <- UMAP.list.current$plt.umap
+    plt.umap.current <- plt.umap.current +
+      xlab(paste0(tolower(set.name), "UMAP 1")) + ylab(paste0(tolower(set.name), "UMAP 2")) +
+      labs(title = "Regulator network", subtitle = set.name) + theme_miko()
+    # + scale_color_manual(values = div7.col)
+    plt.umap.list[[set.name]] <- plt.umap.current
+  }
+
+  which.weights <- names(object@meta.data)[grepl("weights", names(object@meta.data))]
+
+  message("Constructing plot...")
+  plt.weight.vln <- list()
+  for (i in which.weights){
+    plt.weight.vln[[i]] <-   VlnPlot(object, features = i, group.by = 'seurat_clusters', sort = F, pt.size = 0.1) +
+      NoLegend() + ylim(0, 1)  + theme_miko() +
+      ylab("Weights") + xlab("Clusters") +
+      labs(title = "WNN Weights")
+  }
+
+  plt.top <- cowplot::plot_grid(plotlist = plt.umap.list, ncol = length(plt.umap.list), align = "hv")
+  plt.middle <- cowplot::plot_grid(plotlist = plt.weight.vln, ncol = length(plt.weight.vln), align = "hv")
+  plt.merge <- cowplot::plot_grid(plt.top, plt.middle, ncol = 1)
+  plt.all <- cowplot::plot_grid(plt.merge, plt.wnn.umap, ncol = 2, rel_widths = c(3,2))
+
+
+  return(
+    list(
+      object = object,
+      plot = plt.all
+    )
+  )
 
 }
 
