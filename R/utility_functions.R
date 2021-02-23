@@ -5829,3 +5829,63 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
   return(expressed.genes)
 }
 
+
+
+
+#' Subsample cells in seurat object to be balanced (sample-size-wise) across conditions.
+#'
+#' Subsample cells in seurat object to be balanced (sample-size-wise) across conditions.
+#'
+#' @param object Seurat Object
+#' @param group Character specifying group (i.e., metadata field) to sub-sample within.
+#' @param balance.size Numeric. Target sub sample size for each condition. If target exceeds number of available cells, only available cells are included. If unspecified, smallest-sized group is set as target (Default).
+#' @name balanceSamples
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#'
+#' so.query <- balanceSamples(object = so.query, group = "Barcode")
+#'
+balanceSamples <- function(object, group, balance.size = NA){
+
+  # balances samples based on min sample present - otherwise if balance siz eis specified, matches to specification.
+
+  stopifnot(class(object) == "Seurat")
+
+  # get sample sizes
+  df.meta <- object@meta.data
+  stopifnot(group %in% colnames(df.meta))
+
+  u.group <- unique(as.character(df.meta[,group]))
+
+  if (is.na(balance.size)){
+    df.tally <- data.frame(table(as.character(df.meta[,group])))
+    colnames(df.tally) <- c("group", "n")
+    target.n <- min(df.tally$n)
+  } else {
+    target.n <- balance.size
+  }
+
+  # get sampled indices
+  all.select.cells <- c()
+  for (i in 1:length(u.group)){
+    av.cells <- rownames(df.meta)[df.meta[,group] %in% u.group[i]]
+    n.cells <- length(av.cells)
+    if (n.cells < target.n){
+      cur.target <- n.cells
+    } else {
+      cur.target <- target.n
+    }
+    select.cells <- sample(x = av.cells, size = cur.target, replace = F)
+    all.select.cells <- c(all.select.cells, select.cells)
+    message(paste0(signif(100*length(select.cells)/n.cells, 3), "% cells (",length(select.cells) , "/" ,n.cells, ") sampled from ", u.group[i], " group"))
+
+  }
+
+  # subsample
+  object <- object[, colnames(object) %in% all.select.cells]
+
+  return(object)
+
+}
+
