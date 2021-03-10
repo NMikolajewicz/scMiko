@@ -12,7 +12,7 @@ runHG(
   n.workers = 16,
   my.pathway = NULL,
   my.pathway.representation = "ENTREZ",
-  min.size = 1,
+  min.size = 2,
   max.size = 300,
   e2s = F,
   go.ontology = "BP"
@@ -33,7 +33,7 @@ runHG(
 
 \item{my.pathway.representation}{If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.}
 
-\item{min.size}{min geneset size. Default is 1.}
+\item{min.size}{min geneset size. Default is 2.}
 
 \item{max.size}{max geneset size. Default is 300.}
 

@@ -4820,7 +4820,7 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @param n.workers Number of workers for parallelization. Default is 16.
 #' @param my.pathway Named list of pathways, with each entry containing vector of Entrez IDs. Retrieved internally unless explicitly provided.
 #' @param my.pathway.representation If my.pathway is provided, species which format, options = "SYMBOL" or "ENTREZ". ENTREZ is Default.
-#' @param min.size min geneset size. Default is 1.
+#' @param min.size min geneset size. Default is 2.
 #' @param max.size max geneset size. Default is 300.
 #' @param e2s entrez to symbol mapping (computationally demanding). Default False.
 #' @param go.ontology BP, MF or CC. Ignored if pathway.db != "GO".
@@ -4828,7 +4828,7 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @examples
 #' @author Nicholas Mikolajewicz
 #'
-runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 1, max.size = 300, e2s = F, go.ontology = "BP"){
+runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 2, max.size = 300, e2s = F, go.ontology = "BP"){
 
   suppressMessages({
     suppressWarnings({
@@ -4857,6 +4857,7 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   names(e2g.list) <- g2e.list
 
   gene.universe <- unique(gene.universe)
+  gene.universe.original <- gene.universe
   gene.universe <- unique(g2e.list[gene.universe])
 
   cl <- parallel::makeCluster(n.workers)
@@ -4873,10 +4874,11 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
         current.genes <- unique(gene.list[[i]])
       }
     } else {
+      gene.universe <- gene.universe.original
       current.genes <- unique(gene.list[[i]])
     }
 
-    res.hyper <-  fgsea::fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 2, maxSize = Inf)
+    res.hyper <-  fgsea::fora(pathways = pathways, genes = current.genes, universe = gene.universe, minSize = 1, maxSize = Inf)
 
     if (e2s){
       suppressMessages({
@@ -5889,3 +5891,244 @@ balanceSamples <- function(object, group, balance.size = NA){
 
 }
 
+
+#' Project dimensionally-reduced features onto UMAP
+#'
+#' Project dimensionally-reduced features (e.g., PC, IC) onto UMAP
+#'
+#' @param object Seurat Object
+#' @param reduction Character specifying reduction key. Default: "pca"
+#' @param n.components Numeric. Number of top components to project.
+#' @param show.n.features Numeric. Show top n features alongside projection. Default is 50.
+#' @param pca.min.var.exp Threshold for minimum variance explained by principal component.
+#' @param pca.cum.pca.thresh Threshold for maximum cumulative variance explained by principal component.
+#' @param umap.reduction Character specifying reduction key for umap coordinates.
+#' @param rel.width Relative widths of umap and top feature plots. Default: c(2.5,1)
+#' @param ... additional parameters passed to geom_point(). Generally used to specify point size.
+#' @name projectReduction
+#' @author Nicholas Mikolajewicz
+#' @return list of ggplot handles
+#' @examples
+#'
+#'
+projectReduction <- function(object, reduction = "pca", n.components = NA, show.n.features = 50, pca.min.var.exp = 0.05, pca.cum.pca.thresh = 0.8,   umap.reduction = "umap", rel.width  = c(2.5, 1),  ...){
+
+  # so.query <- RunPCA(so.query, verbose = FALSE)
+
+  # specify number of PCA components to use for downstream analysis
+
+  if (grepl("pca", reduction)){
+    pca.var.threshold <- pca.cum.pca.thresh
+    pca.components <- propVarPCA(object, reduction = reduction)
+    red.name <- "PC"
+  }  else if (grepl("ica", reduction)){
+    red.name <- "IC"
+  } else {
+    stop("invalid reduction")
+  }
+
+  if (is.na(n.components) & grepl("ica", reduction)){
+    n.components <- 30
+  } else if (!is.na(n.components) & grepl("pca", reduction)){
+    # n.components <- 30
+    pca.min.var.exp <- 0
+    # n.pca <- max(pca.components$pc.id[pca.components$pc.cum_sum<pca.var.threshold])+1
+  } else if (is.na(n.components) & grepl("pca", reduction)) {
+    n.pca <- max(pca.components$pc.id[pca.components$pc.cum_sum<pca.var.threshold])+1
+    n.components <- n.pca
+  }
+
+
+
+
+  df.pca.umap <- data.frame(
+    x = object@reductions[[umap.reduction]]@cell.embeddings[, 1],
+    y = object@reductions[[umap.reduction]]@cell.embeddings[, 2]
+  )
+
+  plt.list <- list()
+  for (i in 1:n.components){
+
+    if ( grepl("pca", reduction)){
+      if (pca.components$pc.prop_var[i] < pca.min.var.exp) next
+      var.exp <- paste0("(", signif(pca.components$pc.prop_var[i]* 100, 3), "% variance)")
+    } else {
+      var.exp <- ""
+    }
+    df.pca.umap$pc <- object@reductions[[reduction]]@cell.embeddings[ ,i]
+
+    df.factor <- data.frame(
+      feature = rownames(object@reductions[[reduction]]@feature.loadings),
+      loading = (object@reductions[[reduction]]@feature.loadings[,i])
+    )
+
+    df.factor <- (df.factor %>% dplyr::arrange(-abs(loading)))[1: show.n.features, ]
+      # dplyr::top_n(show.n.features, abs(loading))
+
+    plt.pc.activity <- df.pca.umap %>%
+      ggplot(aes(x = x, y = y, color = pc, size = abs(pc))) +
+      geom_point(...) +
+      scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
+      theme_miko(legend = T) +
+      labs(x = "UMAP 1", y = "UMAP 2", title = paste0(red.name, " ", i, " ", var.exp), color = reduction)
+
+
+    plt.pc.loading<- df.factor %>%
+      ggplot(aes(y = reorder(feature, loading), x = loading, fill = loading)) +
+      scale_fill_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
+      geom_bar(stat = "identity") +
+      labs(x = "Factor Loading", y = "Feature", title = paste0(red.name , " ", i, " Factor Loading"),  fill = "Loading") +
+      theme_miko(legend = T) +
+      geom_vline(xintercept = 0, linetype = "dashed") + theme(axis.text.y = element_text(size = 8))
+
+    plt.pc.merge <- cowplot::plot_grid(plt.pc.activity, plt.pc.loading, ncol = 2,rel_widths = rel.width)
+
+
+    # print(plt.splice.pc.merge)
+
+    plt.list[[paste0(red.name,i)]] <- plt.pc.merge
+
+  }
+
+
+  return(plt.list)
+
+
+}
+
+
+
+#' Get top loaded features for PCA or ICA dimensional reduction.
+#'
+#' Get top loaded features for PCA or ICA dimensional reduction.
+#'
+#' @param feature.loading Feature loading matrix
+#' @param sig.threshold Numeric specifying top nth percentile of features to return. Default: 0.99.
+#' @param top.is.positive Logical specifying whether to enforce top loaded feature being positive. If negative, loading sign is inverted.
+#' @name getReductionGenes
+#' @author Nicholas Mikolajewicz
+#' @return list of ggplot handles
+#' @examples
+#'
+#' feature.loading <- as.matrix(seurat.object@reductions[[reduction]]@feature.loadings)
+#' red.res <- getReductionGenes(feature.loading = feature.loading,  sig.threshold = 0.99)
+#'
+getReductionGenes <- function(feature.loading, sig.threshold = 0.99, top.is.positive = T){
+
+  if (!("matrix" %in% class(feature.loading))) stop("feature.loading input is not a matrix")
+
+  ica.kme <- t(feature.loading)
+  ica.sign <- apply(ica.kme, 1, function(x) sign(x[which.max(abs(x))]))
+
+  if (top.is.positive){
+
+    for (i in 1:nrow(ica.kme)){
+      ica.kme[i,] <- ica.kme[i,] * ica.sign[i]
+    }
+  }
+
+  module.genes.pos <-  apply(ica.kme, 1, function(x) colnames(ica.kme)[((x> quantile( x, sig.threshold)) & (x > 0))])
+  module.genes.neg <-  apply(ica.kme, 1, function(x) colnames(ica.kme)[((x < quantile( x, 1-sig.threshold)) & (x < 0))])
+
+  module.genes.pos.list <- list()
+  module.genes.neg.list <- list()
+  for (i in 1:ncol(module.genes.pos)){
+    module.genes.pos.list[[colnames(module.genes.pos)[i]]] <- module.genes.pos[ ,i]
+  }
+  for (i in 1:ncol(module.genes.neg)){
+    module.genes.neg.list[[colnames(module.genes.neg)[i]]] <- module.genes.neg[ ,i]
+  }
+
+  return(list(
+    feature.lodaing = ica.kme,
+    sign.correction = ica.sign,
+    module.genes.pos = module.genes.pos.list,
+    module.genes.neg = module.genes.neg.list))
+
+}
+
+
+
+#' Get unique features from metadata column in seurat object.
+#'
+#' Get unique features from metadata column in seurat object.
+#'
+#' @param object Seurat object
+#' @param group name of metadata column to get features for.
+#' @param is.numeric Logical to assert numerical class and order features.
+#' @name uniqueFeatures
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#'
+#' so.query <- uniqueFeatures(object = so.query, group = "Barcode, is.numeric = F)
+#'
+uniqueFeatures <- function(object, group, is.numeric = F){
+  # object: Seurat object
+  # group: name of metadata column to get features for.
+
+  df.meta <- object@meta.data
+
+  if (!(group %in% colnames(df.meta))){
+    message(paste0( "'",group, "' is not a valid metadata column. No unique features returned. "))
+    return(NULL)
+  } else {
+    all.bc <- df.meta[ ,group]
+    u.bc <- unique(as.vector(all.bc))
+    if (is.numeric){
+      u.bc <- as.numeric(u.bc)
+      u.bc <- order(u.bc)
+    }
+
+  }
+
+  return(u.bc)
+
+}
+
+
+#' Create pseudo-replicates, stratified by grouping variable.
+#'
+#' Create pseudo-replicates, stratified by grouping variable.
+#'
+#' @param object Seurat object
+#' @param split.by name of metadata column to create pseudo-replicates for.
+#' @param n numerical, number of replicates to create.
+#' @name pseudoReplicates
+#' @author Nicholas Mikolajewicz
+#' @return Returns a Seurat object where latest pseudo replicates results will be stored in object metadata under 'pseudo_replicates'. Note that 'pseudo_replicates' will be overwritten every time pseudoReplicates is run
+#' @examples
+#'
+#' so.query <- uniqueFeatures(object = so.query, group = "Barcode, is.numeric = F)
+#'
+pseudoReplicates <- function(object, split.by, n = 2){
+
+  # n: number of pseudosamples
+  # split.within: name of metadata column to split samples within
+  df.meta <- object@meta.data
+  u.bc <- uniqueFeatures(object = object, group = split.by, is.numeric = F)
+  pseudosample.name <- paste0(split.by, "_", n, "_split")
+  df.meta$pseudo_replicates <- NA
+  df.meta[ ,pseudosample.name] <- NA
+  all.bc <- df.meta[ ,split.by]
+  for (i in 1:length(u.bc)){
+    which.bc <- which(all.bc %in% u.bc[i])
+    n.bc <- sum(all.bc %in% u.bc[i])
+    n.per.group <- round(n.bc/n)
+    for (j in 1:n){
+
+      if (j < n){
+        g1 <- sample(which.bc, n.per.group)
+        df.meta$pseudo_replicates[g1] <- paste0(u.bc[i], "_", j)
+        which.bc <- which.bc[!(which.bc %in% g1)]
+      } else {
+        # g1 <- sample(which.bc, n.per.group)
+        df.meta$pseudo_replicates[which.bc] <- paste0(u.bc[i], "_", j)
+      }
+    }
+
+    df.meta[ ,pseudosample.name] <- df.meta$pseudo_replicates
+  }
+  object@meta.data <- df.meta
+  return(object)
+}

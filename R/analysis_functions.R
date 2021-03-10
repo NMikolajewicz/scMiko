@@ -246,6 +246,8 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
   })
 
   closeAllConnections()
+  rm(object)
+  invisible({gc()})
 
   return(
     list(
