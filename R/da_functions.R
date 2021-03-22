@@ -7,6 +7,7 @@
 #' @param sample.group Character specifying metadata column with replicate groupings. If not specified (Default), pseudoreplicates are generated (see scMiko::pseudoReplicates()).
 #' @param design.groups Character vector specifying model design. Default: c(condition.group, sample.group).
 #' @param balance.samples Logical to balance sample sizes between condition.group. Call to scMiko::balanceSamples()
+#' @param balance.samples Numeric specifying target sample size when balancing samples. 'balance.size' argument for scMiko::balanceSamples.
 #' @param assay Character specifying which Seurat assay to use.
 #' @param reference.group Character specifying which condition.group is reference.
 #' @param fdr.correction Logical to perform FDR correction.
@@ -14,7 +15,7 @@
 #' @author Nicholas Mikolajewicz
 #' @return list of results
 da_Run <- function(object, condition.group, sample.group = NA, design.groups = c(condition.group, sample.group),
-                   balance.samples = T, assay = DefaultAssay(object), reference.group = NULL, fdr.correction = F){
+                   balance.samples = T, balance.size = NA, assay = DefaultAssay(object), reference.group = NULL, fdr.correction = F){
 
   require(igraph)
   require(miloR)
@@ -524,9 +525,12 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     return(dge.list)
   }
 
+
+
+
   # balance sample sizes
   if (balance.samples){
-    object <- balanceSamples(object = object, group = condition.group, balance.size = NA)
+    object <- balanceSamples(object = object, group = condition.group, balance.size = balance.size)
   }
 
   # generate pseudoreplicates
