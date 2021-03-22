@@ -6132,3 +6132,26 @@ pseudoReplicates <- function(object, split.by, n = 2){
   object@meta.data <- df.meta
   return(object)
 }
+
+
+
+
+
+#' Number of unique values
+#'
+#' Number of unique values.
+#'
+#' @param x object
+#' @name ulength
+#' @author Nicholas Mikolajewicz
+#' @return numeric
+#' @examples
+#'
+#' x <- c(1,1,1,1,2,2,2,3,)
+#' n.x <- ulength(x)
+#'
+ulength <- function(x){
+
+ length(unique(x))
+}
+
