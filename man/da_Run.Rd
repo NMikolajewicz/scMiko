@@ -10,6 +10,7 @@ da_Run(
   sample.group = NA,
   design.groups = c(condition.group, sample.group),
   balance.samples = T,
+  balance.size = NA,
   assay = DefaultAssay(object),
   reference.group = NULL,
   fdr.correction = F
@@ -24,7 +25,7 @@ da_Run(
 
 \item{design.groups}{Character vector specifying model design. Default: c(condition.group, sample.group).}
 
-\item{balance.samples}{Logical to balance sample sizes between condition.group. Call to scMiko::balanceSamples()}
+\item{balance.samples}{Numeric specifying target sample size when balancing samples. 'balance.size' argument for scMiko::balanceSamples.}
 
 \item{assay}{Character specifying which Seurat assay to use.}
 
