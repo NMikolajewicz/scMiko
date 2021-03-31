@@ -6155,3 +6155,37 @@ ulength <- function(x){
  length(unique(x))
 }
 
+
+
+#' Compute purity of each cell's neighborhood, as defined by KNN graph.
+#'
+#' Compute purity of each cell's neighborhood, as defined by KNN graph. For each neighborhood, the proportion of cells belonging to the most represented cluster is computed as the purity score. The Purity score is stored in the metadata of the returned seurat object.
+#'
+#' @param object Seurat object
+#' @param graph name of KNN graph to use for analysis. Must be present within provided seurat object. If absent, run FindNeighbors().
+#' @param cluster.field name of cluster metadata field to use for cluster membership data. Default is 'seurat_clusters'.
+#' @name neighborPurity
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object with purity score stored in metadata
+#' @examples
+#'
+#' object <- FindNeighbors(object)
+#' object <- FindClusters(object, resolution = 1)
+#' object <- neighborPurity(object, "RNA_nn")
+#'
+neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
+
+  nn.graph <- (object@graphs[[graph]])
+  message("Getting nearest neighbors...")
+  nn.graph.ind <- apply(nn.graph, 1, function(x) which(x>0))
+  message("Mapping nearest neighbors to cluster memberships...")
+  cluster.vec <- as.vector(object@meta.data[ ,cluster.field])
+  nn.graph.clustID <- apply(nn.graph.ind, 2, function(x) cluster.vec[x])
+  message("Computing neighborhood purity...")
+  nn.graph.clust.tally <- apply(nn.graph.clustID, 2, function(x) table(x))
+  tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
+  object@meta.data$purity <-tally.size
+  message("Complete!")
+  return(object)
+
+}
