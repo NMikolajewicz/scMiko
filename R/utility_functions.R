@@ -6175,17 +6175,32 @@ ulength <- function(x){
 #'
 neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
 
-  nn.graph <- (object@graphs[[graph]])
-  message("Getting nearest neighbors...")
-  nn.graph.ind <- apply(nn.graph, 1, function(x) which(x>0))
-  message("Mapping nearest neighbors to cluster memberships...")
-  cluster.vec <- as.vector(object@meta.data[ ,cluster.field])
-  nn.graph.clustID <- apply(nn.graph.ind, 2, function(x) cluster.vec[x])
-  message("Computing neighborhood purity...")
-  nn.graph.clust.tally <- apply(nn.graph.clustID, 2, function(x) table(x))
-  tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
-  object@meta.data$purity <-tally.size
-  message("Complete!")
+  if (names(object@graphs) %in% graph){
+    nn.graph <- (object@graphs[[graph]])
+    message("Getting nearest neighbors...")
+    nn.graph.ind <- apply(nn.graph, 1, function(x) which(x>0))
+    message("Mapping nearest neighbors to cluster memberships...")
+    cluster.vec <- as.vector(object@meta.data[ ,cluster.field])
+
+    if ("matrix" %in% class(nn.graph.ind) ){
+      nn.graph.clustID <- apply(nn.graph.ind, 2, function(x) cluster.vec[x])
+      message("Computing neighborhood purity...")
+      nn.graph.clust.tally <- apply(nn.graph.clustID, 2, function(x) table(x))
+      tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
+      object@meta.data$purity <-tally.size
+    } else if ("list" %in% class(nn.graph.ind)){
+      nn.graph.clustID <- lapply(nn.graph.ind,  function(x) cluster.vec[x])
+      message("Computing neighborhood purity...")
+      nn.graph.clust.tally <- lapply(nn.graph.clustID, function(x) table(x))
+      tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
+      object@meta.data$purity <-tally.size
+
+    }
+    message("Complete!")
+
+  } else {
+    message(paste0("'", graph, "' not found. Returning unmodified object."))
+  }
   return(object)
 
 }
