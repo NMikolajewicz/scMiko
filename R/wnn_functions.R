@@ -16,10 +16,13 @@
 #' @param min.pct Minimum expression fraction for inclusion in network integration. Default is 0.25. Ignored if object is list.
 #' @param split.var Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.
 #' @param neighborhood.membership Logical whether to return list of local neighborhoods. Default: T.
+#' @param dist.metric Distance metric for annoy. Options include: euclidean, cosine, manhattan, and hamming
+#' @param nDim Number of principal components to consider initially. Default is 50.
+#' @param ... additional parameters passed to Seurat::FindMultiModalNeighbors()
 #' @name wnn_Run
 #' @author Nicholas Mikolajewicz
 #' @return list of integrated results
-wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cluster.resolution = 1,  cluster.algorithm = 3, min.pct = 0.25, split.var = "seurat_clusters", neighborhood.membership = T){
+wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cluster.resolution = 1,  cluster.algorithm = 3, min.pct = 0.25, split.var = "seurat_clusters", neighborhood.membership = T, dist.metric = "euclidean", nDim = 50,  ...){
 
   suppressMessages({
     suppressWarnings({
@@ -185,7 +188,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   wnn_FindModalityWeights <- function (object, reduction.list, dims.list, k.nn = 20, snn.far.nn = TRUE,
                                        s.nn = k.nn, prune.SNN = 0, l2.norm = TRUE, sd.scale = 1,
                                        query = NULL, cross.contant.list = as.list(rep(1e-04, length(reduction.list))), sigma.idx = k.nn,
-                                       smooth = FALSE, verbose = TRUE){
+                                       smooth = FALSE, verbose = TRUE, dist.metric = dist.metric){
     my.lapply <- ifelse(test = verbose, yes = pblapply, no = lapply)
     reduction.set <- unlist(x = reduction.list)
     names(x = reduction.list) <- names(x = dims.list) <- names(x = cross.contant.list) <- reduction.set
@@ -221,7 +224,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     nn.list <- my.lapply(X = reduction.list, FUN = function(r) {
       nn.r <- wnn_NNHelper(data = embeddings.list.norm[[r]], query = query.embeddings.list.norm[[r]],
                            k = max(k.nn, sigma.idx, s.nn), method = "annoy",
-                           metric = "euclidean")
+                           metric = dist.metric)
       return(nn.r)
     })
     sigma.nn.list <- nn.list
@@ -400,7 +403,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   wnn_MultiModalNN <- function (object, query = NULL, modality.weight = NULL, k.nn = NULL,
                                 reduction.list = NULL, dims.list = NULL, knn.range = 200,
                                 kernel.power = 1, nearest.dist = NULL, sigma.list = NULL,
-                                l2.norm = NULL, verbose = TRUE) {
+                                l2.norm = NULL, verbose = TRUE, dist.metric = "euclidean") {
     my.lapply <- ifelse(test = verbose, yes = pblapply, no = lapply)
     k.nn <- k.nn %||% slot(object = modality.weight, name = "params")$k.nn
     reduction.list <- reduction.list %||% slot(object = modality.weight,
@@ -451,7 +454,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     }
     redunction_nn <- my.lapply(X = 1:reduction.num, FUN = function(x) {
       nn_x <- wnn_NNHelper(data = reduction_embedding[[x]], query = query.reduction_embedding[[x]],
-                           k = knn.range, method = "annoy", metric = "euclidean")
+                           k = knn.range, method = "annoy", metric = dist.metric)
       return(nn_x)
     })
     redunction_nn <- lapply(X = redunction_nn, FUN = function(x) Indices(object = x)[,
@@ -463,7 +466,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     nn_dist <- my.lapply(X = 1:reduction.num, FUN = function(r) {
       wnn_NNdist <- wnn_NNdist(nn.idx = nn_idx, embeddings = reduction_embedding[[r]],
                                query.embeddings = query.reduction_embedding[[r]],
-                               nearest.dist = nearest.dist[[r]])
+                               nearest.dist = nearest.dist[[r]], metric = dist.metric)
       return(wnn_NNdist)
     })
     if (length(x = sigma.list[[1]]) == 1) {
@@ -499,7 +502,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
                                            knn.range = 200, knn.graph.name = "wknn", snn.graph.name = "wsnn",
                                            weighted.nn.name = "weighted.nn", modality.weight = NULL,
                                            prune.SNN = 1/15, weighted.graph = FALSE, return.intermediate = FALSE,
-                                           modality.weight.name = NULL, verbose = TRUE){
+                                           modality.weight.name = NULL, verbose = TRUE,  dist.metric = "euclidean"){
     if (is.null(x = modality.weight)) {
       if (verbose) {
         message("Calculating cell-specific modality weights")
@@ -508,7 +511,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
                                                  reduction.list = reduction.list, dims.list = dims.list,
                                                  k.nn = k.nn, sd.scale = sd.scale, l2.norm = l2.norm,
                                                  cross.contant.list = cross.contant.list, smooth = smooth,
-                                                 verbose = verbose)
+                                                 verbose = verbose, dist.metric = dist.metric)
     }
     modality.weight.name <- modality.weight.name %||% paste0(DefaultAssay(object = object[[reduction.list[[1]]]]),
                                                              ".weight")
@@ -516,7 +519,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     first.assay <- slot(object = modality.weight, name = "modality.assay")[1]
     weighted.nn <- wnn_MultiModalNN(object = object, k.nn = k.nn,
                                     modality.weight = modality.weight, knn.range = knn.range,
-                                    verbose = verbose)
+                                    verbose = verbose, dist.metric = dist.metric)
     select_nn <- Indices(object = weighted.nn)
     select_nn_dist <- Distances(object = weighted.nn)
 
@@ -626,9 +629,13 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
     so.gene <- ScaleData(so.gene, do.scale =do.scale, do.center = do.center)
 
-    nDim <- 50
-    if (nrow(so.gene@assays[[set.name]]) < nDim) nDim <- nrow(so.gene@assays[[set.name]])
-    so.gene <- RunPCA(so.gene, reduction.name = pca.name, npcs = nDim, verbose = F)
+    # nDim <- 50
+    if (nrow(so.gene@assays[[set.name]]) < nDim) {
+      nDim.cur <- nrow(so.gene@assays[[set.name]])
+    } else {
+      nDim.cur <- nDim
+    }
+    so.gene <- RunPCA(so.gene, reduction.name = pca.name, npcs = nDim.cur, verbose = F)
 
   }
 
@@ -658,16 +665,20 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   # weighted nearest neighbor analysis ###########################################
 
   n.run <- length(red.lists)
-  x.constant <- 1e-4 # 1e-4 default
-  k.range <- 200 # 200 default
+  # x.constant <- 1e-4 # 1e-4 default
+  # k.range <- 200 # 200 default
+
+  # dist.metric <- "euclidean"
 
   message("Integrating object...")
   # Run 1 ######
   so.gene <- wnn_FindMultiModalNeighbors(
     object = so.gene, reduction.list = red.lists[1:n.run], k.nn = wnn.knn,  #  round(0.005 * ncol(so.gene))
-    dims.list = dim.lists[1:n.run], modality.weight.name = "wnn.weight", knn.range = k.range,
+    dims.list = dim.lists[1:n.run], modality.weight.name = "wnn.weight",
+    dist.metric = dist.metric,
+    # knn.range = k.range,
     smooth = F,
-    cross.contant.list =  as.list(rep(x.constant, length(red.lists[1:n.run]))),
+    # cross.contant.list =  as.list(rep(x.constant, length(red.lists[1:n.run]))),
     knn.graph.name = "wknn", snn.graph.name = "wsnn", weighted.nn.name = "weighted.nn"
   )
 

@@ -81,11 +81,11 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
         theme(panel.spacing.x = unit(0, "mm"),
               axis.text.y = element_text(size = pathway.name.size ))
 
-      if (!is.null(genesets)){
-        plt.enrich <- plt.enrich + labs(caption = paste0(length(current.gene.set), " genes\nDashed line = 5% FDR"),fill = "-log10(FDR)")
-      } else {
-        plt.enrich <- plt.enrich + labs(caption = "Dashed line = 5% FDR",fill = "-log10(FDR)")
-      }
+      # if (!is.null(genesets)){
+      #   plt.enrich <- plt.enrich + labs(caption = paste0(length(current.gene.set), " genes\nDashed line = 5% FDR"),fill = "-log10(FDR)")
+      # } else {
+      #   plt.enrich <- plt.enrich + labs(caption = "Dashed line = 5% FDR",fill = "-log10(FDR)")
+      # }
 
       plt.enrich.list[[current.mod]] <- plt.enrich
 

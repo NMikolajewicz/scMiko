@@ -17,7 +17,10 @@ wnn_Run(
   cluster.algorithm = 3,
   min.pct = 0.25,
   split.var = "seurat_clusters",
-  neighborhood.membership = T
+  neighborhood.membership = T,
+  dist.metric = "euclidean",
+  nDim = 50,
+  ...
 )
 }
 \arguments{
@@ -46,6 +49,12 @@ wnn_Run(
 \item{split.var}{Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.}
 
 \item{neighborhood.membership}{Logical whether to return list of local neighborhoods. Default: T.}
+
+\item{dist.metric}{Distance metric for annoy. Options include: euclidean, cosine, manhattan, and hamming}
+
+\item{nDim}{Number of principal components to consider initially. Default is 50.}
+
+\item{...}{additional parameters passed to Seurat::FindMultiModalNeighbors()}
 }
 \value{
 list of integrated results
