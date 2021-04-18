@@ -19,7 +19,8 @@ wnn_Run(
   split.var = "seurat_clusters",
   neighborhood.membership = T,
   dist.metric = "euclidean",
-  nDim = 50,
+  pca.nDim = 50,
+  pca.weight.by.var = T,
   ...
 )
 }
@@ -52,7 +53,9 @@ wnn_Run(
 
 \item{dist.metric}{Distance metric for annoy. Options include: euclidean, cosine, manhattan, and hamming}
 
-\item{nDim}{Number of principal components to consider initially. Default is 50.}
+\item{pca.nDim}{Number of principal components to consider initially. Default is 50.}
+
+\item{pca.weight.by.var}{Weight the cell embeddings by the variance of each PC. Default is T.}
 
 \item{...}{additional parameters passed to Seurat::FindMultiModalNeighbors()}
 }

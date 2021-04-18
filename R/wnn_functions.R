@@ -17,12 +17,14 @@
 #' @param split.var Grouping variable for expression fraction filter. Default is 'seurat_clusters'. Ignored if object is list.
 #' @param neighborhood.membership Logical whether to return list of local neighborhoods. Default: T.
 #' @param dist.metric Distance metric for annoy. Options include: euclidean, cosine, manhattan, and hamming
-#' @param nDim Number of principal components to consider initially. Default is 50.
+#' @param pca.nDim Number of principal components to consider initially. Default is 50.
+#' @param pca.weight.by.var Weight the cell embeddings by the variance of each PC. Default is T.
 #' @param ... additional parameters passed to Seurat::FindMultiModalNeighbors()
 #' @name wnn_Run
 #' @author Nicholas Mikolajewicz
 #' @return list of integrated results
-wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cluster.resolution = 1,  cluster.algorithm = 3, min.pct = 0.25, split.var = "seurat_clusters", neighborhood.membership = T, dist.metric = "euclidean", nDim = 50,  ...){
+wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, do.scale = F, do.center = F, normalize.margin = NA, pca.thres = 0.9, cluster.resolution = 1,  cluster.algorithm = 3, min.pct = 0.25, split.var = "seurat_clusters",
+                     neighborhood.membership = T, dist.metric = "euclidean", pca.nDim = 50, pca.weight.by.var = T,  ...){
 
   suppressMessages({
     suppressWarnings({
@@ -395,8 +397,20 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
     modality.assay <- sapply(X = reduction.list, FUN = function(r) slot(object[[r]],
                                                                         name = "assay.used"))
-    modality.weights <- new(Class = "ModalityWeights", first.modality.weight = modality.weights.all, # modality1.weight
-                            modality.assay = modality.assay, params = params, score.matrix = score.mat) # , score.matrix = score.mat
+    # modality.weights <- new(Class = "ModalityWeights", first.modality.weight = modality.weights.all, # modality1.weight
+    #                         modality.assay = modality.assay, params = params, score.matrix = score.mat) # , score.matrix = score.mat
+
+    # NEW UPDATE ##############
+    command <- LogSeuratCommand(object = object, return.command = TRUE)
+    command@params <- lapply(X = command@params, FUN = function(l) unlist(x = l))
+    modality.weights <- new(Class = "ModalityWeights", modality.weight.list = modality.weights.all,
+                            modality.assay = modality.assay, params = params, score.matrix = score.mat,
+                            command = command)
+    ####################
+
+    # modality.weights <- new(Class = "ModalityWeights", first.modality.weight = modality.weights.all, # modality1.weight
+    # modality.assay = modality.assay, params = params, score.matrix = score.mat) # , score.matrix = score.mat
+
     return(modality.weights)
   }
 
@@ -415,7 +429,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     sigma.list = sigma.list %||% slot(object = modality.weight,
                                       name = "params")$sigma.list
     l2.norm = l2.norm %||% slot(object = modality.weight, name = "params")$l2.norm
-    modality.weight.value <- modality.weight@first.modality.weight
+    modality.weight.value <- modality.weight@modality.weight.list
     names(x = modality.weight.value) <- unlist(x = reduction.list)
     if (inherits(x = object, what = "Seurat")) {
       reduction_embedding <- lapply(X = 1:length(x = reduction.list),
@@ -565,7 +579,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
 
     for (i in 1:length(reduction.list)){
-      object[[paste0(unlist(reduction.list)[i], "_", "weights")]] <- modality.weight@first.modality.weight[[i]]
+      object[[paste0(unlist(reduction.list)[i], "_", "weights")]] <- modality.weight@modality.weight.list[[i]]
     }
 
     return(object)
@@ -627,15 +641,15 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
       so.gene <- Seurat::NormalizeData(so.gene, margin = normalize.margin, normalization.method = "CLR", verbose = F)
     }
 
-    so.gene <- ScaleData(so.gene, do.scale =do.scale, do.center = do.center)
+    so.gene <- Seurat::ScaleData(so.gene, do.scale =do.scale, do.center = do.center)
 
     # nDim <- 50
-    if (nrow(so.gene@assays[[set.name]]) < nDim) {
+    if (nrow(so.gene@assays[[set.name]]) < pca.nDim) {
       nDim.cur <- nrow(so.gene@assays[[set.name]])
     } else {
-      nDim.cur <- nDim
+      nDim.cur <- pca.nDim
     }
-    so.gene <- RunPCA(so.gene, reduction.name = pca.name, npcs = nDim.cur, verbose = F)
+    so.gene <- Seurat::RunPCA(so.gene, reduction.name = pca.name, npcs = nDim.cur, verbose = F, weight.by.var = pca.weight.by.var)
 
   }
 
