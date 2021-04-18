@@ -2018,6 +2018,7 @@ dist2hclust <- function(d.mat, method = "average", ...){
 optimalDS <- function(tree, d.mat, genes = NULL, cut.height = 0.998, pam.respects.dendro = FALSE,  ...){
 
   require(dynamicTreeCut)
+  require(WGCNA)
 
   mColorh <- NULL
   for (ds in 0:4){
@@ -3848,7 +3849,9 @@ clusterFilter <- function(so, include = NULL, omit = NULL, which.field = "seurat
   }
 
   # subset and return seurat object
-  return(SubsetData(so, cells = WhichCells(so, cells = include.which.all)))
+  # object <- subset(x = so, cells = WhichCells(so, cells = include.which.all))
+  # SubsetData(so, cells = WhichCells(so, cells = include.which.all))
+  return(subset(x = so, cells = WhichCells(so, cells = include.which.all)))
 }
 
 
@@ -5917,23 +5920,23 @@ projectReduction <- function(object, reduction = "pca", n.components = NA, show.
 
   # specify number of PCA components to use for downstream analysis
 
-  if (grepl("pca", reduction)){
+  if (grepl("pc", reduction)){
     pca.var.threshold <- pca.cum.pca.thresh
     pca.components <- propVarPCA(object, reduction = reduction)
     red.name <- "PC"
-  }  else if (grepl("ica", reduction)){
+  }  else if (grepl("ic", reduction)){
     red.name <- "IC"
   } else {
     stop("invalid reduction")
   }
 
-  if (is.na(n.components) & grepl("ica", reduction)){
+  if (is.na(n.components) & grepl("ic", reduction)){
     n.components <- 30
-  } else if (!is.na(n.components) & grepl("pca", reduction)){
+  } else if (!is.na(n.components) & grepl("pc", reduction)){
     # n.components <- 30
     pca.min.var.exp <- 0
     # n.pca <- max(pca.components$pc.id[pca.components$pc.cum_sum<pca.var.threshold])+1
-  } else if (is.na(n.components) & grepl("pca", reduction)) {
+  } else if (is.na(n.components) & grepl("pc", reduction)) {
     n.pca <- max(pca.components$pc.id[pca.components$pc.cum_sum<pca.var.threshold])+1
     n.components <- n.pca
   }
@@ -5949,7 +5952,7 @@ projectReduction <- function(object, reduction = "pca", n.components = NA, show.
   plt.list <- list()
   for (i in 1:n.components){
 
-    if ( grepl("pca", reduction)){
+    if ( grepl("pc", reduction)){
       if (pca.components$pc.prop_var[i] < pca.min.var.exp) next
       var.exp <- paste0("(", signif(pca.components$pc.prop_var[i]* 100, 3), "% variance)")
     } else {

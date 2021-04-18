@@ -215,7 +215,9 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     object <- UpdateSeuratObject(object) # required after Seurat 3.1.2 update
   }, silent = T)
 
+  try({
   object <- updateDimNames(object) # required after Seurat 3.1.2 update
+  }, silent = T)
 
   # species
   if (species != unique(object@meta.data[["Organism"]])) {
@@ -386,44 +388,58 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   all.commands <- names(object@commands)
   n.var.genes <- reprocess.n.var
   data.reprocessed <- F
-  if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
-    warning("Ensuring correct assays are set...\n")
-    if (DefaultAssay(object) != "RNA") {
+
+
+  if (object@version < 4){
+
+    if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
+      warning("Ensuring correct assays are set...\n")
+      if (DefaultAssay(object) != "RNA") {
+        warning("Setting default assay to 'RNA'...\n")
+        DefaultAssay(object) <- "RNA"
+      }
+      warning("Finding variable features...\n")
+      object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
+      if (length(object@assays[["integrated"]]@var.features) > 0){
+        object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
+      }
+
+    } else if (("integrated" %in% all.assays) & (!("NormalizeData.RNA" %in% all.commands) | !("ScaleData.RNA" %in% all.commands))){
       warning("Setting default assay to 'RNA'...\n")
       DefaultAssay(object) <- "RNA"
-    }
-    warning("Finding variable features...\n")
-    object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
-    if (length(object@assays[["integrated"]]@var.features) > 0){
-      object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
-    }
 
-  } else if (("integrated" %in% all.assays) & (!("NormalizeData.RNA" %in% all.commands) | !("ScaleData.RNA" %in% all.commands))){
-    warning("Setting default assay to 'RNA'...\n")
-    DefaultAssay(object) <- "RNA"
-
-    if (!("NormalizeData.RNA" %in% all.commands)){
-      if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
-      warning("Normalizing data...\n")
-      object <-NormalizeData(object, verbose = FALSE)
-      invisible({gc()})
-    }
-    if (!("ScaleData.RNA" %in% all.commands)){
-      if (scale.reprocessed & ("integrated" %in% all.assays)){
-        warning(paste0("Scaling ", length(rownames(object)), " genes in data...\n"))
-        object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+      if (!("NormalizeData.RNA" %in% all.commands)){
+        if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
+        warning("Normalizing data...\n")
+        object <-NormalizeData(object, verbose = FALSE)
         invisible({gc()})
       }
+      if (!("ScaleData.RNA" %in% all.commands)){
+        if (scale.reprocessed & ("integrated" %in% all.assays)){
+          warning(paste0("Scaling ", length(rownames(object)), " genes in data...\n"))
+          object <- ScaleData(object, verbose = FALSE, features = rownames(object))
+          invisible({gc()})
+        }
+      }
+
+      warning("Finding variable features...\n")
+      object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
+      if (length(object@assays[["integrated"]]@var.features) > 0){
+        object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
+      }
+      invisible({gc()})
+
+      data.reprocessed <- T
     }
 
-    warning("Finding variable features...\n")
-    object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
-    if (length(object@assays[["integrated"]]@var.features) > 0){
-      object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
-    }
-    invisible({gc()})
 
-    data.reprocessed <- T
+  } else {
+
+    if (("integrated" %in% all.assays) & ("SCT" %in% all.assays) ){
+      message("Setting default assay to 'SCT'...")
+      DefaultAssay(object) <- "SCT"
+    }
+
   }
 
 
