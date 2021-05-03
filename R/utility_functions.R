@@ -6041,7 +6041,7 @@ projectReduction <- function(object, reduction = "pca", n.components = NA, show.
       ggplot(aes(y = reorder(feature, loading), x = loading, fill = loading)) +
       scale_fill_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
       geom_bar(stat = "identity") +
-      labs(x = "Factor Loading", y = "Feature", title = paste0(red.name , " ", i, " Factor Loading"),  fill = "Loading") +
+      labs(x = "Factor Loading", y = "Feature", title = "Factor Loading",  fill = "Loading") +
       theme_miko(legend = T) +
       geom_vline(xintercept = 0, linetype = "dashed") + theme(axis.text.y = element_text(size = 8))
 
@@ -6267,4 +6267,49 @@ neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
   }
   return(object)
 
+}
+
+
+#' Determine species based on gene representation
+#'
+#' Determine species (Hs, Mm) based on gene (symbol, ensemble) representation
+#'
+#' @param object Seurat object
+#' @name detectSpecies
+#' @author Nicholas Mikolajewicz
+#' @return Species (Hs or Mm)
+#' @examples
+#'
+#' my.species <- detectSpecies(object)
+#'
+detectSpecies <- function(object){
+
+  stopifnot(class(object) %in% "Seurat")
+  my.rep <- (rownames(object))
+
+  ens.sum <-  sum(grepl("ENS", my.rep))
+  ens.mus.sum <-  sum(grepl("ENSMUS", my.rep))
+  hi.cap.sum <-  sum(my.rep == toupper(my.rep))
+  lo.cap.sum <-  sum(my.rep == firstup(my.rep))
+
+  df.rep <-as.data.frame(t(data.frame(
+    ens.sum = ens.sum,
+    ens.mus.sum = ens.mus.sum,
+    hi.cap.sum = hi.cap.sum,
+    lo.cap.sum = lo.cap.sum
+  )))
+
+  which.rep <- rownames(df.rep)[which.max(df.rep[, 1])]
+
+  if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum > ens.mus.sum)) {
+    species <- "Hs"
+  } else if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum <= ens.mus.sum)) {
+    species <- "Mm"
+  } else if (which.rep == "hi.cap.sum") {
+    species <- "Hs"
+  } else if (which.rep == "lo.cap.sum") {
+    species <- "Mm"
+  }
+
+  return(species)
 }
