@@ -4785,12 +4785,13 @@ parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
 #' @param max.size Minimum gene set size. Default is 300.
 #' @param do.plot Logical to return dotplot visualizing top GSEA ranked pathways. Default is T.
 #' @param plot.top.n Numeric specifying how many top pathways to visualize. Default is 10.
+#' @param path.name.wrap.width Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)
 #' @value list of enrichent results
 #' @examples
 #' @author Nicholas Mikolajewicz
 #'
 runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathway = NULL, min.size = 3,
-                    max.size = 300, do.plot = T, plot.top.n = 10){
+                    max.size = 300, do.plot = T, plot.top.n = 10, path.name.wrap.width = 40){
 
 
   suppressMessages({
@@ -4842,7 +4843,7 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
         gse.pathway.top <- bind_rows(gsea.top, gsea.bottom)
 
         # plot
-        gse.pathway.top$path.trun <- stringr::str_wrap(gse.pathway.top$pathway, 40)
+        gse.pathway.top$path.trun <- stringr::str_wrap(gse.pathway.top$pathway, path.name.wrap.width)
         plt.gsea <- gse.pathway.top %>%
           ggplot(aes(x = NES, y = reorder(path.trun, NES), fill = -log1p(pval), size = -log1p(pval))) +
           geom_segment(aes(x = 0, xend = NES, y = reorder(path.trun, NES), yend = reorder(path.trun, NES)), size = 0.05) +

@@ -14,7 +14,8 @@ runGSEA(
   min.size = 3,
   max.size = 300,
   do.plot = T,
-  plot.top.n = 10
+  plot.top.n = 10,
+  path.name.wrap.width = 40
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ runGSEA(
 \item{do.plot}{Logical to return dotplot visualizing top GSEA ranked pathways. Default is T.}
 
 \item{plot.top.n}{Numeric specifying how many top pathways to visualize. Default is 10.}
+
+\item{path.name.wrap.width}{Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)}
 }
 \description{
 Run gene-set enrichment analysis (GSEA)
