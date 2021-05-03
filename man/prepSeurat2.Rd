@@ -7,7 +7,7 @@
 prepSeurat2(
   object,
   e2s,
-  species,
+  species = NULL,
   resolution = NULL,
   subset.data = NULL,
   subsample = 1,

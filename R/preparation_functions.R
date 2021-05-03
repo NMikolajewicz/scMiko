@@ -192,7 +192,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
+prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
                          terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F,
                          keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
 
@@ -205,6 +205,11 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
   if (!is.null(rmv.pattern)) {
     scMiko::clearGlobalEnv(rmv.pattern)
     invisible({gc()})
+  }
+
+  # get species ################################################################
+  if (is.null(species)){
+    species <- detectSpecies(object)
   }
 
   # general object handling ####################################################
