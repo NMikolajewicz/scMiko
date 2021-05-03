@@ -438,6 +438,10 @@ prepSeurat2 <- function (object, e2s, species, resolution= NULL, subset.data = N
     if (("integrated" %in% all.assays) & ("SCT" %in% all.assays) ){
       message("Setting default assay to 'SCT'...")
       DefaultAssay(object) <- "SCT"
+      try({
+        object@assays[["SCT"]]@var.features <- object@assays[["integrated"]]@var.features
+      }, silent = T)
+
     }
 
   }

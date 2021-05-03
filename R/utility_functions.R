@@ -615,9 +615,9 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
 }
 
 
-#' prep Gene List
+#' Prepare gene to ensemble conversion vector
 #'
-#' Ensure is available and represented correctly.
+#' Prepare gene to ensemble conversion vector
 #'
 #' @param so Seurat Object
 #' @param global.enviroment global.enviroment <- objects()
@@ -628,7 +628,7 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
 #'
 #' gNames.list <- prepGeneList(so, objects())
 #'
-prepGeneList <- function (so, global.enviroment) {
+prepGeneList <- function (so, global.enviroment, species = "Hs") {
   if (!exists("gNames.list")){
     if (("gNames.list_master" %in% global.enviroment)) {
       for (i in 1:length(gNames.list_master)) {
@@ -649,6 +649,60 @@ prepGeneList <- function (so, global.enviroment) {
         gNames.list <- as.vector(av.meta2$SYMBOL)
         names(gNames.list) <- as.vector(av.meta2$ENSEMBL)
       }
+    }
+
+    if (!(exists("gNames.list"))){
+
+      my.rep <- (rownames(so))
+
+
+      ens.sum <-  sum(grepl("ENS", my.rep))
+      ens.mus.sum <-  sum(grepl("ENSMUS", my.rep))
+      hi.cap.sum <-  sum(my.rep == toupper(my.rep))
+      lo.cap.sum <-  sum(my.rep == firstup(my.rep))
+
+      df.rep <-as.data.frame(t(data.frame(
+        ens.sum = ens.sum,
+        ens.mus.sum = ens.mus.sum,
+        hi.cap.sum = hi.cap.sum,
+        lo.cap.sum = lo.cap.sum
+      )))
+
+
+      which.rep <- rownames(df.rep)[which.max(df.rep[, 1])]
+
+      if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum > ens.mus.sum)) {
+        db <- org.Hs.eg.db::org.Hs.eg.db
+        rep <- "ensemble"
+      } else if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum <= ens.mus.sum)) {
+        db <- org.Mm.eg.db::org.Mm.eg.db
+        rep <- "ensemble"
+      } else if (which.rep == "hi.cap.sum") {
+        rep <- "symbol"
+        db <- org.Hs.eg.db::org.Hs.eg.db
+      } else if (which.rep == "lo.cap.sum") {
+        db <- org.Mm.eg.db::org.Mm.eg.db
+        rep <- "symbol"
+      }
+
+      if (rep == "symbol"){
+        my.gene <- AnnotationDbi::select(db,
+                                         keys = my.rep,
+                                         columns = c("ENSEMBL", "SYMBOL"),
+                                         keytype = "SYMBOL",
+                                         multiVals = first)
+      } else if (rep == "ensemble"){
+        my.gene <- AnnotationDbi::select(db,
+                                         keys = my.rep,
+                                         columns = c("ENSEMBL", "SYMBOL"),
+                                         keytype = "ENSEMBL",
+                                         multiVals = first)
+      }
+
+      my.gene <- my.gene[complete.cases(my.gene), ]
+      gNames.list <- as.vector(my.gene$SYMBOL)
+      names(gNames.list) <- as.vector(my.gene$ENSEMBL)
+
     }
     stopifnot(exists("gNames.list"))
   }
@@ -4783,13 +4837,15 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 
       if (do.plot){
         # get top GSEA
-        gse.pathway.top <- bind_rows((gse.pathway %>% dplyr::filter(NES > 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n],
-                                     (gse.pathway %>% dplyr::filter(NES < 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n])
+        gsea.top <- (gse.pathway %>% dplyr::filter(NES > 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n, ]
+        gsea.bottom <- (gse.pathway %>% dplyr::filter(NES < 0) %>% dplyr::arrange(log1p(pval)))[1:plot.top.n, ]
+        gse.pathway.top <- bind_rows(gsea.top, gsea.bottom)
 
         # plot
-        gse.pathway.top$path.trun <- stringr::str_trunc(gse.pathway.top$pathway, 40)
+        gse.pathway.top$path.trun <- stringr::str_wrap(gse.pathway.top$pathway, 40)
         plt.gsea <- gse.pathway.top %>%
           ggplot(aes(x = NES, y = reorder(path.trun, NES), fill = -log1p(pval), size = -log1p(pval))) +
+          geom_segment(aes(x = 0, xend = NES, y = reorder(path.trun, NES), yend = reorder(path.trun, NES)), size = 0.05) +
           geom_point(pch=21) +
           theme_miko(legend = T) +
           xlab("NES") + ylab("") +
@@ -5804,7 +5860,9 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
 
   if (is.na(group)){
 
-    pct.rep <- apply(emat, 1, function(x) mean(x>0))
+    # pct.rep <- apply(emat, 1, function(x) mean(x>0))
+    pct.rep <-Matrix::rowMeans(emat>0) # faster implementation
+
     expressed.genes <- names(pct.rep)[pct.rep > min.pct]
   } else if (group %in% colnames(object@meta.data)){
     group.var <- as.character(object@meta.data[ ,group])
@@ -5812,8 +5870,10 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
     expressed.genes.all <- c()
     for (i in 1:length(u.gv)){
       pct.rep <- NULL
-      pct.rep <- apply(emat[ ,group.var %in% u.gv[i]], 1, function(x) mean(x>0))
-      expressed.genes.all <- c(expressed.genes.all, names(pct.rep)[pct.rep > min.pct])
+      if (!is.null(dim(emat[ ,group.var %in% u.gv[i]]))){
+        pct.rep <- Matrix::rowMeans(emat[ ,group.var %in% u.gv[i]]>0)
+        expressed.genes.all <- c(expressed.genes.all, names(pct.rep)[pct.rep > min.pct])
+      }
     }
 
     df.exp.gene <- data.frame(table(expressed.genes.all))
@@ -5821,7 +5881,7 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
     if (group.boolean == "OR"){
       expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all))
     } else if (group.boolean == "AND"){
-      expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all[df.exp.gene$Freq == length(u.gv)]))
+      expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all[df.exp.gene$Freq == max(df.exp.gene$Freq, na.rm = T)]))
     } else {
       message(paste0("'", group.boolean, "' is not an accepted argument for group.boolean. Must be either 'OR' or 'AND'. 'OR' was used as default argument"))
       expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all))

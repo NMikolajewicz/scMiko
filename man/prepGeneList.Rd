@@ -2,9 +2,9 @@
 % Please edit documentation in R/utility_functions.R
 \name{prepGeneList}
 \alias{prepGeneList}
-\title{prep Gene List}
+\title{Prepare gene to ensemble conversion vector}
 \usage{
-prepGeneList(so, global.enviroment)
+prepGeneList(so, global.enviroment, species = "Hs")
 }
 \arguments{
 \item{so}{Seurat Object}
@@ -15,7 +15,7 @@ prepGeneList(so, global.enviroment)
 Named vector of available genes
 }
 \description{
-Ensure is available and represented correctly.
+Prepare gene to ensemble conversion vector
 }
 \examples{
 

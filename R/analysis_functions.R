@@ -375,10 +375,12 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
 
 
+# try({
+#   # closeAllConnections()
+#   # rm(object)
+#   invisible({gc()})
+# }, silent = T)
 
-  closeAllConnections()
-  rm(object)
-  invisible({gc()})
 
   return(
     list(
