@@ -46,7 +46,7 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
       res.df.cur2 <- bind_rows(
         data.frame(
           xx = res.df.cur$overlap / res.df.cur$size,
-          y = res.df.cur$pathway,
+          y = gsub("_", " ", res.df.cur$pathway),
           z = res.df.cur$padj,
           ov = res.df.cur$overlap / res.df.cur$size,
           set = "Geneset Overlap",
@@ -54,7 +54,7 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
         ),
         data.frame(
           xx = log10(res.df.cur$padj),
-          y = res.df.cur$pathway,
+          y = gsub("_", " ", res.df.cur$pathway),
           z = res.df.cur$padj,
           set = "log10(FDR)",
           ov = res.df.cur$overlap / res.df.cur$size,

@@ -13,6 +13,7 @@ runAUC(
   n.iterations = 1000,
   posterior.p = 0.9,
   mixture.analysis = T,
+  size = autoPointSize(ncol(object)),
   ...
 )
 }
@@ -32,6 +33,8 @@ runAUC(
 \item{posterior.p}{Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).}
 
 \item{mixture.analysis}{logical to perform mixture analysis. Default = T (computationally intensive).}
+
+\item{size}{UMAP point size.}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }

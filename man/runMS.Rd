@@ -4,7 +4,14 @@
 \alias{runMS}
 \title{Run Modular Scoring}
 \usage{
-runMS(object, genelist, assay = DefaultAssay(object), score.key = "MS", ...)
+runMS(
+  object,
+  genelist,
+  assay = DefaultAssay(object),
+  score.key = "MS",
+  size = autoPointSize(ncol(object)),
+  ...
+)
 }
 \arguments{
 \item{object}{Seurat object}
@@ -14,6 +21,8 @@ runMS(object, genelist, assay = DefaultAssay(object), score.key = "MS", ...)
 \item{assay}{Assay used for expression matrix.}
 
 \item{score.key}{Expression program prefix. default is "MS".}
+
+\item{size}{UMAP point size.}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }

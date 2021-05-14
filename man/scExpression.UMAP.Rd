@@ -9,7 +9,7 @@ scExpression.UMAP(
   query.gene,
   x.label = "UMAP 1",
   y.label = "",
-  adjust.pt.size = T,
+  adjust.pt.size = autoPointSize(ncol(object)),
   order.cells = T,
   plot.name = NULL,
   ...

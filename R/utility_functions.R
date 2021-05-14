@@ -5743,7 +5743,7 @@ col2rowname <- function(df, col){
 #' df.wnn.umap <- wnnUMAP.list$df.umap
 #' plt.wnn.umap <- wnnUMAP.list$plt.umap
 #'
-getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters", ...){
+getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters", size = autoPointSize(ncol(object)), ...){
 
   # node.type "text" or "point"
 
@@ -5769,9 +5769,9 @@ getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.feature
 
 
   if (node.type == "text"){
-    plt.umap <- plt.umap +  geom_text(size = 2, ...)
+    plt.umap <- plt.umap +  geom_text(size = size, ...)
   } else if (node.type == "point"){
-    plt.umap <- plt.umap +  geom_point(...)
+    plt.umap <- plt.umap +  geom_point(size = size, ...)
   }
 
   return(
@@ -5975,7 +5975,7 @@ balanceSamples <- function(object, group, balance.size = NA){
 #' @examples
 #'
 #'
-projectReduction <- function(object, reduction = "pca", n.components = NA, show.n.features = 50, pca.min.var.exp = 0.05, pca.cum.pca.thresh = 0.8,   umap.reduction = "umap", rel.width  = c(2.5, 1),  ...){
+projectReduction <- function(object, reduction = "pca", n.components = NA, show.n.features = 50, pca.min.var.exp = 0.05, pca.cum.pca.thresh = 0.8,   umap.reduction = "umap", rel.width  = c(2.5, 1), size = autoPointSize(ncol(object)),   ...){
 
   # so.query <- RunPCA(so.query, verbose = FALSE)
 
@@ -6031,7 +6031,7 @@ projectReduction <- function(object, reduction = "pca", n.components = NA, show.
 
     plt.pc.activity <- df.pca.umap %>%
       ggplot(aes(x = x, y = y, color = pc, size = abs(pc))) +
-      geom_point(...) +
+      geom_point(size = size, ...) +
       scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
       theme_miko(legend = T) +
       labs(x = "UMAP 1", y = "UMAP 2", title = paste0(red.name, " ", i, " ", var.exp), color = reduction)
@@ -6239,7 +6239,7 @@ ulength <- function(x){
 #'
 neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
 
-  if (names(object@graphs) %in% graph){
+  if (graph %in% names(object@graphs)){
     nn.graph <- (object@graphs[[graph]])
     message("Getting nearest neighbors...")
     nn.graph.ind <- apply(nn.graph, 1, function(x) which(x>0))

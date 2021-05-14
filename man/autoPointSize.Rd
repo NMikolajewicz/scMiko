@@ -4,12 +4,16 @@
 \alias{autoPointSize}
 \title{Automatically determine optimal point size for geom_point()}
 \usage{
-autoPointSize(n.points, scale.factor = 1583)
+autoPointSize(n.points, scale.factor = 10000, max.size = 2, min.size = 0.01)
 }
 \arguments{
 \item{n.points}{Number of data points}
 
 \item{scale.factor}{scaling constant used to determine optimal point size.}
+
+\item{max.size}{max point size}
+
+\item{min.size}{min point size}
 }
 \value{
 optimal point size

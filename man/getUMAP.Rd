@@ -9,6 +9,7 @@ getUMAP(
   umap.key = "umap",
   node.type = "point",
   meta.features = "seurat_clusters",
+  size = autoPointSize(ncol(object)),
   ...
 )
 }

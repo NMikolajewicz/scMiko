@@ -536,6 +536,8 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
   # generate pseudoreplicates
   if (is.na(sample.group)){
     object <- pseudoReplicates(object = object, split.by = condition.group, n = 2)
+    sample.group <- "pseudo_replicates"
+    design.groups <- c(condition.group, sample.group)
   }
 
   # object <- FindNeighbors(object)

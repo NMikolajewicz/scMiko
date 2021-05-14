@@ -12,6 +12,7 @@ cluster.UMAP(
   plot.name = "UMAP",
   include.labels = T,
   reduction = "umap",
+  pt.size = autoPointSize(ncol(so)),
   ...
 )
 }

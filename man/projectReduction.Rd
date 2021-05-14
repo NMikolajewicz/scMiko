@@ -13,6 +13,7 @@ projectReduction(
   pca.cum.pca.thresh = 0.8,
   umap.reduction = "umap",
   rel.width = c(2.5, 1),
+  size = autoPointSize(ncol(object)),
   ...
 )
 }

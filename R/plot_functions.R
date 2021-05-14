@@ -14,11 +14,11 @@
 #' @name cluster.UMAP
 #' @return ggplot handle
 #'
-cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap", ...){
+cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap",pt.size = autoPointSize(ncol(so)), ...){
 
   if (group.by == "seurat_clusters") so@meta.data[["seurat_clusters"]] <- orderedFactor(so@meta.data[["seurat_clusters"]])
 
-  plt.handle <- DimPlot(so, group.by = group.by, label = include.labels,reduction = reduction, ...)  +
+  plt.handle <- DimPlot(so, group.by = group.by, label = include.labels,reduction = reduction, pt.size = pt.size, ...)  +
     ggtitle(label = plot.name) +
     xlab(x.label) + ylab(y.label)
 
@@ -44,7 +44,7 @@ cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y
 #' @name scExpression.UMAP
 #' @return ggplot handle
 #'
-scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = T, order.cells = T, plot.name = NULL, ...){
+scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = autoPointSize(ncol(object)), order.cells = T, plot.name = NULL, ...){
 
   if (is.null(plot.name)) plot.name <- query.gene
 
@@ -777,7 +777,7 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
 #' @examples
 #'
 #'
-pseudotime.UMAP <- function(x, y, pseudotime, pt.size = 1, pt.alpha = 1, x.lab = "UMAP 1", y.lab = "UMAP 2"){
+pseudotime.UMAP <- function(x, y, pseudotime, pt.size = autoPointSize(length(pseudotime)), pt.alpha = 1, x.lab = "UMAP 1", y.lab = "UMAP 2"){
 
   df <- data.frame(x,y,pseudotime)
 
@@ -829,6 +829,8 @@ discretePalette <- function(gg, fc, n.groups){
 #'
 #' @param n.points Number of data points
 #' @param scale.factor scaling constant used to determine optimal point size.
+#' @param max.size max point size
+#' @param min.size min point size
 #' @name autoPointSize
 #' @return optimal point size
 #' @examples
@@ -837,6 +839,20 @@ discretePalette <- function(gg, fc, n.groups){
 #'       ggplot(aes(x = x, y = y, color = get(module.names[i]))) +
 #'       geom_point(size = autoPointSize(nrow(df.umap)))
 #'
-autoPointSize <- function(n.points, scale.factor = 1583){
-  min(scale.factor/n.points, 1)
+autoPointSize <- function(n.points, scale.factor = 10000, max.size = 2, min.size = 0.01){
+
+  # df.scaling <- data.frame(x = 10^(seq(0, 6, by = 0.1)))
+  # df.scaling$y = scale.factor/df.scaling$x
+  # df.scaling$y[df.scaling$y > max.size] <- max.size
+  # df.scaling$y[df.scaling$y < min.size] <- min.size
+  #
+  # df.scaling %>%
+  #   ggplot(aes(x = log10(x), y = y)) +
+  #   geom_point()
+
+  p.size <- scale.factor/n.points
+  if (p.size > max.size) p.size <- max.size
+  if (p.size < min.size) p.size <- min.size
+  return(p.size)
 }
+

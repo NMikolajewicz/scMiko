@@ -8,7 +8,7 @@ pseudotime.UMAP(
   x,
   y,
   pseudotime,
-  pt.size = 1,
+  pt.size = autoPointSize(length(pseudotime)),
   pt.alpha = 1,
   x.lab = "UMAP 1",
   y.lab = "UMAP 2"

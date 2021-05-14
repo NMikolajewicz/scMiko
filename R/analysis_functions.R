@@ -11,6 +11,7 @@
 #' @param n.iterations Number of fitting iterations per a repeat. Default is 1000.
 #' @param posterior.p Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).
 #' @param mixture.analysis logical to perform mixture analysis. Default = T (computationally intensive).
+#' @param size UMAP point size.
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
@@ -48,7 +49,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, mixture.analysis = T, ...){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, mixture.analysis = T, size = autoPointSize(ncol(object)), ...){
 
   suppressMessages({
     suppressWarnings({
@@ -209,7 +210,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
         plt.umap.list[[which.set]] <- df.auc.umap2 %>%
           ggplot(aes(x = x, y = y, color = auc)) +
-          geom_point(...) +
+          geom_point(size = size, ...) +
           labs(x = "UMAP 1", y = "UMAP 2", caption = "AUCell-based scoring", title = which.set, subtitle = "AUC scores") +
           theme_miko(center.title = T, legend = T) +
           scale_color_gradient2(high = "red")
@@ -218,7 +219,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plt.auc.umap <- df.auc.umap %>%
         dplyr::arrange(-as.numeric(class.auc)) %>%
         ggplot(aes(x = x, y = y, color = class.auc)) +
-        geom_point(...) +
+        geom_point(size = size, ...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "Original AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
@@ -227,7 +228,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plt.nm.umap <- df.auc.umap %>%
         dplyr::arrange(-as.numeric(class.nm)) %>%
         ggplot(aes(x = x, y = y, color = class.nm)) +
-        geom_point(...) +
+        geom_point(size = size, ...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "NM-modified AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
@@ -236,7 +237,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 
       plt.max.umap <- df.auc.umap %>%
         ggplot(aes(x = x, y = y, color = class.max.score)) +
-        geom_point(...) +
+        geom_point(size = size, ...) +
         labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max AUCell score", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
@@ -271,6 +272,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param genelist Named list of genesets.
 #' @param assay Assay used for expression matrix.
 #' @param score.key Expression program prefix. default is "MS".
+#' @param size UMAP point size.
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runMS
 #' @seealso \code{\link{AddModuleScore}}
@@ -302,7 +304,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ...){
 
   message("Scoring gene modules...")
   object <-   Seurat::AddModuleScore(
@@ -356,7 +358,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
 
     plt.umap.list[[which.set]] <- df.auc.umap2 %>%
       ggplot(aes(x = x, y = y, color = auc)) +
-      geom_point(...) +
+      geom_point(size = size, ...) +
       labs(x = "UMAP 1", y = "UMAP 2", color = "Score",  title = which.set, subtitle = "Modular scores") +
       theme_miko(center.title = T, legend = T) +
       scale_color_gradient2(low = muted("blue"),
@@ -368,7 +370,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     dplyr::arrange(-as.numeric(class.ms)) %>%
     ggplot(aes(x = x, y = y, color = class.ms)) +
     # geom_point() +
-    geom_point(...) +
+    geom_point(size = size, ...) +
     labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
     theme_miko(center.title = T, legend = T) +
     scale_color_manual(values = colpal) +
