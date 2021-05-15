@@ -5716,6 +5716,7 @@ col2rowname <- function(df, col){
     warning("The provided col argument is a not a valid column name. Returning unmodified data.frame.")
     return(df)
   } else {
+    df[,col] <- as.character(df[,col])
     rownames(df) <- make.unique(df[,col])
     df <- df %>% dplyr::select(-c(all_of(col)))
     return(df)
