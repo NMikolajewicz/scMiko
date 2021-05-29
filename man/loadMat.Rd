@@ -2,12 +2,12 @@
 % Please edit documentation in R/M1_functions.R
 \name{loadMat}
 \alias{loadMat}
-\title{Load preprocessed count matrix (e.g., Neftel 2019 datasets)}
+\title{Load gene x cell count matrix into seurat object}
 \usage{
 loadMat(import_set, input_organisms, dir)
 }
 \arguments{
-\item{import_set}{Character specifying TPM matrix file name.}
+\item{import_set}{Character specifying matrix file name.}
 
 \item{input_organisms}{All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
 \itemize{
@@ -21,5 +21,5 @@ loadMat(import_set, input_organisms, dir)
 list containing Seurat Object and named gene vector.
 }
 \description{
-Load preprocessed count data (e.g., Neftel 2019 datasets),
+Load gene x cell count matrix into seurat object
 }
