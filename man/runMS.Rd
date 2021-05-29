@@ -10,6 +10,7 @@ runMS(
   assay = DefaultAssay(object),
   score.key = "MS",
   size = autoPointSize(ncol(object)),
+  raster = F,
   ...
 )
 }
@@ -23,6 +24,8 @@ runMS(
 \item{score.key}{Expression program prefix. default is "MS".}
 
 \item{size}{UMAP point size.}
+
+\item{raster}{Convert points to raster format, default is FALSE.}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }
