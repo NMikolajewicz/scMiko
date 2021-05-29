@@ -2,7 +2,7 @@
 % Please edit documentation in R/M1_functions.R
 \name{scNormScale}
 \alias{scNormScale}
-\title{Normalize and Scale Data}
+\title{Normalize and Scale scRNAseq Data}
 \usage{
 scNormScale(
   so,
