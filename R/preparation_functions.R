@@ -176,7 +176,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
 #' @param species Species. One of "Mm" or "Hs".
 #' @param resolution cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
-#' @param subset.data Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.
+#' @param subset.data Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
 #' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
@@ -196,10 +196,14 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
                          terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F,
                          keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
 
-  warning("Checking seurat object...\n")
+  miko_message("Checking seurat object...")
   # assertion
   if (class(object) != "Seurat") stop("input must be Seurat Object")
 
+
+  if ("integrated" %in% names(object@assays)){
+    DefaultAssay(object) <- "integrated"
+  }
 
   # remove object from global environment #####################################
   if (!is.null(rmv.pattern)) {
@@ -228,15 +232,15 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   if (species != unique(object@meta.data[["Organism"]])) {
     if (length(unique(object@meta.data[["Organism"]])) == 1) {
       species <- unique(object@meta.data[["Organism"]])
-      warning("Incorrect input species was provided, and was updated to reflect what was available in seurat object.\n")
+      miko_message("Incorrect input species was provided, and was updated to reflect what was available in seurat object.")
     } else if (length(unique(object@meta.data[["Organism"]])) > 1)  {
-      warning("Input species could not be verfied and is being used as-is.\n")
+      miko_message("Input species could not be verfied and is being used as-is.")
     }
   }
 
   # set resolution #############################################################
   if (!is.null(resolution) && is.numeric(resolution)){
-    warning("Setting cluster resolution...\n")
+    miko_message("Setting cluster resolution...")
     object <-   setResolution(object, resolution = resolution)
     invisible({gc()})
   }
@@ -247,7 +251,7 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   # subsample ##################################################################
   n.presubsample <- ncol(object)
   if (subsample < 1 && is.numeric(subsample)){
-    warning("Downsampling data...\n")
+    miko_message("Downsampling data...")
     object <- tryCatch({
       object = subset(object, cells = sample(Cells(object), round(ncol(object)*subsample)))
     }, error = function(e){
@@ -278,7 +282,7 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
 
   n.presubset <- ncol(object)
   if (!is.null(subset.data) && ("data.frame" %in% class(subset.data)) && !is.na(unique(subset.data[,1]))) {
-    warning("Subsetting data...\n")
+    miko_message("Subsetting data...")
     object <- scMiko::subsetSeurat(object,subset.data)
     invisible({gc()})
 
@@ -368,7 +372,7 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
 
   if (gene.rep == "ensembl"){
-    warning("Converting ENSEMBL to SYMBOL...\n")
+    miko_message("Converting ENSEMBL to SYMBOL...")
     # filter species-specific genes
     if (species == "Mm"){
       object <- subset(object, features = unique(rownames(object)[grepl("MUSG", rownames(object))]))
@@ -398,36 +402,36 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   if (object@version < 4){
 
     if (("integrated" %in% all.assays) & ("NormalizeData.RNA" %in% all.commands) & ("ScaleData.RNA" %in% all.commands)){
-      warning("Ensuring correct assays are set...\n")
+      miko_message("Ensuring correct assays are set...")
       if (DefaultAssay(object) != "RNA") {
-        warning("Setting default assay to 'RNA'...\n")
+        miko_message("Setting default assay to 'RNA'...")
         DefaultAssay(object) <- "RNA"
       }
-      warning("Finding variable features...\n")
+      miko_message("Finding variable features...")
       object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
       if (length(object@assays[["integrated"]]@var.features) > 0){
         object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
       }
 
     } else if (("integrated" %in% all.assays) & (!("NormalizeData.RNA" %in% all.commands) | !("ScaleData.RNA" %in% all.commands))){
-      warning("Setting default assay to 'RNA'...\n")
+      miko_message("Setting default assay to 'RNA'...")
       DefaultAssay(object) <- "RNA"
 
       if (!("NormalizeData.RNA" %in% all.commands)){
         if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
-        warning("Normalizing data...\n")
+        miko_message("Normalizing data...")
         object <-NormalizeData(object, verbose = FALSE)
         invisible({gc()})
       }
       if (!("ScaleData.RNA" %in% all.commands)){
         if (scale.reprocessed & ("integrated" %in% all.assays)){
-          warning(paste0("Scaling ", length(rownames(object)), " genes in data...\n"))
+          miko_message(paste0("Scaling ", length(rownames(object)), " genes in data..."))
           object <- ScaleData(object, verbose = FALSE, features = rownames(object))
           invisible({gc()})
         }
       }
 
-      warning("Finding variable features...\n")
+      miko_message("Finding variable features...")
       object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = n.var.genes)
       if (length(object@assays[["integrated"]]@var.features) > 0){
         object@assays[["RNA"]]@var.features <- unique(c(object@assays[["RNA"]]@var.features, object@assays[["integrated"]]@var.features))
@@ -441,7 +445,7 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   } else {
 
     if (("integrated" %in% all.assays) & ("SCT" %in% all.assays) ){
-      message("Setting default assay to 'SCT'...")
+      miko_message("Setting default assay to 'SCT'...")
       DefaultAssay(object) <- "SCT"
       try({
         object@assays[["SCT"]]@var.features <- object@assays[["integrated"]]@var.features
@@ -459,15 +463,15 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
     }, silent = T)
     if (!exists("nVar")) nVar <- reprocess.n.var
     if ("counts" %in% terms2drop) stop("Cannot normalize and scale data because counts were omitted from Seurat Object. Remove 'counts' from terms2drop and try again.")
-    warning("Normalizing subset data...\n")
+    miko_message("Normalizing subset data...")
     object <-NormalizeData(object, verbose = FALSE)
     invisible({gc()})
     if (scale.reprocessed & ("integrated" %in% all.assays)){
-      warning(paste0("Scaling ", length(rownames(object)), " genes in subset data...\n"))
+      miko_message(paste0("Scaling ", length(rownames(object)), " genes in subset data..."))
       object <- ScaleData(object, verbose = FALSE, features = rownames(object))
       invisible({gc()})
     }
-    warning(paste0("Finding top ", nVar, " variable genes in subset data...\n"))
+    miko_message(paste0("Finding top ", nVar, " variable genes in subset data..."))
     object <- FindVariableFeatures(object, selection.method = "vst", nfeatures = nVar)
     invisible({gc()})
 
@@ -491,7 +495,7 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
     which.omit <- all.assays[!(all.assays %in% which.default)]
 
     if (length(which.omit) > 0){
-      warning(paste0("Omitting the following assays: ", paste(which.omit, collapse = ", "), "...\n"))
+      miko_message(paste0("Omitting the following assays: ", paste(which.omit, collapse = ", "), "..."))
       for (i in 1:length(which.omit)){
         try({object@assays[[which.omit[i]]] <- NULL}, silent = T)
       }
@@ -503,6 +507,16 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   if (!is.null(barcode.recode)){
     object <- scMiko::recodeBarcode(object, barcode.recode, M00_barcode_recode.path)
   }
+
+  # enforce ordered clusters  ##################################################
+  try({
+    if (all(Idents(object) == object@meta.data$seurat_clusters) ){
+      Idents(object) <- orderedFactor(Idents(object))
+      object@meta.data$seurat_clusters <- orderedFactor(object@meta.data$seurat_clusters)
+    } else {
+      object@meta.data$seurat_clusters <- orderedFactor(object@meta.data$seurat_clusters)
+    }
+  }, silent = T)
 
   # Return results #############################################################
 

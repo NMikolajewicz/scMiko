@@ -11,6 +11,8 @@ runMS(
   score.key = "MS",
   size = autoPointSize(ncol(object)),
   raster = F,
+  rescale = F,
+  verbose = T,
   ...
 )
 }
@@ -26,6 +28,10 @@ runMS(
 \item{size}{UMAP point size.}
 
 \item{raster}{Convert points to raster format, default is FALSE.}
+
+\item{rescale}{rescale values from 0 to 1. Default is FALSE.}
+
+\item{verbose}{Print progress. Default is TRUE.}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }

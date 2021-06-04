@@ -273,6 +273,9 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param assay Assay used for expression matrix.
 #' @param score.key Expression program prefix. default is "MS".
 #' @param size UMAP point size.
+#' @param raster Convert points to raster format, default is FALSE.
+#' @param rescale rescale values from 0 to 1. Default is FALSE.
+#' @param verbose Print progress. Default is TRUE.
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runMS
 #' @seealso \code{\link{AddModuleScore}}
@@ -304,9 +307,11 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), raster = F, rescale = F, verbose = T, ...){
 
-  message("Scoring gene modules...")
+  require(scales);
+
+  miko_message("Scoring gene modules...", verbose = verbose)
   object <-   Seurat::AddModuleScore(
     object = object,
     features = genelist,
@@ -314,7 +319,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     nbin = 24,
     ctrl = 100,
     k = FALSE,
-    assay = NULL,
+    assay = assay,
     name = score.key,
     seed = 1,
     search = FALSE
@@ -324,7 +329,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
   df.ms <- object@meta.data[ ,grepl(score.key, colnames(object@meta.data) )]
   colnames(df.ms) <- names(genelist)
 
-  message("Consolidating results...")
+  miko_message("Consolidating results...", verbose = verbose)
   which.max.score <- apply(df.ms, 1, which.max)
   class.prediction.max <- colnames(df.ms)[which.max.score]
 
@@ -348,17 +353,29 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
   names(colpal) <- c(names(genelist), "unresolved")
 
   df.auc.umap$class.ms <- factor(df.auc.umap$class.ms, levels = names(colpal))
-  message("Generating plots...")
+  miko_message("Generating plots...", verbose = verbose)
+
+  if (raster){
+    geom_point_fun <- scattermore::geom_scattermore
+    size <- 1
+  } else {
+    geom_point_fun <- geom_point
+  }
+
   plt.umap.list <- list()
   for (i in 1:ncol(df.ms)){
 
     which.set <- colnames(df.ms)[i]
+
+    if (rescale){
+      df.auc.umap[ ,which.set] <- scMiko::rescaleValues(df.auc.umap[ ,which.set])
+    }
     df.auc.umap2 <- df.auc.umap
     df.auc.umap2$auc <- df.auc.umap2[ ,which.set]
 
     plt.umap.list[[which.set]] <- df.auc.umap2 %>%
       ggplot(aes(x = x, y = y, color = auc)) +
-      geom_point(size = size, ...) +
+      geom_point_fun(size = size, ...) +
       labs(x = "UMAP 1", y = "UMAP 2", color = "Score",  title = which.set, subtitle = "Modular scores") +
       theme_miko(center.title = T, legend = T) +
       scale_color_gradient2(low = muted("blue"),
@@ -370,7 +387,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     dplyr::arrange(-as.numeric(class.ms)) %>%
     ggplot(aes(x = x, y = y, color = class.ms)) +
     # geom_point() +
-    geom_point(size = size, ...) +
+    geom_point_fun(size = size, ...) +
     labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
     theme_miko(center.title = T, legend = T) +
     scale_color_manual(values = colpal) +
@@ -392,5 +409,83 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
       class.prediction = class.prediction.max
     )
   )
+
+}
+
+
+
+
+#' scRNAseq integration wrapper
+#'
+#' scRNAseq normalization and integration wrapper. Given seurat object input, data are split, normalized and integrated.
+#'
+#' @param object Seurat object
+#' @param split.by Meta data feature to split and integrate data.
+#' @param min.cell Minimum number of cells permitted per object prior to integration.
+#' @param k.anchor 	How many neighbors (k) to use when picking anchors.
+#' @param k.weight Number of neighbors to consider when weighting anchors.
+#' @param nfeatures Number of features to return (passed to SelectIntegrationFeatures)
+#' @param split.prenorm Split data before (TRUE) or after (FALSE) normalization.
+#' @param assay Assay to use for normalization.
+#' @param variable.features.n Use this many features as variable features after ranking by residual variance; default is 3000.
+#' @name miko_integrate
+#' @seealso \code{\link{IntegrateData}}
+#' @author Nicholas Mikolajewicz
+#' @return Integrated seurat object
+#' @examples
+#'
+miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000){
+
+
+  # split data
+  DefaultAssay(object) <- assay
+  # if ("integrated" %in% names(object@assays)) object@assays$integrated <- NULL
+
+  if (split.prenorm){
+    object.list <- SplitObject(object, split.by = split.by)
+
+    # renormalize
+    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", verbose = T, assay = assay,
+                                     vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
+
+  } else {
+    object <- SCTransform(object, method = "glmGamPoi", verbose = T, assay = assay,
+                          vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
+    object.list <- SplitObject(object, split.by = split.by)
+  }
+
+  # select features
+  cell.counts <- (unlist(lapply(object.list, ncol)))
+  object.list <- object.list[cell.counts>=min.cell]
+  object.features <- SelectIntegrationFeatures(object.list = object.list, nfeatures = nfeatures)
+  object.list <- PrepSCTIntegration(object.list = object.list, anchor.features = object.features)
+
+  # run PCA
+
+  min.dim <- min(unlist(lapply(object.list, ncol)))
+  if (min.dim > 50){pca.dim <- 50} else {pca.dim <- min.dim-1}
+  object.list <- pbapply::pblapply(X = object.list, FUN = RunPCA, features = object.features, verbose = T, npcs = pca.dim)
+
+  # find integration anchors
+
+  object.anchors <- FindIntegrationAnchors(object.list = object.list, normalization.method = "SCT", k.filter = 70,
+                                           anchor.features = object.features, dims = 1:30, reduction = "rpca", k.anchor = k.anchor)
+
+  # integrate data
+  if (k.weight > min.dim) k.weight <- min.dim
+  object2 <- IntegrateData(anchorset = object.anchors, normalization.method = "SCT", dims = 1:30, k.weight = k.weight)
+
+  # dimensional reduction
+  var.threshold <- 0.9
+  object2 <- RunPCA(object2, verbose = FALSE)
+  df.object.var <- propVarPCA(object2)
+  object.n.dim <- df.object.var$pc.id [min(which(df.object.var$pc.cum_sum > var.threshold))]
+  object2 <- RunUMAP(object2, reduction = "pca", dims = 1:object.n.dim, return.model = TRUE)
+
+  # cluster data
+  object2 <- FindNeighbors(object2, dims = 1:object.n.dim, verbose = T)
+  object2 <- FindClusters(object2, verbose = T)
+
+  return(object2)
 
 }

@@ -4,7 +4,7 @@
 \alias{neighborPurity}
 \title{Compute purity of each cell's neighborhood, as defined by KNN graph.}
 \usage{
-neighborPurity(object, graph, cluster.field = "seurat_clusters")
+neighborPurity(object, graph, cluster.field = "seurat_clusters", verbose = T)
 }
 \arguments{
 \item{object}{Seurat object}
@@ -12,6 +12,8 @@ neighborPurity(object, graph, cluster.field = "seurat_clusters")
 \item{graph}{name of KNN graph to use for analysis. Must be present within provided seurat object. If absent, run FindNeighbors().}
 
 \item{cluster.field}{name of cluster metadata field to use for cluster membership data. Default is 'seurat_clusters'.}
+
+\item{verbose}{Print progress. Default is TRUE.}
 }
 \value{
 Seurat object with purity score stored in metadata

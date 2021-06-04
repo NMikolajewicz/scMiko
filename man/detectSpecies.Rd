@@ -7,13 +7,13 @@
 detectSpecies(object)
 }
 \arguments{
-\item{object}{Seurat object}
+\item{object}{Seurat object, gene expression matrix (rownames are genes), or gene character vector.}
 }
 \value{
 Species (Hs or Mm)
 }
 \description{
-Determine species (Hs, Mm) based on gene (symbol, ensemble) representation
+Determine species (Hs, Mm) based on gene (symbol, ensembl) representation
 }
 \examples{
 

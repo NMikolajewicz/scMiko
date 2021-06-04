@@ -44,7 +44,8 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
   rownames(expression_matrix2) <- names(gNames)
 
   # assign species
-  orgs <- scMiko::m1.inferSpecies(expression_matrix2, input_organisms)
+  orgs <- detectSpecies(expression_matrix2)
+  # orgs <- scMiko::m1.inferSpecies(expression_matrix2, input_organisms)
 
   # create seurat object
   # so = CreateSeuratObject(counts = expression_matrix2,project="cell_ranger",min.cells=3,min.features=200)
@@ -104,7 +105,8 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
   gene_count2 <- gene_count
 
   # Infer organism
-  orgs <- scMiko::inferSpecies(gene_count2, input_organisms)
+  # orgs <- scMiko::inferSpecies(gene_count2, input_organisms)
+  orgs <-  detectSpecies(gene_count2)
   df_cell$orgs <- orgs
 
   # filter out incorrect species genes immediately.
@@ -228,11 +230,11 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
 }
 
 
-#' Load preprocessed count matrix (e.g., Neftel 2019 datasets)
+#' Load gene x cell count matrix into seurat object
 #'
-#' Load preprocessed count data (e.g., Neftel 2019 datasets),
+#' Load gene x cell count matrix into seurat object
 #'
-#' @param import_set Character specifying TPM matrix file name.
+#' @param import_set Character specifying matrix file name.
 #' @param input_organisms All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
 #' \itemize{
 #' \item "Hs" - Human
@@ -244,31 +246,78 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
 #'
 loadMat <- function(import_set, input_organisms, dir) {
 
-
   import_set_path <- paste(dir, import_set, sep ="")
 
   # import expression matrix data
-  expression_matrix<-read.table(import_set_path[1],header=TRUE)
 
-  # if (!exists("expression_matrix")) expression_matrix<-read.table(file = import_set[1], sep = '\t')
+  which.set <- "richards" # options: "kumal", "rambow", richards
+  # is.kumal <- F # specificy fixes made to accomodate Kumal 2018 EMT6 data
+  if (which.set == "kumal"){
+    expression_matrix<-read.csv(import_set_path[1],header=F, stringsAsFactors = F)
+    expression_matrix <- as.data.frame(t(expression_matrix))
+  } else if (which.set == "rambow"){
+    expression_matrix<-read.table(import_set_path[1],sep = ",",header=TRUE)
+    rownames(expression_matrix) <- expression_matrix$X
+    expression_matrix <- expression_matrix %>% dplyr::select(-c("X"))
+    my.ensembl <-rownames(expression_matrix)
+    my.symbol <- ensembl2sym(my.ensembl, input_organisms)
+    my.symbol <- my.symbol[complete.cases(my.symbol), ]
+    expression_matrix <- expression_matrix[rownames(expression_matrix) %in% my.symbol$ENSEMBL, ]
+    e2g.list <- my.symbol$SYMBOL; names(e2g.list) <- my.symbol$ENSEMBL
+    rownames(expression_matrix) <- make.unique(e2g.list[ rownames(expression_matrix)])
+    expression_matrix$GENE <- rownames(expression_matrix)
+  } else if (which.set == "richards"){
+    expression_matrix<-read.csv(import_set_path[1],header=T, stringsAsFactors = F)
+    expression_matrix$GENE <- expression_matrix$X
+    expression_matrix <- col2rowname(expression_matrix, "X")
+
+    # expression_matrix <- as.data.frame((expression_matrix))
+  } else {
+    expression_matrix<-read.table(import_set_path[1],header=TRUE)
+  }
+
+  # sum(is.na(expression_matrix))
+  expression_matrix[is.na(expression_matrix)] <- 0
 
   # get gene and ensembl names
+  if (which.set == "kumal"){
+    features.df<-read.csv(import_set_path[3],header=T, stringsAsFactors = F)
+    cell.df <-read.csv(import_set_path[2],header=T, stringsAsFactors = F)
+    colnames(expression_matrix) <- cell.df$NM_ID
+    expression_matrix$GENE <- as.character(features.df$GeneSymbol)
+  }
+
   feature.names <- as.vector(expression_matrix$GENE)
+
 
   # average duplicate rows (i.e., duplicate genes)
   if (length(unique(feature.names)) < length(feature.names)){
-    expression_matrix.col <- expression_matrix
-    expression_matrix.col <- dplyr::select(expression_matrix.col, -c("GENE"))
-    expression_matrix.col$rowID <- seq(1, nrow(expression_matrix.col))
-    expression_matrix.col.noDup <-  WGCNA::collapseRows(expression_matrix.col, rowGroup = expression_matrix$GENE, rowID = expression_matrix.col$rowID, method = "Average")
-    new.mat <- as.data.frame(expression_matrix.col.noDup[["datETcollapsed"]])
-    new.mat <- dplyr::select(new.mat, -c("rowID"))
-    new.mat$GENE <- rownames(new.mat)
-    expression_matrix2 <- new.mat
+
+    success.attempt <- F
+    try({
+
+      expression_matrix.col <- expression_matrix
+      expression_matrix.col <- dplyr::select(expression_matrix.col, -c("GENE"))
+      expression_matrix.col$rowID <- seq(1, nrow(expression_matrix.col))
+      expression_matrix.col.noDup <-  WGCNA::collapseRows(expression_matrix.col, rowGroup = expression_matrix$GENE, rowID = expression_matrix.col$rowID, method = "Average")
+      new.mat <- as.data.frame(expression_matrix.col.noDup[["datETcollapsed"]])
+      new.mat <- dplyr::select(new.mat, -c("rowID"))
+      new.mat$GENE <- rownames(new.mat)
+      expression_matrix2 <- new.mat
+      rm("new.mat")
+      success.attempt <- T
+
+    }, silent = T)
+
+    if (!success.attempt){
+      which.duplicate <- duplicated(feature.names)
+      expression_matrix2 <- expression_matrix[!(which.duplicate), ]
+    }
   } else {
     # assign to secondary matrix
     expression_matrix2 <- expression_matrix
   }
+
 
   feature.names <- as.vector(expression_matrix2$GENE)
 
@@ -288,7 +337,6 @@ loadMat <- function(import_set, input_organisms, dir) {
 
   # create seurat object
   so = CreateSeuratObject(counts = expression_matrix2,project=import_set[1],min.cells=0,min.features=0)
-  # so = CreateSeuratObject(counts = expression_matrix2,project=import_set[1],min.cells=3,min.features=200)
 
   # add gene symbols as meta data in seurat object
   mat_ens <- rownames(so@assays[["RNA"]])
@@ -298,6 +346,20 @@ loadMat <- function(import_set, input_organisms, dir) {
   # Add gene symbols as meta data that we can use later
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=gNames_filtered,col.name="ENSEMBL");
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=as.vector((gNames)[match.id]),col.name="SYMBOL");
+
+  # Additional metadata
+  if (which.set == "kumal"){
+    kumal.id <- match( colnames(so), cell.df$NM_ID)
+    so@meta.data[["Sample_ID"]] <- cell.df$Sample_ID[kumal.id]
+    so@meta.data[["Model"]] <- cell.df$Model[kumal.id]
+    so@meta.data[["Protocol"]] <- cell.df$Protocol[kumal.id]
+    so@meta.data[["Experiment"]] <- cell.df$Experiment[kumal.id]
+
+
+    which.emt6 <- grepl("B16F10",  so@meta.data[["Model"]])
+
+    so <- so[ ,which.emt6]
+  }
 
   # Add in inferred organism
   so$Organism <- orgs;
@@ -442,7 +504,7 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 }
 
 
-#' Normalize and Scale Data
+#' Normalize and Scale scRNAseq Data
 #'
 #' Applies one of two normalization/scaling approaches supported by Seurat.
 #'
@@ -507,6 +569,7 @@ scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,
                         assay = assay,
+                        method = "glmGamPoi",
                         conserve.memory = conserve.memory)
     } else {
       so <- SCTransform(object = so,
@@ -516,6 +579,7 @@ scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,
                         assay = assay,
+                        method = "glmGamPoi",
                         conserve.memory = conserve.memory)
     }
 

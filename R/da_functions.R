@@ -53,11 +53,11 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     # sink(file = "/dev/null")
     # gc()
     # sink(file = NULL)
-    message(paste0("Constructing kNN graph with k:", k))
+    miko_message(paste0("Constructing kNN graph with k:", k))
     zee.graph <- milo_neighborsToKNNGraph(nn.out$index, directed = FALSE)
     graph(x) <- zee.graph
     if (isTRUE(get.distance)) {
-      message(paste0("Retrieving distances from ", k, " nearest neighbours"))
+      miko_message(paste0("Retrieving distances from ", k, " nearest neighbours"))
       old.dist <- matrix(0L, ncol = ncol(x), nrow = ncol(x))
       n.idx <- ncol(x)
       for (i in seq_along(1:n.idx)) {
@@ -236,25 +236,25 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     if (any(is.na(da.res$SpatialFDR))) {
       warning("NA values found in SpatialFDR vector")
     }
-    message(paste0("Found ", n.da, " DA neighbourhoods at FDR ",
+    miko_message(paste0("Found ", n.da, " DA neighbourhoods at FDR ",
                    da.fdr * 100, "%"))
 
     if ((ncol(nhoodAdjacency(x)) == ncol(nhoods(x))) & isFALSE(compute.new)) {
-      message("nhoodAdjacency found - using for nhood grouping")
+      miko_message("nhoodAdjacency found - using for nhood grouping")
       nhs.da.gr <- miko_graph_nhoods_from_adjacency(nhoods(x),
                                                     nhood.adj = nhoodAdjacency(x), da.res = da.res,
                                                     is.da = da.res$SpatialFDR < da.fdr, merge.discord = merge.discord,
                                                     lfc.threshold = lfc.threshold, overlap = overlap,
                                                     subset.nhoods = subset.nhoods)
     } else {
-      message("Computing nhood adjacency")
+      miko_message("Computing nhood adjacency")
       nhs.da.gr <- miko_group_nhoods_by_overlap(nhoods(x), da.res = da.res,
                                                 is.da = da.res$SpatialFDR < da.fdr, merge.discord = merge.discord,
                                                 lfc.threshold = lfc.threshold, overlap = overlap,
                                                 cells = seq_len(ncol(x)), subset.nhoods = subset.nhoods)
     }
     nhood.gr <- unique(nhs.da.gr)
-    message(paste0("Nhoods aggregated into ", length(nhood.gr),
+    miko_message(paste0("Nhoods aggregated into ", length(nhood.gr),
                    " groups"))
     fake.meta <- data.frame(CellID = colnames(x), Nhood.Group = rep(NA,
                                                                     ncol(x)))
@@ -424,10 +424,10 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     if (any(is.na(da.res$SpatialFDR))) {
       warning("NA values found in SpatialFDR vector")
     }
-    message(paste0("Found ", n.da, " DA neighbourhoods at FDR ",
+    miko_message(paste0("Found ", n.da, " DA neighbourhoods at FDR ",
                    da.fdr * 100, "%"))
     if (!is.null(nhoodAdjacency(x)) & isFALSE(compute.new)) {
-      message("nhoodAdjacency found - using for nhood grouping")
+      miko_message("nhoodAdjacency found - using for nhood grouping")
       nhs.da.gr <- miko_group_nhoods_from_adjacency(nhoods(x),
                                                     nhood.adj = nhoodAdjacency(x), da.res = da.res,
                                                     is.da = na.func(da.res$SpatialFDR < da.fdr), overlap = overlap)
@@ -457,7 +457,7 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     else if (is.matrix(design)) {
       model <- design
       if (nrow(model) != nrow(copy.meta)) {
-        message("Subsetting input design matrix to DA neighbourhood cells")
+        miko_message("Subsetting input design matrix to DA neighbourhood cells")
         if (length(subset.dims) == nrow(model)) {
           model <- model[subset.dims, ]
         }
@@ -480,7 +480,7 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     # sink(file = "/dev/null")
     # gc()
     # sink(file = NULL)
-    message(paste0("Nhoods aggregated into ", length(nhood.gr),
+    miko_message(paste0("Nhoods aggregated into ", length(nhood.gr),
                    " groups"))
     dge.list <- list()
     for (i in seq_along(nhood.gr)) {

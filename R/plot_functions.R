@@ -856,3 +856,109 @@ autoPointSize <- function(n.points, scale.factor = 10000, max.size = 2, min.size
   return(p.size)
 }
 
+
+#' Visualize feature activity/expression gradient overlaid on UMAP
+#'
+#' Visualize feature activity/expression gradient overlaid on UMAP
+#'
+#' @param object Seurat object.
+#' @param feature scaling constant used to determine optimal point size.
+#' @param umap.key name of UMAP reduction. Default is "umap". Requires that UMAP embedding was calculated using Seurat::RunUMAP() prior to running scMiko::featureGradient().
+#' @param min.quantile.cutoff upper quantile threshold at which values are winsorized. Default is 0.975
+#' @param max.quantile.cutoff lower quantile threshold at which values are winsorized. Default is 0.025
+#' @param arrow.color gradient arrow color. Default is "black".
+#' @param arrow.size gradient arrow size Default is 1.
+#' @name featureGradient
+#' @return ggplot handle
+#' @examples
+#'
+#'  gg.plot <-  featureGradient(object = so, feature = "S.Score")
+#'
+featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cutoff = 0.025, max.quantile.cutoff = 0.975, arrow.color = "black", arrow.size = 1){
+
+  df.umap <- getUMAP(object, umap.key = umap.key)[["df.umap"]]
+
+  if (sum(rownames(object) %in% feature) == 1){
+    df.umap$z <- object@assays[[DefaultAssay(object)]]@data[rownames(object) %in% feature, ]
+  } else if (sum(colnames(object@meta.data) %in% feature) == 1){
+    df.umap$z <-object@meta.data[ ,feature]
+  } else {
+    stop(feature, " was not found")
+  }
+
+  df.umap <- df.umap[complete.cases(df.umap), ]
+
+  lm.fit <- lm(z ~ x + y, data = df.umap)
+  df.umap$z.fit <- lm.fit[["fitted.values"]]
+  min.x <- min(df.umap$x)
+  max.x <- max(df.umap$x)
+  min.y <- min(df.umap$y)
+  max.y <- max(df.umap$y)
+  x.val <- c(min.x, max.x)
+  xy.slope <- ((lm.fit[["coefficients"]][["x"]]*1))/(-lm.fit[["coefficients"]][["y"]]) / 1
+  x.val <- seq(min.x, max.x, abs((max.x-min.x)/1000))
+  df.grad <- data.frame(x = x.val, y = -(1/xy.slope) *x.val)
+  df.grad <- df.grad[ (df.grad$y < max.y) & (df.grad$y > min.y ),]
+  df.grad <- df.grad[ c(which.min(df.grad$x), which.max(df.grad$x)), ]
+
+  df.grad$z <- (lm.fit[["coefficients"]][["x"]]*df.grad$x) +  (lm.fit[["coefficients"]][["y"]]*df.grad$y) + (lm.fit[["coefficients"]][["(Intercept)"]])
+  df.grad <- df.grad %>% dplyr::arrange(z)
+  q99 <- quantile(df.umap$z, max.quantile.cutoff)
+  q01 <- quantile(df.umap$z, min.quantile.cutoff)
+  df.umap$z[df.umap$z>q99] <- q99
+  df.umap$z[df.umap$z<q01] <- q01
+
+  lm.sum <- summary(lm.fit)
+  r2.val <- paste0("R2 = ", signif(lm.sum[["r.squared"]], 3))
+
+  df.umap %>% ggplot(aes(x =x , y = y, color=z)) +
+    geom_point(size = autoPointSize(nrow(df.umap))) +
+    geom_segment(x = df.grad$x[1],y = df.grad$y[1], xend = df.grad$x[2],
+                 yend = df.grad$y[2], inherit.aes = F, arrow = arrow(), color = arrow.color, size = arrow.size) +
+    scale_color_distiller(palette = "RdYlBu") +
+    theme_miko(legend = T) +
+    labs(x = "UMAP 1", y = "UMAP 2", title = paste0(feature, " gradient"), subtitle = r2.val, color = "")
+
+
+}
+
+#' Visualize gene expression on UMAP
+#'
+#' Visualize gene expression on UMAP. Wrapper for Nebulosa::plot_density() and scMiko::scExpression.UMAP() functions.
+#'
+#' @param object Seurat object.
+#' @param feature feature name.
+#' @param plot.subtitle Plot title.
+#' @param do.neb Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is T.
+#' @param title.size Size of plot title. Default is 10.
+#' @name exprUMAP
+#' @return ggplot handle
+#' @examples
+#'
+#'  gg.plot <-  exprUMAP(object = so, feature = "Prrx1")
+#'
+exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10){
+
+  if (!do.neb){
+    scExpression.UMAP(object,feature, adjust.pt.size =0.5) +
+      theme_void() + theme(legend.position = "none") +
+      scale_color_gradient(low = "grey95", high = "tomato") +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.subtitle = element_text(hjust = 0.5)) +
+      labs(subtitle = plot.subtitle) +
+      theme(plot.subtitle=element_text(size=5, color="black")) +
+      theme(plot.title =element_text(size=title.size, face="italic", color="black"))
+  } else {
+    Nebulosa::plot_density(object,feature, size = 0.5) +
+      theme_void() + theme(legend.position = "none") +
+      scale_color_gradient(low = "grey95", high = "tomato") +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.subtitle = element_text(hjust = 0.5)) +
+      labs(subtitle = plot.subtitle) +
+      theme(plot.subtitle=element_text(size=5, color="black")) +
+      theme(plot.title =element_text(size=title.size, face="italic", color="black"))
+  }
+
+
+}
+

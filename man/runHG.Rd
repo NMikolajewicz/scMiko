@@ -15,7 +15,8 @@ runHG(
   min.size = 2,
   max.size = 300,
   e2s = F,
-  go.ontology = "BP"
+  go.ontology = "BP",
+  verbose = T
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ runHG(
 \item{e2s}{entrez to symbol mapping (computationally demanding). Default False.}
 
 \item{go.ontology}{BP, MF or CC. Ignored if pathway.db != "GO".}
+
+\item{verbose}{Print progress. Default is TRUE.}
 }
 \description{
 Run hypergeometric gene enrichment analysis.

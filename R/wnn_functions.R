@@ -221,7 +221,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
       query.embeddings.list.norm <- query.embeddings.list
     }
     if (verbose) {
-      message("Finding ", k.nn, " nearest wnn_Neighbors for each modality.")
+      miko_message("Finding ", k.nn, " nearest wnn_Neighbors for each modality.")
     }
     nn.list <- my.lapply(X = reduction.list, FUN = function(r) {
       nn.r <- wnn_NNHelper(data = embeddings.list.norm[[r]], query = query.embeddings.list.norm[[r]],
@@ -298,7 +298,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     })
     if (snn.far.nn) {
       if (verbose) {
-        message("Calculating kernel bandwidths")
+        miko_message("Calculating kernel bandwidths")
       }
       snn.graph.list <- lapply(X = sigma.nn.list, FUN = function(nn) {
         snn.matrix <- wnn_ComputeSNN(nn_ranked = Indices(object = nn)[,
@@ -318,7 +318,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
                                    sd.scale)
     } else {
       if (verbose) {
-        message("Calculating sigma by ", sigma.idx, "th wnn_Neighbor")
+        miko_message("Calculating sigma by ", sigma.idx, "th wnn_Neighbor")
       }
       modality_sd.list <- lapply(X = reduction.list, FUN = function(r) {
         rdist <- Distances(object = sigma.nn.list[[r]])[,
@@ -464,7 +464,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     query.cell.num <- nrow(x = query.reduction_embedding[[1]])
     reduction.num <- length(x = query.reduction_embedding)
     if (verbose) {
-      message("Finding multimodal wnn_Neighbors")
+      miko_message("Finding multimodal wnn_Neighbors")
     }
     redunction_nn <- my.lapply(X = 1:reduction.num, FUN = function(x) {
       nn_x <- wnn_NNHelper(data = reduction_embedding[[x]], query = query.reduction_embedding[[x]],
@@ -519,7 +519,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
                                            modality.weight.name = NULL, verbose = TRUE,  dist.metric = "euclidean"){
     if (is.null(x = modality.weight)) {
       if (verbose) {
-        message("Calculating cell-specific modality weights")
+        miko_message("Calculating cell-specific modality weights")
       }
       modality.weight <- wnn_FindModalityWeights(object = object,
                                                  reduction.list = reduction.list, dims.list = dims.list,
@@ -540,7 +540,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
     if (weighted.graph) {
       if (verbose) {
-        message("Constructing multimodal KNN graph")
+        miko_message("Constructing multimodal KNN graph")
       }
       select_nn_dist <- t(x = apply(X = select_nn_dist, MARGIN = 1,
                                     FUN = function(x) log2(k.nn) * x/sum(x)))
@@ -553,7 +553,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
       }
     } else {
       if (verbose) {
-        message("Constructing multimodal KNN graph")
+        miko_message("Constructing multimodal KNN graph")
       }
       j <- as.numeric(x = t(x = select_nn))
       i <- ((1:length(x = j)) - 1)%/%k.nn + 1
@@ -568,7 +568,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     slot(object = nn.matrix, name = "assay.used") <- first.assay
     object[[knn.graph.name]] <- nn.matrix
     if (verbose) {
-      message("Constructing multimodal SNN graph")
+      miko_message("Constructing multimodal SNN graph")
     }
     snn.matrix <- wnn_ComputeSNN(nn_ranked = select_nn, prune = prune.SNN)
     rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
@@ -591,7 +591,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
   if (class(object) == "Seurat"){
 
-    message("Preparing expression matrices...")
+    miko_message("Preparing expression matrices...")
     which.rep <- getExpressedGenes(object = object, min.pct = min.pct, group = split.var, group.boolean = "OR")
 
     # split seurat objects #########################################################
@@ -617,7 +617,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   invisible({gc()})
 
   # assemble seurat object #######################################################
-  message("Preparing integration object...")
+  miko_message("Preparing integration object...")
   for (i in 1:length(exp.list)){
     set.name <- names(exp.list)[i]
     if (i == 1){
@@ -630,7 +630,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
 
   # normalize, scale and dimensionally reduce data ###############################
-  message("Running PCA...")
+  miko_message("Running PCA...")
   for (i in 1:length(exp.list)){
     set.name <- names(exp.list)[i]
     DefaultAssay(so.gene) <- set.name
@@ -654,7 +654,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   }
 
   # get optimal PCA number #######################################################
-  message("Identifying optimal number of PCs...")
+  miko_message("Identifying optimal number of PCs...")
   # pca.thres <- 0.9
   nDim.optimal <- c()
   for (i in 1:length(exp.list)){
@@ -684,7 +684,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
   # dist.metric <- "euclidean"
 
-  message("Integrating object...")
+  miko_message("Integrating object...")
   # Run 1 ######
   so.gene <- wnn_FindMultiModalNeighbors(
     object = so.gene, reduction.list = red.lists[1:n.run], k.nn = wnn.knn,  #  round(0.005 * ncol(so.gene))
@@ -744,7 +744,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
     rm(so.gene)
   }
 
-  message("Embedding UMAP...")
+  miko_message("Embedding UMAP...")
 
   so.gene2 <- tryCatch({
     so.gene2 <- RunUMAP(so.gene2, nn.name = "weighted.nn",
@@ -757,7 +757,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
   })
 
 
-  message("Finding clusters...")
+  miko_message("Finding clusters...")
   so.gene2 <- FindClusters(so.gene2, graph.name = "wsnn", algorithm = cluster.algorithm, resolution = cluster.resolution, verbose = T)
 
   wnnUMAP.list <- getUMAP(so.gene2, umap.key = "wnn.umap", node.type = "point", size = 0.01)
@@ -776,7 +776,7 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
   neighborhood.list2 <- list()
   if (neighborhood.membership){
-    message("Getting neighborhoods...")
+    miko_message("Getting neighborhoods...")
     for (i in 1:length(gname)){
       neighborhood.list2[[gname[i]]] <- gname[nmat[i,]]
     }
@@ -823,7 +823,7 @@ wnn_Components <- function(object, exp.list, dim.lists, plt.wnn.umap, umap.min.d
   # umap.lists <- list()
   plt.umap.list <- list()
 
-  message("Embedding UMAPs...")
+  miko_message("Embedding UMAPs...")
   for (i in 1:length(exp.list)){
     set.name <- names(exp.list)[i]
 
@@ -850,7 +850,7 @@ wnn_Components <- function(object, exp.list, dim.lists, plt.wnn.umap, umap.min.d
 
   which.weights <- names(object@meta.data)[grepl("weights", names(object@meta.data))]
 
-  message("Constructing plot...")
+  miko_message("Constructing plot...")
   plt.weight.vln <- list()
   for (i in which.weights){
     plt.weight.vln[[i]] <-   VlnPlot(object, features = i, group.by = 'seurat_clusters', sort = F, pt.size = 0.1) +

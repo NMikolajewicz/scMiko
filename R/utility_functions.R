@@ -1542,7 +1542,7 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
   # compute measure of centrality
   avg.mat <- matrix(nrow = length(gene.list), ncol = length(u.clusters))
-  if (verbose) message(paste0("Computing ", which.center, "..."))
+  if (verbose) miko_message(paste0("Computing ", which.center, "...") , verbose = verbose)
   for (i in 1:length(u.clusters)){
 
     current.mat <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
@@ -3345,7 +3345,7 @@ getClusterCenters <- function(df, which.center = "mean"){
   df.centers <- df %>%
     dplyr::group_by(cluster) %>%
     dplyr::summarize(x.center = get.center(x, which.center),
-              y.center = get.center(y, which.center))
+                     y.center = get.center(y, which.center))
 
   return(df.centers)
 }
@@ -3875,7 +3875,10 @@ updateDimNames <- function(so){
 clusterFilter <- function(so, include = NULL, omit = NULL, which.field = "seurat_clusters"){
 
   # ensure seurat dim names are up to date to ensure proper subsetting
-  so <- updateDimNames(so)
+  try({
+    so <- updateDimNames(so)
+  }, silent = T)
+
 
   # get seurat meta data
   df.meta <- so@meta.data
@@ -3903,9 +3906,10 @@ clusterFilter <- function(so, include = NULL, omit = NULL, which.field = "seurat
   }
 
   # subset and return seurat object
+  # subset(x = so, cells = WhichCells(so, cells = include.which.all))
   # object <- subset(x = so, cells = WhichCells(so, cells = include.which.all))
   # SubsetData(so, cells = WhichCells(so, cells = include.which.all))
-  return(subset(x = so, cells = WhichCells(so, cells = include.which.all)))
+  return(so[ ,colnames(so) %in% include.which.all])
 }
 
 
@@ -4884,11 +4888,12 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @param max.size max geneset size. Default is 300.
 #' @param e2s entrez to symbol mapping (computationally demanding). Default False.
 #' @param go.ontology BP, MF or CC. Ignored if pathway.db != "GO".
+#' @param verbose Print progress. Default is TRUE.
 #' @value enrichment results
 #' @examples
 #' @author Nicholas Mikolajewicz
 #'
-runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 2, max.size = 300, e2s = F, go.ontology = "BP"){
+runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 2, max.size = 300, e2s = F, go.ontology = "BP", verbose = T){
 
   suppressMessages({
     suppressWarnings({
@@ -4901,7 +4906,7 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
 
     })})
 
-  message("Preparing pathway genesets...")
+  miko_message("Preparing pathway genesets...", verbose = verbose)
   if (is.null(my.pathway)){
     pathways <- getAnnotationPathways(query.genes = my.entrez$ENTREZID, db = pathway.db, ontology = go.ontology, species = species)
   } else {
@@ -4920,10 +4925,13 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   gene.universe.original <- gene.universe
   gene.universe <- unique(g2e.list[gene.universe])
 
+  n.av.core <- parallel::detectCores()
+  if (n.workers > n.av.core) n.workers <- n.av.core
+  if (n.workers > length(gene.list)) n.workers <- length(gene.list)
   cl <- parallel::makeCluster(n.workers)
   doParallel::registerDoParallel(cl)
 
-  message("Running hypergeometric enrichment...")
+  miko_message("Running hypergeometric enrichment...", verbose = verbose)
   res.h.list <- list()
   res.h.list <- foreach(i = 1:length(gene.list), .packages = c("dplyr", "fgsea", "plyr"))  %dopar% {
 
@@ -5019,7 +5027,7 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
   df.umap$cells <- rownames(df.umap)
 
   # clean clusters...
-  if (verbose) message("Cleaning clusters...")
+  miko_message("Cleaning clusters...", verbose = verbose)
   if (return.plots) plot.list <- list()
   remove.which <- c()
   for (i in 1:length(u.cluster)){
@@ -5299,7 +5307,14 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
 
     # fit first model to initialize other model fits - this make the other models converge faster
     responsePlaceholder = nextElem(exprIter(exprObj, weightsMatrix, useWeights))
-    fitInit <- lmer( eval(parse(text=form)), data=data, REML=REML, control=control )
+    # fitInit <- lmer( eval(parse(text=form)), data=data, REML=REML, control=control )
+
+    fitInit <- tryCatch({
+      lmer( eval(parse(text=form)), data=data, REML=REML, control=control )
+    }, error = function(e){
+      return(lm( eval(parse(text=form)), data=data ))
+    }
+    )
 
     # specify gene explicitly in data
     data2 = data.frame(data, expr=responsePlaceholder$E, check.names=FALSE)
@@ -5310,16 +5325,30 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
       weights = matrix(data = 1, nrow = nrow(exprObj), ncol = ncol(exprObj))
     )
 
-    return(list(
-      input.data = input.data,
-      data = data2,
-      form =  form,
-      REML =  REML,
-      theta =  fitInit@theta,
-      fxn = fxn,
-      control = control,
-      na.action=stats::na.exclude
-    ))
+    output.list <- tryCatch({
+      list(
+        input.data = input.data,
+        data = data2,
+        form =  form,
+        REML =  REML,
+        theta =  fitInit@theta,
+        fxn = fxn,
+        control = control,
+        na.action=stats::na.exclude
+      )}, error = function(e){
+        return( list(
+          input.data = input.data,
+          data = data2,
+          form =  form,
+          REML =  REML,
+          theta = NULL,
+          fxn = fxn,
+          control = control,
+          na.action=stats::na.exclude
+        ))
+      })
+
+    return(output.list)
   }
 
   # get model parameter list
@@ -5412,10 +5441,22 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
 
       try({
         data3$expr <- E.cur[k,]
-        res.cur[[rownames(E.cur)[k]]] <- fxn( lmer( eval(parse(text=vd_inputs.list$form)), data=data3, REML=F,
-                                                    weights=W.cur[k,],
-                                                    control=vd_inputs.list$control,na.action= vd_inputs.list$na.action,
-                                                    start = list( theta = vd_inputs.list$theta)))
+        # res.cur[[rownames(E.cur)[k]]] <- fxn( lmer( eval(parse(text=vd_inputs.list$form)), data=data3, REML=F,
+        #                                             weights=W.cur[k,],
+        #                                             control=vd_inputs.list$control,na.action= vd_inputs.list$na.action,
+        #                                             start = list( theta = vd_inputs.list$theta)))
+
+        res.cur[[rownames(E.cur)[k]]] <-   tryCatch({
+          fxn( lmer( eval(parse(text=vd_inputs.list$form)), data=data3, REML=F,
+                     weights=W.cur[k,],
+                     control=vd_inputs.list$control,na.action= vd_inputs.list$na.action,
+                     start = list( theta = vd_inputs.list$theta)))
+        }, error = function(e){
+          fxn( lm( eval(parse(text=vd_inputs.list$form)), data=data3,
+                   weights=W.cur[k,],
+          ))
+        })
+
         which.gene <- c(which.gene, rownames(E.cur)[k])
 
       }, silent = T)
@@ -5593,12 +5634,12 @@ vd_Formula <- function(object, covariates = NULL, interactions  = NULL){
 
   # append interaction terms
   if (!is.null(df.interaction.pairs)){
-  for (i in 1:nrow(df.interaction.pairs)){
+    for (i in 1:nrow(df.interaction.pairs)){
 
-    term.current <-  paste0(df.interaction.pairs[i,1], ":", df.interaction.pairs[i,2])
-    form <- append.term(form,  paste0("(1|", term.current, ")"))
+      term.current <-  paste0(df.interaction.pairs[i,1], ":", df.interaction.pairs[i,2])
+      form <- append.term(form,  paste0("(1|", term.current, ")"))
 
-  }
+    }
   }
 
   # specify model formula
@@ -5607,6 +5648,15 @@ vd_Formula <- function(object, covariates = NULL, interactions  = NULL){
   # get covariate data
   df.meta <- object@meta.data
   df.meta.sub <- df.meta[ ,covariates.av]
+
+  if (length(covariates.av) == 1){
+    if (!(("data.frame") %in% class(df.meta.sub))){
+      df.meta.sub <- as.data.frame(df.meta.sub)
+      rownames(df.meta.sub) <- rownames(df.meta)
+      colnames(df.meta.sub) <- covariates.av
+    }
+  }
+
 
   return(
     list(
@@ -5804,10 +5854,10 @@ getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.feature
 #'
 categoricalColPal <- function(labels = NULL, n = NULL, palette = "Spectral"){
 
-require("RColorBrewer")
+  require("RColorBrewer")
 
   if (is.null(labels) & is.null(n)){
-    message("'Error: 'labels' or 'n' were not specified. Color palette was not generated.")
+    miko_message("'Error: 'labels' or 'n' were not specified. Color palette was not generated.")
     return(NULL)
   } else if (!is.null(labels)){
     n <- length(labels)
@@ -5818,7 +5868,7 @@ require("RColorBrewer")
   if (palette %in% rownames(all.pal)){
     col.pal <- colorRampPalette(RColorBrewer::brewer.pal(all.pal[palette, "maxcolors"], palette))(n)
   } else {
-    message("Error: Specified palette must belong to RColorBrewer. See brewer.pal.info for available palettes.")
+    miko_message("Error: Specified palette must belong to RColorBrewer. See brewer.pal.info for available palettes.")
     return(NULL)
   }
 
@@ -5885,12 +5935,12 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
     } else if (group.boolean == "AND"){
       expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all[df.exp.gene$Freq == max(df.exp.gene$Freq, na.rm = T)]))
     } else {
-      message(paste0("'", group.boolean, "' is not an accepted argument for group.boolean. Must be either 'OR' or 'AND'. 'OR' was used as default argument"))
+      miko_message(paste0("'", group.boolean, "' is not an accepted argument for group.boolean. Must be either 'OR' or 'AND'. 'OR' was used as default argument"))
       expressed.genes <- unique(as.character(df.exp.gene$expressed.genes.all))
     }
 
   } else {
-    message(paste0( "'", group,  "' was not found in seurat object. Failed to identify expressed genes. "))
+    miko_message(paste0( "'", group,  "' was not found in seurat object. Failed to identify expressed genes. "))
   }
 
   return(expressed.genes)
@@ -5945,7 +5995,7 @@ balanceSamples <- function(object, group, balance.size = NA){
     }
     select.cells <- sample(x = av.cells, size = cur.target, replace = F)
     all.select.cells <- c(all.select.cells, select.cells)
-    message(paste0(signif(100*length(select.cells)/n.cells, 3), "% cells (",length(select.cells) , "/" ,n.cells, ") sampled from ", u.group[i], " group"))
+    miko_message(paste0(signif(100*length(select.cells)/n.cells, 3), "% cells (",length(select.cells) , "/" ,n.cells, ") sampled from ", u.group[i], " group"))
 
   }
 
@@ -6028,7 +6078,7 @@ projectReduction <- function(object, reduction = "pca", n.components = NA, show.
     )
 
     df.factor <- (df.factor %>% dplyr::arrange(-abs(loading)))[1: show.n.features, ]
-      # dplyr::top_n(show.n.features, abs(loading))
+    # dplyr::top_n(show.n.features, abs(loading))
 
     plt.pc.activity <- df.pca.umap %>%
       ggplot(aes(x = x, y = y, color = pc, size = abs(pc))) +
@@ -6135,7 +6185,7 @@ uniqueFeatures <- function(object, group, is.numeric = F){
   df.meta <- object@meta.data
 
   if (!(group %in% colnames(df.meta))){
-    message(paste0( "'",group, "' is not a valid metadata column. No unique features returned. "))
+    miko_message(paste0( "'",group, "' is not a valid metadata column. No unique features returned. "))
     return(NULL)
   } else {
     all.bc <- df.meta[ ,group]
@@ -6217,7 +6267,7 @@ pseudoReplicates <- function(object, split.by, n = 2){
 #'
 ulength <- function(x){
 
- length(unique(x))
+  length(unique(x))
 }
 
 
@@ -6229,6 +6279,7 @@ ulength <- function(x){
 #' @param object Seurat object
 #' @param graph name of KNN graph to use for analysis. Must be present within provided seurat object. If absent, run FindNeighbors().
 #' @param cluster.field name of cluster metadata field to use for cluster membership data. Default is 'seurat_clusters'.
+#' @param verbose Print progress. Default is TRUE.
 #' @name neighborPurity
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object with purity score stored in metadata
@@ -6238,33 +6289,34 @@ ulength <- function(x){
 #' object <- FindClusters(object, resolution = 1)
 #' object <- neighborPurity(object, "RNA_nn")
 #'
-neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
+neighborPurity <- function(object, graph, cluster.field = "seurat_clusters", verbose = T){
 
   if (graph %in% names(object@graphs)){
     nn.graph <- (object@graphs[[graph]])
-    message("Getting nearest neighbors...")
+    miko_message("Getting nearest neighbors...", verbose = verbose)
     nn.graph.ind <- apply(nn.graph, 1, function(x) which(x>0))
-    message("Mapping nearest neighbors to cluster memberships...")
+    # nn.graph.ind <- apply((nn.graph > 0), 1, which) # faster
+    miko_message("Mapping nearest neighbors to cluster memberships...", verbose = verbose)
     cluster.vec <- as.vector(object@meta.data[ ,cluster.field])
 
     if ("matrix" %in% class(nn.graph.ind) ){
       nn.graph.clustID <- apply(nn.graph.ind, 2, function(x) cluster.vec[x])
-      message("Computing neighborhood purity...")
+      miko_message("Computing neighborhood purity...", verbose = verbose)
       nn.graph.clust.tally <- apply(nn.graph.clustID, 2, function(x) table(x))
       tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
       object@meta.data$purity <-tally.size
     } else if ("list" %in% class(nn.graph.ind)){
       nn.graph.clustID <- lapply(nn.graph.ind,  function(x) cluster.vec[x])
-      message("Computing neighborhood purity...")
+      miko_message("Computing neighborhood purity...", verbose = verbose)
       nn.graph.clust.tally <- lapply(nn.graph.clustID, function(x) table(x))
       tally.size <- unlist(lapply(nn.graph.clust.tally, function(x) max(x/sum(x))))
       object@meta.data$purity <-tally.size
 
     }
-    message("Complete!")
+    miko_message("Complete!", verbose = verbose)
 
   } else {
-    message(paste0("'", graph, "' not found. Returning unmodified object."))
+    miko_message(paste0("'", graph, "' not found. Returning unmodified object."), verbose = verbose)
   }
   return(object)
 
@@ -6273,9 +6325,9 @@ neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
 
 #' Determine species based on gene representation
 #'
-#' Determine species (Hs, Mm) based on gene (symbol, ensemble) representation
+#' Determine species (Hs, Mm) based on gene (symbol, ensembl) representation
 #'
-#' @param object Seurat object
+#' @param object Seurat object, gene expression matrix (rownames are genes), or gene character vector.
 #' @name detectSpecies
 #' @author Nicholas Mikolajewicz
 #' @return Species (Hs or Mm)
@@ -6285,8 +6337,15 @@ neighborPurity <- function(object, graph, cluster.field = "seurat_clusters"){
 #'
 detectSpecies <- function(object){
 
-  stopifnot(class(object) %in% "Seurat")
-  my.rep <- (rownames(object))
+  if (sum(c("Seurat", "Matrix", "dgCMatrix") %in% class(object)) > 0){
+    my.rep <- (rownames(object))
+  } else if ( "character" %in% class(object)) {
+    my.rep <- object
+  } else {
+    miko_message("Input does not belong to Seurat, Matrix, dgCMatrix or character class. Unable to detect species.")
+    return(NULL)
+  }
+
 
   ens.sum <-  sum(grepl("ENS", my.rep))
   ens.mus.sum <-  sum(grepl("ENSMUS", my.rep))
@@ -6313,4 +6372,23 @@ detectSpecies <- function(object){
   }
 
   return(species)
+}
+
+#' Print message
+#'
+#' Print message
+#'
+#' @param x Character string to print
+#' @param time Logical to print time
+#' @param verbose Logical to print message
+#' @name miko_message
+#' @author Nicholas Mikolajewicz
+miko_message <- function(x, time = T, verbose = T){
+  if (verbose){
+    if (time){
+      message(Sys.time() , ": ",  x)
+    } else {
+      message(x)
+    }
+  }
 }
