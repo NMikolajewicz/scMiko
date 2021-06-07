@@ -13,7 +13,8 @@ miko_integrate(
   nfeatures = 3000,
   split.prenorm = F,
   assay = "SCT",
-  variable.features.n = 3000
+  variable.features.n = 3000,
+  verbose = T
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ miko_integrate(
 \item{assay}{Assay to use for normalization.}
 
 \item{variable.features.n}{Use this many features as variable features after ranking by residual variance; default is 3000.}
+
+\item{verbose}{Print progress. Default is TRUE.}
 }
 \value{
 Integrated seurat object
