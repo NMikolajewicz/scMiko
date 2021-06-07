@@ -4,7 +4,15 @@
 \alias{exprUMAP}
 \title{Visualize gene expression on UMAP}
 \usage{
-exprUMAP(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10)
+exprUMAP(
+  object,
+  feature,
+  plot.subtitle = NULL,
+  do.neb = T,
+  title.size = 10,
+  slot = "data",
+  ...
+)
 }
 \arguments{
 \item{object}{Seurat object.}
@@ -16,6 +24,10 @@ exprUMAP(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10)
 \item{do.neb}{Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is T.}
 
 \item{title.size}{Size of plot title. Default is 10.}
+
+\item{slot}{which slot to pull from? Default is "data".}
+
+\item{...}{additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)}
 }
 \value{
 ggplot handle
