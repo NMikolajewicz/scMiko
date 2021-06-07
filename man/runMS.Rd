@@ -13,6 +13,8 @@ runMS(
   raster = F,
   rescale = F,
   verbose = T,
+  winsorize.quantiles = c(0, 1),
+  search = F,
   ...
 )
 }
@@ -33,13 +35,17 @@ runMS(
 
 \item{verbose}{Print progress. Default is TRUE.}
 
+\item{winsorize.quantiles}{Rescale values to lie between lower and upper bound quanitle. Default  = c(0,1).}
+
+\item{search}{Search for symbol synonyms for features in features that don't match features in object? Searches the HGNC's gene names database; see UpdateSymbolList for more details. Default is FALSE.}
+
 \item{...}{additional parameters passed to geom_point(...)}
 }
 \value{
 list of results along with ggplot handles visualizing class predictions overlaid on UMAP.
 }
 \description{
-Wrapper for Seurat::AddModuleScore. Calculates module scores for feature expression programs in single cells.
+Wrapper for Seurat::AddModuleScore(). Calculates module scores for feature expression programs in single cells.
 }
 \examples{
 
