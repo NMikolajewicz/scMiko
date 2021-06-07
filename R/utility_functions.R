@@ -1415,27 +1415,38 @@ cleanFilterGenes <- function(genes, so, which.species){
 #' @param object Seurat Object
 #' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
 #' @param subsample.n Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.
+#' @param verbose Print progress. Default is TRUE.
 #' @name downsampleSeurat
 #' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
-downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL){
+downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL, verbose = T){
 
-  if (subsample.factor < 1){
-    if (subsample.factor<0) stop("subsample.factor must be numeric between 0 and 1")
+  use.factor <- (subsample.factor < 1) & (subsample.factor > 0 )
+  use.n <-( !is.null(subsample.n)) & (is.numeric(subsample.n))
 
+  n.subset <- NULL
+  if (!(use.factor | use.n)){
+    return(object)
+  } else if (use.n & use.factor){
+    if (subsample.n > ncol(object)) {
+      subsample.n <- ncol(object)
+    }
+    n.subset <- round(subsample.n)
+  } else if (use.n){
+    if (subsample.n > ncol(object)) {
+      subsample.n <- ncol(object)
+    }
+    n.subset <- round(subsample.n)
+  } else if (use.factor){
+    n.subset <- round(subsample.factor *ncol(object))
+  } else {
+    return(object)
+  }
+
+  if (!is.null(n.subset)){
     object <-  tryCatch({
-
-      if (is.null(subsample.n)){
-        n.subset <- round(subsample.factor *ncol(object))
-      } else {
-        if (subsample.n > ncol(object)) {
-          warning(paste("subsample.n exceeded number of cells in seurat object. Data was not subsampled"))
-          subsample.n <- ncol(object)
-        }
-        n.subset <- subsample.n
-      }
-
+      miko_message(paste0("Sampling ", n.subset, "/", ncol(object), " (", signif(100*n.subset/ncol(object), 4), "%) cells"), verbose = verbose)
       cell.ind <- sample(x = seq(1, ncol(object)), size = n.subset, replace = FALSE, prob = NULL)
       object <- subset(object , cells = cell.ind)
     }, error = function(e){
@@ -1443,10 +1454,11 @@ downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL){
       print(e)
       return(object)
     })
-
+    miko_message("Complete!", verbose = verbose)
+    return(object)
+  } else {
+    return(object)
   }
-
-  return(object)
 
 }
 
@@ -4964,6 +4976,8 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   parallel::stopCluster(cl)
   names(res.h.list) <- names(gene.list)
 
+  miko_message("Complete!", verbose = verbose)
+
   return(res.h.list)
 
 }
@@ -6391,4 +6405,35 @@ miko_message <- function(x, time = T, verbose = T){
       message(x)
     }
   }
+}
+
+
+#' Winsorize values at lower and upper quantiles.
+#'
+#' Winsorize values at lower and upper quantiles.
+#'
+#' @param x Numeric vector
+#' @param lower.quantile lower quantile [0, 1]. Default = 0.01
+#' @param upper.quantile lower quantile [0, 1]. Default = 0.99
+#' @name snip
+#' @author Nicholas Mikolajewicz
+snip <- function(x, lower.quantile = 0.01, upper.quantile = 0.99){
+  lq <- quantile(x, lower.quantile, na.rm = T)
+  uq <- quantile(x, upper.quantile, na.rm = T)
+
+  x[x < lq] <- lq
+  x[x > uq] <- uq
+
+  return(x)
+}
+
+#' Returns intersection of all list entries.
+#'
+#' Returns intersection of all list entries.
+#'
+#' @param x list
+#' @name lintersect
+#' @author Nicholas Mikolajewicz
+lintersect <- function(x){
+  Reduce(intersect,  x)
 }

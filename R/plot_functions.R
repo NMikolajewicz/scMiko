@@ -931,16 +931,18 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #' @param plot.subtitle Plot title.
 #' @param do.neb Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is T.
 #' @param title.size Size of plot title. Default is 10.
+#' @param slot which slot to pull from? Default is "data".
+#' @param ... additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)
 #' @name exprUMAP
 #' @return ggplot handle
 #' @examples
 #'
 #'  gg.plot <-  exprUMAP(object = so, feature = "Prrx1")
 #'
-exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10){
+exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10, slot = "data", ...){
 
   if (!do.neb){
-    scExpression.UMAP(object,feature, adjust.pt.size =0.5) +
+    scExpression.UMAP(object,feature, adjust.pt.size =0.5, slot = slot, ...) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -949,7 +951,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.si
       theme(plot.subtitle=element_text(size=5, color="black")) +
       theme(plot.title =element_text(size=title.size, face="italic", color="black"))
   } else {
-    Nebulosa::plot_density(object,feature, size = 0.5) +
+    Nebulosa::plot_density(object,feature, size = 0.5, slot = slot, ... ) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
