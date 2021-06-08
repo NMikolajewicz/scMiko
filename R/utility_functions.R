@@ -6437,3 +6437,245 @@ snip <- function(x, lower.quantile = 0.01, upper.quantile = 0.99){
 lintersect <- function(x){
   Reduce(intersect,  x)
 }
+
+
+
+#' Function to draw ggplot heatmaps
+#'
+#' Wrapper for pheatmap::pheatmap() and ggplotify::as.ggplot.
+#'
+#' @param mat numeric matrix
+#' @param scale character indicating if the values should be centered and scaled in either the row direction or the column direction, or none. Corresponding values are "row", "column" and "none"
+#' @param symmetric_scale Enforce symmetrical color scale. Default is TRUE.
+#' @param scale.lim Apply ceiling and floor to all values in matrix. Default is NA.
+#' @param color vector of colors used in heatmap
+#' @param ... additional parameters passed to pheatmap::pheatmap(...)
+#' @name miko_heatmap
+#' @author Nicholas Mikolajewicz
+miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = NA, color = colorRampPalette(rev(brewer.pal(n = 7, name =  "RdBu")))(100), ...){
+
+  if (symmetric_scale & (scale == "none")){
+    if (is.na(scale.lim)){
+      scale.lim <- max(abs(mat))
+    }
+    my.breaks <- seq(-scale.lim, scale.lim, by = (2*scale.lim)/length(color))
+    plt.hm <- ggplotify::as.ggplot(pheatmap::pheatmap(mat, breaks = my.breaks, color = color, silent = T, ...) )
+  } else {
+    plt.hm <- ggplotify::as.ggplot(pheatmap::pheatmap(mat, color = color, scale = scale, silent = T, ...) )
+
+    if (scale != "none"){
+      plt.hm <- plt.hm + labs(caption = paste0(scale, " scaled"))
+    }
+  }
+
+  plt.hm <- plt.hm +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(plot.subtitle = element_text(hjust = 0.5))
+
+  return(plt.hm)
+
+}
+
+
+
+#' Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.
+#'
+#' Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.
+#'
+#' @param object seurat object
+#' @param which.species Species, either "Mm" or "Hs".
+#' @name scoreGBM
+#' @author Nicholas Mikolajewicz
+scoreGBM <- function(object, which.species = detectSpecies(object)){
+
+  # get GBM genes
+  gbm.genes <- data.frame(geneSets[["GBM_Hs_Neftel2019"]])
+
+  # convert to list
+  gbm.list <- list()
+  for (i in 1:ncol(gbm.genes)){
+
+    # enforce correct species
+    if (which.species == "Hs"){
+      gbm.genes[ ,i] <- toupper(gbm.genes[,i])
+    } else if (which.species == "Mm"){
+      gbm.genes[ ,i] <- firstup(gbm.genes[,i])
+    }
+
+    # get module name
+    module.name <- colnames(gbm.genes[i])
+
+    # assign to list
+    gbm.list[[module.name]] <- gbm.genes[!is.na(gbm.genes[ ,i]) ,i]
+  }
+
+  module.scores <- matrix(ncol = length(gbm.list), nrow = ncol(object))
+
+  for (i in 1:length(gbm.list)){
+    current.list <- list(g1 = gbm.list[[i]])
+
+
+    st <- AddModuleScore(
+      object,
+      features = current.list,
+      pool = NULL,
+      nbin = 17,
+      ctrl = 100,
+      k = FALSE,
+      assay = DefaultAssay(object),
+      name = "ModuleScore",
+      seed = 1,
+      search = FALSE,
+      verbose = F
+    )
+
+    module.scores[ ,i] <- snip(st@meta.data[["ModuleScore1"]])
+  }
+
+  colnames(module.scores) <- names(gbm.list)
+  rownames(module.scores) <- rownames(object@meta.data)
+  rm(st)
+
+
+
+  MES.score <- apply(module.scores[ ,c("MES1", "MES2")], 1, mean)
+  NPC.score <- apply(module.scores[ ,c("NPC1", "NPC2")], 1, mean)
+
+  pooled.scores <- cbind(MES.score, NPC.score)
+  colnames(pooled.scores) <- c("MES", "NPC")
+  module.scores <- cbind(module.scores, pooled.scores)
+
+  # subset module scores
+  class.names <- list(
+    OPC = "OPC",
+    NPC = "NPC",
+    AC = "AC",
+    MES = "MES"
+  )
+
+
+  ms <- module.scores[ ,unlist(class.names)]
+  opc_npc.subset <- c(class.names$OPC, class.names$NPC)
+  ac_mes.subset <- c(class.names$AC, class.names$MES)
+
+  # define y-axis
+  SC_opc_npc_max <- apply(ms[,opc_npc.subset], 1, function(x) max(x))
+  SC_ac_mes_max <- apply(ms[,ac_mes.subset], 1, function(x) max(x))
+
+  # y-axis value
+  D.y <- SC_opc_npc_max-SC_ac_mes_max
+
+  # define y axis
+  # x-axis sign class
+  D.y.sign <- sign(D.y)
+
+  # D > 0 class
+  Dpos.x <- log((abs(ms[,class.names$NPC] - ms[,class.names$OPC]) + 1), base = 2)
+  Dpos.x.class <- Dpos.x.dif <- ms[,class.names$NPC] - ms[,class.names$OPC]
+  Dpos.x.class[Dpos.x.dif > 0] <- 1  #NPC
+  Dpos.x.class[Dpos.x.dif < 0] <- -1 #OPC
+  Dpos.x <- Dpos.x*Dpos.x.class
+
+  # D < 0 class
+  Dneg.x <- log((abs(ms[,class.names$MES] - ms[,class.names$AC]) + 1), base = 2)
+  Dneg.x.class <- Dneg.x.dif <- ms[,class.names$MES] - ms[,class.names$AC]
+  Dneg.x.class[Dneg.x.dif > 0] <- 1   #MES
+  Dneg.x.class[Dneg.x.dif < 0] <- -1  #AC
+  Dneg.x <- Dneg.x*Dneg.x.class
+
+  df.state <- data.frame(D.y,
+                         Dpos.x,
+                         Dneg.x,
+                         D.y.sign
+  )
+
+  try({df.state$cell <- colnames(object)}, silent = T)
+  try({df.state$seurat_clusters <- object@meta.data[["seurat_clusters"]]}, silent = T)
+  try({df.state$Barcode <- object@meta.data[["Barcode"]]}, silent = T)
+  # deviation.score = 1-object@meta.data[["max.tumor.transfer.score"]])
+
+  df.state$y <- df.state$D.y
+  df.state$x <- df.state$Dpos.x
+  df.state$x[df.state$y < 0] <- df.state$Dneg.x[df.state$y < 0]
+
+  scale.max <- max(c(abs(df.state$x), abs(df.state$y))) * 1.1
+
+
+  df.labels <- data.frame(x = c(scale.max*0.9,-scale.max*0.9,-scale.max*0.9,scale.max*0.9),
+                          y = c(scale.max,scale.max,-scale.max,-scale.max),
+                          label = c("NPC", "OPC", "AC", "MES"))
+
+  color.pal <- "slategray" # lightgrey
+  # plt.metascores
+  plt.metascores <- df.state %>%
+    # dplyr::arrange(deviation.score) %>%
+    # , color = deviation.score , color = "Deviation\nScore"
+    ggplot(aes(x, y)) +
+    xlab("Relative meta-module score\n[log(|SC1-SC2|+1)]") +
+    ylab("Relative meta-module score\n[log(|SC1-SC2|+1)]") +
+    labs(title = "GBM Subtypes") +
+    theme_miko(legend = T, center.title = T) +
+    theme(panel.border = element_rect(colour = color.pal, fill=NA, size=4)) +
+    annotate("rect", xmin = -scale.max, xmax = 0, ymin = -scale.max, ymax = scale.max, fill= "white")  +
+    annotate("rect", xmin = 0, xmax = scale.max, ymin = 0, ymax = scale.max , fill= "white") +
+    annotate("rect", xmin = 0, xmax = scale.max, ymin = -scale.max, ymax = scale.max, fill= "white") +
+    annotate("rect", xmin = -scale.max, xmax = 0, ymin = 0, ymax = scale.max, fill= "white") +
+    geom_hline(yintercept=0, color = color.pal, size=1.5) +
+    geom_vline(xintercept=0, color = color.pal, size=1.5) +
+    geom_point(size = 0.9, alpha = 1.0)  +
+    geom_label(data = df.labels, aes(x = x, y = y, label = label), fill = color.pal, color="white") +
+    viridis::scale_color_viridis()
+
+  # SPECIFY GBM SUBTYPE
+  df.state$GBMstate <- NA
+  state.threshold <- 0
+  df.state$GBMstate[df.state$x > state.threshold & df.state$y > state.threshold] <- "NPC"
+  df.state$GBMstate[df.state$x > state.threshold & df.state$y < -state.threshold] <- "MES"
+  df.state$GBMstate[df.state$x < -state.threshold & df.state$y > state.threshold] <- "OPC"
+  df.state$GBMstate[df.state$x < -state.threshold & df.state$y < -state.threshold] <- "AC"
+
+  df.ms <- as.data.frame(module.scores)
+  df.ms$cell <- rownames(df.ms)
+
+  df.ms$x <- object@reductions[["umap"]]@cell.embeddings[ ,1]
+  df.ms$y <- object@reductions[["umap"]]@cell.embeddings[ ,2]
+
+  df.ms$state <- df.state$GBMstate
+
+
+  plt.state.umap.list <- list()
+  for (i in 1:(ncol(module.scores))){
+
+    df.ms.cur <- df.ms[ ,c("x", "y", colnames(module.scores)[i])]
+    colnames(df.ms.cur) <- c("x", "y", "z")
+
+    plt.state.umap.list[[colnames(module.scores)[i]]] <- df.ms.cur %>%
+      ggplot(aes(x = x, y = y, color = z)) +
+      # theme_miko(center.title = T) +
+      geom_point(size = autoPointSize(n.points = nrow(df.ms.cur))) +
+      theme_miko(center.title = T) +
+      xlab("UMAP 1") + ylab("UMAP 2") +
+      # scale_color_gradient(low = "grey95", high = "tomato") +
+      viridis::scale_color_viridis() +
+      scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
+      labs(title = colnames(module.scores)[i])
+  }
+
+
+  plt.umap.gbm.state <- df.ms %>%
+    ggplot(aes(x = x, y = y, color = state)) +
+    geom_point(size = 1) +
+    theme_miko(legend = T, center.title = T, color.palette = "ptol") +
+    xlab("UMAP 1") + ylab("UMAP 2") +
+    labs(title = "GBM State")
+
+
+  return(list(
+    plt.metascores = plt.metascores,
+    plt.umap.scores = plt.state.umap.list,
+    plt.umap.state = plt.umap.gbm.state,
+    df.scores = df.ms,
+    df.states = df.state
+  ))
+
+}
