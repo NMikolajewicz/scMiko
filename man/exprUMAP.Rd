@@ -11,6 +11,7 @@ exprUMAP(
   do.neb = T,
   title.size = 10,
   slot = "data",
+  reduction = "umap",
   ...
 )
 }
@@ -26,6 +27,8 @@ exprUMAP(
 \item{title.size}{Size of plot title. Default is 10.}
 
 \item{slot}{which slot to pull from? Default is "data".}
+
+\item{reduction}{reduction name. Default is "umap".}
 
 \item{...}{additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)}
 }

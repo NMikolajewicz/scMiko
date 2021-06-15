@@ -34,22 +34,23 @@ cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y
 #' UMAP plot with cell-level gene expression for queried gene. Uses Seurat::FeaturePlot().
 #'
 #' @param object Seurat Object
-#' @param query.gene Character. Gene name to plot.
-#' @param x.label Character. X axis label.
-#' @param y.label Character. Y axis label.
+#' @param query.gene Character specifying gene name to plot.
+#' @param x.label Character specifying X axis label.
+#' @param y.label Character specifying Y axis label.
 #' @param adjust.pt.size Adjust point size for plotting. Logical.
 #' @param order.cells Plot cells in order of expression. Logical.
-#' @param plot.name Character. Plot title.
+#' @param plot.name Character specifying plot title.
+#' @param reduction Character specifying reduction name. Default is "umap".
 #' @param ... additional parameters passed to Seurat::FeaturePlot().
 #' @name scExpression.UMAP
 #' @return ggplot handle
 #'
-scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = autoPointSize(ncol(object)), order.cells = T, plot.name = NULL, ...){
+scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = autoPointSize(ncol(object)), order.cells = T, plot.name = NULL, reduction = "umap",  ...){
 
   if (is.null(plot.name)) plot.name <- query.gene
 
   plt.handle <- FeaturePlot(object = object, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
-                            reduction = "umap",pt.size = adjust.pt.size, sort.cell = order.cells, ...) +
+                            reduction = reduction,pt.size = adjust.pt.size, sort.cell = order.cells, ...) +
     xlab(x.label) +
     ylab(y.label) +
     ggtitle(plot.name)
@@ -932,6 +933,7 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #' @param do.neb Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is T.
 #' @param title.size Size of plot title. Default is 10.
 #' @param slot which slot to pull from? Default is "data".
+#' @param reduction reduction name. Default is "umap".
 #' @param ... additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)
 #' @name exprUMAP
 #' @return ggplot handle
@@ -939,10 +941,10 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #'
 #'  gg.plot <-  exprUMAP(object = so, feature = "Prrx1")
 #'
-exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10, slot = "data", ...){
+exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10, slot = "data", reduction = "umap", ...){
 
   if (!do.neb){
-    scExpression.UMAP(object,feature, adjust.pt.size =0.5, slot = slot, ...) +
+    scExpression.UMAP(object,feature, adjust.pt.size =0.5, slot = slot, reduction = reduction,...) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -951,7 +953,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.si
       theme(plot.subtitle=element_text(size=5, color="black")) +
       theme(plot.title =element_text(size=title.size, face="italic", color="black"))
   } else {
-    Nebulosa::plot_density(object,feature, size = 0.5, slot = slot, ... ) +
+    Nebulosa::plot_density(object,feature, size = 0.5, slot = slot,reduction = reduction, ... ) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -961,6 +963,69 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.si
       theme(plot.title =element_text(size=title.size, face="italic", color="black"))
   }
 
+
+}
+
+
+
+#' Draw volcano plot to visualize differential expression.
+#'
+#' Draw volcano plot to visualize differential expression. Uses data.frame output from getDEG(..., return.list = F).
+#'
+#' @param df.deg Differential expression data. Dataframe output from presto::wilcoxauc() or scMiko::getDEG(..., return.list = F).
+#' @param group group to visaulize data for. Must be entry in 'group' column of df.deg.
+#' @param show.n Top n features to label. Default is 10.
+#' @param features Specific features to label. If specified, show.n is ignored.
+#' @param fdr.threshold FDR threshold at which reference line is drawn. Default = 0.05.
+#' @param label.size Label size.
+#' @name miko_volcano
+#' @return ggplot handle
+#' @examples
+#'
+#'  df.dat <- getDEG(so.query, return.list = F)
+#'  plt.volcano <-  miko_volcano(df.deg = df.dat)
+#'
+miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr.threshold = 0.05, label.size = NA){
+
+  # assertions
+  stopifnot(all(c("group", "auc", "logFC", "padj", "feature") %in% colnames(df.deg)))
+
+  if (ulength(df.deg$group) > 1){
+
+    stopifnot(!is.null(group))
+    stopifnot(sum(grepl(group, df.deg$group)) > 0)
+    # filter
+    df.deg$deg.group <- df.deg$group
+    df.deg <- df.deg %>% dplyr::select(-c("group"))
+    df.deg <- df.deg %>% dplyr::filter(grepl(pattern = group, x = deg.group))
+  }
+  # get 10 genes to show
+
+  deg.top <- NULL
+  if (is.null(features)){
+    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(show.n/2), auc),
+                         df.deg %>% dplyr::top_n(round(show.n/2), -auc))
+  } else {
+    deg.top <- df.deg %>% dplyr::filter(feature  %in% features)
+  }
+
+  if (is.null(nrow(deg.top)) | nrow(deg.top) == 0){
+    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(10/2), auc),
+                         df.deg %>% dplyr::top_n(round(10/2), -auc))
+  }
+
+  # generate plot
+  deg.top$feature <- paste0("italic('", deg.top$feature, "')")
+  df.deg %>%
+    ggplot(aes(x = logFC, y = -log10(padj))) +
+    geom_point(aes(color = (auc-0.5), size = abs(logFC))) +
+    scale_size(range = c(0, 3)) +
+    ggrepel::geom_text_repel(data = deg.top, aes(x = logFC, y = -log10(padj), label = feature), parse = T, size = label.size, min.segment.length = 0) +
+    geom_hline(yintercept = -log10(fdr.threshold), linetype = "dashed") +
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    scale_color_gradient2(low = scales::muted("blue"), mid = "white", high = scales::muted("red")) +
+    theme_miko(legend = T) +
+    labs(title = "Volcano Plot", color = "|AUC-0.5|", size = "|logFC|")
 
 }
 
