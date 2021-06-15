@@ -12,23 +12,26 @@ scExpression.UMAP(
   adjust.pt.size = autoPointSize(ncol(object)),
   order.cells = T,
   plot.name = NULL,
+  reduction = "umap",
   ...
 )
 }
 \arguments{
 \item{object}{Seurat Object}
 
-\item{query.gene}{Character. Gene name to plot.}
+\item{query.gene}{Character specifying gene name to plot.}
 
-\item{x.label}{Character. X axis label.}
+\item{x.label}{Character specifying X axis label.}
 
-\item{y.label}{Character. Y axis label.}
+\item{y.label}{Character specifying Y axis label.}
 
 \item{adjust.pt.size}{Adjust point size for plotting. Logical.}
 
 \item{order.cells}{Plot cells in order of expression. Logical.}
 
-\item{plot.name}{Character. Plot title.}
+\item{plot.name}{Character specifying plot title.}
+
+\item{reduction}{Character specifying reduction name. Default is "umap".}
 
 \item{...}{additional parameters passed to Seurat::FeaturePlot().}
 }

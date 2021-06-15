@@ -4,12 +4,14 @@
 \alias{scoreGBM}
 \title{Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.}
 \usage{
-scoreGBM(object, which.species = detectSpecies(object))
+scoreGBM(object, species = detectSpecies(object), verbose = T)
 }
 \arguments{
 \item{object}{seurat object}
 
-\item{which.species}{Species, either "Mm" or "Hs".}
+\item{species}{Species, either "Mm" or "Hs".}
+
+\item{verbose}{Print progress. Default is TRUE.}
 }
 \description{
 Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.

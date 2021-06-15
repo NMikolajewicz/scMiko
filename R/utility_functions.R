@@ -6483,12 +6483,14 @@ miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = N
 #' Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.
 #'
 #' @param object seurat object
-#' @param which.species Species, either "Mm" or "Hs".
+#' @param species Species, either "Mm" or "Hs".
+#' @param verbose Print progress. Default is TRUE.
 #' @name scoreGBM
 #' @author Nicholas Mikolajewicz
-scoreGBM <- function(object, which.species = detectSpecies(object)){
+scoreGBM <- function(object, species = detectSpecies(object), verbose = T){
 
   # get GBM genes
+  miko_message("Getting GBM genesets...", verbose = verbose)
   gbm.genes <- data.frame(geneSets[["GBM_Hs_Neftel2019"]])
 
   # convert to list
@@ -6496,9 +6498,9 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
   for (i in 1:ncol(gbm.genes)){
 
     # enforce correct species
-    if (which.species == "Hs"){
+    if (species == "Hs"){
       gbm.genes[ ,i] <- toupper(gbm.genes[,i])
-    } else if (which.species == "Mm"){
+    } else if (species == "Mm"){
       gbm.genes[ ,i] <- firstup(gbm.genes[,i])
     }
 
@@ -6510,6 +6512,10 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
   }
 
   module.scores <- matrix(ncol = length(gbm.list), nrow = ncol(object))
+  miko_message("Scoring cells...", verbose = verbose)
+  suppressWarnings({
+    suppressMessages({
+
 
   for (i in 1:length(gbm.list)){
     current.list <- list(g1 = gbm.list[[i]])
@@ -6532,12 +6538,15 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
     module.scores[ ,i] <- snip(st@meta.data[["ModuleScore1"]])
   }
 
+    })
+  })
+
   colnames(module.scores) <- names(gbm.list)
   rownames(module.scores) <- rownames(object@meta.data)
   rm(st)
 
 
-
+  miko_message("Assigning GBM subtypes...", verbose = verbose)
   MES.score <- apply(module.scores[ ,c("MES1", "MES2")], 1, mean)
   NPC.score <- apply(module.scores[ ,c("NPC1", "NPC2")], 1, mean)
 
@@ -6605,6 +6614,7 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
                           y = c(scale.max,scale.max,-scale.max,-scale.max),
                           label = c("NPC", "OPC", "AC", "MES"))
 
+  miko_message("Generating plots...", verbose = verbose)
   color.pal <- "slategray" # lightgrey
   # plt.metascores
   plt.metascores <- df.state %>%
@@ -6644,6 +6654,9 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
 
 
   plt.state.umap.list <- list()
+  suppressWarnings({
+    suppressMessages({
+
   for (i in 1:(ncol(module.scores))){
 
     df.ms.cur <- df.ms[ ,c("x", "y", colnames(module.scores)[i])]
@@ -6660,6 +6673,8 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
       scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
       labs(title = colnames(module.scores)[i])
   }
+    })
+  })
 
 
   plt.umap.gbm.state <- df.ms %>%
@@ -6669,6 +6684,7 @@ scoreGBM <- function(object, which.species = detectSpecies(object)){
     xlab("UMAP 1") + ylab("UMAP 2") +
     labs(title = "GBM State")
 
+  miko_message("Complete!", verbose = verbose)
 
   return(list(
     plt.metascores = plt.metascores,
