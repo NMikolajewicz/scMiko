@@ -277,6 +277,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param rescale rescale values from 0 to 1. Default is FALSE.
 #' @param verbose Print progress. Default is TRUE.
 #' @param winsorize.quantiles Rescale values to lie between lower and upper bound quanitle. Default  = c(0,1).
+#' @param return.plots Logical to compute and return plots in results list. Default is TRUE.
 #' @param search Search for symbol synonyms for features in features that don't match features in object? Searches the HGNC's gene names database; see UpdateSymbolList for more details. Default is FALSE.
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runMS
@@ -309,7 +310,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), search = F, ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, ...){
 
   require(scales);
 
@@ -329,12 +330,17 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
 
 
   df.ms <- object@meta.data[ ,grepl(score.key, colnames(object@meta.data) )]
+  if (is.numeric(df.ms)){
+    df.ms <- as.data.frame(df.ms)
+    rownames(df.ms) <- colnames(object)
+  }
   colnames(df.ms) <- names(genelist)
 
   miko_message("Consolidating results...", verbose = verbose)
   which.max.score <- apply(df.ms, 1, which.max)
   class.prediction.max <- colnames(df.ms)[which.max.score]
 
+  if (return.plots){
   df.auc.umap <- data.frame(
     cells = colnames(object),
     x = object@reductions[["umap"]]@cell.embeddings[ ,1],
@@ -405,15 +411,28 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
                             high = muted("red"))
   }
 
-  plt.max.umap <- df.auc.umap %>%
-    dplyr::arrange(-as.numeric(class.ms)) %>%
-    ggplot(aes(x = x, y = y, color = class.ms)) +
-    # geom_point() +
-    geom_point_fun(size = size, ...) +
-    labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
-    theme_miko(center.title = T, legend = T) +
-    scale_color_manual(values = colpal) +
-    guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
+  } else {
+    plt.umap.list <- list()
+    df.auc.umap <- df.ms
+    df.auc.umap$class.ms <- class.prediction.max
+    df.auc.umap$class.ms <- factor(df.auc.umap$class.ms, levels = c(names(genelist), "unresolved"))
+  }
+
+
+  if (return.plots){
+    plt.max.umap <- df.auc.umap %>%
+      dplyr::arrange(-as.numeric(class.ms)) %>%
+      ggplot(aes(x = x, y = y, color = class.ms)) +
+      # geom_point() +
+      geom_point_fun(size = size, ...) +
+      labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
+      theme_miko(center.title = T, legend = T) +
+      scale_color_manual(values = colpal) +
+      guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
+  } else {
+    plt.max.umap <- NULL
+  }
+
 
 
 # try({
@@ -451,13 +470,15 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
 #' @param assay Assay to use for normalization.
 #' @param variable.features.n Use this many features as variable features after ranking by residual variance; default is 3000.
 #' @param verbose Print progress. Default is TRUE.
+#' @param use.existing.sct If TRUE, existing SCT model is used. Default is FALSE (new SCT model is fit)
+#' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE
 #' @name miko_integrate
 #' @seealso \code{\link{IntegrateData}}
 #' @author Nicholas Mikolajewicz
 #' @return Integrated seurat object
 #' @examples
 #'
-miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T){
+miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F){
 
   verbose. <- verbose
 
@@ -465,20 +486,26 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
   DefaultAssay(object) <- assay
   # if ("integrated" %in% names(object@assays)) object@assays$integrated <- NULL
 
+  if (!use.existing.sct){
+
   if (split.prenorm){
    if (verbose.) miko_message("Spliting object...")
     object.list <- SplitObject(object, split.by = split.by)
 
     # renormalize
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", verbose = verbose., assay = assay,
+    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", verbose = verbose., assay = assay, conserve.memory = conserve.memory,
                                      vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
 
   } else {
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
     object <- SCTransform(object, method = "glmGamPoi", verbose = T, assay = assay,
-                          vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
+                          vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n, conserve.memory = conserve.memory,)
     if (verbose.)  miko_message("Spliting object...", verbose = verbose.)
+    object.list <- SplitObject(object, split.by = split.by)
+  }
+
+  } else {
     object.list <- SplitObject(object, split.by = split.by)
   }
 
@@ -538,7 +565,9 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @param auc.thresh AUC threshold. Default = 0.6.
 #' @param fdr.thresh FDR threshold. Default = 0.01.
 #' @param logFC.thresh logFC threshold. Default = NA.
-#' @param pct.dif.thresh Difference in expression percentage. Default = 0.
+#' @param pct.dif.thresh Difference in expression percentage. Default = NA.
+#' @param pct.in.thresh Expression percentages exceeding this threshold are retained. Default is NA.
+#' @param pct.out.thresh Expression percentages below this threshold are retained Default is NA.
 #' @param return.list If TRUE, return list of differentially expressed genes. If FALSE, returns table with statistics from differential expression analysis.
 #' @param return.all If TRUE, all thresholding filters are ignored, and all results are returned.
 #' @param verbose Print progress. Default is TRUE.
@@ -549,7 +578,7 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @examples
 #'
 getDEG <- function(object, assay = "SCT", data = "data",
-                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, return.list = T, return.all = F, verbose = T){
+                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = T, return.all = F, verbose = T){
 
   require(presto)
   stopifnot("Seurat" %in% class(object) )
@@ -568,17 +597,25 @@ getDEG <- function(object, assay = "SCT", data = "data",
     if (!is.na(auc.thresh)){
       deg.dat <- deg.dat %>% dplyr::filter(auc > auc.thresh)
     }
-  if (!is.na(fdr.thresh)){
-    deg.dat <- deg.dat %>% dplyr::filter(padj < fdr.thresh)
-  }
+    if (!is.na(fdr.thresh)){
+      deg.dat <- deg.dat %>% dplyr::filter(padj < fdr.thresh)
+    }
 
-  if (!is.na(logFC.thresh)){
-    deg.dat <- deg.dat %>% dplyr::filter(logFC > logFC.thresh)
-  }
+    if (!is.na(logFC.thresh)){
+      deg.dat <- deg.dat %>% dplyr::filter(logFC > logFC.thresh)
+    }
 
-  if (!is.na(pct.dif.thresh)){
-    deg.dat <- deg.dat %>% dplyr::filter(pct.dif > pct.dif.thresh)
-  }
+    if (!is.na(pct.dif.thresh)){
+      deg.dat <- deg.dat %>% dplyr::filter(pct.dif > pct.dif.thresh)
+    }
+
+    if (!is.na(pct.in.thresh)){
+      deg.dat <- deg.dat %>% dplyr::filter(pct_in > pct.in.thresh)
+    }
+
+    if (!is.na(pct.out.thresh)){
+      deg.dat <- deg.dat %>% dplyr::filter(pct_out < pct.out.thresh)
+    }
 
 
   }
@@ -599,3 +636,225 @@ getDEG <- function(object, assay = "SCT", data = "data",
   }
 
 }
+
+
+
+#' Perform non-negative matrix factorization (NMF)
+#'
+#' Perform non-negative matrix factorization (NMF)
+#'
+#' @param object Seurat object
+#' @param assay assay. Default "SCT".
+#' @param k Number of NMF modules. Default is 6.
+#' @param raster rasterize output plot. Default is F.
+#' @param n.threads Number of threads to use when running NMF.
+#' @param max.iter FDR threshold. Default = 0.01.
+#' @param gene.cutoff gene cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.
+#' @param gene.n number of genes to return per module.
+#' @param sample.name sample name. Default is NULL.
+#' @param show.top.n number of enrichment terms to show in summary plots.
+#' @param min.pct gene expression threshold [0, 1]. Default is NA.
+#' @param verbose Print progress. Default is TRUE.
+#' @name runNMF
+#' @seealso \code{\link{nnmf}}
+#' @author Nicholas Mikolajewicz
+#' @return list
+#' @examples
+#'
+runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, max.iter = 50,
+                   gene.cutoff = 0.5, gene.n = 50,sample.name = NULL, show.top.n = 10, min.pct = NA, verbose = T){
+
+  stopifnot("Seurat" %in% class(object))
+  require("NNLM")
+  # object <- so.ct2a
+  # assay <-  "SCT"
+  # sample.name <- "CT2A"
+  miko_message("Preparing expression matrix...", verbose = verbose)
+
+  DefaultAssay(object) <- assay
+  # slot = "scale.data",
+
+  if (!is.na(min.pct)){
+    if (min.pct >= 0 & min.pct < 1){
+      expr.genes <-  getExpressedGenes(object = object, min.pct = min.pct)
+      object <- GetResidual(object = object, features = expr.genes, verbose = verbose, assay = assay)
+    }
+  }
+
+  expr.mat <- object@assays[[assay]]@scale.data
+  expr.mat[expr.mat < 0] <- 0
+
+  miko_message("Running NMF...", verbose = verbose)
+  nmf.opt  <- nnmf(expr.mat, k = k,
+                   max.iter = max.iter,
+                   method = "scd",
+                   loss = "mse",
+                   rel.tol = 1e-4,
+                   n.threads = n.threads,  #n.threads
+                   verbose = 2);
+
+
+  getNMFGenes.dev <- function(feature.loading, norm.cutoff = 0.5, n.cutoff = NA){
+
+    if (!("matrix" %in% class(feature.loading))) stop("feature.loading input is not a matrix")
+
+    nmf.kme <- t(feature.loading)
+    nmf.kme <- (apply(nmf.kme, 2, function(x) (x/sum(x))))
+
+    # get module genes
+    if (!is.na(n.cutoff)){
+      module.genes <-  apply(nmf.kme, 1, function(x) colnames(nmf.kme)[order(-x)][1:n.cutoff])
+      module.genes <-  wideDF2namedList(module.genes)
+    } else {
+      module.genes <-  apply(nmf.kme, 1, function(x) colnames(nmf.kme)[x>norm.cutoff])
+    }
+
+    module.size <- unlist(lapply(module.genes, length))
+    nmf.module.genes <- module.genes[module.size > 0]
+
+    return(nmf.module.genes)
+  }
+
+
+  miko_message("Getting module genes...", verbose = verbose)
+  nmf.gene <- getNMFGenes.dev(feature.loading = nmf.opt$W, norm.cutoff = gene.cutoff, n.cutoff = gene.n)
+  df.cell.load <- data.frame(t(nmf.opt$H))
+  colnames(df.cell.load) <- names(nmf.gene) <- paste0("NMF", seq(1, length(nmf.gene)))
+  df.cell.load$var <- rownames(df.cell.load)
+
+  miko_message("Running pathway enrichment...", verbose = verbose)
+  nmf.res.hg <- runHG(gene.list =  nmf.gene, gene.universe = rownames(object), species = detectSpecies(object), pathway.db = "Bader", verbose = verbose)
+  nmf.sum.hg <- summarizeHG(nmf.res.hg, show.n = show.top.n)
+
+  miko_message("Generating plots...", verbose = verbose)
+  df.cell.umap <- getUMAP(object = object)[["df.umap"]]
+  df.cell.umap <- merge(df.cell.umap, df.cell.load, by = "var")
+
+  all.plots <- list()
+  for (i in 1:length(nmf.gene)){
+
+    df.cell.umap$score <- snip(x = df.cell.umap[ ,names(nmf.gene)[i]], lower.quantile = 0.001, upper.quantile = 0.999)
+    if (raster){
+      plt.nmf.load <- df.cell.umap %>%
+        ggplot(aes(x = x, y = y, color = score)) +
+        scattermore::geom_scattermore()
+      # geom_point(size = autoPointSize(n.points = nrow(df.cell.umap))) +
+      viridis::scale_color_viridis() +
+        labs(title = paste0(names(nmf.gene)[i], ""), subtitle = sample.name, x = "UMAP 1", y = "UMAP 2", color = "Activity") +
+        theme_miko(legend = T)
+    } else {
+      plt.nmf.load <- df.cell.umap %>%
+        ggplot(aes(x = x, y = y, color = score)) +
+        geom_point(size = autoPointSize(n.points = nrow(df.cell.umap))) +
+        viridis::scale_color_viridis() +
+        labs(title = paste0(names(nmf.gene)[i], ""), subtitle = sample.name, x = "UMAP 1", y = "UMAP 2", color = "Activity") +
+        theme_miko(legend = T)
+    }
+
+
+    plt.nmf.load.combo <- cowplot::plot_grid(plt.nmf.load, nmf.sum.hg$plots[[names(nmf.gene)[i]]])
+
+    # print(plt.nmf.load.combo)
+    all.plots[[names(nmf.gene)[i]]] <- plt.nmf.load.combo
+    # print(plt.nmf.load.combo)
+
+
+
+  }
+
+  miko_message("Complete!", verbose = verbose)
+
+
+  return(list(
+    nmf.results = nmf.opt,
+    plots = all.plots,
+    genes = nmf.gene,
+    df.cell.umap = df.cell.umap
+  ))
+
+}
+
+
+#' Run Robust Prinicipal Component Analysis
+#'
+#' Run a robust PCA (rPCA) dimensionality reduction on single-cell seurat object.
+#'
+#' @param object Seurat object
+#' @param assay Name of Assay rPCA is being run on
+#' @param npcs Total Number of PCs to compute and store (50 by default)
+#' @param maxpcs Max Number of PCs to compute and store (50 by default)
+#' @param reductions.key dimensional reduction key, specifies the string before the number for the dimension names. RPC by default
+#' @param seed.use Set a random seed. By default, sets the seed to 42. Setting NULL will not set a seed.
+#' @param verbose Print progress. Default is TRUE.
+#' @param method Robust PCA method. default is "hubert".
+#' @param maxdir maximal number of random directions to use for computing the outlyingness of the data points. Default is maxdir=100.
+#' @param signflip a logical value indicating wheather to try to solve the sign indeterminancy of the loadings - ad hoc approach setting the maximum element in a singular vector to be positive. Default is signflip = TRUE
+#' @param ... additional parameters passed to rPCA methods.
+#' @name runRPCA
+#' @seealso \code{\link{PcaHubert}}
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#'
+runRPCA <- function(object, assay = NULL, npcs = 50, maxpcs = 50,  reduction.key = "RPC_", seed.use = 42, verbose = T,
+                    method = c( "hubert", "robpca", "fasthcs", "pcal"), maxdir = 100,signflip = T, ...){
+
+  # computation time (hubert):
+  # 1000 cells ~ 2 min
+  # 17000 cells ~ 10 min
+
+  # computation time (pcal):
+  # 1000 cells ~ 1 min
+  # 17000 cells ~ 8 min
+
+  # recommended algorithms for scRNAseq: hubert, pcal
+
+  if (is.null(assay)){
+    assay <- DefaultAssay(object)
+  }
+
+  set.seed(seed.use)
+
+  miko_message("Running robust PCA...", verbose = verbose)
+
+  if (method == "hubert"){
+    require(rrcov)
+    pca.red <- rrcov::PcaHubert (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs, trace = verbose, maxdir = maxdir, signflip = T, ...)
+    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red@loadings,
+                                             loadings = pca.red@scores,
+                                             stdev = pca.red@eigenvalues,
+                                             key = reduction.key, assay =assay, ...)
+  } else if (method == "robpca"){
+    require(rospca)
+    pca.red <- rospca::robpca (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs,  ndir = maxdir, ...)
+    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red[["loadings"]],
+                                             loadings = pca.red[["scores"]],
+                                             stdev = pca.red[["eigenvalues"]],
+                                             key = reduction.key, assay =assay, ...)
+  } else if (method == "fasthcs"){
+    require(FastHCS)
+    # only works for q <= 25
+
+    if (maxpcs > 25) maxpcs <- 25
+    pca.red <- FastHCS::FastHCS (x = object@assays[[assay]]@scale.data, q = maxpcs, seed = seed.use)
+    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red[["loadings"]],
+                                             loadings = pca.red[["scores"]],
+                                             stdev = pca.red[["eigenvalues"]],
+                                             key = reduction.key, assay =assay, ...)
+  } else if (method == "pcal"){
+    require(rrcov)
+    miko_message("Running robust PCA...", verbose = verbose)
+    pca.red <- rrcov::PcaLocantore (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs, trace = verbose, signflip = T)
+    miko_message("Complete!", verbose = verbose)
+
+    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red@loadings,
+                                             loadings = pca.red@scores,
+                                             stdev = pca.red@eigenvalues,
+                                             key = reduction.key, assay =assay, ...)
+  }
+
+  miko_message("Complete!", verbose = verbose)
+  return(object)
+
+}
+
