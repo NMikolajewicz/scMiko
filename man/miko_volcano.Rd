@@ -10,7 +10,8 @@ miko_volcano(
   show.n = 10,
   features = NULL,
   fdr.threshold = 0.05,
-  label.size = NA
+  label.size = NA,
+  correct.p.value = T
 )
 }
 \arguments{
