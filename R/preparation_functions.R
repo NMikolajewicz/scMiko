@@ -183,6 +183,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
 #' @param reprocess.n.var Number of variable genes to use if data is reprocessed. Default is 3000. Note that if integrated assay is available, variable features are first identified for reprocessed data set, and subsequently merged with the variable features present in the integrated assay, thus allows for potentially more variable features than specified by this parameter.
 #' @param neighbors.reprocessed Specifies whether to compute new neighborhood graph if graphs are missing. Note that if data are subset, graphs are inherently removed. If downstream clustering is anticipated, set as TRUE. Default is FALSE.
+#' @param use.integrated If TRUE, sets default assay to "integrated" if present within seurat object.
 #' @param scale.reprocessed if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.
 #' @param keep.default.assay.only Specify whether to omit assays that are not default. Default is FALSE.
 #' @param coerce.assay.used.to.default Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.
@@ -193,7 +194,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
 prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
-                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F,
+                         terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F, use.integrated = T,
                          keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
 
   miko_message("Checking seurat object...")
@@ -201,9 +202,12 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   if (class(object) != "Seurat") stop("input must be Seurat Object")
 
 
-  if ("integrated" %in% names(object@assays)){
-    DefaultAssay(object) <- "integrated"
+  if (use.integrated){
+    if ("integrated" %in% names(object@assays)){
+      DefaultAssay(object) <- "integrated"
+    }
   }
+
 
   # remove object from global environment #####################################
   if (!is.null(rmv.pattern)) {

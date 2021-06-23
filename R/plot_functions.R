@@ -930,10 +930,12 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #' @param object Seurat object.
 #' @param feature feature name.
 #' @param plot.subtitle Plot title.
-#' @param do.neb Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is T.
+#' @param do.neb Logical to use Nebulosa::plot_density instead of scMiko::scExpression.UMAP. Default is F.
 #' @param title.size Size of plot title. Default is 10.
 #' @param slot which slot to pull from? Default is "data".
+#' @param assay assay to retrieve data from.
 #' @param reduction reduction name. Default is "umap".
+#' @param size point size for plots.
 #' @param ... additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)
 #' @name exprUMAP
 #' @return ggplot handle
@@ -941,10 +943,11 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #'
 #'  gg.plot <-  exprUMAP(object = so, feature = "Prrx1")
 #'
-exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.size = 10, slot = "data", reduction = "umap", ...){
+exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.size = 10, slot = "data", assay = DefaultAssay(object), reduction = "umap", size = autoPointSize(ncol(object)), ...){
 
+  DefaultAssay(object) <- assay
   if (!do.neb){
-    scExpression.UMAP(object,feature, adjust.pt.size =0.5, slot = slot, reduction = reduction,...) +
+    scExpression.UMAP(object,feature, adjust.pt.size =size, slot = slot, reduction = reduction,...) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -953,7 +956,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.si
       theme(plot.subtitle=element_text(size=5, color="black")) +
       theme(plot.title =element_text(size=title.size, face="italic", color="black"))
   } else {
-    Nebulosa::plot_density(object,feature, size = 0.5, slot = slot,reduction = reduction, ... ) +
+    Nebulosa::plot_density(object,feature, size = size, slot = slot,reduction = reduction, ... ) +
       theme_void() + theme(legend.position = "none") +
       scale_color_gradient(low = "grey95", high = "tomato") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -985,10 +988,10 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = T, title.si
 #'  df.dat <- getDEG(so.query, return.list = F)
 #'  plt.volcano <-  miko_volcano(df.deg = df.dat)
 #'
-miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr.threshold = 0.05, label.size = NA){
+miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr.threshold = 0.05, label.size = NA, correct.p.value = T){
 
   # assertions
-  stopifnot(all(c("group", "auc", "logFC", "padj", "feature") %in% colnames(df.deg)))
+  stopifnot(all(c("group", "auc", "logFC", "pval",  "padj", "feature") %in% colnames(df.deg)))
 
   if (ulength(df.deg$group) > 1){
 
@@ -999,8 +1002,8 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
     df.deg <- df.deg %>% dplyr::select(-c("group"))
     df.deg <- df.deg %>% dplyr::filter(grepl(pattern = group, x = deg.group))
   }
-  # get 10 genes to show
 
+  # get genes to show
   deg.top <- NULL
   if (is.null(features)){
     deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(show.n/2), auc),
@@ -1014,6 +1017,15 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
                          df.deg %>% dplyr::top_n(round(10/2), -auc))
   }
 
+
+  if (correct.p.value){
+    y.axis.label <- "-log10(FDR)"
+  } else {
+    y.axis.label <- "-log10(p)"
+    deg.top$padj <- deg.top$pval
+    df.deg$padj <- df.deg$pval
+  }
+
   # generate plot
   deg.top$feature <- paste0("italic('", deg.top$feature, "')")
   df.deg %>%
@@ -1025,7 +1037,7 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
     geom_vline(xintercept = 0, linetype = "dashed") +
     scale_color_gradient2(low = scales::muted("blue"), mid = "white", high = scales::muted("red")) +
     theme_miko(legend = T) +
-    labs(title = "Volcano Plot", color = "|AUC-0.5|", size = "|logFC|")
+    labs(title = "Volcano Plot", color = "|AUC-0.5|", size = "|logFC|", y = y.axis.label)
 
 }
 
