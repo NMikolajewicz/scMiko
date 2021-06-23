@@ -14,7 +14,9 @@ miko_integrate(
   split.prenorm = F,
   assay = "SCT",
   variable.features.n = 3000,
-  verbose = T
+  verbose = T,
+  use.existing.sct = F,
+  conserve.memory = F
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ miko_integrate(
 \item{variable.features.n}{Use this many features as variable features after ranking by residual variance; default is 3000.}
 
 \item{verbose}{Print progress. Default is TRUE.}
+
+\item{use.existing.sct}{If TRUE, existing SCT model is used. Default is FALSE (new SCT model is fit)}
+
+\item{conserve.memory}{If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE}
 }
 \value{
 Integrated seurat object
