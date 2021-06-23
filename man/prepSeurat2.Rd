@@ -17,6 +17,7 @@ prepSeurat2(
   reprocess.n.var = 3000,
   neighbors.reprocessed = F,
   scale.reprocessed = F,
+  use.integrated = T,
   keep.default.assay.only = F,
   coerce.assay.used.to.default = T,
   barcode.recode = NULL,
@@ -47,6 +48,8 @@ prepSeurat2(
 \item{neighbors.reprocessed}{Specifies whether to compute new neighborhood graph if graphs are missing. Note that if data are subset, graphs are inherently removed. If downstream clustering is anticipated, set as TRUE. Default is FALSE.}
 
 \item{scale.reprocessed}{if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.}
+
+\item{use.integrated}{If TRUE, sets default assay to "integrated" if present within seurat object.}
 
 \item{keep.default.assay.only}{Specify whether to omit assays that are not default. Default is FALSE.}
 
