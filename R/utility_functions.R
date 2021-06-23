@@ -6461,6 +6461,12 @@ miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = N
     my.breaks <- seq(-scale.lim, scale.lim, by = (2*scale.lim)/length(color))
     plt.hm <- ggplotify::as.ggplot(pheatmap::pheatmap(mat, breaks = my.breaks, color = color, silent = T, ...) )
   } else {
+
+    # remove zero variance col/row entries
+    zero.var.row <-   apply(mat, 1, function(x) var(x) == 0)
+    zero.var.col<-   apply(mat, 2, function(x) var(x) == 0)
+    mat <- mat[!zero.var.row, !zero.var.col]
+
     plt.hm <- ggplotify::as.ggplot(pheatmap::pheatmap(mat, color = color, scale = scale, silent = T, ...) )
 
     if (scale != "none"){
