@@ -13,6 +13,8 @@ getDEG(
   fdr.thresh = 0.01,
   logFC.thresh = NA,
   pct.dif.thresh = NA,
+  pct.in.thresh = NA,
+  pct.out.thresh = NA,
   return.list = T,
   return.all = F,
   verbose = T
@@ -33,7 +35,11 @@ getDEG(
 
 \item{logFC.thresh}{logFC threshold. Default = NA.}
 
-\item{pct.dif.thresh}{Difference in expression percentage. Default = 0.}
+\item{pct.dif.thresh}{Difference in expression percentage. Default = NA.}
+
+\item{pct.in.thresh}{Expression percentages exceeding this threshold are retained. Default is NA.}
+
+\item{pct.out.thresh}{Expression percentages below this threshold are retained Default is NA.}
 
 \item{return.list}{If TRUE, return list of differentially expressed genes. If FALSE, returns table with statistics from differential expression analysis.}
 
