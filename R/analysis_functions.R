@@ -781,9 +781,11 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 #'
 #' @param object Seurat object
 #' @param assay Name of Assay rPCA is being run on
+#' @param features Features to compute PCA on. If features=NULL, PCA will be run using scaled features for the Assay. Note that the features must be present in the scaled data. Any requested features that are not scaled or have 0 variance will be dropped, and the PCA will be run using the remaining features.
 #' @param npcs Total Number of PCs to compute and store (50 by default)
 #' @param maxpcs Max Number of PCs to compute and store (50 by default)
 #' @param reductions.key dimensional reduction key, specifies the string before the number for the dimension names. RPC by default
+#' @param reduction.name dimensional reduction name, rpca by default
 #' @param seed.use Set a random seed. By default, sets the seed to 42. Setting NULL will not set a seed.
 #' @param verbose Print progress. Default is TRUE.
 #' @param method Robust PCA method. default is "hubert".
@@ -796,7 +798,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 #' @return Seurat object
 #' @examples
 #'
-runRPCA <- function(object, assay = NULL, npcs = 50, maxpcs = 50,  reduction.key = "RPC_", seed.use = 42, verbose = T,
+runRPCA <- function(object, assay = NULL, features = NULL, npcs = 50, maxpcs = 50,  reduction.key = "RPC_", reduction.name = "rpca", seed.use = 42, verbose = T,
                     method = c( "hubert", "robpca", "fasthcs", "pcal"), maxdir = 100,signflip = T, ...){
 
   # computation time (hubert):
@@ -808,49 +810,78 @@ runRPCA <- function(object, assay = NULL, npcs = 50, maxpcs = 50,  reduction.key
   # 17000 cells ~ 8 min
 
   # recommended algorithms for scRNAseq: hubert, pcal
+  set.seed(seed.use)
 
-  if (is.null(assay)){
-    assay <- DefaultAssay(object)
+  if ("Seurat" %in% class(object)){
+    if (is.null(assay)){
+      assay <- DefaultAssay(object)
+    } else {
+      DefaultAssay(object) <- assay
+    }
+    emat <- object@assays[[assay]]@scale.data
+  } else if ("matrix" %in% class(object)){
+    emat <- object
+    assay <- "temp"
   }
 
-  set.seed(seed.use)
+  # emat <- object@assays[[assay]]@scale.data
+  if (!is.null(features)){
+    emat <- emat[rownames(emat) %in% features, ]
+  }
 
   miko_message("Running robust PCA...", verbose = verbose)
 
   if (method == "hubert"){
     require(rrcov)
-    pca.red <- rrcov::PcaHubert (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs, trace = verbose, maxdir = maxdir, signflip = T, ...)
-    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red@loadings,
-                                             loadings = pca.red@scores,
-                                             stdev = pca.red@eigenvalues,
-                                             key = reduction.key, assay =assay, ...)
+    pca.red <- rrcov::PcaHubert (x = emat, k = npcs, kmax = maxpcs, trace = verbose, maxdir = maxdir, signflip = T, ...)
+    res.list <- list(
+      embeddings = pca.red@loadings,
+      loadings = pca.red@scores,
+      stdev = pca.red@eigenvalues
+    )
+
   } else if (method == "robpca"){
     require(rospca)
-    pca.red <- rospca::robpca (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs,  ndir = maxdir, ...)
-    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red[["loadings"]],
-                                             loadings = pca.red[["scores"]],
-                                             stdev = pca.red[["eigenvalues"]],
-                                             key = reduction.key, assay =assay, ...)
+    pca.red <- rospca::robpca (x = emat, k = npcs, kmax = maxpcs,  ndir = maxdir, ...)
+    res.list <- list(
+      embeddings = pca.red[["loadings"]],
+      loadings = pca.red[["scores"]],
+      stdev = pca.red[["eigenvalues"]]
+    )
+
   } else if (method == "fasthcs"){
     require(FastHCS)
     # only works for q <= 25
-
     if (maxpcs > 25) maxpcs <- 25
-    pca.red <- FastHCS::FastHCS (x = object@assays[[assay]]@scale.data, q = maxpcs, seed = seed.use)
-    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red[["loadings"]],
-                                             loadings = pca.red[["scores"]],
-                                             stdev = pca.red[["eigenvalues"]],
-                                             key = reduction.key, assay =assay, ...)
+    pca.red <- FastHCS::FastHCS (x = emat, q = maxpcs, seed = seed.use)
+    res.list <- list(
+      embeddings = pca.red[["loadings"]],
+      loadings = pca.red[["scores"]],
+      stdev = pca.red[["eigenvalues"]]
+    )
   } else if (method == "pcal"){
     require(rrcov)
-    miko_message("Running robust PCA...", verbose = verbose)
-    pca.red <- rrcov::PcaLocantore (x = object@assays[[assay]]@scale.data, k = npcs, kmax = maxpcs, trace = verbose, signflip = T)
-    miko_message("Complete!", verbose = verbose)
+    pca.red <- rrcov::PcaLocantore (x = emat, k = npcs, kmax = maxpcs, trace = verbose, signflip = T)
+    res.list <- list(
+      embeddings = pca.red@loadings,
+      loadings = pca.red@scores,
+      stdev = pca.red@eigenvalues
+    )
+  }
 
-    object[["rpca"]] <- CreateDimReducObject(embeddings = pca.red@loadings,
-                                             loadings = pca.red@scores,
-                                             stdev = pca.red@eigenvalues,
-                                             key = reduction.key, assay =assay, ...)
+  if ("Seurat" %in% class(object)){
+    object[[reduction.name]] <- CreateDimReducObject(embeddings = res.list$embeddings,
+                                                     loadings = res.list$loadings,
+                                                     stdev = res.list$stdev,
+                                                     key = reduction.key,
+                                                     assay =assay, ...)
+
+  } else if ("matrix" %in% class(object)){
+    object <-  CreateDimReducObject(embeddings = res.list$embeddings,
+                                    loadings = res.list$loadings,
+                                    stdev = res.list$stdev,
+                                    key = reduction.key,
+                                    assay =assay, ...)
   }
 
   miko_message("Complete!", verbose = verbose)

@@ -4907,10 +4907,13 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #'
 runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 2, max.size = 300, e2s = F, go.ontology = "BP", verbose = T){
 
+
+  if (is.null(names(gene.list)) | ("" %in% names(gene.list)))  stop("One or more entries in the provided gene list is unnamed.")
+
   suppressMessages({
     suppressWarnings({
 
-      require("foreach")
+      require("foreach"); require("parallel"); require("fgsea"); require("plyr"); require("dplyr")
 
       my.symbol <- gene.universe
       my.entrez <- sym2entrez(my.symbol, my.species = species )

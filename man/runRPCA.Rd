@@ -7,9 +7,11 @@
 runRPCA(
   object,
   assay = NULL,
+  features = NULL,
   npcs = 50,
   maxpcs = 50,
   reduction.key = "RPC_",
+  reduction.name = "rpca",
   seed.use = 42,
   verbose = T,
   method = c("hubert", "robpca", "fasthcs", "pcal"),
@@ -23,9 +25,13 @@ runRPCA(
 
 \item{assay}{Name of Assay rPCA is being run on}
 
+\item{features}{Features to compute PCA on. If features=NULL, PCA will be run using scaled features for the Assay. Note that the features must be present in the scaled data. Any requested features that are not scaled or have 0 variance will be dropped, and the PCA will be run using the remaining features.}
+
 \item{npcs}{Total Number of PCs to compute and store (50 by default)}
 
 \item{maxpcs}{Max Number of PCs to compute and store (50 by default)}
+
+\item{reduction.name}{dimensional reduction name, rpca by default}
 
 \item{seed.use}{Set a random seed. By default, sets the seed to 42. Setting NULL will not set a seed.}
 
