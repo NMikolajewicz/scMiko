@@ -570,6 +570,7 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @param pct.out.thresh Expression percentages below this threshold are retained Default is NA.
 #' @param return.list If TRUE, return list of differentially expressed genes. If FALSE, returns table with statistics from differential expression analysis.
 #' @param return.all If TRUE, all thresholding filters are ignored, and all results are returned.
+#' @param sig.figs If specified and return.list = F, rounds statistics to specified significant figure (recommended: 3). Default is NA.
 #' @param verbose Print progress. Default is TRUE.
 #' @name getDEG
 #' @seealso \code{\link{wilcoxauc}}
@@ -578,7 +579,7 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @examples
 #'
 getDEG <- function(object, assay = "SCT", data = "data",
-                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = T, return.all = F, verbose = T){
+                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = T, return.all = F, sig.figs = NA, verbose = T){
 
   require(presto)
   stopifnot("Seurat" %in% class(object) )
@@ -632,6 +633,12 @@ getDEG <- function(object, assay = "SCT", data = "data",
     return(deg.list)
   } else {
     miko_message("Complete!", verbose = verbose)
+
+    if (!is.na(sig.figs)){
+      try({
+        deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif")] <- signif(deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif")], sig.figs)
+      }, silent = T)
+    }
     return(deg.dat)
   }
 

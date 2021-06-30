@@ -17,6 +17,7 @@ getDEG(
   pct.out.thresh = NA,
   return.list = T,
   return.all = F,
+  sig.figs = NA,
   verbose = T
 )
 }
@@ -44,6 +45,8 @@ getDEG(
 \item{return.list}{If TRUE, return list of differentially expressed genes. If FALSE, returns table with statistics from differential expression analysis.}
 
 \item{return.all}{If TRUE, all thresholding filters are ignored, and all results are returned.}
+
+\item{sig.figs}{If specified and return.list = F, rounds statistics to specified significant figure (recommended: 3). Default is NA.}
 
 \item{verbose}{Print progress. Default is TRUE.}
 }
