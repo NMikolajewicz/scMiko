@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible than Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1</p>
     </div>
 
-    <pre class="usage"><span class='fu'>BaCo</span>(<span class='no'>X</span>)</pre>
+    <pre class="usage"><span class='fu'>BaCo</span><span class='op'>(</span><span class='va'>X</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -130,10 +130,12 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'>#create a matrix (or load your own)</span>
-<span class='no'>X</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='fl'>1</span>:<span class='fl'>1000</span>, <span class='kw'>ncol</span><span class='kw'>=</span><span class='fl'>20</span>)
+<span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>1000</span>, ncol<span class='op'>=</span><span class='fl'>20</span><span class='op'>)</span>
 
 <span class='co'>#compute the Bayesian correlation matrix</span>
-<span class='no'>B</span> <span class='kw'>&lt;-</span> <span class='fu'>BaCo</span>(<span class='no'>X</span>)</div></pre>
+<span class='va'>B</span> <span class='op'>&lt;-</span> <span class='fu'>BaCo</span><span class='op'>(</span><span class='va'>X</span><span class='op'>)</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -149,7 +151,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

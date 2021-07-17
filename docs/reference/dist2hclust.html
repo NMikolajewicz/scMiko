@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Hierarchially-cluster distance matrix using flashClust package.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>dist2hclust</span>(<span class='no'>d.mat</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"average"</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>dist2hclust</span><span class='op'>(</span><span class='va'>d.mat</span>, method <span class='op'>=</span> <span class='st'>"average"</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -137,35 +137,50 @@
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code>flashClust</code></p></div>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># Get expression matrix</span>
-<span class='no'>which.data</span> <span class='kw'>&lt;-</span> <span class='st'>"scale"</span>
+<span class='va'>which.data</span> <span class='op'>&lt;-</span> <span class='st'>"scale"</span>
 
 <span class='co'># variable gene only matrix</span>
-<span class='no'>use.var</span> <span class='kw'>&lt;-</span> <span class='no'>T</span>
-<span class='kw'>if</span> (<span class='no'>use.var</span>){
-  <span class='no'>exp.mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getExpressionMatrix.html'>getExpressionMatrix</a></span>(<span class='no'>so.query</span>, <span class='kw'>only.variable</span> <span class='kw'>=</span> <span class='no'>use.var</span>, <span class='kw'>which.data</span> <span class='kw'>=</span> <span class='no'>which.data</span>, <span class='kw'>use.additional.genes</span> <span class='kw'>=</span> <span class='fl'>NA</span>)
-} <span class='kw'>else</span> {
-  <span class='no'>exp.mat</span> <span class='kw'>&lt;-</span> <span class='no'>exp.mat.complete</span>
-}</div><div class='output co'>#&gt; <span class='error'>Error in DefaultAssay(so): could not find function "DefaultAssay"</span></div><div class='input'>
+<span class='va'>use.var</span> <span class='op'>&lt;-</span> <span class='cn'>T</span>
+<span class='kw'>if</span> <span class='op'>(</span><span class='va'>use.var</span><span class='op'>)</span><span class='op'>{</span>
+  <span class='va'>exp.mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='getExpressionMatrix.html'>getExpressionMatrix</a></span><span class='op'>(</span><span class='va'>so.query</span>, only.variable <span class='op'>=</span> <span class='va'>use.var</span>, which.data <span class='op'>=</span> <span class='va'>which.data</span>, use.additional.genes <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span>
+<span class='op'>}</span> <span class='kw'>else</span> <span class='op'>{</span>
+  <span class='va'>exp.mat</span> <span class='op'>&lt;-</span> <span class='va'>exp.mat.complete</span>
+<span class='op'>}</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in DefaultAssay(so): could not find function "DefaultAssay"</span></div><div class='input'>
 
 <span class='co'># transpose expressio matrix (genes are columns)</span>
-<span class='no'>t.exp.mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/t.html'>t</a></span>(<span class='no'>exp.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in t(exp.mat): object 'exp.mat' not found</span></div><div class='input'><span class='no'>datExpr</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span>(<span class='no'>t.exp.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in as.matrix(t.exp.mat): object 't.exp.mat' not found</span></div><div class='input'><span class='no'>SubGeneNames</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>datExpr</span>)</div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'datExpr' not found</span></div><div class='input'>
+<span class='va'>t.exp.mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/t.html'>t</a></span><span class='op'>(</span><span class='va'>exp.mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in t(exp.mat): object 'exp.mat' not found</span></div><div class='input'><span class='va'>datExpr</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>t.exp.mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in as.matrix(t.exp.mat): object 't.exp.mat' not found</span></div><div class='input'><span class='va'>SubGeneNames</span><span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>datExpr</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'datExpr' not found</span></div><div class='input'>
 <span class='co'># capture output used to hide undesired print statement</span>
-<span class='no'>print2hide</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span>(<span class='fu'>allowWGCNAThreads</span>())</div><div class='output co'>#&gt; <span class='error'>Error in allowWGCNAThreads(): could not find function "allowWGCNAThreads"</span></div><div class='input'>
+<span class='va'>print2hide</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span><span class='op'>(</span><span class='fu'>allowWGCNAThreads</span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in allowWGCNAThreads(): could not find function "allowWGCNAThreads"</span></div><div class='input'>
 <span class='co'># transform matrix if necessary</span>
-<span class='kw'>if</span> (<span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span>(<span class='no'>datExpr</span>) <span class='kw'>&lt;</span> <span class='fl'>0</span>) {
-  <span class='no'>datExpr.noz</span> <span class='kw'>&lt;-</span> <span class='no'>datExpr</span> + <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span>(<span class='no'>datExpr</span>))
-} <span class='kw'>else</span> {
-  <span class='no'>datExpr.noz</span> <span class='kw'>&lt;-</span> <span class='no'>datExpr</span>
-}</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'datExpr' not found</span></div><div class='input'>
+<span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>datExpr</span><span class='op'>)</span> <span class='op'>&lt;</span> <span class='fl'>0</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>datExpr.noz</span> <span class='op'>&lt;-</span> <span class='va'>datExpr</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>datExpr</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>}</span> <span class='kw'>else</span> <span class='op'>{</span>
+  <span class='va'>datExpr.noz</span> <span class='op'>&lt;-</span> <span class='va'>datExpr</span>
+<span class='op'>}</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'datExpr' not found</span></div><div class='input'>
 <span class='co'># run WGCNA</span>
-<span class='no'>output.all</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='runWGCNA.html'>runWGCNA</a></span>(<span class='no'>datExpr.noz</span>, <span class='kw'>cor.metric</span> <span class='kw'>=</span> <span class='st'>"rho_p"</span>, <span class='kw'>soft.power</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>use.TOM</span> <span class='kw'>=</span> <span class='no'>T</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: Computing similarity matrix...</span></div><div class='output co'>#&gt; <span class='error'>Error in dismay::dismay(e.mat, metric = cor.metric): object 'datExpr.noz' not found</span></div><div class='input'>
+<span class='va'>output.all</span> <span class='op'>&lt;-</span> <span class='fu'><a href='runWGCNA.html'>runWGCNA</a></span><span class='op'>(</span><span class='va'>datExpr.noz</span>, cor.metric <span class='op'>=</span> <span class='st'>"rho_p"</span>, soft.power <span class='op'>=</span> <span class='fl'>2</span>, use.TOM <span class='op'>=</span> <span class='cn'>T</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: Computing similarity matrix...</span></div><div class='output co'>#&gt; <span class='error'>Error in dismay::dismay(e.mat, metric = cor.metric): object 'datExpr.noz' not found</span></div><div class='input'>
 <span class='co'># unpack output</span>
-<span class='no'>s.mat</span> <span class='kw'>&lt;-</span> <span class='no'>output.all</span><span class='kw'>[[</span><span class='st'>"s.mat"</span>]] <span class='co'># similar matrix</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='no'>a.mat</span> <span class='kw'>&lt;-</span> <span class='no'>output.all</span><span class='kw'>[[</span><span class='st'>"a.mat"</span>]] <span class='co'># adjacency matrix</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='no'>w.mat</span> <span class='kw'>&lt;-</span> <span class='no'>output.all</span><span class='kw'>[[</span><span class='st'>"w.mat"</span>]] <span class='co'># topological overlap matix</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='no'>d.mat</span> <span class='kw'>&lt;-</span> <span class='no'>output.all</span><span class='kw'>[[</span><span class='st'>"d.mat"</span>]] <span class='co'># disimilarity matix</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'>
-<span class='no'>geneTree</span> <span class='kw'>&lt;-</span> <span class='fu'>dist2hclust</span>(<span class='no'>d.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(any(class(d.mat) == "matrix")): object 'd.mat' not found</span></div><div class='input'>
+<span class='va'>s.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"s.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># similar matrix</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='va'>a.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"a.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># adjacency matrix</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='va'>w.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"w.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># topological overlap matix</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='va'>d.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"d.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># disimilarity matix</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'>
+<span class='va'>geneTree</span> <span class='op'>&lt;-</span> <span class='fu'>dist2hclust</span><span class='op'>(</span><span class='va'>d.mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(any(class(d.mat) == "matrix")): object 'd.mat' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -182,7 +197,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Performs quantile normalization of 2 vectors (Hicks 2014).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>qNorm</span>(<span class='no'>x</span>, <span class='no'>y</span>, <span class='kw'>genes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>flag.top.n</span> <span class='kw'>=</span> <span class='fl'>15</span>)</pre>
+    <pre class="usage"><span class='fu'>qNorm</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span>, genes <span class='op'>=</span> <span class='cn'>NULL</span>, flag.top.n <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,11 +138,17 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>data.frame of quantile normalized values.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># quantile normalization</span>
-<span class='no'>x.s1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getConnectivity.html'>getConnectivity</a></span>(<span class='no'>s.1</span>, <span class='kw'>gene.names</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>a.1</span>))$<span class='no'>wi</span></div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'a.1' not found</span></div><div class='input'><span class='no'>y.s2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getConnectivity.html'>getConnectivity</a></span>(<span class='no'>s.2</span>, <span class='kw'>gene.names</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>a.2</span>))$<span class='no'>wi</span></div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'a.2' not found</span></div><div class='input'><span class='no'>df.xy.s</span> <span class='kw'>&lt;-</span> <span class='fu'>qNorm</span>(<span class='no'>x.s1</span>, <span class='no'>y.s2</span>, <span class='kw'>genes</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span>(<span class='no'>a.1</span>))</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(length(x) == length(y)): object 'x.s1' not found</span></div><div class='input'>
+<span class='va'>x.s1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='getConnectivity.html'>getConnectivity</a></span><span class='op'>(</span><span class='va'>s.1</span>, gene.names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>a.1</span><span class='op'>)</span><span class='op'>)</span><span class='op'>$</span><span class='va'>wi</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'a.1' not found</span></div><div class='input'><span class='va'>y.s2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='getConnectivity.html'>getConnectivity</a></span><span class='op'>(</span><span class='va'>s.2</span>, gene.names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>a.2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>$</span><span class='va'>wi</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in is.data.frame(x): object 'a.2' not found</span></div><div class='input'><span class='va'>df.xy.s</span> <span class='op'>&lt;-</span> <span class='fu'>qNorm</span><span class='op'>(</span><span class='va'>x.s1</span>, <span class='va'>y.s2</span>, genes <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>a.1</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(length(x) == length(y)): object 'x.s1' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -159,7 +165,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

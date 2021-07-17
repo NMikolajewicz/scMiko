@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Cut clustered tree at varying heights and overlay with dendrogram to find optimal parameter set. — optimalDS" />
-<meta property="og:description" content="WGCNA::cutreeDynamic is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set." />
+<meta property="og:description" content="WGCNA::cutreeDynamic is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set. Default cut method is 'hybrid'." />
 
 
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -109,10 +109,17 @@
     </div>
 
     <div class="ref-description">
-    <p>WGCNA::cutreeDynamic is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set.</p>
+    <p>WGCNA::cutreeDynamic is run for varying levels of deepSplit parameter (0:4), and cluster membership is assigned for each parameter set. Default cut method is 'hybrid'.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>optimalDS</span>(<span class='no'>tree</span>, <span class='no'>d.mat</span>, <span class='kw'>genes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>optimalDS</span><span class='op'>(</span>
+  <span class='va'>tree</span>,
+  <span class='va'>d.mat</span>,
+  genes <span class='op'>=</span> <span class='cn'>NULL</span>,
+  cut.height <span class='op'>=</span> <span class='fl'>0.998</span>,
+  pam.respects.dendro <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -130,6 +137,14 @@
       <td><p>vector of gene names corresponding rows/col of distance matrix (d.mat). If specified, additional "genes" column is provided in output.</p></td>
     </tr>
     <tr>
+      <th>cut.height</th>
+      <td><p>Maximum joining heights that will be considered. Default is 0.998.</p></td>
+    </tr>
+    <tr>
+      <th>pam.respects.dendro</th>
+      <td><p>Logical, only used for method "hybrid". If TRUE, the PAM stage will respect the dendrogram in the sense that objects and small clusters will only be assigned to clusters that belong to the same branch that the objects or small clusters being assigned belong to. Default is FALSE.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
       <td><p>additional arguments passed to dynamicTreeCut::cutreeDynamic()</p></td>
     </tr>
@@ -144,8 +159,10 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>geneTree</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='dist2hclust.html'>dist2hclust</a></span>(<span class='no'>d.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(any(class(d.mat) == "matrix")): object 'd.mat' not found</span></div><div class='input'><span class='co'># determine number of modules based on refrence dataset</span>
-<span class='no'>print2hide</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span>(<span class='no'>mColorh</span> <span class='kw'>&lt;-</span> <span class='fu'>optimalDS</span>(<span class='kw'>tree</span> <span class='kw'>=</span> <span class='no'>geneTree</span>, <span class='kw'>d.mat</span> <span class='kw'>=</span> <span class='no'>d.mat</span>, <span class='kw'>genes</span>  <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span>(<span class='no'>a.mat</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in cutreeDynamic(dendro = tree, distM = d.mat, cutHeight = 0.998,     deepSplit = ds, pamRespectsDendro = FALSE, ...): object 'geneTree' not found</span></div><div class='input'>
+<span class='va'>geneTree</span> <span class='op'>&lt;-</span> <span class='fu'><a href='dist2hclust.html'>dist2hclust</a></span><span class='op'>(</span><span class='va'>d.mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in stopifnot(any(class(d.mat) == "matrix")): object 'd.mat' not found</span></div><div class='input'><span class='co'># determine number of modules based on refrence dataset</span>
+<span class='va'>print2hide</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/capture.output.html'>capture.output</a></span><span class='op'>(</span><span class='va'>mColorh</span> <span class='op'>&lt;-</span> <span class='fu'>optimalDS</span><span class='op'>(</span>tree <span class='op'>=</span> <span class='va'>geneTree</span>, d.mat <span class='op'>=</span> <span class='va'>d.mat</span>, genes  <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>a.mat</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in cutreeDynamic(dendro = tree, distM = d.mat, cutHeight = cut.height,     deepSplit = ds, pamRespectsDendro = pam.respects.dendro,     ...): object 'geneTree' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -162,7 +179,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

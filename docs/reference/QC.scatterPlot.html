@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="QC scatter plots — QC.scatterPlot" />
-<meta property="og:description" content="Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell." />
+<meta property="og:description" content="Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell. Cellular density is computed and overlayed as color on scatter plot." />
 
 
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -109,10 +109,10 @@
     </div>
 
     <div class="ref-description">
-    <p>Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell.</p>
+    <p>Pairwise relationships between 1) UMI count/cell and mitchondrial content, 2) gene count/cell and mitochondrial content, and 3) UMI count/cell and gene count/cell. Cellular density is computed and overlayed as color on scatter plot.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>QC.scatterPlot</span>(<span class='no'>so</span>)</pre>
+    <pre class="usage"><span class='fu'>QC.scatterPlot</span><span class='op'>(</span><span class='va'>so</span>, legend.width <span class='op'>=</span> <span class='fl'>1</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -120,6 +120,14 @@
     <tr>
       <th>so</th>
       <td><p>Seurat Object</p></td>
+    </tr>
+    <tr>
+      <th>legend.width</th>
+      <td><p>numeric specifying legend width (in cm)</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional parameters passed to scMiko::getDensity().</p></td>
     </tr>
     </table>
 
@@ -142,7 +150,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

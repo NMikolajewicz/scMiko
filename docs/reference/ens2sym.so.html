@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,24 +112,31 @@
     <p>Process Seurat object so that genes in Ensemble format are converted to Symbol representation.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ens2sym.so</span>(<span class='no'>so</span>, <span class='no'>gNames.list</span>, <span class='kw'>convert.RNA</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre class="usage"><span class='fu'>ens2sym.so</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>gNames.list</span>, convert.RNA <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>reference.genes</th>
-      <td><p>Named vector of genes; names are ENSEMBL, entries are SYMBOL.</p></td>
+      <th>object</th>
+      <td><p>Seurat object</p></td>
     </tr>
     <tr>
-      <th>query.genes</th>
-      <td><p>vector of query genes to check representation</p></td>
+      <th>gNames.list</th>
+      <td><p>named character vector mapping ensembl (names) to gene symbols (entries)</p></td>
+    </tr>
+    <tr>
+      <th>convert.RNA</th>
+      <td><p>logical to convert ensembl in RNA assay to gene symbol</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Seurat object with specified gene representation.</p>
+    <p>Seurat object with genes represented as symbols</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -146,7 +153,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

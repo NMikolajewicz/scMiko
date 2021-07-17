@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,15 +112,16 @@
     <p>Analysis of scale free topology for multiple soft thresholding powers. The aim is to help the user pick an appropriate soft-thresholding power for network construction. Inspired by WGCNA::pickSoftThreshold and updated from first version (scMiko::getSoftThreshold)</p>
     </div>
 
-    <pre class="usage"><span class='fu'>getSoftThreshold2</span>(
-  <span class='no'>s.mat</span>,
-  <span class='kw'>power</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0.5</span>, <span class='fl'>5</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>0.5</span>), <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>6</span>, <span class='fl'>10</span>)),
-  <span class='kw'>network.type</span> <span class='kw'>=</span> <span class='st'>"signed"</span>,
-  <span class='kw'>nBreaks</span> <span class='kw'>=</span> <span class='fl'>20</span>,
-  <span class='kw'>removeFirst</span> <span class='kw'>=</span> <span class='no'>T</span>,
-  <span class='kw'>rescale.adjacency</span> <span class='kw'>=</span> <span class='no'>F</span>,
-  <span class='kw'>n.cores</span> <span class='kw'>=</span> <span class='fl'>4</span>
-)</pre>
+    <pre class="usage"><span class='fu'>getSoftThreshold2</span><span class='op'>(</span>
+  <span class='va'>s.mat</span>,
+  power <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0.5</span>, <span class='fl'>5</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>6</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
+  network.type <span class='op'>=</span> <span class='st'>"signed"</span>,
+  nBreaks <span class='op'>=</span> <span class='fl'>20</span>,
+  removeFirst <span class='op'>=</span> <span class='cn'>T</span>,
+  rescale.adjacency <span class='op'>=</span> <span class='cn'>F</span>,
+  n.cores <span class='op'>=</span> <span class='fl'>4</span>,
+  r2.target <span class='op'>=</span> <span class='fl'>0.9</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,6 +151,10 @@
       <td><p>Number of cores to use for parallelization. Default is 4.</p></td>
     </tr>
     <tr>
+      <th>r2.target</th>
+      <td><p>Retrieves soft power that corresponds to network topology corresponding to r2 &gt;= r2.target. Default is 0.9.</p></td>
+    </tr>
+    <tr>
       <th>networkType</th>
       <td><p>Allowed values are (unique abbreviations of) "unsigned", "signed", "signed hybrid". See WGCNA::adjacency.</p></td>
     </tr>
@@ -165,12 +170,15 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># determine optimal soft threshold</span>
-<span class='no'>sft</span> <span class='kw'>&lt;-</span> <span class='fu'>getSoftThreshold2</span>(<span class='no'>s.mat</span>, <span class='kw'>power</span> <span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>0.5</span>,<span class='fl'>5</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>0.5</span>), <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>6</span>,<span class='fl'>10</span>)),
-<span class='kw'>network.type</span> <span class='kw'>=</span> <span class='st'>"signed"</span>, <span class='kw'>rescale.adjacency</span> <span class='kw'>=</span> <span class='no'>F</span>)</div><div class='output co'>#&gt; <span class='error'>Error in makeCluster(n.cores): could not find function "makeCluster"</span></div><div class='input'>
+<span class='va'>sft</span> <span class='op'>&lt;-</span> <span class='fu'>getSoftThreshold2</span><span class='op'>(</span><span class='va'>s.mat</span>, power <span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0.5</span>,<span class='fl'>5</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>6</span>,<span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
+network.type <span class='op'>=</span> <span class='st'>"signed"</span>, rescale.adjacency <span class='op'>=</span> <span class='cn'>F</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in (foreach(i = 1:length(powers), .packages = c("scMiko", "dplyr",     "ggplot2", "ggpmisc"))) %dopar% {    power.cur &lt;- powers[i]    a.cur &lt;- sim2adj(s.mat, soft.power = power.cur, network.type = network.type)    if (rescale.adjacency)         a.cur &lt;- recaleValues(a.cur, new.min = 0, new.max = 1)    net.connectivity.df &lt;- getConnectivity(a.cur, rownames(a.cur),         flag.top.n = 20)    rm(a.cur)    invisible({        gc()    })    k &lt;- net.connectivity.df$wi    discretized.k &lt;- cut(k, nBreaks)    dk &lt;- tapply(k, discretized.k, mean)    p.dk &lt;- as.vector(tapply(k, discretized.k, length)/length(k))    breaks1 &lt;- seq(from = min(k), to = max(k), length = nBreaks +         1)    hist1 &lt;- suppressWarnings(hist(k, breaks = breaks1, equidist = FALSE,         plot = FALSE, right = TRUE))    dk2 &lt;- hist1$mids    dk &lt;- ifelse(is.na(dk), dk2, dk)    dk = ifelse(dk == 0, dk2, dk)    p.dk &lt;- ifelse(is.na(p.dk), 0, p.dk)    log.dk &lt;- as.vector(log10(dk))    if (removeFirst) {        p.dk = p.dk[-1]        log.dk = log.dk[-1]    }    log.p.dk &lt;- as.numeric(log10(p.dk + 1e-09))    lm1 &lt;- lm(log.p.dk ~ log.dk)    r2.sf.current &lt;- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])    df.sf &lt;- data.frame(x = log.dk, y = log.p.dk)    plt.sf.current &lt;- df.sf %&gt;% ggplot(aes(x = x, y = y)) + geom_smooth(method = "lm",         color = "tomato", fill = "tomato") + geom_point(size = 3) +         xlab("N Links (Log)") + ylab("N Nodes (Log)") + labs(title = "Node Linkages",         subtitle = paste0("Soft Power = ", power.cur)) + theme_classic() +         stat_fit_glance(method = "lm", label.y = "bottom", method.args = list(formula = y ~             x), mapping = aes(label = sprintf("r^2~\"=\"~%.3f~~italic(P)~\"=\"~%.2g",             stat(r.squared), stat(p.value))), parse = TRUE)    sf.list &lt;- list(r2 = r2.sf.current, df = df.sf, plt = plt.sf.current)    return(sf.list)}: could not find function "%dopar%"</span></div><div class='input'>
 <span class='co'># visualize optimization plot</span>
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>sft</span>$<span class='no'>optimization.plot</span>)</div><div class='output co'>#&gt; <span class='error'>Error in print(sft$optimization.plot): object 'sft' not found</span></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>optimization.plot</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in print(sft$optimization.plot): object 'sft' not found</span></div><div class='input'>
 <span class='co'># visualize node-linkage density plots</span>
-<span class='kw pkg'>cowplot</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/cowplot/man/plot_grid.html'>plot_grid</a></span>(<span class='kw'>plotlist</span> <span class='kw'>=</span> <span class='no'>sft</span>$<span class='no'>distribution.plot</span>, <span class='kw'>ncol</span> <span class='kw'>=</span> <span class='fl'>5</span>)</div><div class='output co'>#&gt; <span class='error'>Error in cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5): object 'sft' not found</span></div></pre>
+<span class='fu'>cowplot</span><span class='fu'>::</span><span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span>plotlist <span class='op'>=</span> <span class='va'>sft</span><span class='op'>$</span><span class='va'>distribution.plot</span>, ncol <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5): object 'sft' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -186,7 +194,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

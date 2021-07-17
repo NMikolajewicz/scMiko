@@ -87,7 +87,7 @@ Heavily based on the fantastic walk through found at https://romanhaa.github.io/
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -126,53 +126,53 @@ passed to scanpy.pp.neighbors())</p>
 <p>Heavily based on the fantastic walk through found at https://romanhaa.github.io/blog/paga_to_r/</p>
     </div>
 
-    <pre class="usage"><span class='fu'>PAGA</span>(
-  <span class='no'>object</span>,
-  <span class='kw'>assay</span> <span class='kw'>=</span> <span class='st'>"RNA"</span>,
-  <span class='kw'>slim</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>seurat_grouping</span> <span class='kw'>=</span> <span class='st'>"seurat_clusters"</span>,
-  <span class='kw'>set_ident</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>clustering_algorithm</span> <span class='kw'>=</span> <span class='st'>"leiden"</span>,
-  <span class='kw'>reduction_name</span> <span class='kw'>=</span> <span class='st'>"umap"</span>,
-  <span class='kw'>reduction_key</span> <span class='kw'>=</span> <span class='st'>"umap_"</span>,
-  <span class='kw'>edge_filter_weight</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
-  <span class='kw'>neighbors_n_neighbors</span> <span class='kw'>=</span> <span class='fl'>15</span>,
-  <span class='kw'>neighbors_n_pcs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>neighbors_use_rep</span> <span class='kw'>=</span> <span class='st'>"pca"</span>,
-  <span class='kw'>neighbors_knn</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>neighbors_random_state</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>neighbors_method</span> <span class='kw'>=</span> <span class='st'>"umap"</span>,
-  <span class='kw'>neighbors_metric</span> <span class='kw'>=</span> <span class='st'>"euclidean"</span>,
-  <span class='kw'>clustering_resolution</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>clustering_restrict_to</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>clustering_random_state</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>clustering_key_added</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>clustering_adjacency</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>clustering_directed</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>clustering_use_weights</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>clustering_n_iterations</span> <span class='kw'>=</span> -<span class='fl'>1</span>,
-  <span class='kw'>clustering_partition_type</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>paga_show</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>paga_plot</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>paga_add_pos</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>paga_threshold</span> <span class='kw'>=</span> <span class='fl'>0.01</span>,
-  <span class='kw'>paga_layout</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>paga_init_pos</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>paga_root</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>paga_single_component</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>paga_random_state</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>umap_min_dist</span> <span class='kw'>=</span> <span class='fl'>0.5</span>,
-  <span class='kw'>umap_spread</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>umap_n_components</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>umap_alpha</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>umap_gamma</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>umap_negative_sample_rate</span> <span class='kw'>=</span> <span class='fl'>5</span>,
-  <span class='kw'>umap_init_pos</span> <span class='kw'>=</span> <span class='st'>"spectral"</span>,
-  <span class='kw'>dpt_root_cell</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>dpt_root_cluster</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>dpt_auto_root</span> <span class='kw'>=</span> <span class='st'>"min"</span>,
-  <span class='kw'>dpt_auto_reduction</span> <span class='kw'>=</span> <span class='st'>"dm"</span>
-)</pre>
+    <pre class="usage"><span class='fu'>PAGA</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  assay <span class='op'>=</span> <span class='st'>"RNA"</span>,
+  slim <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  seurat_grouping <span class='op'>=</span> <span class='st'>"seurat_clusters"</span>,
+  set_ident <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  clustering_algorithm <span class='op'>=</span> <span class='st'>"leiden"</span>,
+  reduction_name <span class='op'>=</span> <span class='st'>"umap"</span>,
+  reduction_key <span class='op'>=</span> <span class='st'>"umap_"</span>,
+  edge_filter_weight <span class='op'>=</span> <span class='fl'>0.1</span>,
+  neighbors_n_neighbors <span class='op'>=</span> <span class='fl'>15</span>,
+  neighbors_n_pcs <span class='op'>=</span> <span class='cn'>NULL</span>,
+  neighbors_use_rep <span class='op'>=</span> <span class='st'>"pca"</span>,
+  neighbors_knn <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  neighbors_random_state <span class='op'>=</span> <span class='fl'>0</span>,
+  neighbors_method <span class='op'>=</span> <span class='st'>"umap"</span>,
+  neighbors_metric <span class='op'>=</span> <span class='st'>"euclidean"</span>,
+  clustering_resolution <span class='op'>=</span> <span class='fl'>1</span>,
+  clustering_restrict_to <span class='op'>=</span> <span class='cn'>NULL</span>,
+  clustering_random_state <span class='op'>=</span> <span class='fl'>0</span>,
+  clustering_key_added <span class='op'>=</span> <span class='cn'>NULL</span>,
+  clustering_adjacency <span class='op'>=</span> <span class='cn'>NULL</span>,
+  clustering_directed <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  clustering_use_weights <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  clustering_n_iterations <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>,
+  clustering_partition_type <span class='op'>=</span> <span class='cn'>NULL</span>,
+  paga_show <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  paga_plot <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  paga_add_pos <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  paga_threshold <span class='op'>=</span> <span class='fl'>0.01</span>,
+  paga_layout <span class='op'>=</span> <span class='cn'>NULL</span>,
+  paga_init_pos <span class='op'>=</span> <span class='cn'>NULL</span>,
+  paga_root <span class='op'>=</span> <span class='fl'>0</span>,
+  paga_single_component <span class='op'>=</span> <span class='cn'>NULL</span>,
+  paga_random_state <span class='op'>=</span> <span class='fl'>0</span>,
+  umap_min_dist <span class='op'>=</span> <span class='fl'>0.5</span>,
+  umap_spread <span class='op'>=</span> <span class='fl'>1</span>,
+  umap_n_components <span class='op'>=</span> <span class='fl'>3</span>,
+  umap_alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  umap_gamma <span class='op'>=</span> <span class='fl'>1</span>,
+  umap_negative_sample_rate <span class='op'>=</span> <span class='fl'>5</span>,
+  umap_init_pos <span class='op'>=</span> <span class='st'>"spectral"</span>,
+  dpt_root_cell <span class='op'>=</span> <span class='cn'>NULL</span>,
+  dpt_root_cluster <span class='op'>=</span> <span class='cn'>NULL</span>,
+  dpt_auto_root <span class='op'>=</span> <span class='st'>"min"</span>,
+  dpt_auto_reduction <span class='op'>=</span> <span class='st'>"dm"</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -239,37 +239,42 @@ passed to scanpy.pp.neighbors())</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sceasy</span>)</div><div class='output co'>#&gt; <span class='error'>Error in library(sceasy): there is no package called 'sceasy'</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>reticulate</span>)
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>sceasy</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Loading required package: reticulate</span></div><div class='output co'>#&gt; <span class='warning'>Warning: package 'reticulate' was built under R version 4.0.5</span></div><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/rstudio/reticulate'>reticulate</a></span><span class='op'>)</span>
 
-<span class='no'>py.path</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/py_config.html'>py_config</a></span>()
-<span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/use_python.html'>use_python</a></span>(<span class='no'>py.path</span><span class='kw'>[[</span><span class='st'>"python"</span>]])
-<span class='no'>sc</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/import.html'>import</a></span>(<span class='st'>"scanpy"</span>, <span class='kw'>convert</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</div><div class='output co'>#&gt; <span class='error'>Error in py_module_import(module, convert = convert): ModuleNotFoundError: No module named 'scanpy'</span></div><div class='input'>
+<span class='va'>py.path</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/py_config.html'>py_config</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/use_python.html'>use_python</a></span><span class='op'>(</span><span class='va'>py.path</span><span class='op'>[[</span><span class='st'>"python"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+<span class='va'>sc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/reticulate/man/import.html'>import</a></span><span class='op'>(</span><span class='st'>"scanpy"</span>, convert <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+
 <span class='co'># run PAGA analysis</span>
-<span class='no'>pr</span> <span class='kw'>&lt;-</span> <span class='fu'>PAGA</span>(<span class='no'>so.query</span>,<span class='kw'>assay</span> <span class='kw'>=</span> <span class='st'>"RNA"</span>, <span class='kw'>seurat_grouping</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>edge_filter_weight</span> <span class='kw'>=</span> <span class='fl'>0.1</span>)</div><div class='output co'>#&gt; <span class='error'>Error in loadNamespace(name): there is no package called 'sceasy'</span></div><div class='input'>
+<span class='va'>pr</span> <span class='op'>&lt;-</span> <span class='fu'>PAGA</span><span class='op'>(</span><span class='va'>so.query</span>,assay <span class='op'>=</span> <span class='st'>"RNA"</span>, seurat_grouping <span class='op'>=</span> <span class='cn'>NULL</span>, edge_filter_weight <span class='op'>=</span> <span class='fl'>0.1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in compareVersion(as.character(obj@version), "3.0.0"): object 'so.query' not found</span></div><div class='input'>
 <span class='co'># get PAGA results</span>
-<span class='no'>pr.list</span> <span class='kw'>&lt;-</span> <span class='no'>pr</span>@<span class='kw'>misc</span><span class='kw'>[[</span><span class='st'>"paga"</span>]]</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'pr' not found</span></div><div class='input'>
+<span class='va'>pr.list</span> <span class='op'>&lt;-</span> <span class='va'>pr</span><span class='op'>@</span><span class='va'>misc</span><span class='op'>[[</span><span class='st'>"paga"</span><span class='op'>]</span><span class='op'>]</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'pr' not found</span></div><div class='input'>
 <span class='co'># generate PAGA plots</span>
-<span class='no'>paga.plot</span> <span class='kw'>&lt;-</span> <span class='fu'>ggplot</span>(<span class='no'>pr.list</span><span class='kw'>[[</span><span class='st'>"position"</span>]], <span class='fu'>aes</span>(<span class='no'>x</span>, <span class='no'>y</span>)) +
-  <span class='fu'>geom_segment</span>(
-   <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>pr.list</span><span class='kw'>[[</span><span class='st'>"edges"</span>]],
-   <span class='fu'>aes</span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>x1</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='no'>y1</span>, <span class='kw'>xend</span> <span class='kw'>=</span> <span class='no'>x2</span>, <span class='kw'>yend</span> <span class='kw'>=</span> <span class='no'>y2</span>),
-   <span class='kw'>size</span> <span class='kw'>=</span> <span class='no'>pr.list</span><span class='kw'>[[</span><span class='st'>"edges"</span>]]$<span class='no'>weight</span>*<span class='fl'>3</span>,
-   <span class='kw'>colour</span> <span class='kw'>=</span> <span class='st'>"black"</span>,
-   <span class='kw'>show.legend</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
- ) +
- <span class='fu'>geom_point</span>(<span class='fu'>aes</span>(<span class='kw'>color</span> <span class='kw'>=</span> <span class='no'>group</span>), <span class='kw'>size</span> <span class='kw'>=</span> <span class='fl'>7</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>show.legend</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>) +
- <span class='fu'>geom_text</span>(<span class='fu'>aes</span>(<span class='kw'>label</span> <span class='kw'>=</span> <span class='no'>group</span>), <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"black"</span>, <span class='kw'>fontface</span> <span class='kw'>=</span> <span class='st'>"bold"</span>) +
- <span class='fu'>labs</span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='st'>"UMAP_1"</span>, <span class='kw'>y</span> <span class='kw'>=</span> <span class='st'>"UMAP_2"</span>) +
- <span class='fu'>theme_bw</span>() +
-<span class='fu'>theme</span>(
-   <span class='kw'>axis.title</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>axis.text</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>axis.ticks</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>axis.line</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>panel.grid.major</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>panel.grid.minor</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>(),
-   <span class='kw'>panel.border</span> <span class='kw'>=</span> <span class='fu'>element_blank</span>()
- )</div><div class='output co'>#&gt; <span class='error'>Error in ggplot(pr.list[["position"]], aes(x, y)): could not find function "ggplot"</span></div><div class='input'>
+<span class='va'>paga.plot</span> <span class='op'>&lt;-</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>pr.list</span><span class='op'>[[</span><span class='st'>"position"</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'>aes</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_segment</span><span class='op'>(</span>
+   data <span class='op'>=</span> <span class='va'>pr.list</span><span class='op'>[[</span><span class='st'>"edges"</span><span class='op'>]</span><span class='op'>]</span>,
+   <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>x1</span>, y <span class='op'>=</span> <span class='va'>y1</span>, xend <span class='op'>=</span> <span class='va'>x2</span>, yend <span class='op'>=</span> <span class='va'>y2</span><span class='op'>)</span>,
+   size <span class='op'>=</span> <span class='va'>pr.list</span><span class='op'>[[</span><span class='st'>"edges"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>$</span><span class='va'>weight</span><span class='op'>*</span><span class='fl'>3</span>,
+   colour <span class='op'>=</span> <span class='st'>"black"</span>,
+   show.legend <span class='op'>=</span> <span class='cn'>FALSE</span>
+ <span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'>geom_point</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>group</span><span class='op'>)</span>, size <span class='op'>=</span> <span class='fl'>7</span>, alpha <span class='op'>=</span> <span class='fl'>1</span>, show.legend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'>geom_text</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>label <span class='op'>=</span> <span class='va'>group</span><span class='op'>)</span>, color <span class='op'>=</span> <span class='st'>"black"</span>, fontface <span class='op'>=</span> <span class='st'>"bold"</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"UMAP_1"</span>, y <span class='op'>=</span> <span class='st'>"UMAP_2"</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'>theme_bw</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+<span class='fu'>theme</span><span class='op'>(</span>
+   axis.title <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   axis.text <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   axis.ticks <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   axis.line <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   panel.grid.major <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   panel.grid.minor <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,
+   panel.border <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>
+ <span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in ggplot(pr.list[["position"]], aes(x, y)): could not find function "ggplot"</span></div><div class='input'>
 
 </div></pre>
   </div>
@@ -287,7 +292,7 @@ passed to scanpy.pp.neighbors())</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

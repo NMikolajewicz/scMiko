@@ -896,3 +896,143 @@ runRPCA <- function(object, assay = NULL, features = NULL, npcs = 50, maxpcs = 5
 
 }
 
+
+#' Evaluate signature coherence.
+#'
+#' Evaluates signature coherence by computing signature score (using runMS) and then calculating correlations between signature components (i.e., gene expression) and signature score. Genes for which correlations do not exceed coherence threshold are dropped and remaining genes are used to calculate new coherent signature.
+#'
+#' @param object Seurat object
+#' @param ms.result Output from runMS() for provided genelist. If not specified, signatures are computed using runMS.
+#' @param genelist Named list of genes used to compute gene signature.
+#' @param slot Seurat slot used for gene expression correlations. Default is 'data.'
+#' @param assay Seurat assay. Default is DefaultAssay(object).
+#' @param coherence.threshold Coherence threshold. Default is 0.1.
+#' @param show.grid Logical to show grid on coherence graph.
+#' @param coherent.ms Logical to recompute coherent signature following coherence thresholding.
+#' @param cor.method correlation metod used to determine signature coherence. Options: spearman, pearson. Default is spearman.
+#' @param ... additional parameters passed to scMiko::runMS().
+#' @name signatureCoherence
+#' @seealso \code{\link{runMS}}
+#' @author Nicholas Mikolajewicz
+#' @return list of results
+#' @examples
+#'
+signatureCoherence <- function(object = NULL, ms.result = NULL, genelist,
+                               slot = "data", assay = DefaultAssay(object), coherence.threshold = 0.1, show.grid = T,
+                               coherent.ms = T, cor.method = "spearman", ...){
+
+
+  if (is.null(ms.result)){
+    ms.result <- runMS(object = object, genelist = genelist, return.plots = F, ...)
+  }
+
+  match.sets <- colnames(ms.result[["data"]])[colnames(ms.result[["data"]]) %in% names(genelist)]
+
+
+  if (assay == "SCT" & slot == "scale"){
+    object <-  GetResidual(object = object, features = unique(unlist(genelist)))
+  }
+  # , as.dense = T
+  expr.mat <- getExpressionMatrix(so = object, only.variable = F, which.data = slot, which.assay = assay)
+  if (sum(dim(expr.mat)) == 0) stop("Expression matrix is empty.")
+  genelist.coherent <- list()
+  cor.list <- list()
+  plt.list <- list()
+
+  miko_message("Computed signature score correlations...")
+  for (i in 1:length(match.sets)){
+
+    sig.score <- (as.matrix(ms.result$data[ ,match.sets[i]]))
+    # expr.score <- t(expr.mat[rownames(expr.mat) %in% genelist[[match.sets[i]]], ])
+    expr.score <-  tryCatch({
+      expr.score <- t(expr.mat[rownames(expr.mat) %in% genelist[[match.sets[i]]], ])
+    }, error = function(e){
+      expr.mat <- as.matrix(expr.mat)
+      expr.score <- t(expr.mat[rownames(expr.mat) %in% genelist[[match.sets[i]]], ])
+      return(expr.score)
+    })
+
+    if (sum(dim(expr.score)) == 0) next
+
+    if (cor.method == "pearson"){
+      if (all(class(expr.score) == class(sig.score))){
+        cor.score <- cor(expr.score, sig.score)
+      } else {
+        cor.score <- qlcMatrix::corSparse(expr.score, sig.score)
+      }
+    } else if (cor.method == "spearman"){
+      cor.score <- cor(as.matrix(expr.score), sig.score)
+    }
+
+    # a <- qlcMatrix::corSparse(expr.score, expr.score)
+    # rownames(a) <- colnames(a) <- colnames(expr.score)
+
+    rownames(cor.score) <- colnames(expr.score)
+    colnames(cor.score) <- match.sets[i]
+
+    df.cor.score <- as.data.frame(cor.score)
+    colnames(df.cor.score) <- "score"
+    df.cor.score$gene <- rownames(df.cor.score)
+
+
+    raw.score <- signif(mean(df.cor.score$score), 3)
+    coh.score <- signif(mean(df.cor.score$score[df.cor.score$score > coherence.threshold]), 3)
+
+    raw.genes <- length(df.cor.score$score)
+    coherent.genes <- sum(df.cor.score$score > coherence.threshold)
+
+    df.cor.score$is.coherent <- df.cor.score$score > coherence.threshold
+    df.cor.score$raw.score <- raw.score
+    df.cor.score$coh.score <- coh.score
+
+    plt.cor.score <- df.cor.score %>%
+      ggplot(aes(x = score, y = reorder(gene, score), color = is.coherent)) +
+      geom_point() +
+      geom_segment(aes(x = 0, xend = score, y = gene, yend = gene)) +
+      geom_vline(xintercept = 0, linetype = "dashed") +
+      geom_vline(xintercept = coherence.threshold, linetype = "dashed", color = "tomato") +
+      theme_miko(legend = T, grid = show.grid) +
+      scale_color_manual(values = c("TRUE" = "black", "FALSE" = "grey")) +
+      labs(x = "Correlation with Signature Score (r)", y = "Signature Genes",
+           caption = "black dashed line: r = 0\nred dashed line: coherence threshold",
+           title = paste0(match.sets[i], " score coherence"),
+           subtitle = paste0("Raw score = ", raw.score, " (", raw.genes, "/", raw.genes, " genes)\nCoherent score = ",
+                             coh.score, " (", coherent.genes , "/", raw.genes, " genes)"))
+
+    # print(plt.cor.score)
+    plt.list[[match.sets[i]]] <- plt.cor.score
+    cor.list[[match.sets[i]]] <- df.cor.score
+    if (coherent.genes > 0){
+      genelist.coherent[[match.sets[i]]] <- df.cor.score$gene[df.cor.score$is.coherent]
+    }
+
+  }
+
+
+  if (coherent.ms){
+    miko_message("Recomputing coherent signatures...")
+    if (length(genelist.coherent) > 0){
+      ms.coherent.result <-  tryCatch({
+        runMS(object = object, genelist = genelist.coherent, ...)
+      }, error = function(e){
+        return(runMS(object = object, genelist = genelist.coherent,return.plots = F, ...))
+      })
+
+    } else {
+      ms.coherent.result <- list()
+    }
+
+  } else {
+    ms.coherent.result <- list()
+  }
+
+
+  return(list(
+    genelist = genelist,
+    genelist.coherent = genelist.coherent,
+    coherence.plots = plt.list,
+    ms.coherent.result = ms.coherent.result,
+    coherence.data = cor.list
+  ))
+
+}

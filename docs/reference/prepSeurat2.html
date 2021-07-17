@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="prep Seurat (Extended adaptation of prepSeurat) — prepSeurat2" />
-<meta property="og:description" content="Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again." />
+<meta property="og:description" content="Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are normalized and (optionally) scaled again." />
 
 
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -109,25 +109,34 @@
     </div>
 
     <div class="ref-description">
-    <p>Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset or downsampled, then expression values are renormalized and scaled again.</p>
+    <p>Extended version of original prep Seurat function. In addition to running standard seurat object checks, prepSeurat2 ensures correct species is specified, sets the cluster resolution and subsets and downsamples data. If data are subset, then expression values are normalized and (optionally) scaled again.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prepSeurat2</span>(
-  <span class='no'>so</span>,
-  <span class='no'>e2s</span>,
-  <span class='no'>species</span>,
-  <span class='kw'>resolution</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>subset</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>subsample</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>M00_subgroup.path</span> <span class='kw'>=</span> <span class='st'>"M00_subgroups.csv"</span>,
-  <span class='kw'>terms2drop</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
-)</pre>
+    <pre class="usage"><span class='fu'>prepSeurat2</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  <span class='va'>e2s</span>,
+  species <span class='op'>=</span> <span class='cn'>NULL</span>,
+  resolution <span class='op'>=</span> <span class='cn'>NULL</span>,
+  subset.data <span class='op'>=</span> <span class='cn'>NULL</span>,
+  subsample <span class='op'>=</span> <span class='fl'>1</span>,
+  M00_subgroup.path <span class='op'>=</span> <span class='st'>"M00_subgroups.csv"</span>,
+  terms2drop <span class='op'>=</span> <span class='cn'>NULL</span>,
+  rmv.pattern <span class='op'>=</span> <span class='cn'>NULL</span>,
+  reprocess.n.var <span class='op'>=</span> <span class='fl'>3000</span>,
+  neighbors.reprocessed <span class='op'>=</span> <span class='cn'>F</span>,
+  scale.reprocessed <span class='op'>=</span> <span class='cn'>F</span>,
+  use.integrated <span class='op'>=</span> <span class='cn'>T</span>,
+  keep.default.assay.only <span class='op'>=</span> <span class='cn'>F</span>,
+  coerce.assay.used.to.default <span class='op'>=</span> <span class='cn'>T</span>,
+  barcode.recode <span class='op'>=</span> <span class='cn'>NULL</span>,
+  M00_barcode_recode.path <span class='op'>=</span> <span class='st'>"M00_barcode_recode.csv"</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>so</th>
+      <th>object</th>
       <td><p>Seurat objects</p></td>
     </tr>
     <tr>
@@ -143,8 +152,8 @@
       <td><p>cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.</p></td>
     </tr>
     <tr>
-      <th>subset</th>
-      <td><p>Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, field column species which meta.data field to subset on, and subgroups column species which subgroup to include within specied field. See scMiko::subsetSeurat() for details.</p></td>
+      <th>subset.data</th>
+      <td><p>Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.</p></td>
     </tr>
     <tr>
       <th>subsample</th>
@@ -156,13 +165,52 @@
     </tr>
     <tr>
       <th>terms2drop</th>
-      <td><p>Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs".</p></td>
+      <td><p>Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".</p></td>
+    </tr>
+    <tr>
+      <th>rmv.pattern</th>
+      <td><p>Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.</p></td>
+    </tr>
+    <tr>
+      <th>reprocess.n.var</th>
+      <td><p>Number of variable genes to use if data is reprocessed. Default is 3000. Note that if integrated assay is available, variable features are first identified for reprocessed data set, and subsequently merged with the variable features present in the integrated assay, thus allows for potentially more variable features than specified by this parameter.</p></td>
+    </tr>
+    <tr>
+      <th>neighbors.reprocessed</th>
+      <td><p>Specifies whether to compute new neighborhood graph if graphs are missing. Note that if data are subset, graphs are inherently removed. If downstream clustering is anticipated, set as TRUE. Default is FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>scale.reprocessed</th>
+      <td><p>if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>use.integrated</th>
+      <td><p>If TRUE, sets default assay to "integrated" if present within seurat object.</p></td>
+    </tr>
+    <tr>
+      <th>keep.default.assay.only</th>
+      <td><p>Specify whether to omit assays that are not default. Default is FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>coerce.assay.used.to.default</th>
+      <td><p>Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>barcode.recode</th>
+      <td><p>Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.</p></td>
+    </tr>
+    <tr>
+      <th>M00_barcode_recode.path</th>
+      <td><p>Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list containing prepped Seurat object, default assay, and number of cells in seurat object.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -179,7 +227,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

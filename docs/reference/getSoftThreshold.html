@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,23 +112,23 @@
     <p>Analysis of scale free topology for multiple soft thresholding powers. The aim is to help the user pick an appropriate soft-thresholding power for network construction. This is an adaptation of the WGCNA::pickSoftThreshold function which has been customized for scRNAseq applications.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>getSoftThreshold</span>(
-  <span class='no'>s.mat</span>,
-  <span class='kw'>dataIsExpr</span> <span class='kw'>=</span> <span class='no'>F</span>,
-  <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>RsquaredCut</span> <span class='kw'>=</span> <span class='fl'>0.85</span>,
-  <span class='kw'>powerVector</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>1</span>, <span class='fl'>10</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>1</span>), <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>12</span>, <span class='fl'>20</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>2</span>)),
-  <span class='kw'>removeFirst</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>nBreaks</span> <span class='kw'>=</span> <span class='fl'>10</span>,
-  <span class='kw'>blockSize</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
-  <span class='kw'>corFnc</span> <span class='kw'>=</span> <span class='no'>cor</span>,
-  <span class='kw'>corOptions</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>use</span> <span class='kw'>=</span> <span class='st'>"p"</span>),
-  <span class='kw'>networkType</span> <span class='kw'>=</span> <span class='st'>"signed"</span>,
-  <span class='kw'>moreNetworkConcepts</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>gcInterval</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>indent</span> <span class='kw'>=</span> <span class='fl'>0</span>
-)</pre>
+    <pre class="usage"><span class='fu'>getSoftThreshold</span><span class='op'>(</span>
+  <span class='va'>s.mat</span>,
+  dataIsExpr <span class='op'>=</span> <span class='cn'>F</span>,
+  weights <span class='op'>=</span> <span class='cn'>NULL</span>,
+  RsquaredCut <span class='op'>=</span> <span class='fl'>0.85</span>,
+  powerVector <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>10</span>, by <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>12</span>, <span class='fl'>20</span>, by <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span>,
+  removeFirst <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  nBreaks <span class='op'>=</span> <span class='fl'>10</span>,
+  blockSize <span class='op'>=</span> <span class='fl'>1000</span>,
+  corFnc <span class='op'>=</span> <span class='va'>cor</span>,
+  corOptions <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>use <span class='op'>=</span> <span class='st'>"p"</span><span class='op'>)</span>,
+  networkType <span class='op'>=</span> <span class='st'>"signed"</span>,
+  moreNetworkConcepts <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  gcInterval <span class='op'>=</span> <span class='cn'>NULL</span>,
+  verbose <span class='op'>=</span> <span class='fl'>0</span>,
+  indent <span class='op'>=</span> <span class='fl'>0</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -158,18 +158,24 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># determine optimal soft threshold</span>
-<span class='no'>sft</span> <span class='kw'>&lt;-</span> <span class='fu'>getSoftThreshold</span>(<span class='no'>s.mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in getSoftThreshold(s.mat): object 's.mat' not found</span></div><div class='input'>
+<span class='va'>sft</span> <span class='op'>&lt;-</span> <span class='fu'>getSoftThreshold</span><span class='op'>(</span><span class='va'>s.mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in getSoftThreshold(s.mat): object 's.mat' not found</span></div><div class='input'>
 <span class='co'># Plot the results</span>
-<span class='fu'>sizeGrWindow</span>(<span class='fl'>9</span>, <span class='fl'>5</span>)
-<span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span>(<span class='kw'>mfrow</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>1</span>,<span class='fl'>2</span>));
-<span class='no'>cex1</span> <span class='kw'>=</span> <span class='fl'>0.9</span>;
+<span class='fu'>sizeGrWindow</span><span class='op'>(</span><span class='fl'>9</span>, <span class='fl'>5</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/graphics/par.html'>par</a></span><span class='op'>(</span>mfrow <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span>;
+<span class='va'>cex1</span> <span class='op'>=</span> <span class='fl'>0.9</span>;
 
 <span class='co'># Scale-free topology fit index as a function of the soft-thresholding power</span>
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>1</span>], -<span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>3</span>])*<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>2</span>],<span class='kw'>xlab</span><span class='kw'>=</span><span class='st'>"Soft Threshold (power)"</span>,<span class='kw'>ylab</span><span class='kw'>=</span><span class='st'>"Scale Free Topology Model Fit, signed R^2"</span>,<span class='kw'>type</span><span class='kw'>=</span><span class='st'>"n"</span>, <span class='kw'>main</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span>(<span class='st'>"Scale independence"</span>));</div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], xlab = "Soft Threshold (power)", ylab = "Scale Free Topology Model Fit, signed R^2",     type = "n", main = paste("Scale independence")): object 'sft' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/text.html'>text</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>1</span>], -<span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>3</span>])*<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>2</span>],<span class='kw'>labels</span><span class='kw'>=</span><span class='no'>powers</span>,<span class='kw'>cex</span><span class='kw'>=</span><span class='no'>cex1</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"red"</span>);</div><div class='output co'>#&gt; <span class='error'>Error in text(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], labels = powers, cex = cex1, col = "red"): object 'sft' not found</span></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span>, <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span><span class='op'>*</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span>,xlab<span class='op'>=</span><span class='st'>"Soft Threshold (power)"</span>,ylab<span class='op'>=</span><span class='st'>"Scale Free Topology Model Fit, signed R^2"</span>,type<span class='op'>=</span><span class='st'>"n"</span>, main <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='st'>"Scale independence"</span><span class='op'>)</span><span class='op'>)</span>;
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], xlab = "Soft Threshold (power)", ylab = "Scale Free Topology Model Fit, signed R^2",     type = "n", main = paste("Scale independence")): object 'sft' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/text.html'>text</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span>, <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span><span class='op'>*</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>2</span><span class='op'>]</span>,labels<span class='op'>=</span><span class='va'>powers</span>,cex<span class='op'>=</span><span class='va'>cex1</span>,col<span class='op'>=</span><span class='st'>"red"</span><span class='op'>)</span>;
+</div><div class='output co'>#&gt; <span class='error'>Error in text(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], labels = powers, cex = cex1, col = "red"): object 'sft' not found</span></div><div class='input'>
 <span class='co'># Red line corresponds to using an R^2 cut-off</span>
-<span class='fu'><a href='https://rdrr.io/r/graphics/abline.html'>abline</a></span>(<span class='kw'>h</span><span class='kw'>=</span><span class='fl'>0.80</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"red"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in int_abline(a = a, b = b, h = h, v = v, untf = untf, ...): plot.new has not been called yet</span></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/abline.html'>abline</a></span><span class='op'>(</span>h<span class='op'>=</span><span class='fl'>0.80</span>,col<span class='op'>=</span><span class='st'>"red"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in int_abline(a = a, b = b, h = h, v = v, untf = untf, ...): plot.new has not been called yet</span></div><div class='input'>
 <span class='co'># Mean connectivity as a function of the soft-thresholding power</span>
-<span class='fu'><a href='https://rdrr.io/r/base/plot.html'>plot</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>1</span>], <span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>5</span>],<span class='kw'>xlab</span><span class='kw'>=</span><span class='st'>"Soft Threshold (power)"</span>,<span class='kw'>ylab</span><span class='kw'>=</span><span class='st'>"Mean Connectivity"</span>, <span class='kw'>type</span><span class='kw'>=</span><span class='st'>"n"</span>,<span class='kw'>main</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span>(<span class='st'>"Mean connectivity"</span>))</div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], sft$fitIndices[, 5], xlab = "Soft Threshold (power)",     ylab = "Mean Connectivity", type = "n", main = paste("Mean connectivity")): object 'sft' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/text.html'>text</a></span>(<span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>1</span>], <span class='no'>sft</span>$<span class='no'>fitIndices</span>[,<span class='fl'>5</span>], <span class='kw'>labels</span><span class='kw'>=</span><span class='no'>powers</span>, <span class='kw'>cex</span><span class='kw'>=</span><span class='no'>cex1</span>,<span class='kw'>col</span><span class='kw'>=</span><span class='st'>"red"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in text(sft$fitIndices[, 1], sft$fitIndices[, 5], labels = powers,     cex = cex1, col = "red"): object 'sft' not found</span></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/graphics/plot.default.html'>plot</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span>, <span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>5</span><span class='op'>]</span>,xlab<span class='op'>=</span><span class='st'>"Soft Threshold (power)"</span>,ylab<span class='op'>=</span><span class='st'>"Mean Connectivity"</span>, type<span class='op'>=</span><span class='st'>"n"</span>,main <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='st'>"Mean connectivity"</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], sft$fitIndices[, 5], xlab = "Soft Threshold (power)",     ylab = "Mean Connectivity", type = "n", main = paste("Mean connectivity")): object 'sft' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/text.html'>text</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span>, <span class='va'>sft</span><span class='op'>$</span><span class='va'>fitIndices</span><span class='op'>[</span>,<span class='fl'>5</span><span class='op'>]</span>, labels<span class='op'>=</span><span class='va'>powers</span>, cex<span class='op'>=</span><span class='va'>cex1</span>,col<span class='op'>=</span><span class='st'>"red"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in text(sft$fitIndices[, 1], sft$fitIndices[, 5], labels = powers,     cex = cex1, col = "red"): object 'sft' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -186,7 +192,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -4,10 +4,10 @@
 \alias{miko_message}
 \title{Print message}
 \usage{
-miko_message(x, time = T, verbose = T)
+miko_message(..., time = T, verbose = T)
 }
 \arguments{
-\item{x}{Character string to print}
+\item{...}{Character string to print}
 
 \item{time}{Logical to print time}
 

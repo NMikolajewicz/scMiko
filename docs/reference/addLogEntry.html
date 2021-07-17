@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Add entry to analysis log</p>
     </div>
 
-    <pre class="usage"><span class='fu'>addLogEntry</span>(<span class='no'>entry.name</span>, <span class='no'>entry</span>, <span class='no'>df.log</span>, <span class='kw'>entry.variable.name</span> <span class='kw'>=</span> <span class='st'>""</span>)</pre>
+    <pre class="usage"><span class='fu'>addLogEntry</span><span class='op'>(</span><span class='va'>entry.name</span>, <span class='va'>entry</span>, <span class='va'>df.log</span>, entry.variable.name <span class='op'>=</span> <span class='st'>""</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -141,14 +141,18 @@
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='initiateLog.html'>initiateLog</a></code></p></div>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># intiate data log</span>
-<span class='no'>df.log</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='initiateLog.html'>initiateLog</a></span>(<span class='st'>"log name"</span>)
+<span class='va'>df.log</span> <span class='op'>&lt;-</span> <span class='fu'><a href='initiateLog.html'>initiateLog</a></span><span class='op'>(</span><span class='st'>"log name"</span><span class='op'>)</span>
 
 <span class='co'># add new entry to log</span>
-<span class='no'>df.log</span> <span class='kw'>&lt;-</span> <span class='fu'>addLogEntry</span>(<span class='st'>"Query File (.Rdata)"</span>, (<span class='no'>input.file</span>), <span class='no'>df.log</span>, <span class='st'>"input.file"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in paste(entry, collapse = ", "): object 'input.file' not found</span></div><div class='input'>
+<span class='va'>df.log</span> <span class='op'>&lt;-</span> <span class='fu'>addLogEntry</span><span class='op'>(</span><span class='st'>"Query File (.Rdata)"</span>, <span class='op'>(</span><span class='va'>input.file</span><span class='op'>)</span>, <span class='va'>df.log</span>, <span class='st'>"input.file"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in paste(entry, collapse = ", "): object 'input.file' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -165,7 +169,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

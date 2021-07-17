@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,16 @@
     <p>Custom themes applied to ggplot2-based plots.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>theme_miko</span>(<span class='kw'>style</span> <span class='kw'>=</span> <span class='st'>"bw"</span>, <span class='kw'>legend</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='kw'>grid</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='kw'>bold.title</span> <span class='kw'>=</span> <span class='no'>T</span>)</pre>
+    <pre class="usage"><span class='fu'>theme_miko</span><span class='op'>(</span>
+  style <span class='op'>=</span> <span class='st'>"bw"</span>,
+  legend <span class='op'>=</span> <span class='cn'>F</span>,
+  grid <span class='op'>=</span> <span class='cn'>F</span>,
+  bold.title <span class='op'>=</span> <span class='cn'>T</span>,
+  center.title <span class='op'>=</span> <span class='cn'>F</span>,
+  x.axis.rotation <span class='op'>=</span> <span class='fl'>0</span>,
+  fill.palette <span class='op'>=</span> <span class='cn'>NA</span>,
+  color.palette <span class='op'>=</span> <span class='cn'>NA</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -132,6 +141,22 @@
     <tr>
       <th>bold.title</th>
       <td><p>Logical to bold title. Default is T.</p></td>
+    </tr>
+    <tr>
+      <th>center.title</th>
+      <td><p>Logical to center justify title. Default is F.</p></td>
+    </tr>
+    <tr>
+      <th>x.axis.rotation</th>
+      <td><p>rotation angle (e.g., 45)</p></td>
+    </tr>
+    <tr>
+      <th>fill.palette</th>
+      <td><p>palette from ggthemes (e.g., "ptol"). Default is NA.</p></td>
+    </tr>
+    <tr>
+      <th>color.palette</th>
+      <td><p>palette from ggthemes (e.g., "ptol"). Default is NA.</p></td>
     </tr>
     </table>
 
@@ -158,7 +183,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -86,7 +86,7 @@ larger of the pair. The largest percentage drop in the series below 'low' " />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,7 +124,7 @@ the drop in variance explained by each pair of consecutive PCs is standardized b
 larger of the pair. The largest percentage drop in the series below 'low' <!-- % is selected as the 'elbow'. --></p>
     </div>
 
-    <pre class="usage"><span class='fu'>pcaElbow</span>(<span class='no'>varpc</span>, <span class='kw'>low</span> <span class='kw'>=</span> <span class='fl'>0.08</span>, <span class='kw'>max.pc</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</pre>
+    <pre class="usage"><span class='fu'>pcaElbow</span><span class='op'>(</span><span class='va'>varpc</span>, low <span class='op'>=</span> <span class='fl'>0.08</span>, max.pc <span class='op'>=</span> <span class='fl'>0.9</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,11 +149,26 @@ does not explain much 'of the variance'.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>The number of last principle component to keep, prior to the determined elbow cutoff</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Cooper</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># correlated data</span>
-<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'>sim.cor</span>(<span class='fl'>100</span>,<span class='fl'>50</span>)</div><div class='output co'>#&gt; <span class='error'>Error in sim.cor(100, 50): could not find function "sim.cor"</span></div><div class='input'><span class='no'>result</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/princomp.html'>princomp</a></span>(<span class='no'>mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in princomp(mat): object 'mat' not found</span></div><div class='input'><span class='no'>eig</span> <span class='kw'>&lt;-</span> <span class='no'>result</span>$<span class='no'>sdev</span>^<span class='fl'>2</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result' not found</span></div><div class='input'><span class='no'>elb.a</span> <span class='kw'>&lt;-</span> <span class='fu'>quick.elbow</span>(<span class='no'>eig</span>)</div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(eig): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span>(<span class='no'>eig</span>,<span class='kw'>elbow</span><span class='kw'>=</span><span class='no'>elb.a</span>,<span class='kw'>M</span><span class='kw'>=</span><span class='no'>mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig, elbow = elb.a, M = mat): could not find function "pca.scree.plot"</span></div><div class='input'><span class='no'>elb.b</span> <span class='kw'>&lt;-</span> <span class='fu'>quick.elbow</span>(<span class='no'>eig</span>,<span class='kw'>low</span><span class='kw'>=</span><span class='fl'>.05</span>) <span class='co'># decrease 'low' to select more components</span></div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(eig, low = 0.05): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span>(<span class='no'>eig</span>,<span class='kw'>elbow</span><span class='kw'>=</span><span class='no'>elb.b</span>,<span class='kw'>M</span><span class='kw'>=</span><span class='no'>mat</span>)</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig, elbow = elb.b, M = mat): could not find function "pca.scree.plot"</span></div><div class='input'><span class='co'># random (largely independent) data, usually higher elbow #</span>
-<span class='no'>mat2</span> <span class='kw'>&lt;-</span> <span class='fu'>generate.test.matrix</span>(<span class='fl'>5</span>,<span class='fl'>3</span>)</div><div class='output co'>#&gt; <span class='error'>Error in generate.test.matrix(5, 3): could not find function "generate.test.matrix"</span></div><div class='input'><span class='no'>result2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/princomp.html'>princomp</a></span>(<span class='no'>mat2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in princomp(mat2): object 'mat2' not found</span></div><div class='input'><span class='no'>eig2</span> <span class='kw'>&lt;-</span> <span class='no'>result2</span>$<span class='no'>sdev</span>^<span class='fl'>2</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result2' not found</span></div><div class='input'><span class='no'>elb2</span> <span class='kw'>&lt;-</span> <span class='fu'>quick.elbow</span>(<span class='no'>result2</span>$<span class='no'>sdev</span>^<span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(result2$sdev^2): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span>(<span class='no'>eig2</span>,<span class='kw'>elbow</span><span class='kw'>=</span><span class='no'>elb2</span>,<span class='kw'>M</span><span class='kw'>=</span><span class='no'>mat2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig2, elbow = elb2, M = mat2): could not find function "pca.scree.plot"</span></div></pre>
+<span class='va'>mat</span> <span class='op'>&lt;-</span> <span class='fu'>sim.cor</span><span class='op'>(</span><span class='fl'>100</span>,<span class='fl'>50</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in sim.cor(100, 50): could not find function "sim.cor"</span></div><div class='input'><span class='va'>result</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/princomp.html'>princomp</a></span><span class='op'>(</span><span class='va'>mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in princomp(mat): object 'mat' not found</span></div><div class='input'><span class='va'>eig</span> <span class='op'>&lt;-</span> <span class='va'>result</span><span class='op'>$</span><span class='va'>sdev</span><span class='op'>^</span><span class='fl'>2</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result' not found</span></div><div class='input'><span class='va'>elb.a</span> <span class='op'>&lt;-</span> <span class='fu'>quick.elbow</span><span class='op'>(</span><span class='va'>eig</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(eig): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span><span class='op'>(</span><span class='va'>eig</span>,elbow<span class='op'>=</span><span class='va'>elb.a</span>,M<span class='op'>=</span><span class='va'>mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig, elbow = elb.a, M = mat): could not find function "pca.scree.plot"</span></div><div class='input'><span class='va'>elb.b</span> <span class='op'>&lt;-</span> <span class='fu'>quick.elbow</span><span class='op'>(</span><span class='va'>eig</span>,low<span class='op'>=</span><span class='fl'>.05</span><span class='op'>)</span> <span class='co'># decrease 'low' to select more components</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(eig, low = 0.05): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span><span class='op'>(</span><span class='va'>eig</span>,elbow<span class='op'>=</span><span class='va'>elb.b</span>,M<span class='op'>=</span><span class='va'>mat</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig, elbow = elb.b, M = mat): could not find function "pca.scree.plot"</span></div><div class='input'><span class='co'># random (largely independent) data, usually higher elbow #</span>
+<span class='va'>mat2</span> <span class='op'>&lt;-</span> <span class='fu'>generate.test.matrix</span><span class='op'>(</span><span class='fl'>5</span>,<span class='fl'>3</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in generate.test.matrix(5, 3): could not find function "generate.test.matrix"</span></div><div class='input'><span class='va'>result2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/princomp.html'>princomp</a></span><span class='op'>(</span><span class='va'>mat2</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in princomp(mat2): object 'mat2' not found</span></div><div class='input'><span class='va'>eig2</span> <span class='op'>&lt;-</span> <span class='va'>result2</span><span class='op'>$</span><span class='va'>sdev</span><span class='op'>^</span><span class='fl'>2</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'result2' not found</span></div><div class='input'><span class='va'>elb2</span> <span class='op'>&lt;-</span> <span class='fu'>quick.elbow</span><span class='op'>(</span><span class='va'>result2</span><span class='op'>$</span><span class='va'>sdev</span><span class='op'>^</span><span class='fl'>2</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in quick.elbow(result2$sdev^2): could not find function "quick.elbow"</span></div><div class='input'><span class='fu'>pca.scree.plot</span><span class='op'>(</span><span class='va'>eig2</span>,elbow<span class='op'>=</span><span class='va'>elb2</span>,M<span class='op'>=</span><span class='va'>mat2</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in pca.scree.plot(eig2, elbow = elb2, M = mat2): could not find function "pca.scree.plot"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -169,7 +184,7 @@ does not explain much 'of the variance'.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

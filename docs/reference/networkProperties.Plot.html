@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Plot network properties for different soft thresholds</p>
     </div>
 
-    <pre class="usage"><span class='fu'>networkProperties.Plot</span>(<span class='no'>sft</span>, <span class='kw'>r2.threshold</span> <span class='kw'>=</span> <span class='fl'>0.85</span>)</pre>
+    <pre class="usage"><span class='fu'>networkProperties.Plot</span><span class='op'>(</span><span class='va'>sft</span>, r2.threshold <span class='op'>=</span> <span class='fl'>0.85</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -133,7 +133,9 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>sft</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='getSoftThreshold.html'>getSoftThreshold</a></span>(<span class='no'>s.mat</span>, <span class='kw'>networkType</span> <span class='kw'>=</span> <span class='st'>"unsigned"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in getSoftThreshold(s.mat, networkType = "unsigned"): object 's.mat' not found</span></div><div class='input'><span class='fu'>networkProperties.Plot</span>(<span class='no'>sft</span>)</div><div class='output co'>#&gt; <span class='message'>dev.new(): using pdf(file="Rplots11.pdf")</span></div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], xlab = "Soft Threshold (power)", ylab = "Scale Free Topology Model Fit, signed R^2",     type = "n", main = paste("Scale independence")): object 'sft' not found</span></div><div class='input'>
+<span class='va'>sft</span> <span class='op'>&lt;-</span> <span class='fu'><a href='getSoftThreshold.html'>getSoftThreshold</a></span><span class='op'>(</span><span class='va'>s.mat</span>, networkType <span class='op'>=</span> <span class='st'>"unsigned"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in getSoftThreshold(s.mat, networkType = "unsigned"): object 's.mat' not found</span></div><div class='input'><span class='fu'>networkProperties.Plot</span><span class='op'>(</span><span class='va'>sft</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in plot(sft$fitIndices[, 1], -sign(sft$fitIndices[, 3]) * sft$fitIndices[,     2], xlab = "Soft Threshold (power)", ylab = "Scale Free Topology Model Fit, signed R^2",     type = "n", main = paste("Scale independence")): object 'sft' not found</span></div><div class='input'>
 
 </div></pre>
   </div>
@@ -151,7 +153,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

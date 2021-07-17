@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>prep Gene List — prepGeneList • scMiko</title>
+<title>Prepare gene to ensemble conversion vector — prepGeneList • scMiko</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="prep Gene List — prepGeneList" />
-<meta property="og:description" content="Ensure is available and represented correctly." />
+<meta property="og:title" content="Prepare gene to ensemble conversion vector — prepGeneList" />
+<meta property="og:description" content="Prepare gene to ensemble conversion vector" />
 
 
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -103,16 +103,16 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>prep Gene List</h1>
+    <h1>Prepare gene to ensemble conversion vector</h1>
     
     <div class="hidden name"><code>prepGeneList.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Ensure is available and represented correctly.</p>
+    <p>Prepare gene to ensemble conversion vector</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prepGeneList</span>(<span class='no'>so</span>, <span class='no'>global.enviroment</span>)</pre>
+    <pre class="usage"><span class='fu'>prepGeneList</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>global.enviroment</span>, species <span class='op'>=</span> <span class='st'>"Hs"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -130,10 +130,14 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Named vector of available genes</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='no'>gNames.list</span> <span class='kw'>&lt;-</span> <span class='fu'>prepGeneList</span>(<span class='no'>so</span>, <span class='fu'><a href='https://rdrr.io/r/base/ls.html'>objects</a></span>())</div><div class='output co'>#&gt; <span class='error'>Error in prepGeneList(so, objects()): exists("gNames.list") is not TRUE</span></div><div class='input'>
+<span class='va'>gNames.list</span> <span class='op'>&lt;-</span> <span class='fu'>prepGeneList</span><span class='op'>(</span><span class='va'>so</span>, <span class='fu'><a href='https://rdrr.io/r/base/ls.html'>objects</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: restarting interrupted promise evaluation</span></div><div class='output co'>#&gt; <span class='error'>Error in rownames(so): object 'so' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -150,7 +154,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

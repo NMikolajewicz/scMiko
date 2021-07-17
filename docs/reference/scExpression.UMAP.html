@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Cell-level gene expression projected on UMAP — scExpression.UMAP" />
-<meta property="og:description" content="UMAP plot with cell-level gene expression for queried gene." />
+<meta property="og:description" content="UMAP plot with cell-level gene expression for queried gene. Uses Seurat::FeaturePlot()." />
 
 
 
@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -109,39 +109,59 @@
     </div>
 
     <div class="ref-description">
-    <p>UMAP plot with cell-level gene expression for queried gene.</p>
+    <p>UMAP plot with cell-level gene expression for queried gene. Uses Seurat::FeaturePlot().</p>
     </div>
 
-    <pre class="usage"><span class='fu'>scExpression.UMAP</span>(
-  <span class='no'>so</span>,
-  <span class='no'>query.gene</span>,
-  <span class='kw'>x.label</span> <span class='kw'>=</span> <span class='st'>"UMAP 1"</span>,
-  <span class='kw'>y.label</span> <span class='kw'>=</span> <span class='st'>""</span>,
-  <span class='kw'>plot.name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
-)</pre>
+    <pre class="usage"><span class='fu'>scExpression.UMAP</span><span class='op'>(</span>
+  <span class='va'>object</span>,
+  <span class='va'>query.gene</span>,
+  x.label <span class='op'>=</span> <span class='st'>"UMAP 1"</span>,
+  y.label <span class='op'>=</span> <span class='st'>""</span>,
+  adjust.pt.size <span class='op'>=</span> <span class='fu'><a href='autoPointSize.html'>autoPointSize</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
+  order.cells <span class='op'>=</span> <span class='cn'>T</span>,
+  plot.name <span class='op'>=</span> <span class='cn'>NULL</span>,
+  reduction <span class='op'>=</span> <span class='st'>"umap"</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>so</th>
+      <th>object</th>
       <td><p>Seurat Object</p></td>
     </tr>
     <tr>
       <th>query.gene</th>
-      <td><p>Character. Gene name to plot.</p></td>
+      <td><p>Character specifying gene name to plot.</p></td>
     </tr>
     <tr>
       <th>x.label</th>
-      <td><p>Character. X axis label.</p></td>
+      <td><p>Character specifying X axis label.</p></td>
     </tr>
     <tr>
       <th>y.label</th>
-      <td><p>Character. Y axis label.</p></td>
+      <td><p>Character specifying Y axis label.</p></td>
+    </tr>
+    <tr>
+      <th>adjust.pt.size</th>
+      <td><p>Adjust point size for plotting. Logical.</p></td>
+    </tr>
+    <tr>
+      <th>order.cells</th>
+      <td><p>Plot cells in order of expression. Logical.</p></td>
     </tr>
     <tr>
       <th>plot.name</th>
-      <td><p>Character. Plot title.</p></td>
+      <td><p>Character specifying plot title.</p></td>
+    </tr>
+    <tr>
+      <th>reduction</th>
+      <td><p>Character specifying reduction name. Default is "umap".</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional parameters passed to Seurat::FeaturePlot().</p></td>
     </tr>
     </table>
 
@@ -164,7 +184,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

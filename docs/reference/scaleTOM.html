@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Query TOM matrix is rescaled to match nth percentile of reference TOM matrix. Since consensus is defined as component-wise minimum of two TOMS, a bias may result without scaling. This is mitigated by scaling the matrices.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>scaleTOM</span>(<span class='no'>query.TOM</span>, <span class='no'>reference.TOM</span>, <span class='kw'>reference.percentile</span> <span class='kw'>=</span> <span class='fl'>0.95</span>)</pre>
+    <pre class="usage"><span class='fu'>scaleTOM</span><span class='op'>(</span><span class='va'>query.TOM</span>, <span class='va'>reference.TOM</span>, reference.percentile <span class='op'>=</span> <span class='fl'>0.95</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,11 +138,18 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># scale TOM matrices</span>
-<span class='no'>w.1</span> <span class='kw'>&lt;-</span> <span class='fu'>scaleTOM</span>(<span class='kw'>query.TOM</span> <span class='kw'>=</span> <span class='no'>w.1</span>, <span class='kw'>reference.TOM</span> <span class='kw'>=</span> <span class='no'>w.mat</span>, <span class='kw'>reference.percentile</span> <span class='kw'>=</span> <span class='fl'>0.95</span>)</div><div class='output co'>#&gt; <span class='error'>Error in ncol(reference.TOM): object 'w.mat' not found</span></div><div class='input'><span class='no'>w.2</span> <span class='kw'>&lt;-</span> <span class='fu'>scaleTOM</span>(<span class='kw'>query.TOM</span> <span class='kw'>=</span> <span class='no'>w.2</span>, <span class='kw'>reference.TOM</span> <span class='kw'>=</span> <span class='no'>w.mat</span>, <span class='kw'>reference.percentile</span> <span class='kw'>=</span> <span class='fl'>0.95</span>)</div><div class='output co'>#&gt; <span class='error'>Error in ncol(reference.TOM): object 'w.mat' not found</span></div><div class='input'>
+<span class='va'>w.1</span> <span class='op'>&lt;-</span> <span class='fu'>scaleTOM</span><span class='op'>(</span>query.TOM <span class='op'>=</span> <span class='va'>w.1</span>, reference.TOM <span class='op'>=</span> <span class='va'>w.mat</span>, reference.percentile <span class='op'>=</span> <span class='fl'>0.95</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in ncol(reference.TOM): object 'w.mat' not found</span></div><div class='input'><span class='va'>w.2</span> <span class='op'>&lt;-</span> <span class='fu'>scaleTOM</span><span class='op'>(</span>query.TOM <span class='op'>=</span> <span class='va'>w.2</span>, reference.TOM <span class='op'>=</span> <span class='va'>w.mat</span>, reference.percentile <span class='op'>=</span> <span class='fl'>0.95</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in ncol(reference.TOM): object 'w.mat' not found</span></div><div class='input'>
 <span class='co'># recompute the distance matrix</span>
-<span class='no'>d.mat</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>-<span class='no'>w.mat</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.mat' not found</span></div><div class='input'><span class='no'>d.1</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>-<span class='no'>w.1</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.1' not found</span></div><div class='input'><span class='no'>d.2</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>-<span class='no'>w.2</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.2' not found</span></div><div class='input'>
+<span class='va'>d.mat</span> <span class='op'>&lt;-</span> <span class='fl'>1</span><span class='op'>-</span><span class='va'>w.mat</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.mat' not found</span></div><div class='input'><span class='va'>d.1</span> <span class='op'>&lt;-</span> <span class='fl'>1</span><span class='op'>-</span><span class='va'>w.1</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.1' not found</span></div><div class='input'><span class='va'>d.2</span> <span class='op'>&lt;-</span> <span class='fl'>1</span><span class='op'>-</span><span class='va'>w.2</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.2' not found</span></div><div class='input'>
 <span class='co'># compute consensus topological overlap</span>
-<span class='no'>w.co</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>pmin</a></span>(<span class='no'>w.1</span>, <span class='no'>w.2</span>) <span class='co'># component-wise parallel minimum of TOMs</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(quote(list(...)), env): object 'w.1' not found</span></div><div class='input'><span class='no'>d.co</span> <span class='kw'>&lt;-</span> <span class='fl'>1</span>-<span class='no'>w.co</span></div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.co' not found</span></div><div class='input'>
+<span class='va'>w.co</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>pmin</a></span><span class='op'>(</span><span class='va'>w.1</span>, <span class='va'>w.2</span><span class='op'>)</span> <span class='co'># component-wise parallel minimum of TOMs</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(quote(list(...)), env): object 'w.1' not found</span></div><div class='input'><span class='va'>d.co</span> <span class='op'>&lt;-</span> <span class='fl'>1</span><span class='op'>-</span><span class='va'>w.co</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'w.co' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -159,7 +166,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

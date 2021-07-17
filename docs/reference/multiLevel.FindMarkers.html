@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -112,7 +112,7 @@
     <p>Give two existing fields within a Seurat Object, data are stratified by the first, and pairwise comparisons between groups in the second are performed to identify differential gene expression. Uses Seurat's FindMarkers() function.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>multiLevel.FindMarkers</span>(<span class='no'>so</span>, <span class='no'>ordered.levels</span>, <span class='kw'>which.assay</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>multiLevel.FindMarkers</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>ordered.levels</span>, which.assay <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,24 +138,30 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of data.frames where each data.fram contains results from an individual pairwise comparison.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Nicholas Mikolajewicz</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'># define mapping lists</span>
-<span class='no'>mapping.list.1</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>NSG</span> <span class='kw'>=</span> <span class='st'>"NSG"</span>, <span class='kw'>BALBc</span> <span class='kw'>=</span> <span class='st'>"BALB"</span>)
-<span class='no'>mapping.list.2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>Early</span> <span class='kw'>=</span> <span class='st'>"Early"</span>, <span class='kw'>Mid</span> <span class='kw'>=</span> <span class='st'>"Mid"</span>, <span class='kw'>Late</span> <span class='kw'>=</span> <span class='st'>"Late"</span>)
+<span class='va'>mapping.list.1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>NSG <span class='op'>=</span> <span class='st'>"NSG"</span>, BALBc <span class='op'>=</span> <span class='st'>"BALB"</span><span class='op'>)</span>
+<span class='va'>mapping.list.2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>Early <span class='op'>=</span> <span class='st'>"Early"</span>, Mid <span class='op'>=</span> <span class='st'>"Mid"</span>, Late <span class='op'>=</span> <span class='st'>"Late"</span><span class='op'>)</span>
 
 <span class='co'># Create new field called "Mouse" using relabled entries from "Condition" - relabelling based on mapping list</span>
-<span class='no'>so.query.2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='mapSubsetSeurat.html'>mapSubsetSeurat</a></span>(<span class='no'>so.query</span>, <span class='kw'>old.field</span> <span class='kw'>=</span> <span class='st'>"Condition"</span>, <span class='kw'>new.field</span> <span class='kw'>=</span> <span class='st'>"Mouse"</span>, <span class='kw'>mapping.list</span> <span class='kw'>=</span> <span class='no'>mapping.list.1</span>)</div><div class='output co'>#&gt; <span class='error'>Error in grepl(cur.pattern, so@meta.data[[old.field]]): object 'so.query' not found</span></div><div class='input'>
+<span class='va'>so.query.2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='mapSubsetSeurat.html'>mapSubsetSeurat</a></span><span class='op'>(</span><span class='va'>so.query</span>, old.field <span class='op'>=</span> <span class='st'>"Condition"</span>, new.field <span class='op'>=</span> <span class='st'>"Mouse"</span>, mapping.list <span class='op'>=</span> <span class='va'>mapping.list.1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in grepl(cur.pattern, so@meta.data[[old.field]]): object 'so.query' not found</span></div><div class='input'>
 <span class='co'># Create new field called "Time" using relabled entries from "Group" - relabelling based on mapping list</span>
-<span class='no'>so.query.2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='mapSubsetSeurat.html'>mapSubsetSeurat</a></span>(<span class='no'>so.query.2</span>, <span class='kw'>old.field</span> <span class='kw'>=</span> <span class='st'>"Group"</span>, <span class='kw'>new.field</span> <span class='kw'>=</span> <span class='st'>"Time"</span>, <span class='kw'>mapping.list</span> <span class='kw'>=</span> <span class='no'>mapping.list.2</span>)</div><div class='output co'>#&gt; <span class='error'>Error in grepl(cur.pattern, so@meta.data[[old.field]]): object 'so.query.2' not found</span></div><div class='input'>
+<span class='va'>so.query.2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='mapSubsetSeurat.html'>mapSubsetSeurat</a></span><span class='op'>(</span><span class='va'>so.query.2</span>, old.field <span class='op'>=</span> <span class='st'>"Group"</span>, new.field <span class='op'>=</span> <span class='st'>"Time"</span>, mapping.list <span class='op'>=</span> <span class='va'>mapping.list.2</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in grepl(cur.pattern, so@meta.data[[old.field]]): object 'so.query.2' not found</span></div><div class='input'>
 <span class='co'># Perform multilevel differential gene expression.</span>
 <span class='co'># Data are stratified by time, and then pairwise comparison between "Mouse" groups are performed.</span>
 <span class='co'># in this example, 3 total pairwise comparisons were made: BALBc vs NSG (Early), BALBc vs NSG (Mid) and BALBc vs NSG (Late)</span>
-<span class='no'>deg.list</span> <span class='kw'>&lt;-</span> <span class='fu'>multiLevel.FindMarkers</span>(<span class='no'>so.query.2</span>, <span class='kw'>ordered.levels</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"Time"</span>, <span class='st'>"Mouse"</span>),
-                                   <span class='kw'>logfc.threshold</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-                                   <span class='kw'>min.pct</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-                                   <span class='kw'>test.use</span> <span class='kw'>=</span> <span class='st'>"wilcox"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in DefaultAssay(so): could not find function "DefaultAssay"</span></div><div class='input'>
+<span class='va'>deg.list</span> <span class='op'>&lt;-</span> <span class='fu'>multiLevel.FindMarkers</span><span class='op'>(</span><span class='va'>so.query.2</span>, ordered.levels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Time"</span>, <span class='st'>"Mouse"</span><span class='op'>)</span>,
+                                   logfc.threshold <span class='op'>=</span> <span class='fl'>0</span>,
+                                   min.pct <span class='op'>=</span> <span class='fl'>0</span>,
+                                   test.use <span class='op'>=</span> <span class='st'>"wilcox"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in DefaultAssay(so): could not find function "DefaultAssay"</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -172,7 +178,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
