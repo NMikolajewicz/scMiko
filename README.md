@@ -1,6 +1,6 @@
 ### scMiko
 
-Set of general and module-specific utility functions used for scRNAseq analysis. Builds upon [Seurat](https://satijalab.org/seurat/) Package. 
+Single-cell RNA-seq analysis toolbox. Builds upon [Seurat](https://satijalab.org/seurat/) Package. 
 
 Visit [scMiko](https://nmikolajewicz.github.io/scMiko/) site for documentation. 
 
