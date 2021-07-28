@@ -6,7 +6,7 @@
 \usage{
 citationCheck(
   gene.query,
-  search.query,
+  search.query = NULL,
   delay = 0.5,
   mindate = 2000,
   maxdate = 2021,
@@ -17,7 +17,7 @@ citationCheck(
 \arguments{
 \item{gene.query}{Genes to query. Character vector.}
 
-\item{search.query}{Search query. Boolean expression are supported. Character vector.}
+\item{search.query}{Search query. Boolean expression are supported. Character vector. If search.query is not specified, the number of citations for each gene will be returned without constraining the tally to a specified topic.}
 
 \item{delay}{Delay between queries. If database is queried too fast, error is thrown. Default delay is 0.5.}
 
@@ -26,6 +26,8 @@ citationCheck(
 \item{maxdate}{Maximum of date range for search results; must be supplied with mindate.}
 
 \item{verbose}{Print progress (T or F). Default is T.}
+
+\item{...}{additional arguments passed to \code{\link{EUtilsSummary}}}
 }
 \description{
 For given topic (search query), number of publications that mention specified genes (gene.query) are tallied and returned. Based on RISmed package by Stephanie Kovalchik.
@@ -33,6 +35,9 @@ For given topic (search query), number of publications that mention specified ge
 \examples{
 m8.citations <- citationCheck(gene.query = gene.list$m8, search.query = "hematopoietic|hematogenic|HSC", delay = 0.5,
 mindate=2000, maxdate=2021, verbose = T)
+}
+\seealso{
+\code{\link{EUtilsSummary}}
 }
 \author{
 Nicholas Mikolajewicz
