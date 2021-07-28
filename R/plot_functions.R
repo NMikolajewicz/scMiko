@@ -10,17 +10,27 @@
 #' @param plot.name Character. Plot title.
 #' @param include.labels Logical specifying wheter to plot group IDs on UMAP.
 #' @param reduction Character specifying which dimensional reduction to use (e.g., umap, pca). Default is 'umap'.
+#' @param show.axis show graph axis (omit theme_void from existing ggplot). Default is T.
 #' @param ... additional arguments passed to Seurat::DimPlot().
 #' @name cluster.UMAP
 #' @return ggplot handle
 #'
-cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap",pt.size = autoPointSize(ncol(so)), ...){
+cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y.label = "UMAP 2", plot.name = "UMAP", include.labels = T, reduction = "umap",pt.size = autoPointSize(ncol(so)), show.axis = T, ...){
 
-  if (group.by == "seurat_clusters") so@meta.data[["seurat_clusters"]] <- orderedFactor(so@meta.data[["seurat_clusters"]])
+  if (group.by %in% colnames(so@meta.data)){
+    if (group.by == "seurat_clusters") so@meta.data[["seurat_clusters"]] <- orderedFactor(so@meta.data[["seurat_clusters"]])
+  } else {
+    group.by = NULL
+  }
 
   plt.handle <- DimPlot(so, group.by = group.by, label = include.labels,reduction = reduction, pt.size = pt.size, ...)  +
     ggtitle(label = plot.name) +
-    xlab(x.label) + ylab(y.label)
+    xlab(x.label) + ylab(y.label) +
+    theme_miko(legend = T)
+
+  if (!show.axis){
+    plt.handle <- plt.handle +  theme_void()
+  }
 
   return(plt.handle)
 

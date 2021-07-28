@@ -4930,6 +4930,7 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
 
   pathway.size <- unlist(lapply(pathways, length))
   pathways <- pathways[(pathway.size >= min.size) & (pathway.size <= max.size)]
+  names(pathways) <- make.unique(names(pathways))
 
   g2e.list <- my.entrez$ENTREZID
   names(g2e.list) <- my.entrez$SYMBOL
@@ -6494,9 +6495,10 @@ miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = N
 #' @param object seurat object
 #' @param species Species, either "Mm" or "Hs".
 #' @param verbose Print progress. Default is TRUE.
+#' @param do.snip truncate scores at 1st and 99th percentiles (protects against outliers). Default is T.
 #' @name scoreGBM
 #' @author Nicholas Mikolajewicz
-scoreGBM <- function(object, species = detectSpecies(object), verbose = T){
+scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.snip = T){
 
   # get GBM genes
   miko_message("Getting GBM genesets...", verbose = verbose)
@@ -6544,7 +6546,10 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T){
       verbose = F
     )
 
-    module.scores[ ,i] <- snip(st@meta.data[["ModuleScore1"]])
+    if (do.snip){
+      module.scores[ ,i] <- snip(st@meta.data[["ModuleScore1"]])
+    }
+
   }
 
     })
@@ -6711,30 +6716,39 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T){
 #' For given topic (search query), number of publications that mention specified genes (gene.query) are tallied and returned. Based on RISmed package by Stephanie Kovalchik.
 #'
 #' @param gene.query Genes to query. Character vector.
-#' @param search.query Search query. Boolean expression are supported. Character vector.
+#' @param search.query Search query. Boolean expression are supported. Character vector. If search.query is not specified, the number of citations for each gene will be returned without constraining the tally to a specified topic.
 #' @param delay Delay between queries. If database is queried too fast, error is thrown. Default delay is 0.5.
 #' @param mindate Minimum of date range for search results (examples: 2002; 2002/01/01); must be supplied with maxdate.
 #' @param maxdate Maximum of date range for search results; must be supplied with mindate.
 #' @param verbose Print progress (T or F). Default is T.
+#' @param ... additional arguments passed to \code{\link{EUtilsSummary}}
 #' @name citationCheck
+#' @seealso \code{\link{EUtilsSummary}}
 #' @author Nicholas Mikolajewicz
 #' @examples
 #' m8.citations <- citationCheck(gene.query = gene.list$m8, search.query = "hematopoietic|hematogenic|HSC", delay = 0.5,
 #' mindate=2000, maxdate=2021, verbose = T)
-citationCheck <- function(gene.query, search.query, delay = 0.5, mindate=2000, maxdate=2021, verbose = T,  ...){
+citationCheck <- function(gene.query, search.query = NULL, delay = 0.5, mindate=2000, maxdate=2021, verbose = T,  ...){
 
   require(RISmed)
 
-  res <- EUtilsSummary(query = search.query, type="esearch", db="pubmed", datetype='pdat',
-                       mindate=mindate, maxdate=maxdate, ...)
+  if (!is.null(search.query)){
+    res <- EUtilsSummary(query = search.query, type="esearch", db="pubmed", datetype='pdat',
+                         mindate=mindate, maxdate=maxdate, ...)
 
-  miko_message(paste0("Retrieving ",  res@count, " citations that match '", search.query, "' query..."), verbose = verbose)
-  res <- EUtilsSummary(query = search.query, type="esearch", db="pubmed", datetype='pdat',  retmax=res@count,
-                       mindate=mindate, maxdate=maxdate, ...) #, retmax=500
+    miko_message(paste0("Retrieving ",  res@count, " citations that match '", search.query, "' query..."), verbose = verbose)
+    res <- EUtilsSummary(query = search.query, type="esearch", db="pubmed", datetype='pdat',  retmax=res@count,
+                         mindate=mindate, maxdate=maxdate, ...) #, retmax=500
+  } else {
+    res <- NULL
+  }
+
 
   df.pubmed <- NULL
   miko_message(paste0("Retrieving citations for ", length(gene.query) , " gene queries..."),verbose =  verbose)
   for (i in 1:length(gene.query)){
+
+    try({
 
     res.gene <- EUtilsSummary(query = gene.query[i], type="esearch", db="pubmed", datetype='pdat',
                               mindate=mindate, maxdate=maxdate)
@@ -6747,7 +6761,11 @@ citationCheck <- function(gene.query, search.query, delay = 0.5, mindate=2000, m
     }
 
 
+    if (!is.null(search.query)){
     n.intersect <- intersect(unique(res@PMID), unique(res.gene@PMID))
+    } else {
+      n.intersect <- unique(res.gene@PMID)
+    }
 
 
     df.pubmed <- bind_rows(df.pubmed, data.frame(
@@ -6756,6 +6774,9 @@ citationCheck <- function(gene.query, search.query, delay = 0.5, mindate=2000, m
     ))
 
     Sys.sleep(delay)
+
+
+    })
   }
 
   plt.pubmed <- df.pubmed %>%
