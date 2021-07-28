@@ -13,6 +13,7 @@ cluster.UMAP(
   include.labels = T,
   reduction = "umap",
   pt.size = autoPointSize(ncol(so)),
+  show.axis = T,
   ...
 )
 }
@@ -30,6 +31,8 @@ cluster.UMAP(
 \item{include.labels}{Logical specifying wheter to plot group IDs on UMAP.}
 
 \item{reduction}{Character specifying which dimensional reduction to use (e.g., umap, pca). Default is 'umap'.}
+
+\item{show.axis}{show graph axis (omit theme_void from existing ggplot). Default is T.}
 
 \item{...}{additional arguments passed to Seurat::DimPlot().}
 }
