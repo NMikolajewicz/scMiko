@@ -104,11 +104,6 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
   # assign row (genes) and column (cells) names
   gene_count2 <- gene_count
 
-  # Infer organism
-  # orgs <- scMiko::inferSpecies(gene_count2, input_organisms)
-  orgs <-  detectSpecies(gene_count2)
-  df_cell$orgs <- orgs
-
   # filter out incorrect species genes immediately.
   all.genes <- rownames(gene_count2)
   include.which.genes <- rep(FALSE, length(all.genes))
@@ -125,6 +120,11 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
     gene_count <- gene_count[include.which.genes, ]
     gene_count2 <- gene_count2[include.which.genes, ]
   }
+
+  # Infer organism
+  # orgs <- scMiko::inferSpecies(gene_count2, input_organisms)
+  orgs <-  detectSpecies(gene_count2)
+  df_cell$orgs <- orgs
 
   # only keep protein coding genes
 
@@ -374,9 +374,9 @@ loadMat <- function(import_set, input_organisms, dir) {
 
 
 
-#' Assign barcodes labels to seurat metadata
+#' Subset and assign labels to seurat
 #'
-#' Assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.
+#' Subset and assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.
 #'
 #' @param so Seurat Object
 #' @param which.strata Barcode labeling parameter. If NA, "subset_group" metadata field is set to "pooled".
@@ -387,7 +387,8 @@ barcodeLabels <- function(so, which.strata) {
   # set Seurat subset labels for cells of interest
   if (!is.na(which.strata)){
     pattern <- paste(which.strata, collapse="|")
-    so <- Seurat::SubsetData(object = so, cells = (grepl(pattern, so@meta.data[["Barcode"]])))
+    # so <- Seurat::SubsetData(object = so, cells = (grepl(pattern, so@meta.data[["Barcode"]])))
+    so <- so[ , grepl(pattern, so@meta.data[["Barcode"]])]
 
     for (i in 1:length(which.strata)){
       so@meta.data[["subset_group"]][grepl(which.strata[i], so@meta.data[["Barcode"]])] <- which.strata[i]
