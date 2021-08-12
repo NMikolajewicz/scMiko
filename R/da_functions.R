@@ -542,8 +542,13 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
 
   # object <- FindNeighbors(object)
   object <- UpdateSeuratObject(object)
-  sce.object <- as.SingleCellExperiment(object, assay = assay)
-  # scater::plotReducedDim(sce.object, colour_by="bc", dimred = "UMAP")
+  sce.object <- tryCatch({
+    sce.object <- as.SingleCellExperiment(object, assay = assay)
+  }, error = function(e){
+    object_diet <- DietSeurat(object = object, assays = assay, graphs = c("pca", "umap"))
+    sce.object <- as.SingleCellExperiment(object_diet, assay = assay)
+    return(sce.object)
+  })
 
   milo.object <- miloR::Milo(sce.object)
   milo.object <- miko_buildGraph(milo.object, k = 10, d = 30)
@@ -602,7 +607,7 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
 
   V(nh_graph)$colour_by <- col_vals
 
-  plot.g <- simplify(nh_graph)
+  # plot.g <- simplify(nh_graph)
   pl <- ggraph::ggraph(simplify(nh_graph), layout = umap.layout) +
     ggraph::geom_node_point(aes(fill = colour_by, size = size), shape = 21, color = "grey66") +
     scale_size(range = c(0.5, 5), name = "Nhood size") +
