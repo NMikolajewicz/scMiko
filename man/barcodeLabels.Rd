@@ -2,7 +2,7 @@
 % Please edit documentation in R/M1_functions.R
 \name{barcodeLabels}
 \alias{barcodeLabels}
-\title{Assign barcodes labels to seurat metadata}
+\title{Subset and assign labels to seurat}
 \usage{
 barcodeLabels(so, which.strata)
 }
@@ -15,5 +15,5 @@ barcodeLabels(so, which.strata)
 Seurat Object (with updated metadata)
 }
 \description{
-Assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.
+Subset and assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.
 }
