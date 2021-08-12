@@ -1042,7 +1042,8 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
     ggplot(aes(x = logFC, y = -log10(padj))) +
     geom_point(aes(color = (auc-0.5), size = abs(logFC))) +
     scale_size(range = c(0, 3)) +
-    ggrepel::geom_text_repel(data = deg.top, aes(x = logFC, y = -log10(padj), label = feature), parse = T, size = label.size, min.segment.length = 0) +
+    ggrepel::geom_text_repel(data = deg.top, aes(x = logFC, y = -log10(padj), label = feature),
+                             parse = T, size = label.size, min.segment.length = 0, max.overlaps = Inf) +
     geom_hline(yintercept = -log10(fdr.threshold), linetype = "dashed") +
     geom_vline(xintercept = 0, linetype = "dashed") +
     scale_color_gradient2(low = scales::muted("blue"), mid = "white", high = scales::muted("red")) +
