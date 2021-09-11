@@ -527,11 +527,12 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @param dispersion.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.
 #' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE.
 #' @param assay Name of assay to pull the count data from; default is 'RNA'
+#' @param ... additional parameters passed to SCTransform.
 #' @name scNormScale
 #' @return Seurat Object
 #'
 scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
-                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA"){
+                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA", ...){
 
 
   # enable parallelization
@@ -571,7 +572,8 @@ scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.
                         variable.features.rv.th = variable.features.rv.th,
                         assay = assay,
                         method = "glmGamPoi",
-                        conserve.memory = conserve.memory)
+                        conserve.memory = conserve.memory,
+                        ...)
     } else {
       so <- SCTransform(object = so,
                         vars.to.regress = vars2regress,
@@ -581,7 +583,8 @@ scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.
                         variable.features.rv.th = variable.features.rv.th,
                         assay = assay,
                         method = "glmGamPoi",
-                        conserve.memory = conserve.memory)
+                        conserve.memory = conserve.memory,
+                        ...)
     }
 
 

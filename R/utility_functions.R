@@ -765,7 +765,7 @@ subsetSeurat <- function (object, subset.df){
 
   # subset data
   if (subset.flag){
-    require("Seurat")
+    require("Seurat", quietly = T)
     cur.field <- as.vector(unique(subset.df$field))
     if (cur.field == "seurat_clusters"){
       my.cells <- colnames(object)[(as.character(object@meta.data[[cur.field]]) %in% as.vector(subset.df$subgroups))]
@@ -840,11 +840,11 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     which.ontology <- ontology
 
     if (species == "Hs"){
-      require("org.Hs.eg.db")
+      require("org.Hs.eg.db", quietly = T)
       go.e2g <- org.Hs.egGO
       go.g2e <- as.list(org.Hs.egGO2EG)
     } else if (species == "Mm"){
-      require("org.Mm.eg.db")
+      require("org.Mm.eg.db", quietly = T)
       go.e2g <- org.Mm.egGO
       go.g2e <- as.list(org.Mm.egGO2EG)
     }
@@ -900,7 +900,7 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     if (is.null(msigdb.collection)) stop("'msigdb.collection' must be specified if using msigdb pathways\n")
     if (!(require(msigdbr))) {
       BiocManager::install("msigdbr");
-      library(msigdbr)
+      library(msigdbr, quietly = T)
     }
 
     if (species == "Hs"){
@@ -1422,6 +1422,8 @@ cleanFilterGenes <- function(genes, so, which.species){
 #'
 downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL, verbose = T){
 
+
+  set.seed(1023)
   use.factor <- (subsample.factor < 1) & (subsample.factor > 0 )
   use.n <-( !is.null(subsample.n)) & (is.numeric(subsample.n))
 
@@ -1511,27 +1513,33 @@ aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 #' Get summary group expression in Seurat object. Can include mean, median, fraction (of expressing cells), sd, or cv.
 #'
 #' @param so Seurat Object
-#' @param which.data Character specfying which data slot. Default is "data".
-#' @param which.assay Character specigin which assay to use.
-#' @param which.center Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
-#' @param which.group Character specfying group field in Seurat metadata. Default is "seurat_clusters".
+#' @param which.data Character specifying which data slot. Default is "data".
+#' @param which.assay Character specifying which assay to use.
+#' @param which.center Character specifying which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".
+#' @param which.group Character specifying group field in Seurat metadata. Default is "seurat_clusters".
+#' @param which.features Character specifying which genes to include. All if unspecified.
 #' @param do.parallel Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.
 #' @param verbose Logical
 #' @name avgGroupExpression
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F, verbose = T){
+avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", which.features = NULL, do.parallel = F, verbose = T){
   # which.center options: "mean", "fraction", "median", "sum", "sd", "cv"
 
   # inititate parallel processes
   if (do.parallel){
-    library(future.apply)
+    library(future.apply, quietly = T)
     plan(multisession) ## Run in parallel on local computer
   }
 
   # entire matrix
   exp.mat.complete <- getExpressionMatrix(so, which.data = which.data, which.assay = which.assay)
+
+  # subset matrix
+  if (!is.null(which.features)){
+    exp.mat.complete <- exp.mat.complete[rownames(exp.mat.complete) %in% which.features, ]
+  }
 
   # group ID vector
   cluster.membership <- so@meta.data[[which.group]]
@@ -1652,10 +1660,10 @@ enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , whic
   if (!(which.species %in% c("Hs", "Mm"))) stop("Species incorrectly specified. Must be either Hs or Mm")
 
   if (which.species == "Hs"){
-    library(org.Hs.eg.db)
+    library(org.Hs.eg.db, quietly = T)
     db <- "org.Hs.eg.db"
   } else if (which.species == "Mm"){
-    library(org.Mm.eg.db)
+    library(org.Mm.eg.db, quietly = T)
     db <- "org.Mm.eg.db"
   }
 
@@ -2054,7 +2062,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 dist2hclust <- function(d.mat, method = "average", ...){
 
   stopifnot(any(class(d.mat) == "matrix"))
-  library(flashClust)
+  library(flashClust, quietly = T)
 
   tree <- flashClust(as.dist(d.mat), method = method, ...)
 
@@ -2083,8 +2091,8 @@ dist2hclust <- function(d.mat, method = "average", ...){
 #'
 optimalDS <- function(tree, d.mat, genes = NULL, cut.height = 0.998, pam.respects.dendro = FALSE,  ...){
 
-  require(dynamicTreeCut)
-  require(WGCNA)
+  require(dynamicTreeCut, quietly = T)
+  require(WGCNA, quietly = T)
 
   mColorh <- NULL
   for (ds in 0:4){
@@ -2129,7 +2137,7 @@ optimalDS <- function(tree, d.mat, genes = NULL, cut.height = 0.998, pam.respect
 #'
 getModulePreservation <- function(ref.mat, query.mat, ref.module, query.modules = NULL, networkType = "unsigned", referenceNetworks = 1, ...){
 
-  library(WGCNA)
+  library(WGCNA, quietly = T)
   multiExpr <- list(A1=list(data=ref.mat),A2=list(data=query.mat))
 
   if (is.null(query.modules)){
@@ -2364,7 +2372,7 @@ getSoftThreshold <- function (s.mat, dataIsExpr = F, weights = NULL, RsquaredCut
 #'
 runEnrichment <- function(gene.list, gene.universe, species, p.threshold = 0.01, p.adj.threshold = 0.05){
 
-  library(topGO)
+  library(topGO, quietly = T)
 
   #get list of significant GO before multiple testing correction
   results.table.p <- NULL
@@ -3388,8 +3396,8 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
                          mtry = length(hvg)/10, trees = 1000, min_n = 15, mode = "regression", importance = "impurity", num.threads = 3){
 
 
-  require("parsnip")
-  require("yardstick")
+  require("parsnip", quietly = T)
+  require("yardstick", quietly = T)
 
   # get data for highly variable genes (hvg)
   cur.data <- Seurat::GetAssayData(so, slot = slot, assay = assay)
@@ -4726,9 +4734,9 @@ parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
   stopifnot(method %in% c("spearman", "pearson"))
 
   # get necessary packages
-  require("doParallel")
-  require("data.table")
-  require("WGCNA")
+  require("doParallel", quietly = T)
+  require("data.table", quietly = T)
+  require("WGCNA", quietly = T)
 
   # pre-rank matrix (if spearman)
   if (method == "spearman"){
@@ -4913,7 +4921,7 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
   suppressMessages({
     suppressWarnings({
 
-      require("foreach"); require("parallel"); require("fgsea"); require("plyr"); require("dplyr")
+      require("foreach", quietly = T); require("parallel", quietly = T); require("fgsea", quietly = T); require("plyr", quietly = T); require("dplyr", quietly = T)
 
       my.symbol <- gene.universe
       my.entrez <- sym2entrez(my.symbol, my.species = species )
@@ -5177,7 +5185,7 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
 #'
 vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, variable.features = F, subsample.factor = 1){
 
-  require(lme4);
+  require(lme4, quietly = T);
 
   # if features is specified, pct.min and variable features are ignored.
 
@@ -5418,8 +5426,8 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
 #'
 vd_Run <- function(vd_inputs.list, n.workers = 20){
 
-  require(foreach);
-  require(lme4);
+  require(foreach, quietly = T);
+  require(lme4, quietly = T);
 
   # initiate clusters
   cl <- parallel::makeCluster(n.workers)
@@ -5496,7 +5504,7 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
   # helper function to extract results
   extractVarPart2 <- function( modelList, showWarnings=TRUE,... ){
 
-    require("variancePartition")
+    require("variancePartition", quietly = T)
 
     # get results from first model to enumerate all variables present
     # singleResult = calcVarPart( modelList[[1]], showWarnings=showWarnings,... )
@@ -5872,7 +5880,7 @@ getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.feature
 #'
 categoricalColPal <- function(labels = NULL, n = NULL, palette = "Spectral"){
 
-  require("RColorBrewer")
+  require("RColorBrewer", quietly = T)
 
   if (is.null(labels) & is.null(n)){
     miko_message("'Error: 'labels' or 'n' were not specified. Color palette was not generated.")
@@ -6730,7 +6738,7 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.sn
 #' mindate=2000, maxdate=2021, verbose = T)
 citationCheck <- function(gene.query, search.query = NULL, delay = 0.5, mindate=2000, maxdate=2021, verbose = T,  ...){
 
-  require(RISmed)
+  require(RISmed, quietly = T)
 
   if (!is.null(search.query)){
     res <- EUtilsSummary(query = search.query, type="esearch", db="pubmed", datetype='pdat',
@@ -6797,5 +6805,174 @@ citationCheck <- function(gene.query, search.query = NULL, delay = 0.5, mindate=
     )
   )
 
+
+}
+
+
+#' Identify artifact genes
+#'
+#' For each gene in each dataset, compute how many cells in that dataset have more UMI than a specified threshold (umi.count.threshold) of that gene. A plot comparing the largest number across data sets with the third largest number is generated. For the majority of genes, these values are expected to be similar, and therefore lie on a diagonal. Genes that exhibit differences (difference.threshold) between the largest and third-largest number of cells are flagged and returned. This approach is adopted from work by Lause, Berens, Kobak (2021) BioRxiv (See Figure S6)
+#'
+#' @param object seurat object or named list of seurat objects.
+#' @param assay assay containing count matrix. If unspecified, "RNA" assay is used. If "RNA" assay is missing, the default assay is used.
+#' @param features genes used for analysis. If unspecified, variable genes are used.
+#' @param meta.feature feature in meta data that provides dataset grouping information. Default is "Barcode".
+#' @param umi.count.threshold cells that exceed this UMI count threshold are counted.
+#' @param difference.threshold fold difference between largest and 3rd largest number of cells that is used to flag artifact genes for omission.
+#' @param group.specific.is.artefact include genes that are only expressed in one dataset as artifacts. Default is FALSE.
+#' @param verbose Print progress (T or F). Default is F.
+#' @name findArtifactGenes
+#' @author Nicholas Mikolajewicz
+#' @examples
+#' ag.res <-  findArtifactGenes(object = so, assay = NULL, features = NULL, meta.feature = "Barcode", umi.count.threshold = 5, difference.threshold = 100, verbose = T)
+findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.feature = "Barcode", umi.count.threshold = 5, nth.max = 2,
+                              difference.threshold = 30, group.specific.is.artefact = F, verbose = F){
+
+
+  if (class(object) == "list"){
+    which.method <- 1
+    object.list <- object
+    object <- object[[1]]
+    if (is.null(features)) stop("If object is list, features must be specified")
+  } else {
+    which.method <- 2
+  }
+  stopifnot(class(object) == "Seurat")
+
+  if (is.null(assay)) {
+    all.assays <- names(object@assays)
+    if ("RNA" %in% all.assays) {
+      assay <- "RNA"
+    } else {
+      assay = DefaultAssay(object)
+    }
+  }
+  if (is.null(features)) {
+    features = VariableFeatures(object)
+    if (length(features) == 0){
+      stop("Variable features not found Please provide features for evaluation.")
+    }
+  }
+
+
+
+  if (which.method == 1){
+    u.bc <- names(object.list)
+    if (length(u.bc) < nth.max) stop("Insufficient number of datasets to perform artifact detection")
+    cumi.mat <- matrix(nrow = length(features), ncol = length(u.bc))
+    for (i in 1:length(u.bc)){
+      object <- object.list[[u.bc[i]]]
+      e.mat <- object@assays[[assay]]@counts
+      if (is.null(dim(e.mat))) stop("Count matrix not found. Cannot perform artefact detection.")
+      e.mat <- e.mat[rownames(e.mat) %in% features, ]
+      cumi.mat[,i] <-  apply(e.mat, 1, function(x) sum(x>umi.count.threshold))
+    }
+
+    rownames(cumi.mat) <- rownames(e.mat);
+    colnames(cumi.mat) <- u.bc
+
+
+  } else if (which.method == 2){
+    miko_message("Preparing expression matrix...", verbose = verbose)
+    # get grouping variable
+    u.bc <- unique(object@meta.data[ ,meta.feature])
+    if (length(u.bc) < nth.max) stop("Insufficient number of datasets to perform artifact detection")
+    all.bc <- as.character(object@meta.data[ ,meta.feature])
+
+    # get expression matrix
+    e.mat <- object@assays[[assay]]@counts
+    if (is.null(dim(e.mat))) stop("Count matrix not found. Cannot perform artefact detection.")
+    e.mat <- e.mat[rownames(e.mat) %in% features, ]
+
+    miko_message(paste0("Identifying how many cells have over ", umi.count.threshold, " UMI for each gene...."), verbose = verbose)
+    df.cell.umi <- NULL
+    cumi.mat <- matrix(nrow = nrow(e.mat), ncol = length(u.bc))
+
+    # flag cells with expression above threshold
+    for (i in 1:length(u.bc)){
+      e.subset <- e.mat[ ,all.bc %in% u.bc[i]]
+      cumi.mat[,i] <-  apply(e.subset, 1, function(x) sum(x>umi.count.threshold))
+    }
+    rownames(cumi.mat) <- rownames(e.mat);
+    colnames(cumi.mat) <- u.bc
+
+  }
+
+  # rank datasets
+  cumi.rank <- t(apply(cumi.mat, 1, rank, ties.method = "random"))
+
+  # get largest and 3rd largest number of cells
+  df.cumi.ind <- data.frame(
+    x = apply(cumi.rank, 1, function(x) which(x == length(u.bc))),
+    y = apply(cumi.rank, 1, function(x) which(x == length(u.bc)-(nth.max-1)))
+  )
+
+  miko_message(paste0("Consolidating results..."), verbose = verbose)
+  # condsolidate data
+  df.cumi.n <- NULL
+  for (i in 1:nrow(df.cumi.ind)){
+    df.cumi.n <- bind_rows(
+      df.cumi.n,
+      data.frame(
+        x =  cumi.mat[i ,df.cumi.ind$x[i]],
+        y =  cumi.mat[i ,df.cumi.ind$y[i]] )
+
+    )
+  }
+
+  df.cumi.n$gene <- rownames(df.cumi.ind)
+
+  if (nth.max == 2){
+    nth.label <- "2nd"
+  } else if (nth.max == 3){
+    nth.label <- "3rd"
+  } else if (nth.max == 4){
+    nth.label <- "4th"
+  } else if (nth.max == 5){
+    nth.label <- "5th"
+  } else if (nth.max == 6){
+    nth.label <- "6th"
+  } else {
+    nth.label <- paste0(nth.max, "th")
+  }
+
+  miko_message(paste0("Generating plot..."), verbose = verbose)
+  # generate plot
+  df.cumi.n$ratio <- (df.cumi.n$x + 1)/(df.cumi.n$y + 1)
+  df.cumi.n$is.artifact <- df.cumi.n$ratio >= difference.threshold
+
+  if (group.specific.is.artefact){
+    df.cumi.n$is.artifact2 <- F
+    df.cumi.n$is.artifact2[df.cumi.n$y == 0]  <- T
+  } else {
+    df.cumi.n$is.artifact2 <- F
+  }
+
+  p3 <- df.cumi.n %>%
+    ggplot(aes(x = x + 1, y = y + 1, color = is.artifact | is.artifact2))+
+    geom_point() +
+    # geom_path(data = df.threshold, aes(x = x, y = y)) +
+    ggrepel::geom_text_repel(data = df.cumi.n %>% dplyr::filter(is.artifact), aes(x = x+ 1, y = y + 1, label = gene), max.overlaps = Inf, size = 2) +
+    scale_x_log10() +
+    scale_y_log10() +
+    labs(x = paste0("1 + max(#cells with > ", umi.count.threshold, " counts)"),
+         color = "is.artifact",
+         caption = paste0(sum(df.cumi.n$is.artifact | df.cumi.n$is.artifact2), " artifact genes detected") ,
+         y = paste0("1 + ", nth.label, "-max(#cells with > ", umi.count.threshold, " counts)"),
+         title = "Artifact gene detection",
+         subtitle = paste0("Difference Threshold: ", difference.threshold)) +
+    theme_miko(color.palette = "ptol", legend = T)
+
+
+
+  artifact.gene <- df.cumi.n$gene[(df.cumi.n$is.artifact | df.cumi.n$is.artifact2)]
+
+  miko_message(paste0("Complete!"), verbose = verbose)
+
+  return(list(
+    artifact.gene = artifact.gene,
+    data = df.cumi.n,
+    plot = p3
+  ))
 
 }

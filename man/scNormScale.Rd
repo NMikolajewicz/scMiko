@@ -18,7 +18,8 @@ scNormScale(
   mean.cutoff = c(0.1, 8),
   dispersion.cutoff = c(1, Inf),
   conserve.memory = FALSE,
-  assay = "RNA"
+  assay = "RNA",
+  ...
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ scNormScale(
 \item{conserve.memory}{If set to TRUE the residual matrix for all genes is never created in full; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE.}
 
 \item{assay}{Name of assay to pull the count data from; default is 'RNA'}
+
+\item{...}{additional parameters passed to SCTransform.}
 
 \item{n.works}{Number of works to used during parallel processing. Default is 3.}
 }

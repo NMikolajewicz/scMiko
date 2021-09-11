@@ -10,6 +10,7 @@ avgGroupExpression(
   which.assay = DefaultAssay(so),
   which.center = "mean",
   which.group = "seurat_clusters",
+  which.features = NULL,
   do.parallel = F,
   verbose = T
 )
@@ -17,13 +18,15 @@ avgGroupExpression(
 \arguments{
 \item{so}{Seurat Object}
 
-\item{which.data}{Character specfying which data slot. Default is "data".}
+\item{which.data}{Character specifying which data slot. Default is "data".}
 
-\item{which.assay}{Character specigin which assay to use.}
+\item{which.assay}{Character specifying which assay to use.}
 
-\item{which.center}{Character indicating which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".}
+\item{which.center}{Character specifying which summary measure to use. Must be one of "mean", "median", "fraction", "sum", "sd", or "cv". If unspecified, default is "mean".}
 
-\item{which.group}{Character specfying group field in Seurat metadata. Default is "seurat_clusters".}
+\item{which.group}{Character specifying group field in Seurat metadata. Default is "seurat_clusters".}
+
+\item{which.features}{Character specifying which genes to include. All if unspecified.}
 
 \item{do.parallel}{Logical specifying whether to perform computations in parallel. Default is F. Uses future.apply package.}
 
