@@ -4317,7 +4317,7 @@ getNMFGenes <- function(feature.loading, norm.cutoff = 0.5){
 #' # reinstall scMiko
 #' scMikoUpdate()
 #'
-scMikoUpdate <- function(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...){
+scMikoUpdate <- function(token = "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", ...){
 
   try({detach("package:scMiko", unload = T)}, silent = T)
 
