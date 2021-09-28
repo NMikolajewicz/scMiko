@@ -4421,6 +4421,86 @@ savePDF <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save.
   }
 }
 
+#' Save figure as html
+#'
+#' Save figure as html
+#'
+#' @param file.name path/filename of output html A character.
+#' @param plot.handle plot handle that will be saved as html E.g., GGplot handle.
+#' @param fig.width Numeric for plot width. Default is 5.
+#' @param fig.height Numeric for plot height Default is 5.
+#' @param save.flag Logical to save figure. Default is TRUE.
+#' @author Nicholas Mikolajewicz
+#' @name saveHTML
+#' @examples
+#'
+#' # save module figure
+#' saveHTML(file.name = "M01_QC_violin.pdf", plot.handle = plt.QC_violin, fig.width = 5, fig.height = 5, save.flag = save.pdf)
+#'
+saveHTML <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save.flag = T){
+
+  if (save.flag){
+
+    if (!grepl(".html", file.name)) file.name <- paste0(file.name, ".html")
+
+    library(R3port, quietly = T);
+    library(rmarkdown, quietly = T)
+
+    try({
+      R3port::html_plot(
+        plot = plot.handle,
+        out = file.name,
+        title = "",
+        titlepr = "",
+        footnote = "",
+        pwidth = fig.width,
+        pheight = fig.height,
+        res = NULL,
+        fontsize = 12,
+        units = "in",
+        rawout = NULL,
+        cleancur = T,
+        show = F
+      )
+    }, silent = T)
+
+    suppressMessages({
+      suppressWarnings({
+        self_contained_html <- function (input, output){
+          require(xfun, quietly = T)
+          input <- normalizePath(input)
+          if (!file.exists(output))
+            file.create(output)
+          output <- normalizePath(output)
+          template <- tempfile(fileext = ".html")
+          on.exit(unlink(template), add = TRUE)
+          write_utf8("$body$", template)
+          from <- if (pandoc_available("1.17"))
+            "markdown_strict"
+          else "markdown"
+          pandoc_convert(input = input, from = from, output = output,
+                         options = c("--self-contained", "--template", template))
+          invisible(output)
+        }
+
+        self_contained_html(input = file.name, output = file.name)
+
+      })
+    })
+
+    # clean header
+    library(xml2, quietly = T)
+    h <- as_list(read_html(file.name))
+    if (h[["html"]][["body"]][["p"]][[1]] == "<!DOCTYPE html>  "){
+      h[["html"]][["body"]][["p"]][[1]] <- NULL
+      catch_out <- write_html(as_xml_document(h$html), file.name,
+                              options=c("format","no_declaration"))
+    }
+  }
+
+
+}
+
 
 #' Gene expression markers for all identity classes.
 #'

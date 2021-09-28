@@ -425,6 +425,8 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
 #' @param which.assay Specifies which seurat assay to used to compute e.mat. Used only if e.mat is not provided. Default is DefaultAssay(so)
 #' @param x.label x axis title (a character). Default is which.group.
 #' @param x.label.angle rotation angle for x axis title (a numeric). Default is NULL.
+#' @param show.violin Show expression as violin plot. Default is T.
+#' @param show.full.axis Show full normalized axis [0,1], rather than adapting to data. Default is T.
 #' @name expression.Plot
 #' @return ggplot object
 #' @examples
@@ -436,8 +438,9 @@ networkProperties.Plot <- function(sft, r2.threshold = 0.85){
 #'
 expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
                             which.group = "seurat_clusters", which.data = "data", which.assay = DefaultAssay(so),
-                            x.label = NULL, x.label.angle = NULL){
+                            x.label = NULL, x.label.angle = NULL, show.violin = T, show.full.axis = T){
 
+  miko_message("Preparing Expression Data...")
   # get expression data
   if (is.null(e.mat)){
     em <- getExpressionMatrix(
@@ -457,18 +460,19 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
       so,
       which.data = "data",
       which.center = "fraction",
-      which.group = which.group
+      which.group = which.group,
+      verbose = F
     )
   } else {
     em.frac <- f.mat
   }
 
   if ("genes" %in% colnames(em)){
-    rownames(em) <- em$genes
+    rownames(em) <- make.unique(em$genes)
     em <- em %>% dplyr::select(-c("genes"))
   }
   if ("genes" %in% colnames(em.frac)){
-    rownames(em.frac) <- em.frac$genes
+    rownames(em.frac) <- make.unique(em.frac$genes)
     em.frac <- em.frac %>% dplyr::select(-c("genes"))
   }
 
@@ -499,6 +503,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
   em.sum <- merge(em.sum, em.frac.mark.df, by = "group")
 
   # hierarchial clustering
+  miko_message("Clustering groups...")
   row.names.df <- em.sum$group
   em.sum <- em.sum %>% dplyr::select(-c("group"))
   clust.var <- as.matrix(em.sum)
@@ -514,6 +519,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
   if (is.null(x.label)) x.label <- which.group
 
+  miko_message("Generating plot...")
   if (clust.success){
     # helper function for creating dendograms
     ggdend.v2 <- function(df) {
@@ -548,14 +554,29 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
     plt.em <- ggplot() +
       geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +
-      coord_cartesian(ylim = c(0, 1)) +
-      geom_violin(data = em.merge, aes(x = group, y = query.norm, fill = group)) +
+      # coord_cartesian(ylim = c(0, 1)) +
+      # geom_violin(data = em.merge, aes(x = group, y = query.norm, fill = group)) +
       geom_point(data = em.merge.sum, aes(x = group, y = (ev), fill = group)) +
       theme_miko() +
       xlab(x.label)  +
-      scale_y_continuous(sec.axis = sec_axis(~., name = "Normalized Expression (violin)"), name = "Expressing Fraction (bar)") +
-      theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
-            legend.position = "none")
+      scale_y_continuous(sec.axis = sec_axis(~., name = "Normalized Expression (dot)"), name = "Expressing Fraction (bar)")
+
+      # theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
+      #       legend.position = "none")
+
+    if (show.violin){
+      plt.em <- plt.em +
+        geom_violin(data = em.merge, aes(x = group, y = query.norm, fill = group)) +
+        geom_point(data = em.merge.sum, aes(x = group, y = (ev), fill = group))  +
+        scale_y_continuous(sec.axis = sec_axis(~., name = "Normalized Expression (violin)"), name = "Expressing Fraction (bar)")
+    }
+
+    if (show.full.axis){
+      plt.em <- plt.em + coord_cartesian(ylim = c(0, 1)) +
+        theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
+              legend.position = "none")
+    }
+
 
     if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
       plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
@@ -573,14 +594,27 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
                 ev = mean(query, na.rm = T))
     plt.sgExp <- ggplot() +
       geom_bar(data = em.merge.sum, aes(x = group, y = ef, fill = group), stat = "identity", alpha = 0.5) +
-      coord_cartesian(ylim = c(0, 1)) +
-      geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
+      # geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
       geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group)) +
       theme_miko() +
       xlab(x.label)  +
-      scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)") +
-      theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
-            legend.position = "none")
+      scale_y_continuous(sec.axis = sec_axis(~., name = "Normalized Expression (dot)"), name = "Expressing Fraction (bar)")
+      # theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
+      #       legend.position = "none")
+
+    if (show.violin){
+      plt.em <- plt.em +
+        geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
+        geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group))    +
+        scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)")
+    }
+
+    if (show.full.axis){
+      plt.em <- plt.em +
+        coord_cartesian(ylim = c(0, 1)) +
+        theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
+                               legend.position = "none")
+    }
 
     if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
       plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))

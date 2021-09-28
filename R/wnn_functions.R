@@ -591,8 +591,13 @@ wnn_Run <- function (object, wnn.knn = 20, umap.knn = 20, umap.min.dist = 0.1, d
 
   if (class(object) == "Seurat"){
 
-    miko_message("Preparing expression matrices...")
-    which.rep <- getExpressedGenes(object = object, min.pct = min.pct, group = split.var, group.boolean = "OR")
+    if (min.pct > 0){
+      miko_message("Preparing expression matrices...")
+      which.rep <- getExpressedGenes(object = object, min.pct = min.pct, group = split.var, group.boolean = "OR")
+    } else {
+      which.rep <- rownames(object)
+    }
+
 
     # split seurat objects #########################################################
     object.list <- SplitObject(object[rownames(object) %in% which.rep, ], split.by = split.var)

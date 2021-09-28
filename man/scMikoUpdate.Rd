@@ -4,7 +4,7 @@
 \alias{scMikoUpdate}
 \title{Reinstall scMiko package}
 \usage{
-scMikoUpdate(token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa", ...)
+scMikoUpdate(token = "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", ...)
 }
 \arguments{
 \item{token}{autherization key to for private git repository}

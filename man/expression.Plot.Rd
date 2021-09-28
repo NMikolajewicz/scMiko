@@ -13,7 +13,9 @@ expression.Plot(
   which.data = "data",
   which.assay = DefaultAssay(so),
   x.label = NULL,
-  x.label.angle = NULL
+  x.label.angle = NULL,
+  show.violin = T,
+  show.full.axis = T
 )
 }
 \arguments{
@@ -34,6 +36,10 @@ expression.Plot(
 \item{x.label}{x axis title (a character). Default is which.group.}
 
 \item{x.label.angle}{rotation angle for x axis title (a numeric). Default is NULL.}
+
+\item{show.violin}{Show expression as violin plot. Default is T.}
+
+\item{show.full.axis}{Show full normalized axis [0,1], rather than adapting to data. Default is T.}
 }
 \value{
 ggplot object

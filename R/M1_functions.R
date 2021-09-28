@@ -5,7 +5,7 @@
 #'
 #' Input data is output from cell ranger (10x datasets)
 #'
-#' @param import_set Character specifying folder containing matrix.mtx, gense.tsv and barcodes.tsv files provided by 10x.
+#' @param import_set Character specifying folder containing matrix.mtx, genes.tsv (or features.tsv) and barcodes.tsv files provided by 10x.
 #' @param input_organisms Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
 #' \itemize{
 #' \item "Hs" - Human
@@ -21,19 +21,32 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
   import_set_path <- paste(dir, import_set, sep ="")
 
   # import cell ranger-processed data
-  expression_matrix <- Read10X(data.dir = import_set_path[1])
+  expression_matrix <- Seurat::Read10X(data.dir = import_set_path[1])
 
   # assign to secondary matrix
   expression_matrix2 <- expression_matrix
 
   # import gene and ensembl names
-  feature.names = read.delim(paste(import_set_path[1], "/genes.tsv", sep = ""),
-                             header = FALSE,
-                             stringsAsFactors = FALSE)
+  load.success <- F
+  try({
+    feature.names = read.delim(paste(import_set_path[1], "/genes.tsv", sep = ""),
+                               header = FALSE,
+                               stringsAsFactors = FALSE)
+    load.success <- T
+  }, silent = T)
+  if (!load.success){
+    feature.names = read.delim(paste(import_set_path[1], "/features.tsv", sep = ""),
+                               header = FALSE,
+                               stringsAsFactors = FALSE)
+  }
 
-  # remove hg19 tags
+
+  # remove tags
   feature.names[,1] <- gsub("hg19_", "", feature.names[,1])
   feature.names[,2] <- gsub("hg19_", "", feature.names[,2])
+  feature.names[,1] <- gsub("hg38_", "", feature.names[,1])
+  feature.names[,2] <- gsub("hg38_", "", feature.names[,2])
+
 
   # create gene list
   gNames <- as.character( feature.names$V2 );

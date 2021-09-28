@@ -7,7 +7,7 @@
 loadCellRanger(import_set, input_organisms, dir = "")
 }
 \arguments{
-\item{import_set}{Character specifying folder containing matrix.mtx, gense.tsv and barcodes.tsv files provided by 10x.}
+\item{import_set}{Character specifying folder containing matrix.mtx, genes.tsv (or features.tsv) and barcodes.tsv files provided by 10x.}
 
 \item{input_organisms}{Character specifying species to include. This is necessary to parse ensemble ids into mouse and human. One of:
 \itemize{
