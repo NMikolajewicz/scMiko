@@ -1,106 +1,4 @@
-#' Load Module-Specific Packages
-#'
-#' Load packages required for each analysis module
-#'
-#' @param module.number Numeric.
-#' @param load.default Logical flag specifying wther to load default packages. If module.number is specified, load.default is ignored.
-#' @name modulePackages
-#' @seealso \code{\link{library}}
-#' @return
-#'
-modulePackages <- function (module.number = NULL, load.default = T){
 
-  if (!is.null(module.number)){
-
-
-    if (module.number == 1){
-
-      load.default <- F
-
-      # List of packages to load
-      packages2load <- c("Seurat", "sctransform",
-                         "plyr", "dplyr", "tidyr", "reshape2", "Matrix", "RColorBrewer", "ggplot2", "gridExtra",
-                         "DT", "flexdashboard", "future")
-
-      # load packages
-      lapply(packages2load, library, character.only = TRUE)
-
-    } else if (module.number == 2){
-    } else if (module.number == 3){
-    } else if (module.number == 4){
-    } else if (module.number == 5){
-    } else if (module.number == 6){
-    } else if (module.number == 7){
-    } else if (module.number == 8){
-    } else if (module.number == 9){
-
-      load.default <- F
-
-      # List of packages to load
-      # packrat::disable(project = getwd(), restart = TRUE)
-      packages2load <- c("Seurat", "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "gridExtra",
-                         "DT", "flexdashboard", "ggpmisc", "ggExtra", "grid", "ggrepel", "ddpcr",
-                         "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "fgsea", "plotly", "ggplot2", "reactome.db")
-
-      # load packages
-      lapply(packages2load, library, character.only = TRUE)
-
-      # Note: ensure that Plotly version 4.8.0 is used only
-      #   require(devtools)
-      #   install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
-      session.info <- sessionInfo()
-      stopifnot(session.info[["otherPkgs"]][["plotly"]][["Version"]] == "4.8.0")
-
-    } else if (module.number == 10){
-
-      load.default <- F
-
-      # List of packages to load
-      packages2load <- c("Seurat", "sctransform",
-                         "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "ggplot2", "gridExtra",
-                         "DT", "flexdashboard", "ggpmisc", "ggpmisc", "ggExtra", "grid", "ddpcr",  "future",
-                         "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "scales")
-
-
-      library("viridis")
-
-      # load packages
-      lapply(packages2load, library, character.only = TRUE)
-
-
-    } else if (module.number == 11){
-    } else if (module.number == 12){
-    } else if (module.number == 13){
-    } else if (module.number == 14){
-    } else if (module.number == 15){
-    } else if (module.number == 16){
-    } else if (module.number == 17){
-    } else if (module.number == 18){
-    } else if (module.number == 19){
-    } else if (module.number == 20){
-    } else if (module.number == 21){
-    }
-
-  }
-
-  if (load.default){
-    # List of packages to load
-    # packrat::disable(project = getwd(), restart = TRUE)
-    packages2load <- c("Seurat", "plyr", "dplyr", "tidyr", "reshape2", "RColorBrewer", "gridExtra",
-                       "DT", "flexdashboard", "ggpmisc", "ggExtra", "grid", "ggrepel", "ddpcr",
-                       "AnnotationDbi", "org.Mm.eg.db", "org.Hs.eg.db", "fgsea", "plotly", "ggplot2", "reactome.db")
-
-    # load packages
-    lapply(packages2load, library, character.only = TRUE)
-
-    # Note: ensure that Plotly version 4.8.0 is used only
-    #   require(devtools)
-    #   install_version("plotly", version = "4.8.0", repos = "http://cran.us.r-project.org")
-    session.info <- sessionInfo()
-    stopifnot(session.info[["otherPkgs"]][["plotly"]][["Version"]] == "4.8.0")
-  }
-
-}
 
 #' Initiate analysis log
 #'
@@ -193,7 +91,7 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
+prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
                          terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F, use.integrated = T,
                          keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
 
@@ -233,6 +131,10 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
   }, silent = T)
 
   # species
+  if (!("Organism" %in% colnames(object@meta.data))){
+    object@meta.data[["Organism"]] <- detectSpecies(object)
+  }
+
   if (species != unique(object@meta.data[["Organism"]])) {
     if (length(unique(object@meta.data[["Organism"]])) == 1) {
       species <- unique(object@meta.data[["Organism"]])
@@ -318,9 +220,20 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
         rm(graph.holder)
         object <- suppressMessages({UpdateSeuratObject(object)})
       }, error = function(e){
-        pca.prop <- propVarPCA(object)
+
+        if ("pca" %in% names(object@reductions)){
+          pca.prop <- propVarPCA(object)
+        } else {
+          if (length(object@assays[[DefaultAssay(object)]]@scale.data) == 0){
+            object <- scNormScale(object, method = "NFS", assay = DefaultAssay(object), enable.parallelization = F)
+            object <- RunPCA(object, verbose = F)
+          }
+          pca.prop <- propVarPCA(object)
+        }
+
+
         target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
-        object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
+        object <- FindNeighbors(object, verbose = T, reduction = "pca", dims = 1:target.pc)
         object <- suppressMessages({UpdateSeuratObject(object)})
         return(object)
       })
@@ -373,23 +286,27 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
 
   # convert ENSEBLE to GENE names in Seurat object #############################
 
-  gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
+  if (!is.null(e2s)){
 
-  if (gene.rep == "ensembl"){
-    miko_message("Converting ENSEMBL to SYMBOL...")
-    # filter species-specific genes
-    if (species == "Mm"){
-      object <- subset(object, features = unique(rownames(object)[grepl("MUSG", rownames(object))]))
-    } else if (species == "Hs"){
-      object <- subset(object, features =  unique(rownames(object)[!(grepl("MUSG", rownames(object)))]))
+    gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
+
+    if (gene.rep == "ensembl"){
+      miko_message("Converting ENSEMBL to SYMBOL...")
+      # filter species-specific genes
+      if (species == "Mm"){
+        object <- subset(object, features = unique(rownames(object)[grepl("MUSG", rownames(object))]))
+      } else if (species == "Hs"){
+        object <- subset(object, features =  unique(rownames(object)[!(grepl("MUSG", rownames(object)))]))
+      }
+
+      # convert ensembl to symbol
+      object <- ens2sym.so(object, gNames.list = e2s)
+      gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
+      object <- suppressMessages({UpdateSeuratObject(object)})
+
+      invisible({gc()})
     }
 
-    # convert ensembl to symbol
-    object <- ens2sym.so(object, gNames.list = e2s)
-    gene.rep <-  checkGeneRep(e2s, as.vector(rownames(object)))
-    object <- suppressMessages({UpdateSeuratObject(object)})
-
-    invisible({gc()})
   }
 
   # remove duplicate genes #####################################################
@@ -522,6 +439,12 @@ prepSeurat2 <- function (object, e2s, species = NULL, resolution= NULL, subset.d
     }
   }, silent = T)
 
+
+  # generate UMAP if missing ###################################################
+  if (!("umap" %in% names(object@reductions))){
+    object <- RunUMAP(object, dims = 1:30)
+  }
+
   # Return results #############################################################
 
   return(list(
@@ -556,72 +479,6 @@ prepSeurat <- function (object){
 
   return(object)
 }
-
-#' install missing packages from cran or bioconductor
-#'
-#' Install missing packages from cran or bioconductor, and flag any remaining packages that are not available on either repository.
-#'
-#' @param package.list Character vector of package names.
-#' @param install.missing Flag specfiying whether to install missing packages. If FALSE, return list of missing packages only. If none are missing, NULL is returned.
-#' @param prefer.repo Preffered repository for installing packages. If package is available on both repos, prefferred is use. Options are 'bioconductor' (default) or 'cran'.
-#' @name getMissingPackages
-#' @author Nicholas Mikolajewicz
-#'
-getMissingPackages <- function(package.list, install.missing = F, prefer.repo = "bioconductor"){
-
-  # prefer.repo: If available on both repositories, which repository to install from
-  # options:
-  #   bioconductor
-  #   cran
-
-  available.packages <- installed.packages()
-  which.missing <- package.list[!(package.list %in% available.packages)]
-
-  is.success <- F
-  if ((length(which.missing) > 0) & install.missing){
-
-    # check cran
-    cranList <- utils::available.packages()
-    cran.package.list <- package.list[which.missing %in% cranList[,1]]
-
-    # check bioconductor
-    if (!(require("BiocManager"))) install.packages("BiocManager")
-    bioList <- BiocManager::available()
-    bio.package.list <- package.list[which.missing %in% bioList]
-
-    # find overalp between repositories
-    overlap.packages <- intersect(cran.package.list, bio.package.list)
-
-    # not on cran or bioconductor
-    available.on.rep <- unique(c(cran.package.list, bio.package.list))
-    not.available.on.rep <- which.missing[!(which.missing %in% available.on.rep)]
-
-    if (length(not.available.on.rep) > 0) warning(paste0(paste(not.available.on.rep, collapse = ", "), " package(s) are not available on CRAN or BIOCONDUCTOR. Manual installation from source is required.\n"))
-
-    if (prefer.repo == "bioconductor"){
-      install.bc <- bio.package.list
-      install.cran <- cran.package.list[!(cran.package.list %in% overlap.packages)]
-    } else if (prefer.repo == "cran"){
-      install.bc <- bio.package.list[!(cran.package.list %in% overlap.packages)]
-      install.cran <- cran.package.list
-    }
-    if (length(install.bc) > 0) BiocManager::install(install.bc)
-    if (length(install.cran) > 0) install.packages(install.cran)
-
-    is.success <- T
-  } else {
-    is.success <- T
-    if ((!install.missing) & (length(which.missing) > 0)){
-      return(which.missing)
-    } else {
-      return(NULL)
-    }
-  }
-
-  if ((!is.success) & (install.missing)) warning("There were issues installing all the requested packages. Try installing one at a time.\n")
-
-}
-
 
 
 #' Remove variables from global environment
