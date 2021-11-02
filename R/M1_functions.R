@@ -523,7 +523,6 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' Applies one of two normalization/scaling approaches supported by Seurat.
 #'
 #' @param so Seurat Object
-#' @param gNames Named vector of genes. Names are ensemble, entries are Symbols.
 #' @param method Character specifying data normalization and scaling method. One of:
 #' \itemize{
 #' \item "NFS" - Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow. Parameters are set to use LogNormalization method with a scale.factor of 1000. Variable features are selceted using 'mvp' method, and var2regress is regressed out during data scaling.
@@ -531,7 +530,7 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' }
 #' @param vars2regress Character vector specifying which variables to regress out during data scaling.
 #' @param enable.parallelization Logical specifying whether to enable parallelization. Default is T.
-#' @param n.works Number of works to used during parallel processing. Default is 3.
+#' @param n.works Number of works to used during parallel processing. Default is 1.
 #' @param max.memory Max memory to use during parallel processing. Default is 20480 * 1024^2
 #' @param variable.features.n If method = SCT, integer that specifies number of variable features to retrieve. If specified, overides variable feature threshold specified by variable.features.rv.th.
 #' @param variable.features.rv.th If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.
@@ -544,8 +543,10 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @name scNormScale
 #' @return Seurat Object
 #'
-scNormScale <- function(so, gNames, method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 3, max.memory = (20480 * 1024^2), variable.features.n = NULL,
+scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 1, max.memory = (20480 * 1024^2), variable.features.n = NULL,
                            variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA", ...){
+#gNames,
+  #' @param gNames Named vector of genes. Names are ensemble, entries are Symbols.
 
 
   # enable parallelization
