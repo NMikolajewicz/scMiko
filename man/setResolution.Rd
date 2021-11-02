@@ -27,7 +27,10 @@ setResolution(
 Seurat object
 }
 \description{
-Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
+Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. Wrapper for Seurat's FindClusters() function.
+}
+\seealso{
+\code{\link{FindClusters}}
 }
 \author{
 Nicholas Mikolajewicz

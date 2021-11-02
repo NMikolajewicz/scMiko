@@ -6,7 +6,7 @@
 \usage{
 prepSeurat2(
   object,
-  e2s,
+  e2s = NULL,
   species = NULL,
   resolution = NULL,
   subset.data = NULL,

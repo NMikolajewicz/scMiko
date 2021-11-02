@@ -4,7 +4,14 @@
 \alias{downsampleSeurat}
 \title{Downsample single cell data}
 \usage{
-downsampleSeurat(object, subsample.factor = 1, subsample.n = NULL, verbose = T)
+downsampleSeurat(
+  object,
+  subsample.factor = 1,
+  subsample.n = NULL,
+  sample.group = NULL,
+  min.group.size = 500,
+  verbose = T
+)
 }
 \arguments{
 \item{object}{Seurat Object}
@@ -12,6 +19,10 @@ downsampleSeurat(object, subsample.factor = 1, subsample.n = NULL, verbose = T)
 \item{subsample.factor}{Numeric [0,1]. Factor to downsample data by.}
 
 \item{subsample.n}{Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.}
+
+\item{sample.group}{Character. Meta data grouping variable in which min.group.size will be enforced.}
+
+\item{min.group.size}{Numeric [1,ncol(object)]. Minimum number of cells to downsample to within sample.group. If there are insufficient cells to achieve the target min.group.size, only the available cells are retained.}
 
 \item{verbose}{Print progress. Default is TRUE.}
 }

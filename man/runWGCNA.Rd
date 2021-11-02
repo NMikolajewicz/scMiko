@@ -13,6 +13,7 @@ runWGCNA(
   network.type = "signed",
   TOM.type = "unsigned",
   rescale.adjacency = F,
+  verbose = T,
   ...
 )
 }
@@ -32,6 +33,8 @@ runWGCNA(
 \item{TOM.type}{TOM type. Allowed values are "unsigned" (default) or "signed"}
 
 \item{rescale.adjacency}{Logical indicate whether adjacency matrix is rescaled to [0,1]. Default is False.}
+
+\item{verbose}{Print progress. Default is TRUE}
 
 \item{...}{Additional arguments passessed to TOMsimilarity {WGCNA package}}
 }

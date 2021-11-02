@@ -10,6 +10,7 @@ runMS(
   assay = DefaultAssay(object),
   score.key = "MS",
   size = autoPointSize(ncol(object)),
+  ncore = 10,
   raster = F,
   rescale = F,
   verbose = T,
@@ -29,6 +30,8 @@ runMS(
 \item{score.key}{Expression program prefix. default is "MS".}
 
 \item{size}{UMAP point size.}
+
+\item{ncore}{Number of workers for parallelized implementation. Default is 10.}
 
 \item{raster}{Convert points to raster format, default is FALSE.}
 

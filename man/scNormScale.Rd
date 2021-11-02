@@ -6,11 +6,10 @@
 \usage{
 scNormScale(
   so,
-  gNames,
   method = "SCT",
   vars2regress = NULL,
   enable.parallelization = T,
-  n.workers = 3,
+  n.workers = 1,
   max.memory = (20480 * 1024^2),
   variable.features.n = NULL,
   variable.features.rv.th = 1.3,
@@ -24,8 +23,6 @@ scNormScale(
 }
 \arguments{
 \item{so}{Seurat Object}
-
-\item{gNames}{Named vector of genes. Names are ensemble, entries are Symbols.}
 
 \item{method}{Character specifying data normalization and scaling method. One of:
 \itemize{
@@ -55,7 +52,9 @@ scNormScale(
 
 \item{...}{additional parameters passed to SCTransform.}
 
-\item{n.works}{Number of works to used during parallel processing. Default is 3.}
+\item{n.works}{Number of works to used during parallel processing. Default is 1.}
+
+\item{gNames}{Named vector of genes. Names are ensemble, entries are Symbols.}
 }
 \value{
 Seurat Object

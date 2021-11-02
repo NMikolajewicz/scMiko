@@ -6,7 +6,7 @@
 \usage{
 getDEG(
   object,
-  assay = "SCT",
+  assay = DefaultAssay(object),
   data = "data",
   group_by = "seurat_clusters",
   auc.thresh = 0.6,
