@@ -187,101 +187,6 @@ QC.scatterPlot <- function(so, legend.width = 1, ...){
 
 
 
-#' Generate heatmap with plotly interface
-#'
-#' Generate heatmap with plotly interface. Takes output from scMiko::getHeat() function as input.
-#'
-#' @param mat matrix. Must be same matrix provided to scMiko::getHeat().
-#' @param heat.object output from scMiko::getHeat()
-#' @param scale.limit Numeric specifying heatmap limits. If unspecified, defined as max(c(abs(max(mat)), abs(min(mat)))).
-#' @param legend.label Character.
-#' @param x.label x axis label. Character
-#' @param y.label y axis label. Character.
-#' @param title plot title. Character.
-#' @name generateHeat
-#' @return plotly handle
-#'
-generateHeat <- function(mat, heat.object, scale.limit = NULL, legend.label = "", x.label = "", y.label = "", title = ""){
-
-  if (is.null(scale.limit)) scale.limit <- max(c(abs(max(mat)), abs(min(mat))))
-
-  mat.reconstruct <- mat[heat.object[["rowInd"]], heat.object[["colInd"]]]
-
-  # create data frame from reconstructed matrix
-  gene.order <- rownames(mat.reconstruct)
-  df.recon <- as.data.frame(mat.reconstruct)
-  df.recon$genes <- factor(rownames(df.recon), levels = gene.order)
-  df.recon.melt <- melt(df.recon)
-  df.recon.melt$variable <- factor(df.recon.melt$variable, levels = colnames(mat.reconstruct))
-
-  # define limits
-  df.recon.melt$value[df.recon.melt$value > scale.limit] <- scale.limit
-  df.recon.melt$value[df.recon.melt$value < -scale.limit] <- -scale.limit
-
-  # heatmap (ggplot2-based)
-  # legend name
-  fill.label <- legend.label
-
-
-  p_heat <- ggplot(df.recon.melt, aes(variable, genes)) +
-    geom_tile(aes(fill = (value))) +
-    scale_fill_gradientn(colours = rev(brewer.pal(9, "RdBu")), limits = c(-scale.limit, scale.limit)) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    xlab(x.label) +
-    ggtitle(title) + labs(fill = fill.label)
-
-  # helper function for creating dendograms
-  ggdend <- function(df) {
-    ggplot() +
-      geom_segment(data = df, aes(x=x, y=y, xend=xend, yend=yend)) +
-      labs(x = "", y = "") +
-      ggdendro::theme_dendro() +
-      theme(axis.text = element_blank(), axis.ticks = element_blank(),
-            panel.grid = element_blank())
-  }
-
-  # get dendromgram data from heat object
-  dx.cor <- ggdendro::dendro_data(heat.object[["colDendrogram"]])
-  dy.cor <- ggdendro::dendro_data(heat.object[["rowDendrogram"]])
-
-  # x/y dendograms
-  px <- ggdend(dx.cor$segments)
-  py <- ggdend(dy.cor$segments) + coord_flip()
-
-  # hide axis ticks and grid lines
-  eaxis <- list(
-    showticklabels = FALSE,
-    showgrid = FALSE,
-    zeroline = FALSE
-  )
-
-  p_empty <- plot_ly() %>%
-    layout(margin = list(l = 50),
-           xaxis = eaxis,
-           yaxis = eaxis)
-
-  output <- list(p_heat = p_heat,
-                 px = px,
-                 py = py,
-                 p_empty =p_empty)
-
-
-  plotly.heat <- subplot(output$px, output$p_empty, output$p_heat, output$py,
-                nrows = 2, margin = 0.01,
-                widths = c(0.85, 0.15), heights = c(0.15, 0.85)) %>%
-    config(
-      toImageButtonOptions = list(
-        format = "svg",
-        filename = "myplot",
-        width = 600,
-        height = 700
-      )
-    )
-
-  return(plotly.heat)
-
-}
-
 
 #' Save ggplot as image file
 #'
@@ -377,38 +282,6 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 
 
 
-#' Plot network properties for different soft thresholds
-#'
-#' Plot network properties for different soft thresholds
-#'
-#' @param sft list of soft threshold picks (output from scMiko::getSoftThreshold)
-#' @param r2.threshold Numeric specifying threshold at which to draw red horizontal curve. Default is 0.85.
-#' @name networkProperties.Plot
-#' @return plot
-#' @examples
-#'
-#' sft <- getSoftThreshold(s.mat, networkType = "unsigned")
-#' networkProperties.Plot(sft)
-#'
-#'
-networkProperties.Plot <- function(sft, r2.threshold = 0.85){
-  # Plot the results
-  sizeGrWindow(9, 5)
-  par(mfrow = c(1,2));
-  cex1 = 0.9;
-  powers = c(c(1:10), seq(from = 12, to=20, by=2));
-
-  # Scale-free topology fit index as a function of the soft-thresholding power
-  plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit, signed R^2",type="n", main = paste("Scale independence"));
-  text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],labels=powers,cex=cex1,col="red");
-
-  # Red line corresponds to using an R^2 cut-off
-  abline(h=r2.threshold,col="red")
-
-  # Mean connectivity as a function of the soft-thresholding power
-  plot(sft$fitIndices[,1], sft$fitIndices[,5],xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",main = paste("Mean connectivity"))
-  text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
-}
 
 
 
@@ -806,66 +679,6 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
 }
 
 
-#' UMAP projection of pseudotimes
-#'
-#' Visualize pseudotimes using UMAP coordinates.
-#'
-#' @param x x coordinates (e.g., UMAP 1)
-#' @param y y coordinates (e.g., UMAP 2)
-#' @param pseudotime pseudotimes. Numerical vector, same length as x and y.
-#' @param pt.size Point size. Numeric [0,inf]
-#' @param pt.alpha Point alpha. Numeric [0,1]
-#' @param x.lab x axis label. Default is 'UMAP 1'.
-#' @param y.lab y axis label. Default is 'UMAP 2'.
-#' @name pseudotime.UMAP
-#' @return ggplot2 handle
-#' @examples
-#'
-#'
-pseudotime.UMAP <- function(x, y, pseudotime, pt.size = autoPointSize(length(pseudotime)), pt.alpha = 1, x.lab = "UMAP 1", y.lab = "UMAP 2"){
-
-  df <- data.frame(x,y,pseudotime)
-
-  plt.pt <- df %>%
-    ggplot(aes(x, y, color = pseudotime)) +
-    geom_point(size = pt.size, alpha = pt.alpha) +
-    theme_classic() +
-    xlab(x.lab) +
-    ylab(y.lab) +
-    viridis::scale_color_viridis()
-
-  return(plt.pt)
-
-}
-
-
-#' Apply discrete color palette to ggplot object
-#'
-#' Apply discrete color palette to ggplot object
-#'
-#' @param gg ggplot handle
-#' @param fc character specifying whether to apply color palette to 'fill', 'color', or 'both'
-#' @param n.groups numeric specifying number of groups
-#' @name discretePalette
-#' @return ggplot2 handle
-#' @examples
-#'
-#' gg.plot <- discretePalette(gg.plot, fc = "color", n.groups = 4)
-#'
-discretePalette <- function(gg, fc, n.groups){
-
-  if (n.groups <= 10){
-
-    if (fc == "color"){
-      gg <- gg + ggsci::scale_color_npg()
-    } else if (fc == "fill"){
-      gg <- gg + ggsci::scale_fill_npg()
-    } else if (fc == "both"){
-      gg <- gg + ggsci::scale_color_npg() + ggsci::scale_fill_npg()
-    }
-  }
-  return(gg)
-}
 
 
 #' Automatically determine optimal point size for geom_point()
