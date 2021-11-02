@@ -273,6 +273,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param assay Assay used for expression matrix.
 #' @param score.key Expression program prefix. default is "MS".
 #' @param size UMAP point size.
+#' @param ncore Number of workers for parallelized implementation. Default is 10.
 #' @param raster Convert points to raster format, default is FALSE.
 #' @param rescale rescale values from 0 to 1. Default is FALSE.
 #' @param verbose Print progress. Default is TRUE.
@@ -310,23 +311,57 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, ...){
 
   require(scales);
 
+  opt.bsize <- optimalBinSize(object)
+
+  if (class(genelist) == "character"){
+    genelist <- list(geneset = genelist)
+  }
+
+  # start cluster
+  if (ncore > 1){
+    if (ncore > detectCores()){
+      ncore <- detectCores()
+    } else {
+      ncore <- ncore
+    }
+  }
+
+
   miko_message("Scoring gene modules...", verbose = verbose)
-  object <-   Seurat::AddModuleScore(
-    object = object,
-    features = genelist,
-    pool = NULL,
-    nbin = 24,
-    ctrl = 100,
-    k = FALSE,
-    assay = assay,
-    name = score.key,
-    seed = 1,
-    search = search
-  )
+  if (ncore > 1){
+    object <-  AddSModuleScore(
+      object = object,
+      features = genelist,
+      pool = NULL,
+      nbin = opt.bsize,
+      ctrl = 100,
+      ncore = ncore,
+      k = FALSE,
+      assay = assay,
+      name = score.key,
+      seed = 1,
+      search = search
+    )
+  } else{
+    object <-   Seurat::AddModuleScore(
+      object = object,
+      features = genelist,
+      pool = NULL,
+      nbin = opt.bsize,
+      ctrl = 100,
+      k = FALSE,
+      assay = assay,
+      name = score.key,
+      seed = 1,
+      search = search
+    )
+  }
+
+
 
 
   df.ms <- object@meta.data[ ,grepl(score.key, colnames(object@meta.data) )]
@@ -578,7 +613,7 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @return data.frame or list
 #' @examples
 #'
-getDEG <- function(object, assay = "SCT", data = "data",
+getDEG <- function(object, assay = DefaultAssay(object), data = "data",
                    group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = T, return.all = F, sig.figs = NA, verbose = T){
 
   require(presto)
@@ -922,6 +957,11 @@ signatureCoherence <- function(object = NULL, ms.result = NULL, genelist,
                                coherent.ms = T, cor.method = "spearman", ...){
 
 
+  if (class(genelist) == "character"){
+    genelist <- list(geneset = genelist)
+  }
+
+
   if (is.null(ms.result)){
     ms.result <- runMS(object = object, genelist = genelist, return.plots = F, ...)
   }
@@ -963,6 +1003,8 @@ signatureCoherence <- function(object = NULL, ms.result = NULL, genelist,
     } else if (cor.method == "spearman"){
       cor.score <- cor(as.matrix(expr.score), sig.score)
     }
+
+    cor.score[is.na(cor.score)] <- 0
 
     # a <- qlcMatrix::corSparse(expr.score, expr.score)
     # rownames(a) <- colnames(a) <- colnames(expr.score)
@@ -1036,3 +1078,5 @@ signatureCoherence <- function(object = NULL, ms.result = NULL, genelist,
   ))
 
 }
+
+
