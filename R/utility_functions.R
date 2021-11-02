@@ -342,145 +342,6 @@ sym2ens <- function(my.symbols, my.species){
 }
 
 
-#' Create heatmap object
-#'
-#' Uses gplots::heatmap.2 function to generate heatmap object. Run in chunk specifying include = F to suppress plot and only output object.
-#'
-#' @param mat Matrix. Input matrix for heatmap.
-#' @param hmcol Heatmap colors
-#' @param scale.limit Numeric. Color scale limit.
-#' @param main Character. Name of plot.
-#' @param xlab Character. X axis label.
-#' @param ... additional parameters passed to gplots::heatmap.2(...)
-#' @name getHeat
-#' @author Nicholas Mikolajewicz
-#' @return Heatmap object
-#'
-getHeat <- function(mat, hmcol = NULL, scale.limit = NULL, main = NULL, xlab = NULL, ...){
-
-  # get color palette
-  if (is.null(hmcol)) hmcol <- colorRampPalette(RColorBrewer::brewer.pal(9, "RdBu"))(100)
-
-  # get scale limits
-  if (is.null(scale.limit)) scale.limit <- max(abs(mat))
-
-  # get plot title
-  if (is.null(main)) main <- "Gene Exp Matrix"
-
-  # get x label
-  if (is.null(xlab)) xlab <- "Cluster ID"
-
-  #threw this into a function to suppress plot that is automatically generated
-  heat.object <- NULL
-  try({
-    heat.object <- gplots::heatmap.2( mat, labCol= colnames(mat),
-                                      trace="none",
-                                      col= rev(hmcol),
-                                      breaks =seq(-scale.limit, scale.limit, by = ((2*scale.limit/100))),
-                                      distfun = function(x) as.dist(1-cor(t(x))),
-                                      hclustfun = function(x) hclust(x, method="average"),
-                                      main = main,
-                                      xlab = xlab,
-                                      ...)
-
-  }, silent = T)
-
-  if (is.null(heat.object)){
-    heat.object <- gplots::heatmap.2( mat, labCol= colnames(mat),
-                                      trace="none",
-                                      col= rev(hmcol),
-                                      distfun = function(x) as.dist(1-cor(t(x))),
-                                      hclustfun = function(x) hclust(x, method="average"),
-                                      main = "Gene Exp Matrix",
-                                      xlab = "Cluster ID",
-                                      ...)
-  }
-
-  return(heat.object)
-}
-
-
-#' Get list of available files
-#'
-#' Get list of files in specified directory. Default directory is "Preprocessed Datasets/".
-#'
-#' @param directory Character. Directory name.
-#' @name getAvailableFiles
-#' @author Nicholas Mikolajewicz
-#' @return list of files
-#'
-getAvailableFiles <- function(directory = "Preprocessed Datasets/"){
-  return(list.files(directory))
-}
-
-
-#' Normalize and scale data within appropriate assay
-#'
-#' Ensures data are properly normalized and scaled. If intergrated dataset provided, Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow is applied and default assay is set to 'RNA'. Otherwise, if  non-integrated dataset is provided, SCT transform is assumed and default assay is set to 'SCT'. If non-intergrated data have not been process with SCT workflow, see m1.scNormScale() function.
-#'
-#'
-#' @param so Seurat Object
-#' @name prepExpression
-#' @author Nicholas Mikolajewicz
-#' @return Seurat Object
-#'
-prepExpression <- function(so){
-
-  if (DefaultAssay(so) == "integrated"){
-    DefaultAssay(so) <- "RNA"
-    so <-NormalizeData(so, verbose = FALSE)
-    so <- ScaleData(so, verbose = FALSE)
-    so <- FindVariableFeatures(so, selection.method = "vst", nfeatures = 10000)
-  } else {
-    if ("SCT" %in% names(so@assays)) DefaultAssay(so) <- "SCT"
-  }
-
-  return(so)
-
-}
-
-
-
-
-#' Check if gene is avaialble in Seurat Object
-#'
-#' Return logical flag indicated whether query gene is present in seurat expression matrix.
-#'
-#' @param so Seurat Object
-#' @param query.gene Character. Gene of interest.
-#' @param reference.genes Named vector of genes; names are ENSEMBL, entries are SYMBOL.
-#' @name isGeneAvailable
-#' @author Nicholas Mikolajewicz
-#' @return Logical
-#'
-isGeneAvailable <- function(so, query.gene, reference.genes){
-  all.genes <- rownames(so@assays[[DefaultAssay(so)]])
-  gene.rep <-  checkGeneRep(reference.genes, all.genes)
-  stopifnot(gene.rep == "symbol")
-  geneAvailable <- query.gene %in% all.genes
-
-  return(geneAvailable)
-}
-
-
-
-#' Reload scMiko package
-#'
-#' Function that detaches and attaches scMiko package.
-#'
-#' @name scMikoReload
-#' @author Nicholas Mikolajewicz
-#' @examples
-#'
-#' # reload scMiko package
-#' scMikoReload()
-#'
-scMikoReload <- function(){
-
-  try({detach("package:scMiko", unload=TRUE)}, silent = T)
-  library(scMiko)
-
-}
 
 
 
@@ -542,7 +403,10 @@ fixBarcodeLabel <- function (object){
   } else if (("CellType" %in% meta.data.names) & !("Barcode" %in% meta.data.names)) {
     barcode <- object@meta.data[["CellType"]]
 
-  } else {stop("Problem with CellType/Barcode metadata detected. Troubleshooting required")}
+  } else {
+    barcode <- object@meta.data[["orig.ident"]]
+    # stop("Problem with CellType/Barcode metadata detected. Troubleshooting required")
+    }
 
   object@meta.data[["Barcode"]] <- barcode
 
@@ -551,7 +415,7 @@ fixBarcodeLabel <- function (object){
 
 #' Set cluster resolution
 #'
-#' Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.
+#' Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. Wrapper for Seurat's FindClusters() function.
 #'
 #' @param object Seurat Object
 #' @param resolution Numeric [0, inf] specifying cluster resolution. Values [0.1,1] typically perform well.
@@ -559,10 +423,11 @@ fixBarcodeLabel <- function (object){
 #' @param use.existing.clusters Logical flag specifying whether to use existing clustering solution if it already exists for specified resolution.
 #' @param ... additional arguments passed to Seurat::FindClusters(...)
 #' @name setResolution
+#' @seealso \code{\link{FindClusters}}
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object
 #'
-setResolution <- function (object, resolution, assay = DefaultAssay(object), use.existing.clusters = T, ...){
+setResolution <- function(object, resolution, assay = DefaultAssay(object), use.existing.clusters = T, ...){
 
   if (!("Seurat" %in% class(object))) stop("input is not a seurat object")
   if (!("numeric" %in% class(resolution))) stop("resolution is not a numeric")
@@ -578,15 +443,17 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
     if ("integrated" %in% names(object@assays)){
       DefaultAssay(object) <- "integrated"
       object <- tryCatch({
-        warning("Computing clusters using integrated assay...\n")
+        miko_message("Computing clusters using integrated assay...")
         object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
       }, error = function(e){
         print(e)
-        warning("Finding neighbors...\n")
+        miko_message("Finding neighbors...\n")
+
+
         pca.prop <- propVarPCA(object)
         target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
         object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
-        warning("Computing clusters using integrated assay...\n")
+        miko_message("Computing clusters using integrated assay...")
         object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
         DefaultAssay(object) <- my.assay
         return(object)
@@ -594,15 +461,49 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
       DefaultAssay(object) <- my.assay
     } else {
       object <- tryCatch({
-        warning(paste0("Computing clusters using ", assay, " assay...\n"))
+        miko_message(paste0("Computing clusters using ", assay, " assay..."))
         object <- FindClusters(object = object, resolution = resolution, verbose = F,...)
       }, error = function(e){
         print(e)
-        warning("Finding neighbors...\n")
+
+
+
+        if (!("pca" %in% names(object@reductions))){
+          miko_message("PCA is missing, running necessary preprocessing...")
+          if (length(VariableFeatures(object) == 0)){
+            object <- FindVariableFeatures(object = object)
+          }
+
+          object <- tryCatch({
+            RunPCA(object = object, verbose = F)
+          }, error = function(e){
+            object <- scNormScale(
+              so = object,
+              method = "NFS",
+              vars2regress = NULL,
+              enable.parallelization = F,
+              n.workers = 1,
+              max.memory = (20480 * 1024^2),
+              variable.features.n = NULL,
+              variable.features.rv.th = 1.3,
+              return.only.var.genes = F,
+              mean.cutoff = c(0.1, 8),
+              dispersion.cutoff = c(1, Inf),
+              conserve.memory = T,
+              assay = DefaultAssay(object)
+            )
+            object <- RunPCA(object = object, verbose = F)
+            return(object)
+          })
+
+        }
+
         pca.prop <- propVarPCA(object)
         target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<0.9])+1
+
+        miko_message("Finding neighbors...")
         object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
-        warning(paste0("Computing clusters using ", assay, " assay...\n"))
+        miko_message(paste0("Computing clusters using ", assay, " assay..."))
         object <- FindClusters(object = object, resolution = resolution, verbose = F, ...)
         return(object)
       })
@@ -613,6 +514,7 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
 
   return(object)
 }
+
 
 
 #' Prepare gene to ensemble conversion vector
@@ -629,7 +531,13 @@ setResolution <- function (object, resolution, assay = DefaultAssay(object), use
 #' gNames.list <- prepGeneList(so, objects())
 #'
 prepGeneList <- function (so, global.enviroment, species = "Hs") {
+
+
   if (!exists("gNames.list")){
+    gNames.list <- NULL
+
+    try({
+
     if (("gNames.list_master" %in% global.enviroment)) {
       for (i in 1:length(gNames.list_master)) {
         gNames.list <- c(gNames.list, gNames.list_master[[i]])
@@ -704,7 +612,9 @@ prepGeneList <- function (so, global.enviroment, species = "Hs") {
       names(gNames.list) <- as.vector(my.gene$ENSEMBL)
 
     }
-    stopifnot(exists("gNames.list"))
+
+    }, silent = T)
+
   }
 
   return(gNames.list)
@@ -1415,12 +1325,14 @@ cleanFilterGenes <- function(genes, so, which.species){
 #' @param object Seurat Object
 #' @param subsample.factor Numeric [0,1]. Factor to downsample data by.
 #' @param subsample.n Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.
+#' @param sample.group Character. Meta data grouping variable in which min.group.size will be enforced.
+#' @param min.group.size Numeric [1,ncol(object)]. Minimum number of cells to downsample to within sample.group. If there are insufficient cells to achieve the target min.group.size, only the available cells are retained.
 #' @param verbose Print progress. Default is TRUE.
 #' @name downsampleSeurat
 #' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
-downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL, verbose = T){
+downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL,  sample.group = NULL, min.group.size = 500, verbose = T){
 
 
   set.seed(1023)
@@ -1446,17 +1358,69 @@ downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL, v
     return(object)
   }
 
+  if (!is.null(sample.group) && (sample.group %in% colnames(object@meta.data))){
+
+    cell.ind <- sample(x = seq(1, ncol(object)), size = n.subset, replace = FALSE, prob = NULL)
+    df.tally.orig <- as.data.frame(table(object@meta.data[ ,sample.group]))
+    df.tally.sampled <- as.data.frame(table(object@meta.data[cell.ind ,sample.group]))
+    colnames(df.tally.orig) <-  c("group", "n_original")
+    colnames(df.tally.sampled) <- c("group", "n_sampled")
+
+
+    df.tally <- merge(df.tally.orig, df.tally.sampled, by = "group")
+
+    df.tally$dif <- df.tally$n_original - df.tally$n_sampled
+    df.tally$flip <- (df.tally$n_original < min.group.size) != (df.tally$n_sampled < min.group.size)
+    df.tally$below.target <- df.tally$n_sampled < min.group.size
+    df.tally$nextra <- df.tally$n_sampled - min.group.size
+
+    n.spare <- sum(df.tally$nextra[df.tally$nextra > 0])
+    n.missing <- abs(sum(df.tally$nextra[df.tally$nextra < 0]))
+
+    n.av <- min(c(n.spare, n.missing))
+
+    df.meta <- data.frame(ind = seq(1, ncol(object)), group = object@meta.data[ ,sample.group])
+    for (i in 1:nrow(df.tally)){
+      df.tally.sampled <- as.data.frame(table(object@meta.data[cell.ind ,sample.group]))
+      # n.spare <- sum(df.tally$nextra[df.tally$nextra > 0])
+      n.spare <- df.tally$nextra[i]
+      n.av <- min(c(n.spare, n.missing))
+      if (n.av > 0){
+        df.meta$spare <- (df.meta$ind %in% cell.ind) & (df.meta$group %in% df.tally$group[i] )
+        df.meta$missing <- (!(df.meta$ind %in% cell.ind)) & (df.meta$group %in% df.tally.sampled$Var1[df.tally.sampled$Freq < min.group.size] )
+
+        if (sum(df.meta$spare) == 0) next
+        if (sum(df.meta$missing) == 0) next
+
+        omit.ind <- sample(x = df.meta$ind[df.meta$spare], size = n.av, replace = FALSE, prob = NULL)
+        n.av <- min(c(n.av, length(df.meta$ind[df.meta$missing] )))
+        add.ind <- sample(x = df.meta$ind[df.meta$missing], size = n.av, replace = FALSE, prob = NULL)
+
+        cell.ind <- unique(c(cell.ind[!(cell.ind %in% omit.ind)], add.ind))
+
+        n.missing <- n.missing - length(add.ind)
+
+        df.tally.sampled <- as.data.frame(table(object@meta.data[cell.ind ,sample.group]))
+      }
+    }
+
+
+  } else {
+    cell.ind <- sample(x = seq(1, ncol(object)), size = n.subset, replace = FALSE, prob = NULL)
+  }
+
+
   if (!is.null(n.subset)){
     object <-  tryCatch({
       miko_message(paste0("Sampling ", n.subset, "/", ncol(object), " (", signif(100*n.subset/ncol(object), 4), "%) cells"), verbose = verbose)
-      cell.ind <- sample(x = seq(1, ncol(object)), size = n.subset, replace = FALSE, prob = NULL)
+
       object <- subset(object , cells = cell.ind)
     }, error = function(e){
       warning("Failed to downsample seurat object. Troubleshooting required.")
       print(e)
       return(object)
     })
-    miko_message("Complete!", verbose = verbose)
+
     return(object)
   } else {
     return(object)
@@ -1639,223 +1603,6 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
 }
 
-#' Over-representation enrichment of GO terms using weighted fisher method
-#'
-#' Over-representation enrichment of GO terms using weighted fisher method
-#'
-#' @param gene.candidates Vector of candidate genes.
-#' @param gene.universe Vector of all genes.
-#' @param which.species Character specifying species. "Mm" or "Hs".
-#' @param which.ontology Character specifying ontology. "BP", "MF", or "CC".
-#' @param p.threshold p value threshold. Default is 0.001.
-#' @param padj.threshold adjusted p value threhsold (BH). Default is 0.05.
-#' @param topGO.object topGO object (Optional). If unspecified, new topGO object is new created. If specified, gene list is used to updated existing object.
-#' @name enrichGO.fisher
-#' @import topGo
-#' @return list of 2 data.frames (unadjusted.results (p<0.001) and adjusted.results (padj < 0.05)) and a topGO object.
-#'
-enrichGO.fisher <- function(gene.candidates, gene.universe, which.species , which.ontology = "BP", p.threshold = 0.001,
-                            padj.threshold = 0.05, topGO.object = NULL){
-
-  if (!(which.species %in% c("Hs", "Mm"))) stop("Species incorrectly specified. Must be either Hs or Mm")
-
-  if (which.species == "Hs"){
-    library(org.Hs.eg.db, quietly = T)
-    db <- "org.Hs.eg.db"
-  } else if (which.species == "Mm"){
-    library(org.Mm.eg.db, quietly = T)
-    db <- "org.Mm.eg.db"
-  }
-
-
-  allGO2genes <- topGO::annFUN.org(whichOnto=which.ontology, feasibleGenes=NULL, mapping=db, ID="symbol")
-  # all.genes <- colnames(datExpr)
-
-  # make named factor showing which genes are of interest
-  geneList=factor(as.integer(gene.universe %in% gene.candidates))
-  names(geneList)= gene.universe
-
-  if (is.null(topGO.object)){
-    # if no GO object provided, create new
-    GOdata <- new("topGOdata",
-                  ontology=which.ontology,
-                  allGenes=geneList,
-                  annot=topGO::annFUN.GO2genes,
-                  GO2genes=allGO2genes,
-                  nodeSize=10)
-  } else {
-    # if GO object exists, update gene list
-    GOdata <- topGO::updateGenes(topGO.object, geneList)
-  }
-
-  # define test using the weight01 algorithm (default) with fisher
-  res.wfisher <- runTest(GOdata, algorithm='weight01', statistic='fisher')
-
-  # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
-  allGO <- usedGO(GOdata)
-  res.table <- GenTable(GOdata, weightFisher=res.wfisher, orderBy='weightFisher', topNodes=length(allGO))
-
-  # ensure p values are numeric
-  res.table$weightFisher <- as.numeric(res.table$weightFisher)
-
-  #performing BH correction on our p values
-  p.adj <- round(p.adjust(res.table$weightFisher,method="BH"),digits = 4)
-
-  # create the file with all the statistics from GO analysis
-  res.table.adj <- cbind(res.table,p.adj)
-  res.table.adj=res.table.adj[order(res.table.adj$p.adj),]
-
-  #get list of significant GO before multiple testing correction
-  results.table.p <-  res.table.adj[which(res.table.adj$weightFisher<=p.threshold),]
-
-  #get list of significant GO after multiple testing correction
-  results.table.bh <- res.table.adj[which(res.table.adj$p.adj<=padj.threshold),]
-
-
-  return(list(unadjusted.results = results.table.p, adjusted.results = results.table.bh, topGo.object = GOdata))
-}
-
-
-
-
-#' Filter seurat object according to specified meta data entries
-#'
-#' Using a mapping.list, entries from an existing meta data field are relabeled and mapped to new meta data field, and cells which are not specified in this mapping are omitted from the seurat object.
-#'
-#' @param so Seurat object.
-#' @param old.field Existing seurat meta field that will be relabelled.
-#' @param new.field New seurat meta field that will be created with relablled entries from old.field.
-#' @param mapping.list Named list specifying how to relabel entries in old.field (mapping.list entries) to new.field (mapping.list names) in seurat meta data. Note that entries in mapping list do not have to match old.field entires exactly; entries are used as pattern arguemtn to grepl() function.
-#' @name mapSubsetSeurat
-#' @author Nicholas Mikolajewicz
-#' @return Seurat object in which old field was mapped to new field, according to mapping specified in mapping.list. Any cells that are not mapped are omitted from seurat object.
-#' @examples
-#'
-#' # define mapping lists
-#' mapping.list.1 <- list(NSG = "NSG", BALBc = "BALB")
-#' mapping.list.2 <- list(Early = "Early", Mid = "Mid", Late = "Late")
-#'
-#' # Create new field called "Mouse" using relabled entries from "Condition" - relabelling based on mapping list
-#' so.query.2 <- mapSubsetSeurat(so.query, old.field = "Condition", new.field = "Mouse", mapping.list = mapping.list.1)
-#'
-#' # Create new field called "Time" using relabled entries from "Group" - relabelling based on mapping list
-#' so.query.2 <- mapSubsetSeurat(so.query.2, old.field = "Group", new.field = "Time", mapping.list = mapping.list.2)
-#'
-mapSubsetSeurat <- function(so, old.field, new.field, mapping.list){
-
-  keep.this <- NULL
-  for (i in 1:length(mapping.list)){
-
-    cur.group <- names(mapping.list)[order(names(mapping.list))][i]
-    cur.pattern <- (mapping.list)[order(names(mapping.list))][[i]]
-
-    if (is.null(keep.this)){
-      keep.this <- grepl(cur.pattern, so@meta.data[[old.field]])
-    } else {
-      keep.this <- (keep.this | grepl(cur.pattern, so@meta.data[[old.field]]))
-    }
-
-    so@meta.data[[new.field]][grepl(cur.pattern, so@meta.data[[old.field]])] <- cur.group
-
-  }
-
-
-  # ensure groups are ordered and that order is maintained throughout analysis.
-  u.groups <- as.character(unique(so@meta.data[[new.field]]))
-  u.groups <- u.groups[order(u.groups)]
-  so@meta.data[[new.field]] <- factor(so@meta.data[[new.field]], levels = u.groups)
-  so <-so[, keep.this]
-
-  return(so)
-}
-
-
-#' Perform differential expression analysis
-#'
-#' Give two existing fields within a Seurat Object, data are stratified by the first, and pairwise comparisons between groups in the second are performed to identify differential gene expression. Uses Seurat's FindMarkers() function.
-#'
-#' @param so Seurat object.
-#' @param ordered.levels Vector of one or two seurat meta fields. If one provided, the second is set to "seurat_clusters".
-#' @param which.assay Seurat assay to use. If unspecified, set to DefaultAssay(so).
-#' @param ... Additional arguments passed to Seurat's FindMarkers() function.
-#' @name multiLevel.FindMarkers
-#' @return list of data.frames where each data.fram contains results from an individual pairwise comparison.
-#' @author Nicholas Mikolajewicz
-#' @examples
-#'
-#' # define mapping lists
-#' mapping.list.1 <- list(NSG = "NSG", BALBc = "BALB")
-#' mapping.list.2 <- list(Early = "Early", Mid = "Mid", Late = "Late")
-#'
-#' # Create new field called "Mouse" using relabled entries from "Condition" - relabelling based on mapping list
-#' so.query.2 <- mapSubsetSeurat(so.query, old.field = "Condition", new.field = "Mouse", mapping.list = mapping.list.1)
-#'
-#' # Create new field called "Time" using relabled entries from "Group" - relabelling based on mapping list
-#' so.query.2 <- mapSubsetSeurat(so.query.2, old.field = "Group", new.field = "Time", mapping.list = mapping.list.2)
-#'
-#' # Perform multilevel differential gene expression.
-#' # Data are stratified by time, and then pairwise comparison between "Mouse" groups are performed.
-#' # in this example, 3 total pairwise comparisons were made: BALBc vs NSG (Early), BALBc vs NSG (Mid) and BALBc vs NSG (Late)
-#' deg.list <- multiLevel.FindMarkers(so.query.2, ordered.levels = c("Time", "Mouse"),
-#'                                    logfc.threshold = 0,
-#'                                    min.pct = 0,
-#'                                    test.use = "wilcox")
-#'
-multiLevel.FindMarkers <- function(so, ordered.levels, which.assay = NULL, ...){
-
-  if (length(ordered.levels) == 1) ordered.levels <- c(ordered.levels, "seurat_clusters")
-  if (is.null(which.assay)) which.assay <- DefaultAssay(so)
-
-  # get unique level factors
-  level.1 <- unique(as.character(so@meta.data[[ordered.levels[1]]]))
-  level.2 <-  unique(as.character(so@meta.data[[ordered.levels[2]]]))
-
-  # set idents to level.2
-  Idents(so) <- ordered.levels[2]
-
-  # get all level 2 combinations
-  level.2.combinations <- t(combinat::combn(level.2, 2))
-
-  #N comparisons
-  n.comparisons <- ncol(level.2.combinations) * length(level.1)
-
-  #initiate results list
-  deg.list <- list()
-  for (i in 1:length(level.1)){
-
-    # get current level 1 strata
-    level.1.cur <- level.1[i]
-
-    # subset seurat according to level 1
-    keep.this <- as.character(so@meta.data[[ordered.levels[1]]]) %in% level.1.cur
-    so.cur <-so[, keep.this]
-
-    for (j in 1:nrow(level.2.combinations)){
-
-      # define comparison level 2 comparison group
-      group1 <- level.2.combinations[j, 1]
-      group2 <- level.2.combinations[j, 2]
-
-      comparison.label <- paste(level.1.cur, "|" , group1, ".vs.", group2, sep = "")
-
-      suppressWarnings({
-        deg.list[[comparison.label]] <- FindMarkers(so.cur,
-                                                    assay = which.assay,
-                                                    ident.1 = group1,
-                                                    ident.2 = group2,
-                                                    verbose = F,
-                                                    ...)
-
-      })
-
-    }
-
-  }
-
-  return(deg.list)
-
-}
-
 
 
 
@@ -1914,6 +1661,7 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' @param network.type Network type. Allowed values are (unique abbreviations of) "unsigned", "signed" (default), "signed hybrid"
 #' @param TOM.type TOM type. Allowed values are "unsigned" (default) or "signed"
 #' @param rescale.adjacency Logical indicate whether adjacency matrix is rescaled to [0,1]. Default is False.
+#' @param verbose Print progress. Default is TRUE
 #' @param ... Additional arguments passessed to TOMsimilarity {WGCNA package}
 #' @name runWGCNA
 #' @return List containing  similarity matrix (s.mat), adacency matrix (a.mat), topological overlap matrix (w.mat) and disimilarity matrix (d.mat)
@@ -1949,16 +1697,16 @@ getConnectivity <- function(w.mat, gene.names, flag.top.n = 20){
 #' # run WGCNA
 #' output.all <- runWGCNA(datExpr.noz, cor.metric = "rho_p", soft.power = 2, use.TOM = T)
 #'
-runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", TOM.type = "unsigned", rescale.adjacency = F, ...){
+runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, use.TOM = T, network.type = "signed", TOM.type = "unsigned", rescale.adjacency = F, verbose = T, ...){
 
   # similarity matrix - using proportionality metric for scRNAseq data.
   if (is.null(s.mat)){
-    warning("Computing similarity matrix...")
+    miko_message("Computing similarity matrix...", verbose = verbose)
     s.mat <-  dismay::dismay(e.mat, metric = cor.metric)
   }
 
   # adjacency matrix
-  warning("\nComputing adjacency matrix...")
+  miko_message("Computing adjacency matrix...", verbose = verbose)
   a.mat <-  sim2adj(s.mat, soft.power, network.type)
 
   # rescale value if needed
@@ -1966,7 +1714,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
 
   # compute topological overlap matix (TOM)
   if (use.TOM){
-    warning("\nComputing topological overlap matix...")
+    miko_message("Computing topological overlap matix...", verbose = verbose)
     if ((TOM.type) == "signed" & (network.type == "unsigned")) {
       a.mat.tom <- a.mat * sign(s.mat)
     } else {
@@ -1993,7 +1741,7 @@ runWGCNA <- function(e.mat, s.mat = NULL, cor.metric = "rho_p", soft.power = 2, 
   colnames(w.mat) <- colnames(a.mat)
 
   # dissimilarity measure
-  warning("\nComputing dissimilarity matix...")
+  miko_message("Computing dissimilarity matix...", verbose = verbose)
   d.mat <- 1- w.mat
 
   output <- list(
@@ -2351,85 +2099,6 @@ getSoftThreshold <- function (s.mat, dataIsExpr = F, weights = NULL, RsquaredCut
 
 
 
-#' Wrapper to run  GO enrichment, using fisher enrichment method
-#'
-#' Wrapper to run  GO enrichment, using fisher enrichment method. Builds on TopGo functionality.
-#'
-#' @param gene.list named list of gene sets to query, where name specify name of gene set, and entry is vector of gene symbols.
-#' @param gene.universe background genes
-#' @param species Species: Hs or Mm
-#' @param p.threshold numeric specifying p value threshold. Default is 0.01.
-#' @param p.adj.threshold numeric specifing adjusted p value threshold. Defulat is 0.05.
-#' @name runEnrichment
-#' @seealso \code{\link{enrichGO.fisher}}
-#' @return list of data.frames. results.table.p contains unadjusted results, results.table.bh contains BH-adjusted results.
-#' @author Nicholas Mikolajewicz
-#' @examples
-#'
-#' enrichment.list <- runEnrichment(module.list, gene.universe = all.genes, species = "Hs")
-#' results.p <- enrichment.list$results.table.p
-#' results.bh <- enrichment.list$results.table.bh
-#'
-runEnrichment <- function(gene.list, gene.universe, species, p.threshold = 0.01, p.adj.threshold = 0.05){
-
-  library(topGO, quietly = T)
-
-  #get list of significant GO before multiple testing correction
-  results.table.p <- NULL
-
-  #get list of significant GO after multiple testing correction
-  results.table.bh <- NULL
-
-  # enrich each module
-  topGO.data <- NULL
-  for (i in 1:length(gene.list)){
-
-    if (species == "Hs"){
-
-      enrich.list <- enrichGO.fisher(gene.candidates = toupper(gene.list[[i]]),
-                                     gene.universe = toupper(gene.universe),
-                                     which.species = species,
-                                     p.threshold = p.threshold,
-                                     padj.threshold = p.adj.threshold,
-                                     topGO.object = topGO.data)
-
-    } else if (species == "Mm"){
-
-      enrich.list <- enrichGO.fisher(gene.candidates = gene.list[[i]],
-                                     gene.universe = gene.universe,
-                                     which.species = species,
-                                     p.threshold = p.threshold,
-                                     padj.threshold = p.adj.threshold,
-                                     topGO.object = topGO.data)
-
-    }
-
-    # get results
-    results.table.p.cur <- enrich.list$unadjusted.results
-    results.table.bh.cur <- enrich.list$adjusted.results
-
-    # get and reuse topGo object by updating gene list.
-    topGO.data <- enrich.list$topGo.object
-
-
-    if (nrow(results.table.p.cur) > 0) {
-      results.table.p.cur$module <- names(gene.list)[i]
-      results.table.p <- bind_rows(results.table.p, results.table.p.cur)
-    }
-
-    if (nrow(results.table.bh.cur) > 0) {
-      results.table.bh.cur$module <-  names(gene.list)[i]
-      results.table.bh <- bind_rows(results.table.bh, results.table.bh.cur)
-    }
-  }
-
-  output <- list(
-    results.table.p = results.table.p,
-    results.table.bh = results.table.bh
-  )
-
-  return(output)
-}
 
 
 #' Get list of module genes
@@ -2795,42 +2464,6 @@ rescaleValues <- function(values, new.min = 0, new.max = 1){
   return(values)
 
 }
-
-
-
-#' Bayesian Correlation algorithm
-#'
-#' Bayesian correlation scheme that assigns low similarity to genes that have low confidence expression estimates. Shown to be more reproducible than Pearson correlations. Source: https://www.biorxiv.org/content/10.1101/714824v1
-#'
-#' @param X Expression matrix
-#' @name BaCo
-#' @return Correlation matrix
-#' @examples
-#'
-#' #create a matrix (or load your own)
-#' X <- matrix(1:1000, ncol=20)
-#'
-#' #compute the Bayesian correlation matrix
-#' B <- BaCo(X)
-#'
-BaCo <- function(X){
-
-  alpha0 <- rep(1/nrow(X),ncol(X))
-  beta0=1-alpha0
-  nrowsX <- nrow(X)
-  k <- ncol(X)
-  cs <- colSums(X)
-  alphas <- alpha0 + X
-  betas  <- matrix(rep(beta0,nrowsX), nrow=nrowsX, byrow=TRUE) + matrix(rep(cs,nrowsX), nrow=nrowsX, byrow=TRUE) - X
-  alphasPLUSbetas <- alphas + betas
-  Psi <- alphas/alphasPLUSbetas - matrix(rep(rowSums(alphas/alphasPLUSbetas)/k, k), ncol=k, byrow=FALSE)
-  var_vec <- as.matrix( ( rowSums( (alphas*betas)/( (alphasPLUSbetas^2)*(alphasPLUSbetas+1) ) ) + rowSums(Psi^2) )/k )
-  cov_mtrx <- (Psi %*% t(Psi))/k
-  Bcorrvals <- cov_mtrx / sqrt( var_vec %*% t(var_vec) )
-  diag(Bcorrvals) <- 1
-  Bcorrvals
-}
-
 
 
 
@@ -3303,6 +2936,7 @@ getJaccard <- function(x1, x2, assert.unique = T){
 #' Computes Jaccard similarity mtrix for list of genesets
 #'
 #' @param gene.sets named list of genesets, where names specify name of gene set, and entries are character vectors specifying genes belongs to the respective set.
+#' @param y Optional second gene set. If provided, resulting matrix is gene.sets x y.
 #' @param assert.unique Logical flag specifying whether to remove duplicate entries within individual sets. Default is TRUE.
 #' @name jaccardSimilarityMatrix
 #' @return Jaccard similarity matrix
@@ -3316,19 +2950,39 @@ getJaccard <- function(x1, x2, assert.unique = T){
 #' # generate heatmap
 #' pheatmap::pheatmap(j.mat, show_colnames = F, main = "Jaccard Similarity")
 #'
-jaccardSimilarityMatrix <- function(gene.sets, assert.unique = T){
-  n.sets <- length(gene.sets)
-  j.mat <- matrix(nrow = n.sets, ncol = n.sets)
-  for (i in 1:n.sets){
-    for (j in 1:n.sets){
-      i.name <- names(gene.sets)[i]
-      j.name <- names(gene.sets)[j]
-      j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
-    }
-  }
+jaccardSimilarityMatrix <- function(gene.sets, y = NULL, assert.unique = T){
 
-  rownames(j.mat) <- names(gene.sets)
-  colnames(j.mat) <- names(gene.sets)
+  if (is.null(y)){
+
+    n.sets <- length(gene.sets)
+    j.mat <- matrix(nrow = n.sets, ncol = n.sets)
+    for (i in 1:n.sets){
+      for (j in 1:n.sets){
+        i.name <- names(gene.sets)[i]
+        j.name <- names(gene.sets)[j]
+        j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
+      }
+    }
+
+    rownames(j.mat) <- names(gene.sets)
+    colnames(j.mat) <- names(gene.sets)
+
+
+  } else {
+    n.sets.x <- length(gene.sets)
+    n.sets.y <- length(y)
+    j.mat <- matrix(nrow = n.sets.x, ncol = n.sets.y)
+    for (i in 1:n.sets.x){
+      for (j in 1:n.sets.y){
+        i.name <- names(gene.sets)[i]
+        j.name <- names(y)[j]
+        j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], y[[j.name]], assert.unique = assert.unique)
+      }
+    }
+
+    rownames(j.mat) <- names(gene.sets)
+    colnames(j.mat) <- names(y)
+  }
 
   return(j.mat)
 }
@@ -3460,55 +3114,6 @@ pseudotimeRF <- function(so, hvg, pseudotimes, lineage.name, slot = "data", assa
 }
 
 
-#' Infer initial trajectory through space
-#'
-#' `inferInitialTrajectory` infers an initial trajectory for  `princurve::principal_curve` by clustering the points and calculating the shortest path through cluster centers. The shortest path takes into account the euclidean distance between cluster centers, and the density between those two points. Based on `infer_initial_trajectory` function from `SCORPIUS` package
-#'
-#' @param space A numeric matrix or a data frame containing the coordinates of samples.
-#' @param k The number of clusters
-#' @return the initial trajectory obtained by this method
-#' @name inferInitialTrajectory
-#' @seealso \code{\link{subsetDimRed}}
-#' @examples
-#'
-#' # specify features (i.e., clusters of interest)
-#' which.clusters <- c(0,4,5)
-#'
-#' # get dimensional reduction for specified clusters
-#' dimSubset <- subsetDimRed(so.query, which.features = which.clusters)
-#'
-#' # get initial trajectory
-#' start.traj <- inferInitialTrajectory(as.matrix(dimSubset[["reduction"]]), k = length(unique(dimSubset[["features"]])))
-#'
-inferInitialTrajectory <- function (space, k) {
-  # check_numeric_matrix(space, "space", finite = TRUE)
-  # check_numeric_vector(k, "k", whole = TRUE, finite = TRUE,
-  # range = c(1, nrow(space) - 1), length = 1)
-  fit <- stats::kmeans(space, k)
-  centers <- fit$centers
-  eucl_dist <- as.matrix(stats::dist(centers))
-  i <- j <- NULL
-  pts <- crossing(i = seq_len(k), j = seq_len(k), pct = seq(0,
-                                                            1, length.out = 21)) %>% filter(i < j)
-  pts_space <- (1 - pts$pct) * centers[pts$i, ] + pts$pct *
-    centers[pts$j, ]
-  pts$dist <- rowMeans(RANN::nn2(space, pts_space, k = 10)$nn.dist)
-  dendis <- pts %>% dplyr::group_by(i, j) %>% dplyr::summarise(dist = mean(dist)) %>%
-    ungroup()
-  density_dist <- matrix(0, nrow = k, ncol = k)
-  density_dist[cbind(dendis$i, dendis$j)] <- dendis$dist
-  density_dist[cbind(dendis$j, dendis$i)] <- dendis$dist
-  cluster_distances <- eucl_dist * density_dist
-  tsp <- TSP::insert_dummy(TSP::TSP(cluster_distances))
-  tour <- as.vector(TSP::solve_TSP(tsp))
-  tour2 <- c(tour, tour)
-  start <- min(which(tour2 == k + 1))
-  stop <- max(which(tour2 == k + 1))
-  best_ord <- tour2[(start + 1):(stop - 1)]
-  init_traj <- centers[best_ord, , drop = FALSE]
-  init_traj
-}
-
 
 #' Get dimensional reduction from Seurat Object for subset of data
 #'
@@ -3558,112 +3163,6 @@ subsetDimRed <- function(so, which.features, groups = "seurat_clusters", reducti
 
 
 
-#' Get lineage trajectories using principal curves and compute pseudotimes
-#'
-#' For given space (e.g., UMAP, PCA, etc.), lineage trajectories are fit using prinicpal curves, and these are then used to derive pseudotimes.
-#'
-#' @param space A numeric matrix or a data frame containing the coordinates of samples.
-#' @param start either a previously fit principal curve, or else a matrix of points that in row order define a starting curve. If missing or NULL, then the first principal component is used. If the smoother is "periodic_lowess", then a circle is used as the start.
-#' @param group.labels Character vector (same length as number of rows in space) specifying group membership. Optional.
-#' @param pseudotimes Either logical (TRUE) specifying whether to use internally generated pseudotimes (from principal curve fitting) to color generated umap points, or, numeric vector with pseudotimes. If provided, plotted data are colored by pseudotime. Otherwise colored by group membership.
-#' @param thresh convergence threshold on shortest distances to the curve. Default is 0.001.
-#' @param maxit maximum number of iterations.
-#' @param stretch A stretch factor for the endpoints of the curve, allowing the curve to grow to avoid bunching at the end. Must be a numeric value between 0 and 2.
-#' @param smoother choice of smoother. The default is "smooth_spline", and other choices are "lowess" and "periodic_lowess". The latter allows one to fit closed curves. Beware, you may want to use iter = 0 with lowess().
-#' @param approx_points Approximate curve after smoothing to reduce computational time. If FALSE, no approximation of the curve occurs. Otherwise, approx_points must be equal to the number of points the curve gets approximated to; preferably about 100.
-#' @param trace If TRUE, the iteration information is printed
-#' @param plot_iteractions If TRUE the iterations are plotted.
-#' @return list of results containing principal curve fits and coordinates, pseutimes, plots
-#' @seealso \code{\link{inferInitialTrajectory}}
-#' @name lineageTrajectory
-#' @author Nicholas Mikolajewicz
-#' @examples
-#'
-#' # get lineage name
-#' lineage.name <- names(ss.lineages)[1]
-#'
-#' # get dimnesional reduction for subset of clusters belonging to lineage
-#' dimSubset <- subsetDimRed(so.query, which.features = ss.lineages[[lineage.name]])
-#'
-#' # get initial trajectory
-#' start.traj <- inferInitialTrajectory(as.matrix(dimSubset[["reduction"]]), k = length(unique(dimSubset[["features"]])))
-#'
-#' # get lineage trajectories
-#' LT.results <- lineageTrajectory(space = as.matrix(dimSubset[["reduction"]]),
-#'               start = start.traj,
-#'               group.labels = dimSubset[["features"]]
-#'
-#'
-#'
-lineageTrajectory <- function(space, start = NULL, group.labels = NULL, pseudotimes = NULL, thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline", approx_points = 100, trace = FALSE, plot_iterations = FALSE){
-
-
-  # fit prinicpal curves
-  fit <- princurve::principal_curve(as.matrix(space), start = start,
-                                    thresh = thresh, maxit = maxit, stretch = stretch, smoother = smoother,
-                                    approx_points = approx_points, trace = trace, plot_iterations = plot_iterations)
-  traj.path <- fit$s[fit$ord, , drop = FALSE]
-
-  # get trajectories
-  df.traj <- data.frame(traj.path)
-
-  # get pseudotimes
-  ps <- dynutils::scale_minmax(fit$lambda)
-
-  # generate plots
-  orig.names <- colnames(space)
-  colnames(space)[c(1,2)] <- c("x", "y")
-  colnames(df.traj)[c(1,2)] <- c("x", "y")
-
-
-
-
-  if (!is.null(group.labels) & is.null(pseudotimes)){
-    df.space <- data.frame(space, group = group.labels)
-    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = group))
-  } else if (class(pseudotimes) == "logical"){
-    if (pseudotimes){
-      df.space <- data.frame(space, pt = ps)
-      plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = pt)) + scale_color_viridis("pseudotime")
-    } else {
-      df.space <- data.frame(space)
-      plt.space <- df.space %>% ggplot() + geom_point(aes(x,y))
-    }
-  } else if (class(pseudotimes) == "numeric"){
-    df.space <- data.frame(space, pt = pseudotimes)
-    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y, color = pt)) + scale_color_viridis("pseudotime")
-  } else {
-    df.space <- data.frame(space)
-    plt.space <- df.space %>% ggplot() + geom_point(aes(x,y))
-  }
-
-  plt.trajectory <- plt.space +
-    geom_path(data = df.traj, aes(x, y), size = 1) +
-    theme_bw() +
-    theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
-    ) +
-    xlab(orig.names[1]) +
-    ylab(orig.names[2])
-
-
-  output <- list(
-    principal.curve.fit = fit,
-    principal.curve.coordinates = df.traj,
-    pseudotime = ps,
-    plt.trajectory = plt.trajectory,
-    space = space,
-    groups = group.labels,
-    df.space = df.space
-  )
-
-  return(output)
-
-
-}
-
-
 
 
 #' Variance explained by each principal component.
@@ -3678,7 +3177,44 @@ lineageTrajectory <- function(space, start = NULL, group.labels = NULL, pseudoti
 propVarPCA <- function(so, reduction.name = "pca"){
 
   # get pca reduction
-  pc.std <- so@reductions[[reduction.name]]@stdev
+  if (reduction.name %in% names(so@reductions)){
+    pc.std <- so@reductions[[reduction.name]]@stdev
+  } else {
+    if (reduction.name == "pca"){
+
+      if (length(VariableFeatures(so) == 0)){
+        so <- FindVariableFeatures(object = so)
+      }
+
+      so <- tryCatch({
+        RunPCA(object = so, verbose = F)
+      }, error = function(e){
+        so <- scNormScale(
+          so = so,
+          method = "NFS",
+          vars2regress = NULL,
+          enable.parallelization = F,
+          n.workers = 1,
+          max.memory = (20480 * 1024^2),
+          variable.features.n = NULL,
+          variable.features.rv.th = 1.3,
+          return.only.var.genes = F,
+          mean.cutoff = c(0.1, 8),
+          dispersion.cutoff = c(1, Inf),
+          conserve.memory = T,
+          assay = DefaultAssay(so)
+        )
+        so <- RunPCA(object = so, verbose = F)
+        return(so)
+      })
+
+      pc.std <- so@reductions[[reduction.name]]@stdev
+
+    } else {
+      stop("No valid reduction available.")
+    }
+  }
+
 
   # variance explained
   pc.var <- pc.std^2
@@ -3697,122 +3233,7 @@ propVarPCA <- function(so, reduction.name = "pca"){
 }
 
 
-#' Get branch-specific pseudotimes from diffusion map
-#'
-#' Get branch-specific pseudotimes from diffusion map. Adopted from destiny package.
-#'
-#' @param dpt
-#' @param branch_id
-#' @return numeric vector; pseudotimes
-#' @name dpt_for_branch
-#' @seealso \code{\link{DPT}}
-#' @examples
-#'
-#' # PCA embedding
-#' so.pca <- so.query@reductions[["pca"]]@cell.embeddings
-#'
-#' # diffusion map
-#' dm <- DiffusionMap(so.pca, n_eigs = 50)
-#'
-#' # diffusion pseudotime
-#' dpt <- DPT(dm, tips =tip.cluster)
-#'
-#' # flatten
-#' dpt_flat <- branch_divide(dpt, divide = 1)
-#'
-#' # get branch specific pseudotime
-#' pt_vec <- dpt_for_branch(dpt_flat, branch_id = paths_to)
-#'
-dpt_for_branch <- function(dpt, branch_id) {
-  branch_idx <- dpt@branch[, 1L] == branch_id
-  stopifnot(any(branch_idx))
-  tip_cells <- which(branch_idx & dpt@tips[, 1L])
-  if (length(tip_cells) == 0L) tip_cells <- which(branch_idx)
-  dpt[tip_cells[[1L]], ]
-}
 
-
-#' Infer initial trajectory through space, using pseudotime priors
-#'
-#' Infer initial trajectory through space, using pseudotime priors. Adopted from destiny package, uses smth.gaussian function; The specific function for smoothing using the gaussian window function.
-#'
-#' @param pt pseudotimes. Numeric vector.
-#' @param space A numeric matrix or a data frame containing the coordinates of samples.
-#' @param w.width the length of the smoothing window, if an integer, represents number of items, else, if a value between 0 and 1, represents the proportion of the input vector
-#' @return the initial trajectory
-#' @name inferInitialTrajectory.v2
-#' @seealso \code{\link{principal_curve}}
-#' @importFrom smoother smth.gaussian
-#' @importFrom graphics plot
-#' @examples
-#'
-#'  # lineage-specific pseudotime
-#'  pt_vec <- dpt_for_branch(dpt_flat, branch_id = paths_to)
-#'
-#' # get indices
-#' idx <- dpt_flat@branch[, 1] %in% c(root, paths_to)
-#'
-#' # get initial trajectory path
-#' umap.path <- inferInitialTrajectory.v2(pt_vec[idx], so.query@reductions[["umap"]]@cell.embeddings[idx, ], w_width = 0.15)
-#'
-#'    # get umap coordinates
-#' df.umap.all <- data.frame(x = so.query@reductions[["umap"]]@cell.embeddings[ ,1],
-#'                           y = so.query@reductions[["umap"]]@cell.embeddings[ ,2])
-#' df.umap.all$col <- "grey"
-#'
-#' df.umap.sub <- df.umap.all[idx, ]
-#' df.umap.sub$pt <- pt_vec[idx]
-#'
-#' # compute prinicpal curves
-#' pc.fit <- princurve::principal_curve(as.matrix(df.umap.sub[,c("x", "y")]), start = as.matrix(umap.path[ ,c(1,2)]),
-#'                                      thresh = 0.001, maxit = 10, stretch = 2, smoother = "smooth_spline",
-#'                                      approx_points = 100, trace = FALSE, plot_iterations = FALSE)
-#' traj.path <- pc.fit$s[pc.fit$ord, , drop = FALSE]
-#' df.tp <- data.frame(traj.path)
-#'
-inferInitialTrajectory.v2 <- function(pt, space, w_width = .1) {
-  stopifnot(identical(nrow(space), length(pt)))
-  as.data.frame(apply(space[order(pt), ], 2, function(col) smoother::smth.gaussian(col, w_width, tails = TRUE)))
-}
-
-
-#' Get cell index corresponding to center of specified root cluster.
-#'
-#' Get cell index corresponding to center of specified root cluster. For specified cluster, cluster center is computed and index of nearest cell to cluster center is returned.
-#'
-#' @param x x coordinates (e.g., UMAP 1)
-#' @param y y coordinates (e.g., UMAP 2)
-#' @param cluster.membership group id's corrorespodning to cluster membership (e.g., seurat_cluster entries). Must be same length as x and y.
-#' @param which.cluster specify which cluster to get root cell fot.
-#' @return root cell index
-#' @name getClusterRoot
-#' @author Nicholas Mikolajewicz
-#' @examples
-#'
-getClusterRoot <- function(x, y, cluster.membership, which.cluster){
-
-  # assertions
-  stopifnot(length(which.cluster) == 1)
-  stopifnot(length(cluster.membership) == length(y))
-  stopifnot(length(cluster.membership) == length(x))
-
-  # data.frame
-  df.cc <- data.frame(x, y, cluster = cluster.membership)
-
-  # get centers
-  df.centers <- getClusterCenters(df.cc, which.center = "mean")
-
-  # filter
-  df.coi <- df.centers[df.centers$cluster %in% which.cluster, ]
-
-  # get nearest cell to center
-  df.cc$x.dif <- (df.cc[,1] - df.coi$x.center)^2
-  df.cc$y.dif <- (df.cc[,2] - df.coi$y.center)^2
-  df.cc$xtDist <- sqrt(df.cc$x.dif + df.cc$y.dif)
-  root_cell <- which.min( df.cc$xtDist)
-
-  return(root_cell)
-}
 
 #' Ensure that all dimNames are correctly specified in Seurat Object
 #'
@@ -4004,270 +3425,6 @@ pcaElbow <- function(varpc,low=.08,max.pc=.9) {
 }
 
 
-
-
-
-#' Identify temporally varying pathways using Tempora
-#'
-#' Identify temporally varying pathways using Tempora
-#'
-#' @param object Tempora Object
-#' @param pval_threshold P-value threshold to determine the significance of pathway enrichment over time. Default is 0.05.
-#' @param adjust.p Flag to adjust p value using BH correction. Default is TRUE.
-#' @param pathway.filter Numeric specifying z score threshold used to pre-filter pathways. Default is 3.
-#' @return List containing generalized additive model (GAMs) fits, plots and p-values
-#' @author Gary Bader et. al
-#' @name varyingPaths.Tempora
-#' @examples
-#'
-varyingPaths.Tempora <- function (object, pval_threshold = 0.05, adjust.p = T, pathway.filter = 3) {
-
-  # initiate results list
-  tp.list <- list()
-
-  if (class(object)[1] != "Tempora") {
-    stop("Not a valid Tempora object")
-  }
-  if (is.null(object@n.pcs)) {
-    stop("BuildTrajectory has not been run. See ?Tempora::BuildTrajectory for details")
-  }
-  if (is.null(object@cluster.pathways)) {
-    stop("CalculatePWProfiles has not been run. See ?Tempora::CalculatePWProfiles for details")
-  }
-  gsva_bycluster <- object@cluster.pathways
-  significant_pathways <- c()
-
-  for (i in 1:object@n.pcs) {
-    genes_scaled <- scale(object@cluster.pathways.dr$rotation[,
-                                                              i])
-    significant_pathways <- c(names(which(genes_scaled[, 1] > pathway.filter |
-                                            genes_scaled[, 1] < -pathway.filter)), significant_pathways)
-  }
-
-  tp.list$genes.scaled <- genes_scaled
-  tp.list$n.pathways.considered <- length(significant_pathways)
-  tp.list$considered.pathways <- significant_pathways
-
-  pca_pathways <- sub("%.*", "", significant_pathways)
-  pca_pathways_cleaned <- gsub("[[:punct:]]", "", pca_pathways)
-  themes <- pca_pathways_cleaned
-  warning("Fitting GAM models...")
-  p_vals <- gams <- list()
-
-  for (i in 1:length(themes)) {
-    if (length(grep(themes[i], rownames(gsva_bycluster))) > 1) {
-      plot_df <- data.frame(cluster = colnames(gsva_bycluster[grep(themes[i],
-                                                                   rownames(gsva_bycluster)), ]),
-                            value = colMeans(gsva_bycluster[grep(themes[i],
-                                                                 rownames(gsva_bycluster)), ], na.rm = T))
-    }
-    else if (length(grep(themes[i], rownames(gsva_bycluster))) == 1) {
-      plot_df <- data.frame(cluster = names(gsva_bycluster[grep(themes[i],
-                                                                rownames(gsva_bycluster)), ]),
-                            value = gsva_bycluster[grep(themes[i],
-                                                        rownames(gsva_bycluster)), ])
-    } else {
-      next
-    }
-    plot_df$time <- object@cluster.metadata$Cluster_time_score
-    gams[[themes[i]]] <- mgcv::gam(value ~ s(time, k = 3, bs = "cr"),
-                                   data = plot_df)
-    temp_anova <- mgcv::anova.gam(gams[[themes[i]]])
-    p_vals[[themes[i]]] <- temp_anova$s.pv
-  }
-
-  if (adjust.p){
-    p_vals_adj <- p.adjust(unlist(p_vals[which(unlist(p_vals) >
-                                                 0)]), method = "BH")
-    p.val.label <- "P-value = "
-  } else {
-    p_vals_adj <- unlist(p_vals[which(unlist(p_vals) > 0)])
-    p.val.label <- "Adjusted p-value = "
-  }
-
-  varying_pathways <- p_vals_adj[which(p_vals_adj < pval_threshold)]
-  varying_pathways <- varying_pathways[!duplicated(names(varying_pathways))]
-
-  tp.list$p.vals <-  p_vals
-  tp.list$p.vals.adj <- p_vals_adj
-  tp.list$gams <- gams
-  tp.list$varying.pathways <- varying_pathways
-
-  plt.varying.pathway <- list()
-  if (length(varying_pathways) == 0){
-
-  } else {
-
-
-    warning("Generating time-dependent pathways plots...")
-
-    for (i in 1:length(varying_pathways)) {
-
-      pathway.name <- varying_pathways[i]
-
-      if (length(grep(names(varying_pathways)[i], rownames(gsva_bycluster))) > 1) {
-        plot_df <- data.frame(cluster = colnames(gsva_bycluster[grep(names(varying_pathways)[i],
-                                                                     rownames(gsva_bycluster)), ]),
-                              value = colMeans(gsva_bycluster[grep(names(varying_pathways)[i],
-                                                                   rownames(gsva_bycluster)), ]))
-        plot_df$time <- object@cluster.metadata$Cluster_time_score
-      } else if (length(grep(names(varying_pathways)[i], rownames(gsva_bycluster))) ==  1) {
-        plot_df <- data.frame(cluster = names(gsva_bycluster[grep(names(varying_pathways)[i],
-                                                                  rownames(gsva_bycluster)), ]),
-                              value = gsva_bycluster[grep(names(varying_pathways)[i],
-                                                          rownames(gsva_bycluster)), ])
-        plot_df$time <- object@cluster.metadata$Cluster_time_score
-      }
-
-      id <- which(names(gams) == names(varying_pathways)[i])
-
-      # get plotting data
-      plot.list <- NULL
-      plot.list <- R.devices::suppressGraphics({mgcv::plot.gam(gams[[id[1]]], main = paste0(names(varying_pathways)[i]),
-                                                               xlab = "Inferred Time", ylab = "Pathway Expression Level",
-                                                               bty = "l", cex.main = 1,  shade = F,
-                                                               se = 3, scheme = 1)})
-
-      # prep data as dataframe
-      df.plot <- data.frame(x = plot.list[[1]][["x"]],
-                            y = plot.list[[1]][["fit"]],
-                            se = plot.list[[1]][["se"]],
-                            ci = 1.96*plot.list[[1]][["se"]])
-
-      # generate ggplot
-
-      x.min <- min(df.plot$x, na.rm = T); x.max <- max(df.plot$x, na.rm = T)
-      plt.varying.pathway[[i]] <- ggplot() +
-        xlab("Inferred Time") +
-        ylab("Pathway Activity") +
-        theme_miko() +
-        geom_ribbon(data = df.plot, aes(x, y, ymin = y-ci, ymax = y+ci), alpha = 0.3) +
-        geom_line(data = df.plot, aes(x, y), size = 1, alpha = 0.8) +
-        geom_text(data = plot_df, aes(x = time, y = value, label = cluster), size = 5) +
-        labs(title = plot.list[[1]][["main"]], subtitle = paste0(p.val.label, round(varying_pathways[[i]], 5))) +
-        scale_x_continuous(breaks=c(x.min, x.max), labels=c("Early", "Late"))
-
-      # print(plt.varying.pathway[[i]])
-    }
-  }
-
-  tp.list$plots <-  plt.varying.pathway
-
-  return(tp.list)
-}
-
-
-#' Calcualte pathway enrichment scores in Tempora Framework
-#'
-#' Calcualte pathway enrichment scores in Tempora Framework. Uses GSVA backend.
-#'
-#' @param object Tempora Object
-#' @param gmt_path Local path to database of pathways or genesets organized as a .gmt file. Genesets files in GMT format can be downloaded at http://baderlab.org/GeneSets.
-#' @param method Method used to estimate pathway enrichment profile per cluster. Can be "gsva", "ssgsea", "zscore" or "plage", default to "gsva". See ?gsva for more information.
-#' @param min.sz Minimum size of the genesets used in enrichment estimation, set to 5 genes by default.
-#' @param max.sz Maximum size of the genesets used in enrichment estimation, set to 200 genes by default.
-#' @param parallel.sz Type of cluster architecture when using snow. If 1, no parallelization will be used. If 0, all available cores will be used.
-#' @param verbose Flag for reporting progress
-#' @param do.plot Flag for ploting scree plot
-#' @return Tempora object with internally calculated pathway scores
-#' @author Gary Bader et. al
-#' @name pathActivity.Tempora
-#' @examples
-#'
-pathActivity.Tempora <- function (object, gmt_path, method = "gsva", min.sz = 5, max.sz = 200,
-                                  parallel.sz = 1, verbose = F, do.plot = F)
-{
-  if (class(object)[1] != "Tempora") {
-    stop("Not a valid Tempora object")
-  }
-  warning("Calculating cluster average gene expression profile...")
-  exprMatrix <- object@data
-  exprMatrix_bycluster <- list()
-  pathwaygmt <- GSEABase::getGmt(gmt_path)
-
-  for (i in sort(unique(object@meta.data$Clusters))) {
-    exprMatrix_bycluster[[i]] <- rowMeans(exprMatrix[, which(colnames(exprMatrix) %in%
-                                                               rownames(object@meta.data)[which(object@meta.data$Clusters ==
-                                                                                                  i)])])
-  }
-
-  names(exprMatrix_bycluster) <- sort(unique(object@meta.data$Clusters))
-  exprMatrix_bycluster <- do.call(cbind, exprMatrix_bycluster)
-  colnames(exprMatrix_bycluster) <- sort(unique(object@meta.data$Clusters))
-  rownames(exprMatrix_bycluster) <- rownames(exprMatrix)
-
-  warning("\nCalculating cluster pathway enrichment profiles...\n")
-  gsva_bycluster <- GSVA::gsva(as.matrix(exprMatrix_bycluster),
-                               pathwaygmt, method = method, min.sz = min.sz, max.sz = max.sz,
-                               parallel.sz = parallel.sz, verbose = verbose)
-
-  colnames(gsva_bycluster) <- colnames(exprMatrix_bycluster)
-  object@cluster.pathways <- gsva_bycluster
-
-  gsva_bycluster_pca <- prcomp(t(gsva_bycluster), scale = T,
-                               center = T)
-
-  if (do.plot){
-    screeplot(gsva_bycluster_pca, npcs = 25, type = "lines",
-              main = "PCA on pathway enrichment analysis result")
-  }
-
-  object@cluster.pathways.dr <- gsva_bycluster_pca
-  validObject(object)
-  return(object)
-}
-
-
-#' Row-wise matrix binning
-#'
-#' Bin matrix row-wise by taking averages across regular row intervals.
-#'
-#' @param m matrix
-#' @param bin.size Numeric indicating number of bins. Resulting matrix will have bin.size number of rows.
-#' @return binned matrix
-#' @author Nicholas Mikolajewicz
-#' @name binMatrix
-#' @examples
-#'
-binMatrix <- function(m, bin.size) {
-
-  if (bin.size > nrow(m)) stop("bin.size cannot exceed number of rows in matrix")
-  bm <- matrix(nrow = round((nrow(m)/bin.size)), ncol = ncol(m))
-  for (i in 1:round((nrow(m)/bin.size))) {
-    er <- (i*bin.size)
-    sr <- er-(bin.size-1)
-    if (er > nrow(m)) er <- nrow(m)
-    bm[i,] <- colMeans(m[sr:er ,],na.rm=T)
-  }
-  colnames(bm) <- colnames(m)
-  bm
-}
-
-
-#' Vector binning
-#'
-#' Bin vector by taking averages across regular intervals.
-#'
-#' @param v numeric vector
-#' @param bin.size Numeric indicating number of bins. Resulting vector will have bin.size length.
-#' @return binned vector
-#' @author Nicholas Mikolajewicz
-#' @name binVector
-#' @examples
-#'
-binVector <- function(v, bin.size) {
-
-  if (bin.size > length(v)) stop("bin.size cannot exceed length of vector")
-  bv <- c()
-  for (i in 1:round((length(v)/bin.size))) {
-    er <- (i*bin.size)
-    sr <- er-(bin.size-1)
-    if (er > length(v)) er <- length(v)
-    bv <- c(bv, mean(v[sr:er],na.rm=T))
-  }
-
-  bv
-}
 
 
 
@@ -4502,101 +3659,6 @@ saveHTML <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save
 }
 
 
-#' Gene expression markers for all identity classes.
-#'
-#' Finds markers (differentially expressed genes) for each of the identity classes in a dataset, with parallel implementation. Produces identical output as Seurat::FindAllMarkers,
-#'
-#' @param object Seurat object
-#' @param n.work Number of workers. If 1 (default), runs Seurat::FindAllMarkers(). If >1, parallelized implementation is used.
-#' @param assay Assay to use in differential expression testing. Default is DefaultAssay(object)
-#' @param slot Slot to pull data from; note that if test.use is "negbinom", "poisson", or "DESeq2", slot will be set to "counts". Default is "data".
-#' @param only.pos Only return positive markers (FALSE by default)
-#' @param min.pct only test genes that are detected in a minimum fraction of min.pct cells in either of the two populations. Meant to speed up the function by not testing genes that are very infrequently expressed. Default is 0
-#' @param test.use Test to use. See Seurat::FindAllMarkers() or Seurat::FindMarkers() for list of all options.
-#' @param logfc.threshold Limit testing to genes which show, on average, at least X-fold difference (log-scale) between the two groups of cells. Default is 0.25 Increasing logfc.threshold speeds up the function, but can miss weaker signals.
-#' @param max.cells.per.ident Down sample each identity class to a max number. Default is 200.
-#' @param return.thresh Only return markers that have a p-value < return.thresh, or a power > return.thresh (if the test is ROC).
-#' @param verbose Print a progress bar once expression testing begins. Default is F.
-#' @param ... additional arguments passed to Seurat::FindAllMarkers() (if n.work = 1) or Seurat::FindMarkers() (if n.work >1)
-#' @author Nicholas Mikolajewicz
-#' @name FindAllMarkers.Parallel
-#' @value Matrix containing a ranked list of putative markers, and associated statistics (p-values, ROC score, etc.)
-#' @seealso \code{\link{FindAllMarkers}} \code{\link{FindMarkers}}
-#' @examples
-#'
-#' # Find markers for all clusters
-#' all.markers <- FindAllMarkers.Parallel(object = so.query, n.work = 4)
-#'
-FindAllMarkers.Parallel <- function(object, n.work = 1, assay = DefaultAssay(object), slot = "data", only.pos = F, min.pct = 0, test.use = "MAST",
-                                    logfc.threshold = 0.15, max.cells.per.ident = 200, return.thresh = 1, verbose = F, ...){
-
-
-  if (n.work == 1){
-    deg.gene.a <- FindAllMarkers(object,
-                                 assay = assay,
-                                 slot = slot,
-                                 only.pos = only.pos,
-                                 min.pct = min.pct,
-                                 test.use = test.use,
-                                 logfc.threshold = logfc.threshold,
-                                 max.cells.per.ident = max.cells.per.ident,
-                                 return.thresh = return.thresh, #1 ensures all genes are returned
-                                 verbose = verbose,
-                                 ...)
-  } else {
-
-    if (!require("BiocParallel")) stop("BiocParallel package not found.")
-
-    suppressWarnings({
-
-
-      # helper function to set BPParam
-      safeBPParam <- function(nworkers) {
-        if (.Platform$OS.type=="windows") {
-          BiocParallel::SnowParam(nworkers)
-        } else {
-          BiocParallel::MulticoreParam(nworkers)
-        }
-      }
-
-      # get number of unique clusters
-      M <- length(unique(object@active.ident))
-      N <- M-1
-
-      # get optimal BPParam setup
-      if (n.work > M) n.work <- M
-      nw <- safeBPParam(n.work)
-
-      # find marker wrapper function
-      FindMarker.wrapper <- function(object, x){
-        Seurat::FindMarkers(object, ident.1 = x, only.pos = only.pos, min.pct =min.pct, test.use = test.use,
-                            logfc.threshold = logfc.threshold, max.cells.per.ident = max.cells.per.ident, verbose = verbose, ...)
-      }
-
-
-
-      # run parallelized implementation of find markers
-      deg.gene.par <- bplapply(0:N, object = object, FUN = FindMarker.wrapper, BPPARAM = nw)
-
-      # retrieve results
-      deg.gene.a <- NULL
-      for (i in 1:length(deg.gene.par)){
-        deg.gene.par[[i]]$cluster <- as.character(i-1)
-        deg.gene.par[[i]]$gene <- rownames(deg.gene.par[[i]])
-        deg.gene.a <- bind_rows(deg.gene.a, deg.gene.par[[i]])
-      }
-
-      rm(deg.gene.par)
-      invisible(gc())
-
-    })
-  }
-
-  return(deg.gene.a)
-
-}
-
-
 
 #' Convert sparse matrix to dense matrix
 #'
@@ -4725,24 +3787,6 @@ sparse2df <- function(mat.sparse, block.size = 10000, transpose = F, verbose.err
 
   return(df)
 
-}
-
-#' Non-parametric standardization of matrix
-#'
-#' Center using median and scale using median absolute deviations
-#'
-#' @param z matrix
-#' @param which.dim dimension. Default is 1 (rows). Use 2 for columns.
-#' @author Nicholas Mikolajewicz
-#' @name standardizeNonParametric
-#' @value standardized matrix
-#'
-standardizeNonParametric <- function(z, which.dim = 1) {
-  rowmed <- apply(z, which.dim, median)
-  rowmad <- apply(z, which.dim, mad)  # median absolute deviation
-  rv <- sweep(z, which.dim, rowmed,"-")  #subtracting median expression
-  rv <- sweep(rv, which.dim, rowmad, "/")  # dividing by median absolute deviation
-  return(rv)
 }
 
 
@@ -7056,3 +6100,52 @@ findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.featur
   ))
 
 }
+
+
+#' Identify optimal bin size for AddModuleScore() function
+#'
+#' Identify optimal bin size for AddModuleScore() function
+#'
+#' @param object Seurat object
+#' @param pool List of features to check expression levels against. Defaults to rownames(x = object).
+#' @param nbinNumber of bins of aggregate expression levels for all analyzed features. Initial value to begin with looking for optimal bin.
+#' @param seed See a random seed. If NULL, seed is not set.
+#' @name optimalBinSize
+#' @author Nicholas Mikolajewicz
+#' @examples
+#' optimal.nbin <-  optimalBinSize(object = so.query)
+optimalBinSize <- function (object, pool = NULL, nbin = 24, seed= 1023){
+
+
+  if (!is.null(x = seed)) {
+    set.seed(seed = seed)
+  }
+
+  assay.data <- GetAssayData(object = object)
+
+  pool <- pool %||% rownames(x = object)
+  data.avg <- Matrix::rowMeans(x = assay.data[pool, ])
+  data.avg <- data.avg[order(data.avg)]
+
+
+  StartNBin = nbin
+  data.cut <- NA
+  while(class(data.cut)=="try-error" || is.na(data.cut)[1]){
+
+    data.cut <- try({cut_number(x = data.avg + rnorm(n = length(data.avg))/1e+30,
+                                n = StartNBin, labels = FALSE, right = FALSE)}, silent = T)
+
+    if (class(data.cut)=="try-error" || is.na(data.cut)[1]){
+      StartNBin = round(StartNBin-1)
+    }
+
+
+
+  };
+
+  message(paste0("Optimal bin size: ",StartNBin))
+
+  return(StartNBin)
+
+}
+
