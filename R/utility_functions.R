@@ -2547,7 +2547,7 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
     # store node linkage distribution plot
     plt.sf.current <- df.sf %>%
       ggplot(aes(x=x, y=y)) +
-      geom_smooth(method = "lm", color = "tomato", fill = "tomato") +
+      geom_smooth(method = "lm", color = "tomato", fill = "tomato", formula = 'y ~ x') +
       geom_point(size = 3) +
       xlab("N Links (Log)") +
       ylab("N Nodes (Log)") +
@@ -2595,12 +2595,13 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
     r2.opt <- df.r2.sf$r2[which.min(df.r2.sf$r2)]
   }
 
+
   # optimizatio plot
   plt.opt.sf <- df.r2.sf %>%
     ggplot(aes(x = sf, y = r2)) +
     geom_hline(yintercept = r2.opt, color = "tomato") +
     geom_vline(xintercept = best.power, color = "tomato") +
-    geom_smooth(method = "loess", color = "black", fill = "grey") +
+    geom_smooth(method = "loess", color = "black", fill = "grey", formula = 'y ~ x') +
     geom_point(size = 3) +
     xlab("Soft Power") +
     ylab("R2 (Scale Free Topology)") +
@@ -6114,7 +6115,7 @@ findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.featur
 #' @author Nicholas Mikolajewicz
 #' @examples
 #' optimal.nbin <-  optimalBinSize(object = so.query)
-optimalBinSize <- function (object, pool = NULL, nbin = 24, seed= 1023){
+optimalBinSize <- function (object, pool = NULL, nbin = 24, seed= 1023, verbose = T){
 
 
   if (!is.null(x = seed)) {
@@ -6143,7 +6144,7 @@ optimalBinSize <- function (object, pool = NULL, nbin = 24, seed= 1023){
 
   };
 
-  message(paste0("Optimal bin size: ",StartNBin))
+  miko_message(paste0("Optimal bin size: ",StartNBin), verbose = verbose)
 
   return(StartNBin)
 
