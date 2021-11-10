@@ -4,7 +4,7 @@
 \alias{optimalBinSize}
 \title{Identify optimal bin size for AddModuleScore() function}
 \usage{
-optimalBinSize(object, pool = NULL, nbin = 24, seed = 1023)
+optimalBinSize(object, pool = NULL, nbin = 24, seed = 1023, verbose = T)
 }
 \arguments{
 \item{object}{Seurat object}
