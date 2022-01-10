@@ -421,14 +421,22 @@ barcodeLabels <- function(so, which.strata) {
 #'
 #' @param so Seurat Object
 #' @param gNames Named gene list; entries are Symbols, names are Ensemble.
+#' @param assay assay to use.
 #' @param omit.na Logical specifying whether to omit NA entries (present when unfiltered 10x dataset is used). Default is True.
 #' @name getMitoContent
 #' @return Seurat Object (with updated metadata)
 #'
-getMitoContent <- function(so, gNames, omit.na = T) {
+getMitoContent <- function(so, gNames = NULL, assay = NULL, omit.na = T) {
 
+  if (!("Seurat" %in% class(so))) stop("'object' does not belong to Seurat class")
 
-  f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[["RNA"]]))
+  assay <- DefaultAssay(so)
+if (!is.null(gNames)){
+  f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
+} else {
+  f <- intersect(rownames(so)[ grep("^(MT|mt)-",rownames(so)) ],rownames(so[[assay]]))
+}
+
   so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
 
   if (omit.na) {
@@ -457,6 +465,9 @@ getMitoContent <- function(so, gNames, omit.na = T) {
 #' @return List containing seurat object, filter summary statistics, and filter breakdown list
 #'
 filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upperlimit = 60, unmatch.low = 0, unmatch.high = 1, set_names = NULL) {
+
+  if (!("Seurat" %in% class(so))) stop("'object' does not belong to Seurat class")
+  if (!("percent.mt" %in% colnames(so@meta.data))) so <- getMitoContent(so)
 
   # determine unfiltered UMI count
   original_count <- length(so@meta.data[["nCount_RNA"]])

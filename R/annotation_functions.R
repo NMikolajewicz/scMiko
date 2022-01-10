@@ -14,6 +14,7 @@
 #' @param verbose Print progress. Default is TRUE.
 #' @name nullScore
 #' @author Nicholas Mikolajewicz
+#' @concept miko_score
 #' @return list of results that are used as input into `mikoScore`.
 #' @seealso \code{\link{AddSModuleScore}} for standardized module scoring, \code{\link{mikoScore}} for miko scoring, \code{\link{sigScore}} for derivation of p values for miko scores.
 #' @examples
@@ -270,6 +271,7 @@ nullScore <- function(object, assay = DefaultAssay(object), n.replicate = 25,
 #' @param search Search for symbol synonyms for features in features that don't match features in object? Searches the HGNC's gene names database; see UpdateSymbolList for more details
 #' @param ... Extra parameters passed to UpdateSymbolList
 #' @name AddSModuleScore
+#' @concept miko_score
 #' @author Nicholas Mikolajewicz
 #' @return Returns seurat object with standardized module scores added to object meta data; each module is stored as name# for each module program present in `features`
 #' @seealso \code{\link{AddModuleScore}} for original module scoring function implemented in `Seurat`.
@@ -460,6 +462,7 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
 #' @param verbose Print progress. Default is TRUE.
 #' @name mikoScore
 #' @author Nicholas Mikolajewicz
+#' @concept miko_score
 #' @return list of results.
 #' @seealso \code{\link{AddSModuleScore}} for standardized module scoring, \code{\link{nullScore}} for calculating null score distributions \code{\link{sigScore}} for derivation of p values for miko scores.
 #' @examples
@@ -583,6 +586,7 @@ mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), 
 #' @param verbose Print progress. Default is TRUE.
 #' @name benchmarkScores
 #' @author Nicholas Mikolajewicz
+#' @concept miko_score
 #' @return list of benchmark results.
 #' @seealso \code{\link{AddSModuleScore}} for standardized module scoring, \code{\link{wilcoxauc}} for differential expression analysis
 #' @examples

@@ -10,6 +10,7 @@ downsampleSeurat(
   subsample.n = NULL,
   sample.group = NULL,
   min.group.size = 500,
+  seed = 1023,
   verbose = T
 )
 }
@@ -23,6 +24,8 @@ downsampleSeurat(
 \item{sample.group}{Character. Meta data grouping variable in which min.group.size will be enforced.}
 
 \item{min.group.size}{Numeric [1,ncol(object)]. Minimum number of cells to downsample to within sample.group. If there are insufficient cells to achieve the target min.group.size, only the available cells are retained.}
+
+\item{seed}{seed for sampling. Default is 1023.}
 
 \item{verbose}{Print progress. Default is TRUE.}
 }

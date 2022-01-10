@@ -82,8 +82,8 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
     invisible({gc()})
 
   } else {
-    which.rep.genes <- getExpressedGenes(object = so.query, min.pct = min_pct, group = split_var, group.boolean = "OR")
-    which.rep.genes2 <- unique(c(VariableFeatures(so.query), which.rep.genes))
+    which.rep.genes <- getExpressedGenes(object = object, min.pct = min_pct, group = split_var, group.boolean = "OR")
+    which.rep.genes2 <- unique(c(VariableFeatures(object), which.rep.genes))
   }
 
   which.rep.common <- which.rep.genes2
@@ -635,33 +635,65 @@ getICAGenes <- function(feature.loading, fdr.cutoff = 0.0001, local.fdr = T, ass
 #'
 #' Run fastica algorithm from the ica package for ICA dimensionality reduction. Wrapper for Seurat's RunICA function, with additional significant gene identification step.
 #'
-#' @param object ICA feature loadings
+#' @param object Seurat object
+#' @param assay name of assay to use for ICA analysis. Expression data from 'scale.data' slot will be used.
 #' @param features Features to compute ICA on. If not specified, all features present in `object` are used (not recommended, ICA is computationally expensive).
 #' @param max_cells Max number of cells to run ICA on. If number of cells in `object` exceeded `max_cells`, object is subsampled prior to running ICA. Default is 20000.
 #' @param verbose Print progress. Default is T.
+#' @param ... Additional parameters passed to Seurat::RunICA(...)
 #' @name runICA
 #' @seealso \code{\link{RunICA}} for Seurat's independent component analysis, \code{\link{getICAGenes}} for significant ICA gene identification.
 #' @author Nicholas Mikolajewicz
 #' @return seurat object with significant genes stored in "misc" slot of ICA reduction slot.
 #' @examples
 #'
-runICA <- function(object, features = NULL, max_cells = 20000, verbose = T){
+runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_cells = 20000, verbose = T, ...){
 
-  miko_message("Running ICA...", verbose = verbose)
+  miko_message("Preparing expression data...", verbose = verbose)
 
   if (is.null(features)) features <- rownames(object)
+
+  features_av <- features[features %in% rownames(object@assays[[assay]]@scale.data)]
+  prop.av <- signif(100 * length(features_av)/length(features), 3)
+
+  if (prop.av < 100){
+    miko_message(length(features_av), "/", length(features) , " (", prop.av, "%) genes are available in 'scale.data'. Attempting to process remaining features...")
+  } else {
+    miko_message(length(features_av), "/", length(features) , " (", prop.av, "%) genes are available in 'scale.data'.")
+  }
+
+
+  if (prop.av < 100){
+    # miko_message("Preprocessing expression data for missing features in 'scale.data'...")
+    if (assay == "SCT"){
+      miko_message("Calculating residuals using 'SCT' assay...")
+      object <- GetResidual(object = object, features = features, verbose = verbose, assay = assay)
+    } else if (assay == "RNA"){
+      miko_message("Scaling features using 'RNA' assay...")
+      object <- ScaleData(object = object, features = features, verbose = verbose, assay = assay)
+    }
+
+  }
+
+  features_av <- features[features %in% rownames(object@assays[[assay]]@scale.data)]
+  object@assays[[assay]]@var.features <- features_av
+
+  miko_message(paste0("Running ICA on ", length(features_av), " features..."), verbose = verbose)
 
   if (ncol(object) > max_cells){
     set.seed(1023)
     so.ica <- RunICA(object[ ,sample(colnames(object), max_cells)],
-                     features = features, verbose = F)
+                     features = features_av, verbose = F, ...)
   } else {
-    so.ica <- RunICA(object, features = features, verbose = F)
+    so.ica <- RunICA(object, features = features_av, verbose = F, ...)
   }
 
   object@reductions$ica <- so.ica@reductions[["ica"]]
   object@reductions$ica@misc$meta.data <- so.ica@meta.data
   object@reductions$ica@misc$genes <- getICAGenes(object@reductions[["ica"]]@feature.loadings)
+  object@reductions$ica@misc$commands <- so.ica@commands
+
+
 
 
   return(object)
@@ -678,7 +710,7 @@ runICA <- function(object, features = NULL, max_cells = 20000, verbose = T){
 #' @param raster rasterize output plot. Default is F.
 #' @param n.threads Number of threads to use when running NMF. Default is 2.
 #' @param features features to run NMF on.
-#' @param feature.min.pct minimum expressing fraction for feature to run NMF on. Default is 0.
+#' @param feature.min.pct minimum expressing fraction for feature to run NMF on. Default is 0. Ignored if `features` are specified.
 #' @param max.iter Maximum iteration of alternating NNLS solutions to H and W
 #' @param gene.cutoff Feature loading cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.
 #' @param gene.n number of genes to return per module.
@@ -694,7 +726,7 @@ runICA <- function(object, features = NULL, max_cells = 20000, verbose = T){
 #' @return Seurat object with NMF results in reduction slot. Module genes are stored in "misc" slot of NMF reduction slot.
 #' @examples
 #'
-runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, features = NULL, feature.min.pct = 0, max.iter = 50, gene.cutoff = 0.5, gene.n = 50,sample.name = NULL, show.top.n = 10,  pathway.db = "Bader", do.enrichment = T, verbose = T){
+runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, features = NULL, feature.min.pct = 0, max.iter = 50, gene.cutoff = 0.5, gene.n = 50,sample.name = NULL, show.top.n = 10,  pathway.db = "Bader", do.enrichment = T, verbose = T, ...){
 
   stopifnot("Seurat" %in% class(object))
   require("NNLM")
@@ -703,7 +735,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 
   DefaultAssay(object) <- assay
 
-  if ((!is.null(features)) & feature.min.pct == 0){
+  if (!is.null(features)){
     expr.genes <- features
   } else if (is.null(features)){
     if (feature.min.pct >= 0 & feature.min.pct < 1){
@@ -714,8 +746,6 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
   }
 
   expr.genes <- unique(expr.genes)
-
-  # object <- UpdateSCTAssays(object)
 
   scale_success <- F
   try({
@@ -740,7 +770,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
   }
 
   if ("dgCMatrix" %in% class(expr.mat)) expr.mat <- as.matrix(expr.mat)
-  expr.mat <- expr.mat[rownames(expr.mat) %in% features, ]
+  expr.mat <- expr.mat[rownames(expr.mat) %in% expr.genes, ]
 
 
   miko_message("Running NMF...", verbose = verbose)
@@ -758,7 +788,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
   #
   object[[nmf_name]] <- CreateDimReducObject(loading = (nmf.opt[["W"]]),
                                              # key = "test",
-                                             key = paste0(nmf_name, "_"),
+                                             key = paste0(gsub("_", "", nmf_name), "_"),
                                              embeddings = t(nmf.opt[["H"]]),
                                              assay = DefaultAssay(object))
 
@@ -856,6 +886,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
   object@reductions[[nmf_name]]@misc$genes = nmf.gene
   object@reductions[[nmf_name]]@misc$df.cell.umap = df.cell.umap
   object@reductions[[nmf_name]]@misc$hg.results = nmf.res.hg
+  object@reductions[[nmf_name]]@misc$nnmf_output = nnmf
 
   return(object)
 
@@ -885,7 +916,7 @@ consolidateNMF <- function(object, reduction_key = "nmf"){
   for (i in 1:length(knames)){
 
     k_cur <- gsub("nmf_", "", knames[i])
-    res_cur <- so.nmf@reductions[[knames[i]]]
+    res_cur <- object@reductions[[knames[i]]]
     nc <- ncol(res_cur@feature.loadings)
     # nmf_res_cur <- nmf_res[[i]]
     # nc <- ncol(nmf_res_cur[["nmf.results"]][["W"]])
@@ -953,9 +984,12 @@ group2list <- function(object, group = "seurat_clusters", is.num = F, prefix = "
   df.meta <- object@meta.data
   if (!(group %in% colnames(df.meta))) stop(paste0("'", group, "' is not present in meta data"))
 
-  u.clust <- unique(object$seurat_clusters)
+  u.clust <- unique(df.meta[,group])
   if (is.num){
     u.clust <- as.numeric(as.character(u.clust))
+    u.clust <- u.clust[order(u.clust)]
+  } else {
+    u.clust <- as.character(u.clust)
     u.clust <- u.clust[order(u.clust)]
   }
 
@@ -1388,7 +1422,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 
     cell.emb <-  df.mod.wide
 
-    df.mod.wide$cluster <- so.query@meta.data[, group_by]
+    df.mod.wide$cluster <- cell.object@meta.data[, group_by]
     suppressMessages({
       suppressWarnings({
         df.mod.wide <- df.mod.wide %>%
@@ -1439,21 +1473,21 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
   suppressMessages({
     suppressWarnings({
       bp.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
-                      species = detectSpecies(so.query), pathway.db = "GO", go.ontology = "BP", verbose = F)
+                      species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "BP", verbose = F)
     })
   })
   miko_message("\tGO Molecular Functions...", verbose = verbose, time = F)
   suppressMessages({
     suppressWarnings({
       mf.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
-                      species = detectSpecies(so.query), pathway.db = "GO", go.ontology = "MF", verbose = F)
+                      species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "MF", verbose = F)
     })
   })
   miko_message("\tGO Cellular Compartments...", verbose = verbose, time = F)
   suppressMessages({
     suppressWarnings({
       cc.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
-                      species = detectSpecies(so.query), pathway.db = "GO", go.ontology = "CC", verbose = F)    })
+                      species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "CC", verbose = F)    })
   })
 
 

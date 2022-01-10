@@ -12,6 +12,7 @@
 #' @param plt.title Character specifying plot title. Ignored if do.plot == F.
 #' @param pathway.name.size Font size for pathway names in plots. Ignored if do.plot == F.
 #' @name summarizeHG
+#' @concept enrichment
 #' @author Nicholas Mikolajewicz
 #' @return list of summarized results
 summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, genesets = NULL,

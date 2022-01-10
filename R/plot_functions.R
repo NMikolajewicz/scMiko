@@ -300,6 +300,7 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 #' @param x.label.angle rotation angle for x axis title (a numeric). Default is NULL.
 #' @param show.violin Show expression as violin plot. Default is T.
 #' @param show.full.axis Show full normalized axis [0,1], rather than adapting to data. Default is T.
+#' @param verbose print progress. Default is T.
 #' @name expression.Plot
 #' @return ggplot object
 #' @examples
@@ -311,9 +312,15 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 #'
 expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
                             which.group = "seurat_clusters", which.data = "data", which.assay = DefaultAssay(so),
-                            x.label = NULL, x.label.angle = NULL, show.violin = T, show.full.axis = T){
+                            x.label = NULL, x.label.angle = NULL, show.violin = T, show.full.axis = T, verbose = T){
 
-  miko_message("Preparing Expression Data...")
+  if (!("Seurat" %in% class(so))) stop("'so' is not a Seurat object")
+  which.gene <- which.gene[which.gene %in% rownames(so)]
+  if (length(which.gene) == 0) stop("No features provided in 'which.gene' are available")
+
+  miko_message("Preparing Expression Data...", verbose = verbose)
+
+
   # get expression data
   if (is.null(e.mat)){
     em <- getExpressionMatrix(
@@ -331,6 +338,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
   if (is.null(f.mat)){
     em.frac <- avgGroupExpression(
       so,
+      which.features = which.gene,
       which.data = "data",
       which.center = "fraction",
       which.group = which.group,
@@ -376,7 +384,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
   em.sum <- merge(em.sum, em.frac.mark.df, by = "group")
 
   # hierarchial clustering
-  miko_message("Clustering groups...")
+  miko_message("Clustering groups...", verbose = verbose)
   row.names.df <- em.sum$group
   em.sum <- em.sum %>% dplyr::select(-c("group"))
   clust.var <- as.matrix(em.sum)
@@ -392,7 +400,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
   if (is.null(x.label)) x.label <- which.group
 
-  miko_message("Generating plot...")
+  miko_message("Generating plot...", verbose = verbose)
   if (clust.success){
     # helper function for creating dendograms
     ggdend.v2 <- function(df) {
@@ -476,21 +484,21 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
       #       legend.position = "none")
 
     if (show.violin){
-      plt.em <- plt.em +
+      plt.sgExp <- plt.sgExp +
         geom_violin(data = em.merge, aes(x = group, y = query/max.query, fill = group)) +
         geom_point(data = em.merge.sum, aes(x = group, y = (ev)/max.query, fill = group))    +
         scale_y_continuous(sec.axis = sec_axis(~., name = "Expression (violin)"), name = "Expressing Fraction (bar)")
     }
 
     if (show.full.axis){
-      plt.em <- plt.em +
+      plt.sgExp <- plt.sgExp +
         coord_cartesian(ylim = c(0, 1)) +
         theme(plot.margin = unit(c(0, 1, 0, 1), "cm"),
                                legend.position = "none")
     }
 
     if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
-      plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
+      plt.sgExp <- plt.sgExp + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
     }
   }
 
@@ -899,3 +907,30 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
 
 }
 
+#' Gradient color scale
+#'
+#' Wrapper for scale_color_gradient2, with preferred default parameters
+#'
+#' @param low color for low end of gradient
+#' @param high  color for high end of gradient
+#' @name scale_color_miko
+#' @examples
+#'
+#'  df.dat <- getDEG(so.query, return.list = F)
+#'  plt.volcano <-  miko_volcano(df.deg = df.dat) + scale_color_miko()
+#'
+scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("red")){
+  scale_color_gradient2(low = low, high = high)
+}
+
+#' Gradient fill scale
+#'
+#' Wrapper for scale_fill_gradient2, with preferred default parameters
+#'
+#' @param low color for low end of gradient
+#' @param high  color for high end of gradient
+#' @name scale_fill_miko
+#'
+scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("red")){
+  scale_fill_gradient2(low = low, high = high)
+}

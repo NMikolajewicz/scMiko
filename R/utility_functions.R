@@ -1327,15 +1327,22 @@ cleanFilterGenes <- function(genes, so, which.species){
 #' @param subsample.n Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.
 #' @param sample.group Character. Meta data grouping variable in which min.group.size will be enforced.
 #' @param min.group.size Numeric [1,ncol(object)]. Minimum number of cells to downsample to within sample.group. If there are insufficient cells to achieve the target min.group.size, only the available cells are retained.
+#' @param seed seed for sampling. Default is 1023.
 #' @param verbose Print progress. Default is TRUE.
 #' @name downsampleSeurat
 #' @author Nicholas Mikolajewicz
 #' @return Seurat Object
 #'
-downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL,  sample.group = NULL, min.group.size = 500, verbose = T){
+downsampleSeurat <- function(object, subsample.factor = 1, subsample.n = NULL,  sample.group = NULL, min.group.size = 500, seed = 1023, verbose = T){
 
 
-  set.seed(1023)
+  if (is.null(seed)){
+    set.seed(1023)
+  } else {
+    set.seed(seed)
+  }
+
+
   use.factor <- (subsample.factor < 1) & (subsample.factor > 0 )
   use.n <-( !is.null(subsample.n)) & (is.numeric(subsample.n))
 
@@ -1468,8 +1475,8 @@ getOrderedGroups <- function(so, which.group = "seurat_clusters", is.number = T)
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", do.parallel = F){
-  return(avgGroupExpression(so, which.data, which.assay, which.center, which.group, do.parallel))
+aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", which.features = NULL, do.parallel = F, verbose = T){
+  return(avgGroupExpression(so, which.data, which.assay, which.center, which.group, which.features, do.parallel, verbose))
 }
 
 #' Get summary of group expression in Seurat object
@@ -1488,7 +1495,8 @@ aggGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 #' @author Nicholas Mikolajewicz
 #' @return data.frame (gene rows, group columns)
 #'
-avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean", which.group = "seurat_clusters", which.features = NULL, do.parallel = F, verbose = T){
+avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAssay(so), which.center = "mean",
+                                which.group = "seurat_clusters", which.features = NULL, do.parallel = F, verbose = T){
   # which.center options: "mean", "fraction", "median", "sum", "sd", "cv"
 
   # inititate parallel processes
@@ -1502,7 +1510,14 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
   # subset matrix
   if (!is.null(which.features)){
+    which.features <- which.features[which.features %in% rownames(exp.mat.complete)]
+    if (length(which.features) == 0) stop("'which.features' are not available in Seurat object")
     exp.mat.complete <- exp.mat.complete[rownames(exp.mat.complete) %in% which.features, ]
+  }
+
+  if ((is.null(dim(exp.mat.complete))) && (length(which.features) == 1)){
+    exp.mat.complete <- t(as.matrix(exp.mat.complete))
+    rownames(exp.mat.complete) <- which.features
   }
 
   # group ID vector
@@ -1530,62 +1545,62 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
   for (i in 1:length(u.clusters)){
 
     current.mat <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
-    if (is.numeric(current.mat)){
-      if (which.center %in% c("mean", "median")){
-        avg.mat[,i] <- current.mat
+    # if (is.numeric(current.mat)){
+    #   if (which.center %in% c("mean", "median")){
+    #     avg.mat[,i] <- current.mat
+    #   } else {
+    #     avg.mat[,i] <- NA
+    #   }
+    # } else {
+
+    if (which.center == "mean"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
       } else {
-        avg.mat[,i] <- NA
+        avg.mat[,i] <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+      }
+    } else if (which.center == "median"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
+      } else {
+        avg.mat[,i] <- apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
+      }
+    } else if (which.center == "sum"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(current.mat, 1, function(x) sum(x, na.rm = T))
+      } else {
+        avg.mat[,i] <- apply(current.mat, 1, function(x) sum(x, na.rm = T))
+      }
+    } else if (which.center == "sd"){
+      if (do.parallel){
+        avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+      } else {
+        avg.mat[,i] <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+      }
+    } else if (which.center == "cv"){
+      if (do.parallel){
+        sd.cur <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        av.cur <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+      } else {
+        sd.cur <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
+        av.cur <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
+      }
+      avg.mat[,i] <- sd.cur / abs(av.cur)
+    } else if (which.center == "fraction"){
+      e.subset <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
+      if (is.numeric(e.subset)){
+        avg.mat[,i] <- mean(e.subset>0)
+      } else {
+        if (do.parallel){
+          avg.mat[,i] <- future_apply(e.subset, 1, function(x) sum(x>0)/length(x))
+        } else {
+          avg.mat[,i] <- apply(e.subset, 1, function(x) sum(x>0)/length(x))
+        }
       }
     } else {
-
-      if (which.center == "mean"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-        } else {
-          avg.mat[,i] <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-        }
-      } else if (which.center == "median"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
-        } else {
-          avg.mat[,i] <- apply(current.mat, 1, function(x) log(median(expm1(x), na.rm = T)+1))
-        }
-      } else if (which.center == "sum"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(current.mat, 1, function(x) sum(x, na.rm = T))
-        } else {
-          avg.mat[,i] <- apply(current.mat, 1, function(x) sum(x, na.rm = T))
-        }
-      } else if (which.center == "sd"){
-        if (do.parallel){
-          avg.mat[,i] <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-        } else {
-          avg.mat[,i] <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-        }
-      } else if (which.center == "cv"){
-        if (do.parallel){
-          sd.cur <- future_apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-          av.cur <- future_apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-        } else {
-          sd.cur <- apply(current.mat, 1, function(x) log(sd(expm1(x), na.rm = T)+1))
-          av.cur <- apply(current.mat, 1, function(x) log(mean(expm1(x), na.rm = T)+1))
-        }
-        avg.mat[,i] <- sd.cur / abs(av.cur)
-      } else if (which.center == "fraction"){
-        e.subset <- exp.mat.complete[ ,cluster.membership %in% u.clusters[i]]
-        if (is.numeric(e.subset)){
-          avg.mat[,i] <- 1*(e.subset>0)
-        } else {
-          if (do.parallel){
-            avg.mat[,i] <- future_apply(e.subset, 1, function(x) sum(x>0)/length(x))
-          } else {
-            avg.mat[,i] <- apply(e.subset, 1, function(x) sum(x>0)/length(x))
-          }
-        }
-      } else {
-        stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
-      }
+      stop("which.center must be specified as 'mean', 'median', 'fraction', 'sd', or 'cv'")
     }
+    # }
   }
 
   df.avg <- as.data.frame(avg.mat)
@@ -1602,8 +1617,6 @@ avgGroupExpression <-  function(so, which.data = "data", which.assay = DefaultAs
 
 
 }
-
-
 
 
 #' Gene connectivity within network.
@@ -3964,6 +3977,7 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
       names(gene.list) <- gene
       match.ind <- match(names(gene.list), my.entrez$SYMBOL)
       names(gene.list) <- as.character(my.entrez$ENTREZID[match.ind])
+      gene.list <- gene.list[!is.na(names(gene.list))]
       gene.list = sort(gene.list, decreasing = TRUE)
 
       # clean list
@@ -5591,6 +5605,9 @@ lintersect <- function(x){
 #' @author Nicholas Mikolajewicz
 miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = NA, color = colorRampPalette(rev(brewer.pal(n = 7, name =  "RdBu")))(100), ...){
 
+
+  require(RColorBrewer)
+
   if (symmetric_scale & (scale == "none")){
     if (is.na(scale.lim)){
       scale.lim <- max(abs(mat))
@@ -6148,5 +6165,47 @@ optimalBinSize <- function (object, pool = NULL, nbin = 24, seed= 1023, verbose 
 
   return(StartNBin)
 
+}
+
+
+
+#' Convert long data frame to named list
+#'
+#' Convert long data frame to named list. Input long data frame consists of two columns, the first corresponding to the names within the list (group_by), and the second to the corresponding list entries (values).
+#'
+#' @param df.long long data frame
+#' @param group_by name of data frame column to group values by
+#' @param values name of data frame column containing values
+#' @name longDF2namedList
+#' @return named list
+#' @author Nicholas Mikolajewicz
+#' @examples
+#'
+longDF2namedList <- function(df.long, group_by, values){
+
+  if (!("data.frame" %in% class(df.long))) {
+    try({df.long <- as.data.frame(df.long)}, silent = T)
+    if (!("data.frame" %in% class(df.long))) {
+      stop("Input must be a data frame")
+    }
+  }
+
+
+  n.list <- list()
+  ugroup <- as.character(unique(unlist(df.long[ ,group_by])))
+  ugroup <- ugroup[order(ugroup)]
+  for (i in 1:length(ugroup)){
+
+    # col.name <- colnames(df.wide)[i]
+    entries <- unique(unlist(df.long[ which(as.vector(unlist(df.long[ ,group_by])) %in% ugroup[i]) , values] ))
+    entries <- entries[!is.na(entries)]
+    entries <- entries[entries != ""]
+
+    if (is.factor(entries)) entries <- as.character(entries)
+    n.list[[ugroup[i]]] <- entries
+
+  }
+
+  return(n.list)
 }
 

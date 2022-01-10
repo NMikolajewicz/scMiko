@@ -1,8 +1,9 @@
 pandoc: 2.7.3
 pkgdown: 1.6.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2021-07-01T13:03Z
+articles:
+  install: install.html
+last_built: 2022-01-10T18:32Z
 urls:
   reference: https://github.com/NMikolajewicz//reference
   article: https://github.com/NMikolajewicz//articles

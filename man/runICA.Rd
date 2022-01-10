@@ -4,16 +4,27 @@
 \alias{runICA}
 \title{Run Independent Component Analysis on gene expression}
 \usage{
-runICA(object, features = NULL, max_cells = 20000, verbose = T)
+runICA(
+  object,
+  assay = DefaultAssay(object),
+  features = NULL,
+  max_cells = 20000,
+  verbose = T,
+  ...
+)
 }
 \arguments{
-\item{object}{ICA feature loadings}
+\item{object}{Seurat object}
+
+\item{assay}{name of assay to use for ICA analysis. Expression data from 'scale.data' slot will be used.}
 
 \item{features}{Features to compute ICA on. If not specified, all features present in `object` are used (not recommended, ICA is computationally expensive).}
 
 \item{max_cells}{Max number of cells to run ICA on. If number of cells in `object` exceeded `max_cells`, object is subsampled prior to running ICA. Default is 20000.}
 
 \item{verbose}{Print progress. Default is T.}
+
+\item{...}{Additional parameters passed to Seurat::RunICA(...)}
 }
 \value{
 seurat object with significant genes stored in "misc" slot of ICA reduction slot.

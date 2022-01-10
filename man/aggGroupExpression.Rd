@@ -10,7 +10,9 @@ aggGroupExpression(
   which.assay = DefaultAssay(so),
   which.center = "mean",
   which.group = "seurat_clusters",
-  do.parallel = F
+  which.features = NULL,
+  do.parallel = F,
+  verbose = T
 )
 }
 \arguments{

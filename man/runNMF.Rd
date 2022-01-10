@@ -19,7 +19,8 @@ runNMF(
   show.top.n = 10,
   pathway.db = "Bader",
   do.enrichment = T,
-  verbose = T
+  verbose = T,
+  ...
 )
 }
 \arguments{
@@ -35,7 +36,7 @@ runNMF(
 
 \item{features}{features to run NMF on.}
 
-\item{feature.min.pct}{minimum expressing fraction for feature to run NMF on. Default is 0.}
+\item{feature.min.pct}{minimum expressing fraction for feature to run NMF on. Default is 0. Ignored if `features` are specified.}
 
 \item{max.iter}{Maximum iteration of alternating NNLS solutions to H and W}
 

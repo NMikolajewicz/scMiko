@@ -72,24 +72,68 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">scMiko</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+  <a href="../articles/install.html">Install</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
      
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Introductory Vignettes</li>
+    <li>
+      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Data Integration</li>
+    <li>
+      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
+    </li>
+    <li>
+      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
+    </li>
+    <li>
+      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
+    </li>
+    <li>
+      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
+    </li>
+    <li>
+      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/NMikolajewicz/scMiko">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -112,7 +156,7 @@
     <p>Reinstall scMiko package from private repository (https://github.com/NMikolajewicz/scMiko). Package is reloaded after update.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>scMikoUpdate</span><span class='op'>(</span>token <span class='op'>=</span> <span class='st'>"a3c1c9b15c496991c952d1fe3ccc52db770f22fa"</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>scMikoUpdate</span><span class='op'>(</span>token <span class='op'>=</span> <span class='st'>"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"</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -135,24 +179,14 @@
     <pre class="examples"><div class='input'>
 <span class='co'># reinstall scMiko</span>
 <span class='fu'>scMikoUpdate</span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Registered S3 method overwritten by 'cli':</span>
-#&gt; <span class='message'>  method     from         </span>
-#&gt; <span class='message'>  print.boxx spatstat.geom</span></div><div class='output co'>#&gt; <span class='message'>Downloading GitHub repo NMikolajewicz/scMiko@master</span></div><div class='output co'>#&gt;          checking for file 'C:\Users\Owner\AppData\Local\Temp\RtmpekVrUv\remotes4724fa3286\NMikolajewicz-scMiko-fbedb18c125becfe49308da280eca8b74e632d8d/DESCRIPTION' ...  <span style='color: #00BB00;'>v</span>  <span style='color: #9E9E9E;'>checking for file 'C:\Users\Owner\AppData\Local\Temp\RtmpekVrUv\remotes4724fa3286\NMikolajewicz-scMiko-fbedb18c125becfe49308da280eca8b74e632d8d/DESCRIPTION'</span>
-#&gt;       <span style='color: #9E9E9E;'>-  preparing 'scMiko':</span><span style='color: #00BBBB;'> (1.5s)</span>
-#&gt;    checking DESCRIPTION meta-information ...  <span style='color: #00BB00;'>v</span>  <span style='color: #9E9E9E;'>checking DESCRIPTION meta-information</span>
-#&gt;       <span style='color: #9E9E9E;'>-  checking for LF line-endings in source and make files and shell scripts</span>
-#&gt;       <span style='color: #9E9E9E;'>-  checking for empty or unneeded directories</span>
-#&gt;      NB: this package now depends on R (&gt;=        NB: this package now depends on R (&gt;= 3.5.0)
-#&gt;        WARNING: Added dependency on R &gt;= 3.5.0 because serialized objects in  serialize/load version 3 cannot be read in older versions of R.  File(s) containing such objects: 'scMiko/data/LR.db.rda'  'scMiko/data/baderPathways.rda'  WARNING: Added dependency on R &gt;= 3.5.0 because serialized objects in  serialize/load version 3 cannot be read in older versions of R.  File(s) containing such objects: 'scMiko/data/geneSets.rda'
-#&gt; <span style='color: #9E9E9E;'>-  building 'scMiko_0.1.0.tar.gz'</span>
-#&gt;      
-#&gt; </div><div class='output co'>#&gt; <span class='message'>Installing package into 'C:/Users/Owner/AppData/Local/Temp/RtmpGS4cr8/temp_libpath2fa86764365e'</span>
-#&gt; <span class='message'>(as 'lib' is unspecified)</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: 'scMiko'</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked _by_ '.GlobalEnv':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    LR.db</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from 'package:grDevices':</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    savePlot</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error: Failed to install 'scMiko' from GitHub:</span>
+#&gt; <span class='error'>  HTTP error 401.</span>
+#&gt; <span class='error'>  Bad credentials</span>
+#&gt; <span class='error'></span>
+#&gt; <span class='error'>  Rate limit remaining: 51/60</span>
+#&gt; <span class='error'>  Rate limit reset at: 2022-01-10 18:37:40 UTC</span>
+#&gt; <span class='error'></span>
+#&gt; <span class='error'>  </span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

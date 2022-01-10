@@ -71,24 +71,68 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">scMiko</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+  <a href="../articles/install.html">Install</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
      
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Introductory Vignettes</li>
+    <li>
+      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Data Integration</li>
+    <li>
+      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
+    </li>
+    <li>
+      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
+    </li>
+    <li>
+      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
+    </li>
+    <li>
+      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
+    </li>
+    <li>
+      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/NMikolajewicz/scMiko">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,8 +160,21 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
+          <h2 id="section-variance-decomposition" class="hasAnchor"><a href="#section-variance-decomposition" class="anchor"></a>Variance Decomposition</h2>
+          <p class="section-desc"><p>Variance decomposition analyses</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-scale-free-shared-nearest-neighbor-network-analysis-ssn-" class="hasAnchor"><a href="#section-scale-free-shared-nearest-neighbor-network-analysis-ssn-" class="anchor"></a>Scale-Free Shared Nearest Neighbor Network Analysis (SSN)</h2>
+          <p class="section-desc"><p>Module detection</p></p>
         </th>
       </tr>
       
@@ -128,1024 +185,42 @@
       <tr>
         
         <td>
-          <p><code><a href="addLogEntry.html">addLogEntry()</a></code> </p>
+          <p><code><a href="SSNConnectivity.html">SSNConnectivity()</a></code> </p>
         </td>
-        <td><p>Add entry to analysis log</p></td>
+        <td><p>SSN connectivity plot</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="aggGroupExpression.html">aggGroupExpression()</a></code> </p>
+          <p><code><a href="SSNResolution.html">SSNResolution()</a></code> </p>
         </td>
-        <td><p>Get summary of group expression in Seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="analysisParameters.html">analysisParameters()</a></code> </p>
-        </td>
-        <td><p>Load parameter specifications for Module 1</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="autoPointSize.html">autoPointSize()</a></code> </p>
-        </td>
-        <td><p>Automatically determine optimal point size for geom_point()</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="avgGroupExpression.html">avgGroupExpression()</a></code> </p>
-        </td>
-        <td><p>Get summary of group expression in Seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="BaCo.html">BaCo()</a></code> </p>
-        </td>
-        <td><p>Bayesian Correlation algorithm</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="baderPathways.html">`{`()</a></code> </p>
-        </td>
-        <td><p>Pathway annotations from Bader Lab</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="balanceMatrixSize.html">balanceMatrixSize()</a></code> </p>
-        </td>
-        <td><p>Balance matrix dimensions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="balanceSamples.html">balanceSamples()</a></code> </p>
-        </td>
-        <td><p>Subsample cells in seurat object to be balanced (sample-size-wise) across conditions.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="barcodeLabels.html">barcodeLabels()</a></code> </p>
-        </td>
-        <td><p>Assign barcodes labels to seurat metadata</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="binMatrix.html">binMatrix()</a></code> </p>
-        </td>
-        <td><p>Row-wise matrix binning</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="binVector.html">binVector()</a></code> </p>
-        </td>
-        <td><p>Vector binning</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="categoricalColPal.html">categoricalColPal()</a></code> </p>
-        </td>
-        <td><p>Generate categorical ColorBrewer palette.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="checkGeneRep.html">checkGeneRep()</a></code> </p>
-        </td>
-        <td><p>Check gene representation</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cleanCluster.html">cleanCluster()</a></code> </p>
-        </td>
-        <td><p>Clean clusters</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cleanFilterGenes.html">cleanFilterGenes()</a></code> </p>
-        </td>
-        <td><p>Clean and filter gene list</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="clearGlobalEnv.html">clearGlobalEnv()</a></code> </p>
-        </td>
-        <td><p>Remove variables from global environment</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="cluster.UMAP.html">cluster.UMAP()</a></code> </p>
-        </td>
-        <td><p>UMAP stratified by cluster ID</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="clusterFilter.html">clusterFilter()</a></code> </p>
-        </td>
-        <td><p>Filter seurat object by specified cluster ids</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="col2rowname.html">col2rowname()</a></code> </p>
-        </td>
-        <td><p>Assign column entries in data.frame to row names.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="da_DEG.html">da_DEG()</a></code> </p>
-        </td>
-        <td><p>Identify correlated genes/pathways associated with differential abundance.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="da_Run.html">da_Run()</a></code> </p>
-        </td>
-        <td><p>Run differential abundance analysis.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="detectSpecies.html">detectSpecies()</a></code> </p>
-        </td>
-        <td><p>Determine species based on gene representation</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="discretePalette.html">discretePalette()</a></code> </p>
-        </td>
-        <td><p>Apply discrete color palette to ggplot object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="dist2hclust.html">dist2hclust()</a></code> </p>
-        </td>
-        <td><p>Hierarchially-cluster distance matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="downsampleSeurat.html">downsampleSeurat()</a></code> </p>
-        </td>
-        <td><p>Downsample single cell data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="dpt_for_branch.html">dpt_for_branch()</a></code> </p>
-        </td>
-        <td><p>Get branch-specific pseudotimes from diffusion map</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="enrichGO.fisher.html">enrichGO.fisher()</a></code> </p>
-        </td>
-        <td><p>Over-representation enrichment of GO terms using weighted fisher method</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ens2sym.so.html">ens2sym.so()</a></code> </p>
-        </td>
-        <td><p>Convert gene ensemble to symbol in seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="entrez2sym.html">entrez2sym()</a></code> </p>
-        </td>
-        <td><p>Convert entrez id to gene symbol</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="expression.Plot.html">expression.Plot()</a></code> </p>
-        </td>
-        <td><p>Violin plot of single cell gene expression</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="exprUMAP.html">exprUMAP()</a></code> </p>
-        </td>
-        <td><p>Visualize gene expression on UMAP</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="featureGradient.html">featureGradient()</a></code> </p>
-        </td>
-        <td><p>Visualize feature activity/expression gradient overlaid on UMAP</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="filterSeurat.html">filterSeurat()</a></code> </p>
-        </td>
-        <td><p>Apply QC filters to Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="FindAllMarkers.Parallel.html">FindAllMarkers.Parallel()</a></code> </p>
-        </td>
-        <td><p>Gene expression markers for all identity classes.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="firstup.html">firstup()</a></code> </p>
-        </td>
-        <td><p>Uppercase first letter and lowercase rest</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="fixBarcodeLabel.html">fixBarcodeLabel()</a></code> </p>
-        </td>
-        <td><p>Fix barcode labels</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="flex.asDT.html">flex.asDT()</a></code> </p>
-        </td>
-        <td><p>Outputs datatable with print button options</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="flex.multiTabLogs.html">flex.multiTabLogs()</a></code> </p>
-        </td>
-        <td><p>Generate multi-tab analysis log list for flexdashboard</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="flex.multiTabPlot.html">flex.multiTabPlot()</a></code> </p>
-        </td>
-        <td><p>Generate multi-tab ggplot handle list for flexdashboard</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="flex.multiTabPlotly.html">flex.multiTabPlotly()</a></code> </p>
-        </td>
-        <td><p>Generate multi-tab list of plotly figures for flexdashboard</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="flex.multiTabTables.html">flex.multiTabTables()</a></code> </p>
-        </td>
-        <td><p>Generate multi-tab datatable list for flexdashboard</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="generateHeat.html">generateHeat()</a></code> </p>
-        </td>
-        <td><p>Generate heatmap with plotly interface</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="geneRepCurve.html">geneRepCurve()</a></code> </p>
-        </td>
-        <td><p>Plot relationship showing percentage of cells expressing atleast percentage of genes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="geneSets.html">geneSets</a></code> </p>
-        </td>
-        <td><p>List of scMiko gene sets</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="geom_split_violin.html">geom_split_violin()</a></code> </p>
-        </td>
-        <td><p>Split violin plot using ggplot2</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getAnnotationPathways.html">getAnnotationPathways()</a></code> </p>
-        </td>
-        <td><p>Returns list of annotations for given Entrez gene IDs</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getAvailableFiles.html">getAvailableFiles()</a></code> </p>
-        </td>
-        <td><p>Get list of available files</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getClusterCenters.html">getClusterCenters()</a></code> </p>
-        </td>
-        <td><p>Get cluster centers</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getClusterRoot.html">getClusterRoot()</a></code> </p>
-        </td>
-        <td><p>Get cell index corresponding to center of specified root cluster.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getConnectivity.html">getConnectivity()</a></code> </p>
-        </td>
-        <td><p>Gene connectivity within network.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getDEG.html">getDEG()</a></code> </p>
-        </td>
-        <td><p>Get differentially expressed genes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getDensity.html">getDensity()</a></code> </p>
-        </td>
-        <td><p>Get local density (z) of bivariate relationship (x,y)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getExpressedGenes.html">getExpressedGenes()</a></code> </p>
-        </td>
-        <td><p>Identify expressed genes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getExpressingCells.html">getExpressingCells()</a></code> </p>
-        </td>
-        <td><p>Get cells that express query gene</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getExpressionMatrix.html">getExpressionMatrix()</a></code> </p>
-        </td>
-        <td><p>Get expression matrix from Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getHeat.html">getHeat()</a></code> </p>
-        </td>
-        <td><p>Create heatmap object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getJaccard.html">getJaccard()</a></code> </p>
-        </td>
-        <td><p>Jaccard Similarity</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getLoadPath.html">getLoadPath()</a></code> </p>
-        </td>
-        <td><p>Return load path</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getMissingPackages.html">getMissingPackages()</a></code> </p>
-        </td>
-        <td><p>install missing packages from cran or bioconductor</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getMitoContent.html">getMitoContent()</a></code> </p>
-        </td>
-        <td><p>Calculate mitochondrial content</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getModuleGenes.html">getModuleGenes()</a></code> </p>
-        </td>
-        <td><p>Get list of module genes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getModulePreservation.html">getModulePreservation()</a></code> </p>
-        </td>
-        <td><p>Determine module preservation between reference and query network</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getNMFGenes.html">getNMFGenes()</a></code> </p>
-        </td>
-        <td><p>Returns top module genes from NMF feature loading matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getNodesEdges.html">getNodesEdges()</a></code> </p>
-        </td>
-        <td><p>Get nodes and edges from igraph data.frame for visNetwork</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getOrderedGroups.html">getOrderedGroups()</a></code> </p>
-        </td>
-        <td><p>Get vector of unique ordered group names from Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getReductionGenes.html">getReductionGenes()</a></code> </p>
-        </td>
-        <td><p>Get top loaded features for PCA or ICA dimensional reduction.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getSoftThreshold.html">getSoftThreshold()</a></code> </p>
-        </td>
-        <td><p>Analysis of scale free topology for soft-threshold</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getSoftThreshold2.html">getSoftThreshold2()</a></code> </p>
-        </td>
-        <td><p>Analysis of scale free topology for soft-threshold. Modified from getSoftThreshold.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getUMAP.html">getUMAP()</a></code> </p>
-        </td>
-        <td><p>Get UMAP data and plot from Seurat object.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="id2geneset.html">id2geneset()</a></code> </p>
-        </td>
-        <td><p>Get Reactome/GO geneset</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="id2term.html">id2term()</a></code> </p>
-        </td>
-        <td><p>Map Reactome/GO ID to term</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="inferInitialTrajectory.html">inferInitialTrajectory()</a></code> </p>
-        </td>
-        <td><p>Infer initial trajectory through space</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="inferInitialTrajectory.v2.html">inferInitialTrajectory.v2()</a></code> </p>
-        </td>
-        <td><p>Infer initial trajectory through space, using pseudotime priors</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="inferSpecies.html">inferSpecies()</a></code> </p>
-        </td>
-        <td><p>Infer species from list of Ensemble ids</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="initiateLog.html">initiateLog()</a></code> </p>
-        </td>
-        <td><p>Initiate analysis log</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="isGeneAvailable.html">isGeneAvailable()</a></code> </p>
-        </td>
-        <td><p>Check if gene is avaialble in Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="jaccardSimilarityMatrix.html">jaccardSimilarityMatrix()</a></code> </p>
-        </td>
-        <td><p>Jaccard Similarity Matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="lineageTrajectory.html">lineageTrajectory()</a></code> </p>
-        </td>
-        <td><p>Get lineage trajectories using principal curves and compute pseudotimes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="lintersect.html">lintersect()</a></code> </p>
-        </td>
-        <td><p>Returns intersection of all list entries.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="loadCellRanger.html">loadCellRanger()</a></code> </p>
-        </td>
-        <td><p>Load CellRanger preprocessed data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="loadMat.html">loadMat()</a></code> </p>
-        </td>
-        <td><p>Load gene x cell count matrix into seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="loadMoffat.html">loadMoffat()</a></code> </p>
-        </td>
-        <td><p>Load preprocessed data from Moffat lab sciRNA-seq3 pipeline</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="LR.db.html">LR.db</a></code> </p>
-        </td>
-        <td><p>Ligand-Receptor Database</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="m23.binarizeExpression.html">m23.binarizeExpression()</a></code> <code><a href="m23.binarizeExpression.html">m23.binarizeExpression()</a></code> </p>
-        </td>
-        <td><p>Stratify gene expression into high and low expression groups</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="m9.importMarkers.html">m9.importMarkers()</a></code> </p>
-        </td>
-        <td><p>M9. Import Gene List</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="mapSubsetSeurat.html">mapSubsetSeurat()</a></code> </p>
-        </td>
-        <td><p>Filter seurat object according to specified meta data entries</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="mergeSeuratList.html">mergeSeuratList()</a></code> </p>
-        </td>
-        <td><p>Merge list of seurat objects</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="miko_heatmap.html">miko_heatmap()</a></code> </p>
-        </td>
-        <td><p>Function to draw ggplot heatmaps</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="miko_integrate.html">miko_integrate()</a></code> </p>
-        </td>
-        <td><p>scRNAseq integration wrapper</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="miko_message.html">miko_message()</a></code> </p>
-        </td>
-        <td><p>Print message</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="miko_volcano.html">miko_volcano()</a></code> </p>
-        </td>
-        <td><p>Draw volcano plot to visualize differential expression.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="modulePackages.html">modulePackages()</a></code> </p>
-        </td>
-        <td><p>Load Module-Specific Packages</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="multiLevel.FindMarkers.html">multiLevel.FindMarkers()</a></code> </p>
-        </td>
-        <td><p>Perform differential expression analysis</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="namedList2longDF.html">namedList2longDF()</a></code> </p>
-        </td>
-        <td><p>Convert named list to long data.frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="namedList2wideDF.html">namedList2wideDF()</a></code> </p>
-        </td>
-        <td><p>Convert named list to wide data.frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="neighborPurity.html">neighborPurity()</a></code> </p>
-        </td>
-        <td><p>Compute purity of each cell's neighborhood, as defined by KNN graph.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="networkProperties.Plot.html">networkProperties.Plot()</a></code> </p>
-        </td>
-        <td><p>Plot network properties for different soft thresholds</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="optimalDS.html">optimalDS()</a></code> </p>
-        </td>
-        <td><p>Cut clustered tree at varying heights and overlay with dendrogram to find optimal parameter set.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="orderedFactor.html">orderedFactor()</a></code> </p>
-        </td>
-        <td><p>Sort factor levels in numerical order</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="PAGA.html">PAGA()</a></code> </p>
-        </td>
-        <td><p>PAGA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="PAGAplot.html">PAGAplot()</a></code> </p>
-        </td>
-        <td><p>PAGAplot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="parCor.html">parCor()</a></code> </p>
-        </td>
-        <td><p>Parallelized correlation</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pathActivity.Tempora.html">pathActivity.Tempora()</a></code> </p>
-        </td>
-        <td><p>Calcualte pathway enrichment scores in Tempora Framework</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pcaElbow.html">pcaElbow()</a></code> </p>
-        </td>
-        <td><p>Quickly estimate the 'elbow' of a scree plot (PCA)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepExpression.html">prepExpression()</a></code> </p>
-        </td>
-        <td><p>Normalize and scale data within appropriate assay</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepGeneList.html">prepGeneList()</a></code> </p>
-        </td>
-        <td><p>Prepare gene to ensemble conversion vector</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepSeurat.html">prepSeurat()</a></code> </p>
-        </td>
-        <td><p>prep Seurat</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepSeurat2.html">prepSeurat2()</a></code> </p>
-        </td>
-        <td><p>prep Seurat (Extended adaptation of prepSeurat)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="projectReduction.html">projectReduction()</a></code> </p>
-        </td>
-        <td><p>Project dimensionally-reduced features onto UMAP</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="propVarPCA.html">propVarPCA()</a></code> </p>
-        </td>
-        <td><p>Variance explained by each principal component.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pseudoReplicates.html">pseudoReplicates()</a></code> </p>
-        </td>
-        <td><p>Create pseudo-replicates, stratified by grouping variable.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pseudotime.UMAP.html">pseudotime.UMAP()</a></code> </p>
-        </td>
-        <td><p>UMAP projection of pseudotimes</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="pseudotimeRF.html">pseudotimeRF()</a></code> </p>
-        </td>
-        <td><p>Identify pseudotime-dependent genes using Random Forest (RF) Model</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="QC.scatterPlot.html">QC.scatterPlot()</a></code> </p>
-        </td>
-        <td><p>QC scatter plots</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="QC.violinPlot.html">QC.violinPlot()</a></code> </p>
-        </td>
-        <td><p>QC violin plots</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="qNorm.html">qNorm()</a></code> </p>
-        </td>
-        <td><p>Quantile Normalization of 2 Vectors</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="recodeBarcode.html">recodeBarcode()</a></code> </p>
-        </td>
-        <td><p>Recode (i.e., relabel) barcode metadata field in Seurat object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rescaleValues.html">rescaleValues()</a></code> </p>
-        </td>
-        <td><p>Rescale values to specified range.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rmDuplicateGenes.html">rmDuplicateGenes()</a></code> </p>
-        </td>
-        <td><p>Remove duplicate genes from Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rmvCSVprefix.html">rmvCSVprefix()</a></code> </p>
-        </td>
-        <td><p>Remove "ï.." prefix that is appended to csv header</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runAUC.html">runAUC()</a></code> </p>
-        </td>
-        <td><p>Run AUCell classification</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runEnrichment.html">runEnrichment()</a></code> </p>
-        </td>
-        <td><p>Wrapper to run  GO enrichment, using fisher enrichment method</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runGSEA.html">runGSEA()</a></code> </p>
-        </td>
-        <td><p>Run gene-set enrichment analysis (GSEA)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runHG.html">runHG()</a></code> </p>
-        </td>
-        <td><p>Run hypergeometric gene enrichment analysis.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runMS.html">runMS()</a></code> </p>
-        </td>
-        <td><p>Run Modular Scoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runNMF.html">runNMF()</a></code> </p>
-        </td>
-        <td><p>Perform non-negative matrix factorization (NMF)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runRPCA.html">runRPCA()</a></code> </p>
-        </td>
-        <td><p>Run Robust Prinicipal Component Analysis</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="runWGCNA.html">runWGCNA()</a></code> </p>
-        </td>
-        <td><p>run WGCNA analysis on scRNAseq expression matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="savePDF.html">savePDF()</a></code> </p>
-        </td>
-        <td><p>Save figure as pdf</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="savePlot.html">savePlot()</a></code> </p>
-        </td>
-        <td><p>Save ggplot as image file</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scaleTOM.html">scaleTOM()</a></code> </p>
-        </td>
-        <td><p>TOM matrix rescaling prior to computing consensus topological overlap.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scExpression.UMAP.html">scExpression.UMAP()</a></code> </p>
-        </td>
-        <td><p>Cell-level gene expression projected on UMAP</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scMikoReload.html">scMikoReload()</a></code> </p>
-        </td>
-        <td><p>Reload scMiko package</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scMikoUpdate.html">scMikoUpdate()</a></code> </p>
-        </td>
-        <td><p>Reinstall scMiko package</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scNormScale.html">scNormScale()</a></code> </p>
-        </td>
-        <td><p>Normalize and Scale scRNAseq Data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="scoreGBM.html">scoreGBM()</a></code> </p>
-        </td>
-        <td><p>Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="searchAnnotations.html">searchAnnotations()</a></code> </p>
-        </td>
-        <td><p>Search Reactome/GO databases for terms that match query</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="setResolution.html">setResolution()</a></code> </p>
-        </td>
-        <td><p>Set cluster resolution</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="signatureCoherence.html">signatureCoherence()</a></code> </p>
-        </td>
-        <td><p>Evaluate signature coherence.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sim2adj.html">sim2adj()</a></code> </p>
-        </td>
-        <td><p>Compute adjaceny matrix from similary (correlation) matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="snip.html">snip()</a></code> </p>
-        </td>
-        <td><p>Winsorize values at lower and upper quantiles.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sparse2dense.html">sparse2dense()</a></code> </p>
-        </td>
-        <td><p>Convert sparse matrix to dense matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sparse2df.html">sparse2df()</a></code> </p>
-        </td>
-        <td><p>Convert sparse matrix to data.frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="speciesConvert.html">speciesConvert()</a></code> </p>
-        </td>
-        <td><p>Convert gene symbol representation to Hs or Mm</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="standardizeNonParametric.html">standardizeNonParametric()</a></code> </p>
-        </td>
-        <td><p>Non-parametric standardization of matrix</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="subsetDimRed.html">subsetDimRed()</a></code> </p>
-        </td>
-        <td><p>Get dimensional reduction from Seurat Object for subset of data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="subsetSeurat.html">subsetSeurat()</a></code> </p>
-        </td>
-        <td><p>Subset Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="summarizeHG.html">summarizeHG()</a></code> </p>
-        </td>
-        <td><p>Summarize hypergeometric enrichment results</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sym2ens.html">sym2ens()</a></code> <code><a href="sym2ens.html">ensembl2sym()</a></code> </p>
-        </td>
-        <td><p>Convert gene symbol to ensembl</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sym2entrez.html">sym2entrez()</a></code> </p>
-        </td>
-        <td><p>Convert gene symbol to entrez</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="term2id.html">term2id()</a></code> </p>
-        </td>
-        <td><p>Map Reactome/GO term to ID</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="theme_miko.html">theme_miko()</a></code> </p>
-        </td>
-        <td><p>scMiko Theme</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ulength.html">ulength()</a></code> </p>
-        </td>
-        <td><p>Number of unique values</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="uniqueFeatures.html">uniqueFeatures()</a></code> </p>
-        </td>
-        <td><p>Get unique features from metadata column in seurat object.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="updateCentralLog.html">updateCentralLog()</a></code> </p>
-        </td>
-        <td><p>Update central log</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="updateDimNames.html">updateDimNames()</a></code> </p>
-        </td>
-        <td><p>Ensure that all dimNames are correctly specified in Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="updateGeneSets.html">updateGeneSets()</a></code> </p>
-        </td>
-        <td><p>Create/update list of gene sets for scMiko package.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="upset.Plot.html">upset.Plot()</a></code> </p>
-        </td>
-        <td><p>Upset plot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="value2col.html">value2col()</a></code> </p>
-        </td>
-        <td><p>Convert values to color gradient</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="variableGenes.Plot.html">variableGenes.Plot()</a></code> </p>
-        </td>
-        <td><p>Plot variable genes in Seurat Object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="varyingPaths.Tempora.html">varyingPaths.Tempora()</a></code> </p>
-        </td>
-        <td><p>Identify temporally varying pathways using Tempora</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="vd_Formula.html">vd_Formula()</a></code> </p>
-        </td>
-        <td><p>Specify model formula for variance decomposition.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="vd_Inputs.html">vd_Inputs()</a></code> </p>
-        </td>
-        <td><p>Specify inputs for variance decomposition analysis</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="vd_Run.html">vd_Run()</a></code> </p>
-        </td>
-        <td><p>Perform Variance Decomposition Analysis</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="vd_UMAP.html">vd_UMAP()</a></code> </p>
-        </td>
-        <td><p>Generate UMAPs with each variance decomposition covariate overlaid.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="wgcna2graphDF.html">wgcna2graphDF()</a></code> </p>
-        </td>
-        <td><p>Convert adjacency or TOM matrix to igraph data.frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="wideDF2namedList.html">wideDF2namedList()</a></code> </p>
-        </td>
-        <td><p>Convert wide data.frame to named list</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="wnn_Components.html">wnn_Components()</a></code> </p>
-        </td>
-        <td><p>Compute network component UMAPs and visualize component weights.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="wnn_Run.html">wnn_Run()</a></code> </p>
-        </td>
-        <td><p>Run WNN Multi-Modal Integration.</p></td>
+        <td><p>Identify optimal cluster resolution of scale-free shared nearest neighbor network (SNN)</p></td>
       </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-cell-type-annotation" class="hasAnchor"><a href="#section-cell-type-annotation" class="anchor"></a>Cell-Type Annotation</h2>
+          <p class="section-desc"><p>Module detection</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-pathway-enrichment" class="hasAnchor"><a href="#section-pathway-enrichment" class="anchor"></a>Pathway Enrichment</h2>
+          <p class="section-desc"><p>Pathway Enrichment</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      
     </tbody>
     </table>
   </div>

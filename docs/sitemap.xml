@@ -7,6 +7,9 @@
     <loc>https://github.com/NMikolajewicz//reference/addLogEntry.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/AddSModuleScore.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/aggGroupExpression.html</loc>
   </url>
   <url>
@@ -17,9 +20,6 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/avgGroupExpression.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/BaCo.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/baderPathways.html</loc>
@@ -34,16 +34,19 @@
     <loc>https://github.com/NMikolajewicz//reference/barcodeLabels.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/binMatrix.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/benchmarkCluster.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/binVector.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/benchmarkScores.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/categoricalColPal.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/checkGeneRep.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/citationCheck.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/cleanCluster.html</loc>
@@ -61,7 +64,13 @@
     <loc>https://github.com/NMikolajewicz//reference/clusterFilter.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/coherentFraction.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/col2rowname.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/consolidateNMF.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/da_DEG.html</loc>
@@ -73,19 +82,10 @@
     <loc>https://github.com/NMikolajewicz//reference/detectSpecies.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/discretePalette.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/dist2hclust.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/downsampleSeurat.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/dpt_for_branch.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/enrichGO.fisher.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/ens2sym.so.html</loc>
@@ -106,7 +106,16 @@
     <loc>https://github.com/NMikolajewicz//reference/filterSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/FindAllMarkers.Parallel.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/findArtifactGenes.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/findCDIMarkers.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/findGiniMarkers.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/findNetworkFeatures.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/firstup.html</loc>
@@ -130,9 +139,6 @@
     <loc>https://github.com/NMikolajewicz//reference/flex.multiTabTables.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/generateHeat.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/geneRepCurve.html</loc>
   </url>
   <url>
@@ -145,13 +151,7 @@
     <loc>https://github.com/NMikolajewicz//reference/getAnnotationPathways.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getAvailableFiles.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/getClusterCenters.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/getClusterRoot.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/getConnectivity.html</loc>
@@ -172,16 +172,13 @@
     <loc>https://github.com/NMikolajewicz//reference/getExpressionMatrix.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getHeat.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/getICAGenes.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/getJaccard.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/getLoadPath.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/getMissingPackages.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/getMitoContent.html</loc>
@@ -214,16 +211,13 @@
     <loc>https://github.com/NMikolajewicz//reference/getUMAP.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/group2list.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/id2geneset.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/id2term.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/inferInitialTrajectory.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/inferInitialTrajectory.v2.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/inferSpecies.html</loc>
@@ -232,13 +226,7 @@
     <loc>https://github.com/NMikolajewicz//reference/initiateLog.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/isGeneAvailable.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/jaccardSimilarityMatrix.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/lineageTrajectory.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/lintersect.html</loc>
@@ -253,19 +241,19 @@
     <loc>https://github.com/NMikolajewicz//reference/loadMoffat.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/longDF2namedList.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/LR.db.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/m23.binarizeExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/m9.importMarkers.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/mapSubsetSeurat.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/mergeSeuratList.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/mikoScore.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/miko_heatmap.html</loc>
@@ -280,12 +268,6 @@
     <loc>https://github.com/NMikolajewicz//reference/miko_volcano.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/modulePackages.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/multiLevel.FindMarkers.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/namedList2longDF.html</loc>
   </url>
   <url>
@@ -295,7 +277,10 @@
     <loc>https://github.com/NMikolajewicz//reference/neighborPurity.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/networkProperties.Plot.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/nullScore.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/optimalBinSize.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/optimalDS.html</loc>
@@ -313,13 +298,7 @@
     <loc>https://github.com/NMikolajewicz//reference/parCor.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/pathActivity.Tempora.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/pcaElbow.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/prepExpression.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/prepGeneList.html</loc>
@@ -338,9 +317,6 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/pseudoReplicates.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/pseudotime.UMAP.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/pseudotimeRF.html</loc>
@@ -370,13 +346,13 @@
     <loc>https://github.com/NMikolajewicz//reference/runAUC.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runEnrichment.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/runGSEA.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/runHG.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/runICA.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/runMS.html</loc>
@@ -388,7 +364,13 @@
     <loc>https://github.com/NMikolajewicz//reference/runRPCA.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/runSSN.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/runWGCNA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/saveHTML.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/savePDF.html</loc>
@@ -397,13 +379,19 @@
     <loc>https://github.com/NMikolajewicz//reference/savePlot.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/scaleFreeNet.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/scaleTOM.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scExpression.UMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/scale_color_miko.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scMikoReload.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/scale_fill_miko.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/scExpression.UMAP.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/scMikoUpdate.html</loc>
@@ -424,10 +412,16 @@
     <loc>https://github.com/NMikolajewicz//reference/signatureCoherence.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/sigScore.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/sim2adj.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/snip.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/SNNExpression.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/sparse2dense.html</loc>
@@ -439,7 +433,10 @@
     <loc>https://github.com/NMikolajewicz//reference/speciesConvert.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/standardizeNonParametric.html</loc>
+    <loc>https://github.com/NMikolajewicz//reference/SSNConnectivity.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/SSNResolution.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/subsetDimRed.html</loc>
@@ -487,9 +484,6 @@
     <loc>https://github.com/NMikolajewicz//reference/variableGenes.Plot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/varyingPaths.Tempora.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/vd_Formula.html</loc>
   </url>
   <url>
@@ -512,5 +506,8 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/wnn_Run.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/install.html</loc>
   </url>
 </urlset>

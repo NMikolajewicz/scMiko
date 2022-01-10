@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Set cluster resolution — setResolution" />
-<meta property="og:description" content="Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details." />
+<meta property="og:description" content="Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. Wrapper for Seurat's FindClusters() function." />
 
 
 
@@ -72,24 +72,68 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">scMiko</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+  <a href="../articles/install.html">Install</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
      
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Introductory Vignettes</li>
+    <li>
+      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Data Integration</li>
+    <li>
+      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
+    </li>
+    <li>
+      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
+    </li>
+    <li>
+      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
+    </li>
+    <li>
+      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
+    </li>
+    <li>
+      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/NMikolajewicz/scMiko">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -109,7 +153,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. See Seurat::FindClusters() for details.</p>
+    <p>Set 'Seurat_Clusters' metadata entry to specified cluster resolution [0, inf]. Wrapper for Seurat's FindClusters() function.</p>
     </div>
 
     <pre class="usage"><span class='fu'>setResolution</span><span class='op'>(</span>
@@ -148,6 +192,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Seurat object</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code>FindClusters</code></p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Nicholas Mikolajewicz</p>

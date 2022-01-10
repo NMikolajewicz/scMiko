@@ -16,7 +16,8 @@ miko_integrate(
   variable.features.n = 3000,
   verbose = T,
   use.existing.sct = F,
-  conserve.memory = F
+  conserve.memory = F,
+  vars.to.regress = "percent.mt"
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ miko_integrate(
 \item{use.existing.sct}{If TRUE, existing SCT model is used. Default is FALSE (new SCT model is fit)}
 
 \item{conserve.memory}{If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE}
+
+\item{vars.to.regress}{meta features to regress out. Default is "percent.mt"}
 }
 \value{
 Integrated seurat object

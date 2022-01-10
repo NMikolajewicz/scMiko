@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Assign barcodes labels to seurat metadata — barcodeLabels • scMiko</title>
+<title>Subset and assign labels to seurat — barcodeLabels • scMiko</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Assign barcodes labels to seurat metadata — barcodeLabels" />
-<meta property="og:description" content="Assign barcode labels (in Seurat object) to &quot;subset_group&quot; metadata field, as specified by which.strata parameter." />
+<meta property="og:title" content="Subset and assign labels to seurat — barcodeLabels" />
+<meta property="og:description" content="Subset and assign barcode labels (in Seurat object) to &quot;subset_group&quot; metadata field, as specified by which.strata parameter." />
 
 
 
@@ -72,24 +72,68 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">scMiko</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+  <a href="../articles/install.html">Install</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
      
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Introductory Vignettes</li>
+    <li>
+      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Data Integration</li>
+    <li>
+      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
+    </li>
+    <li>
+      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
+    </li>
+    <li>
+      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
+    </li>
+    <li>
+      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
+    </li>
+    <li>
+      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/NMikolajewicz/scMiko">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -103,13 +147,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Assign barcodes labels to seurat metadata</h1>
+    <h1>Subset and assign labels to seurat</h1>
     
     <div class="hidden name"><code>barcodeLabels.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.</p>
+    <p>Subset and assign barcode labels (in Seurat object) to "subset_group" metadata field, as specified by which.strata parameter.</p>
     </div>
 
     <pre class="usage"><span class='fu'>barcodeLabels</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>which.strata</span><span class='op'>)</span></pre>

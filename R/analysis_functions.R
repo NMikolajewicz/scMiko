@@ -507,18 +507,26 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
 #' @param verbose Print progress. Default is TRUE.
 #' @param use.existing.sct If TRUE, existing SCT model is used. Default is FALSE (new SCT model is fit)
 #' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE
+#' @param vars.to.regress meta features to regress out. Default is "percent.mt". Set to NULL if unspecified.
 #' @name miko_integrate
 #' @seealso \code{\link{IntegrateData}}
 #' @author Nicholas Mikolajewicz
 #' @return Integrated seurat object
 #' @examples
 #'
-miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F){
+miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F, vars.to.regress = "percent.mt"){
 
   verbose. <- verbose
 
+  if(!("Seurat" %in% class(object))) stop("'object' must belong to Seurat class")
+
   # split data
   DefaultAssay(object) <- assay
+
+  if (!is.null(vars.to.regress)){
+    vars.to.regress <- vars.to.regress[vars.to.regress %in% colnames(object@meta.data)]
+    if (length(vars.to.regress) == 0) vars.to.regress <- NULL
+  }
   # if ("integrated" %in% names(object@assays)) object@assays$integrated <- NULL
 
   if (!use.existing.sct){
@@ -530,12 +538,12 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
     # renormalize
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
     object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", verbose = verbose., assay = assay, conserve.memory = conserve.memory,
-                                     vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
+                                     vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
 
   } else {
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-    object <- SCTransform(object, method = "glmGamPoi", verbose = T, assay = assay,
-                          vars.to.regress = "percent.mt", variable.features.rv.th = 1.3, variable.features.n = variable.features.n, conserve.memory = conserve.memory,)
+    object <- SCTransform(object, method = "glmGamPoi", verbose = verbose., assay = assay,
+                          vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n, conserve.memory = conserve.memory)
     if (verbose.)  miko_message("Spliting object...", verbose = verbose.)
     object.list <- SplitObject(object, split.by = split.by)
   }
@@ -623,7 +631,10 @@ getDEG <- function(object, assay = DefaultAssay(object), data = "data",
   deg.dat <- presto::wilcoxauc(X = object , assay = data, seurat_assay = assay, group_by = group_by)
   deg.dat$pct.dif <- deg.dat$pct_in - deg.dat$pct_out
 
-
+  deg.dat$sensitivity <- deg.dat$pct_in/((100-deg.dat$pct_in) + (deg.dat$pct_in))
+  deg.dat$specificity <- (100-deg.dat$pct_out)/((100-deg.dat$pct_out) + (deg.dat$pct_out))
+  deg.dat$PPV <-  deg.dat$pct_in/( deg.dat$pct_in + (deg.dat$pct_out))
+  deg.dat$NPV <- (100-deg.dat$pct_out)/((100-deg.dat$pct_out) + (100-deg.dat$pct_in))
 
 
   if (!return.all){
@@ -657,21 +668,22 @@ getDEG <- function(object, assay = DefaultAssay(object), data = "data",
   }
 
   if (return.list){
-    miko_message("Preparing list output...", verbose = verbose)
+    # miko_message("Preparing list output...", verbose = verbose)
     u.group <- unique(deg.dat$group)
 
     deg.list <- list()
     for (i in 1:length(u.group)){
       deg.list[[u.group[i]]] <- deg.dat$feature[deg.dat$group %in% u.group[i]]
     }
-    miko_message("Complete!", verbose = verbose)
+    # miko_message("Complete!", verbose = verbose)
     return(deg.list)
   } else {
-    miko_message("Complete!", verbose = verbose)
+    # miko_message("Complete!", verbose = verbose)
 
     if (!is.na(sig.figs)){
       try({
-        deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif")] <- signif(deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif")], sig.figs)
+
+        deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV")] <- signif(deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV")], sig.figs)
       }, silent = T)
     }
     return(deg.dat)

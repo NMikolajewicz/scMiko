@@ -15,7 +15,8 @@ expression.Plot(
   x.label = NULL,
   x.label.angle = NULL,
   show.violin = T,
-  show.full.axis = T
+  show.full.axis = T,
+  verbose = T
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ expression.Plot(
 \item{show.violin}{Show expression as violin plot. Default is T.}
 
 \item{show.full.axis}{Show full normalized axis [0,1], rather than adapting to data. Default is T.}
+
+\item{verbose}{print progress. Default is T.}
 }
 \value{
 ggplot object

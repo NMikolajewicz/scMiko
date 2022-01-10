@@ -72,24 +72,68 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">scMiko</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
+  <a href="../articles/install.html">Install</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
      
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Introductory Vignettes</li>
+    <li>
+      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Data Integration</li>
+    <li>
+      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
+    </li>
+    <li>
+      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
+    </li>
+    <li>
+      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
+    </li>
+    <li>
+      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
+    </li>
+    <li>
+      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
+    </li>
+    <li>
+      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/NMikolajewicz/scMiko">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -172,10 +216,10 @@
 <span class='co'># determine optimal soft threshold</span>
 <span class='va'>sft</span> <span class='op'>&lt;-</span> <span class='fu'>getSoftThreshold2</span><span class='op'>(</span><span class='va'>s.mat</span>, power <span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0.5</span>,<span class='fl'>5</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>6</span>,<span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
 network.type <span class='op'>=</span> <span class='st'>"signed"</span>, rescale.adjacency <span class='op'>=</span> <span class='cn'>F</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in (foreach(i = 1:length(powers), .packages = c("scMiko", "dplyr",     "ggplot2", "ggpmisc"))) %dopar% {    power.cur &lt;- powers[i]    a.cur &lt;- sim2adj(s.mat, soft.power = power.cur, network.type = network.type)    if (rescale.adjacency)         a.cur &lt;- recaleValues(a.cur, new.min = 0, new.max = 1)    net.connectivity.df &lt;- getConnectivity(a.cur, rownames(a.cur),         flag.top.n = 20)    rm(a.cur)    invisible({        gc()    })    k &lt;- net.connectivity.df$wi    discretized.k &lt;- cut(k, nBreaks)    dk &lt;- tapply(k, discretized.k, mean)    p.dk &lt;- as.vector(tapply(k, discretized.k, length)/length(k))    breaks1 &lt;- seq(from = min(k), to = max(k), length = nBreaks +         1)    hist1 &lt;- suppressWarnings(hist(k, breaks = breaks1, equidist = FALSE,         plot = FALSE, right = TRUE))    dk2 &lt;- hist1$mids    dk &lt;- ifelse(is.na(dk), dk2, dk)    dk = ifelse(dk == 0, dk2, dk)    p.dk &lt;- ifelse(is.na(p.dk), 0, p.dk)    log.dk &lt;- as.vector(log10(dk))    if (removeFirst) {        p.dk = p.dk[-1]        log.dk = log.dk[-1]    }    log.p.dk &lt;- as.numeric(log10(p.dk + 1e-09))    lm1 &lt;- lm(log.p.dk ~ log.dk)    r2.sf.current &lt;- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])    df.sf &lt;- data.frame(x = log.dk, y = log.p.dk)    plt.sf.current &lt;- df.sf %&gt;% ggplot(aes(x = x, y = y)) + geom_smooth(method = "lm",         color = "tomato", fill = "tomato") + geom_point(size = 3) +         xlab("N Links (Log)") + ylab("N Nodes (Log)") + labs(title = "Node Linkages",         subtitle = paste0("Soft Power = ", power.cur)) + theme_classic() +         stat_fit_glance(method = "lm", label.y = "bottom", method.args = list(formula = y ~             x), mapping = aes(label = sprintf("r^2~\"=\"~%.3f~~italic(P)~\"=\"~%.2g",             stat(r.squared), stat(p.value))), parse = TRUE)    sf.list &lt;- list(r2 = r2.sf.current, df = df.sf, plt = plt.sf.current)    return(sf.list)}: could not find function "%dopar%"</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in (foreach(i = 1:length(powers), .packages = c("scMiko", "dplyr",     "ggplot2", "ggpmisc"))) %dopar% {    power.cur &lt;- powers[i]    a.cur &lt;- sim2adj(s.mat, soft.power = power.cur, network.type = network.type)    if (rescale.adjacency)         a.cur &lt;- recaleValues(a.cur, new.min = 0, new.max = 1)    net.connectivity.df &lt;- getConnectivity(a.cur, rownames(a.cur),         flag.top.n = 20)    rm(a.cur)    invisible({        gc()    })    k &lt;- net.connectivity.df$wi    discretized.k &lt;- cut(k, nBreaks)    dk &lt;- tapply(k, discretized.k, mean)    p.dk &lt;- as.vector(tapply(k, discretized.k, length)/length(k))    breaks1 &lt;- seq(from = min(k), to = max(k), length = nBreaks +         1)    hist1 &lt;- suppressWarnings(hist(k, breaks = breaks1, equidist = FALSE,         plot = FALSE, right = TRUE))    dk2 &lt;- hist1$mids    dk &lt;- ifelse(is.na(dk), dk2, dk)    dk = ifelse(dk == 0, dk2, dk)    p.dk &lt;- ifelse(is.na(p.dk), 0, p.dk)    log.dk &lt;- as.vector(log10(dk))    if (removeFirst) {        p.dk = p.dk[-1]        log.dk = log.dk[-1]    }    log.p.dk &lt;- as.numeric(log10(p.dk + 1e-09))    lm1 &lt;- lm(log.p.dk ~ log.dk)    r2.sf.current &lt;- summary(lm1)[["r.squared"]] * sign(lm1[["coefficients"]][["log.dk"]])    df.sf &lt;- data.frame(x = log.dk, y = log.p.dk)    plt.sf.current &lt;- df.sf %&gt;% ggplot(aes(x = x, y = y)) + geom_smooth(method = "lm",         color = "tomato", fill = "tomato", formula = "y ~ x") +         geom_point(size = 3) + xlab("N Links (Log)") + ylab("N Nodes (Log)") +         labs(title = "Node Linkages", subtitle = paste0("Soft Power = ",             power.cur)) + theme_classic() + stat_fit_glance(method = "lm",         label.y = "bottom", method.args = list(formula = y ~             x), mapping = aes(label = sprintf("r^2~\"=\"~%.3f~~italic(P)~\"=\"~%.2g",             stat(r.squared), stat(p.value))), parse = TRUE)    sf.list &lt;- list(r2 = r2.sf.current, df = df.sf, plt = plt.sf.current)    return(sf.list)}: could not find function "%dopar%"</span></div><div class='input'>
 <span class='co'># visualize optimization plot</span>
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>sft</span><span class='op'>$</span><span class='va'>optimization.plot</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in print(sft$optimization.plot): object 'sft' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'print': object 'sft' not found</span></div><div class='input'>
 <span class='co'># visualize node-linkage density plots</span>
 <span class='fu'>cowplot</span><span class='fu'>::</span><span class='fu'><a href='https://wilkelab.org/cowplot/reference/plot_grid.html'>plot_grid</a></span><span class='op'>(</span>plotlist <span class='op'>=</span> <span class='va'>sft</span><span class='op'>$</span><span class='va'>distribution.plot</span>, ncol <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='error'>Error in cowplot::plot_grid(plotlist = sft$distribution.plot, ncol = 5): object 'sft' not found</span></div></pre>
