@@ -3684,7 +3684,7 @@ saveHTML <- function(file.name, plot.handle, fig.width = 5, fig.height = 5, save
 #' @param verbose.error Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.
 #' @author Nicholas Mikolajewicz
 #' @name sparse2dense
-#' @value dense matrix
+#' @return dense matrix
 #' @seealso \code{\link{sparse2df}}
 #' @examples
 #'
@@ -3748,7 +3748,7 @@ sparse2dense <- function(mat.sparse, block.size = 10000, transpose = F, verbose.
 #' @param verbose.error Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.
 #' @author Nicholas Mikolajewicz
 #' @name sparse2df
-#' @value dense matrix
+#' @return data frame
 #' @seealso \code{\link{sparse2dense}}
 #' @examples
 #'
@@ -3811,7 +3811,7 @@ sparse2df <- function(mat.sparse, block.size = 10000, transpose = F, verbose.err
 #' @param factor factor with numerical entries.
 #' @author Nicholas Mikolajewicz
 #' @name orderedFactor
-#' @value ordered factor
+#' @return ordered factor
 #'
 orderedFactor <- function(f){
   f <- factor(f, levels = unique(f)[order(as.numeric(unique(as.character(f))))])
@@ -3829,12 +3829,11 @@ orderedFactor <- function(f){
 #' @param ... additional parameters passed to MASS::kde2d
 #' @author Nicholas Mikolajewicz
 #' @name getDensity
-#' @value density values
+#' @return density values
 #' @author Kamil Slowikowski (https://slowkow.com/notes/ggplot2-color-by-density/)
 #' @examples
-#'
 #' # get data and compute densities
-#' df.meta <- so@meta.data
+#' df.meta <- so@meta.data # so is seurat object
 #' df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100)
 #'
 #' # generate scatter plot with overlayed density values
@@ -3948,8 +3947,7 @@ parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
 #' @param do.plot Logical to return dotplot visualizing top GSEA ranked pathways. Default is T.
 #' @param plot.top.n Numeric specifying how many top pathways to visualize. Default is 10.
 #' @param path.name.wrap.width Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)
-#' @value list of enrichent results
-#' @examples
+#' @return list of enrichment results
 #' @author Nicholas Mikolajewicz
 #'
 runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathway = NULL, min.size = 3,
@@ -4048,8 +4046,7 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 #' @param e2s entrez to symbol mapping (computationally demanding). Default False.
 #' @param go.ontology BP, MF or CC. Ignored if pathway.db != "GO".
 #' @param verbose Print progress. Default is TRUE.
-#' @value enrichment results
-#' @examples
+#' @return enrichment results
 #' @author Nicholas Mikolajewicz
 #'
 runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.workers = 16, my.pathway = NULL, my.pathway.representation = "ENTREZ", min.size = 2, max.size = 300, e2s = F, go.ontology = "BP", verbose = T){
@@ -4290,6 +4287,7 @@ cleanCluster <- function(object, mad.threshold = 3, return.plots = F, verbose = 
 #' @param variable.features Logical specifying whether to use variable features only. If true, looks for variable features within provided Seurat object.
 #' @param subsample.factor Numeric [0,1] specfying how to subsample (i.e., downsample) data. Default is 1 (no subsampling)
 #' @name vd_Inputs
+#' @concept vd
 #' @author Nicholas Mikolajewicz
 #' @return list of inputs for vd_Run() function.
 #' @seealso \code{\link{vd_Run}}
@@ -4460,7 +4458,7 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
     form = paste( "responsePlaceholder$E", paste(as.character( formula), collapse=''))
 
     responsePlaceholder = nextElem(exprIter(exprObj, weightsMatrix, useWeights))
-    possibleError <- tryCatch( lmer( eval(parse(text=form)), data=data,...,control=control ), error = function(e) e)
+    possibleError <- tryCatch( lmer( eval(parse(text=form)), data=data,control=control, ... ), error = function(e) e)
 
     # detect error when variable in formula does not exist
     if( inherits(possibleError, "error") ){
@@ -4532,8 +4530,9 @@ vd_Inputs <- function(object, vd_model.list, features = NULL, pct.min =  0, vari
 #' @param n.workers Number of workers to use (for parallel implementation; uses foreach package)
 #' @name vd_Run
 #' @author Nicholas Mikolajewicz
+#' @concept vd
 #' @return List of results summarizing variance explained by each model covariate.
-#' @seealso \code{\link{vd_Input}}
+#' @seealso \code{\link{vd_Inputs}}
 #' @examples
 #'
 #'parameter.list <- list(
@@ -4687,6 +4686,7 @@ vd_Run <- function(vd_inputs.list, n.workers = 20){
 #' @param covariates vector of model covariates
 #' @param interactions vector of interaction terms.
 #' @name vd_Formula
+#' @concept vd
 #' @author Nicholas Mikolajewicz
 #' @return List containing model formula and data.frame of covariates.
 #' @seealso \code{\link{vd_Run}}
@@ -4841,6 +4841,7 @@ vd_Formula <- function(object, covariates = NULL, interactions  = NULL){
 #' @param object Seurat Object
 #' @param vd_model.list Output from vd_Formula().
 #' @name vd_UMAP
+#' @concept vd
 #' @author Nicholas Mikolajewicz
 #' @return List ggplot handles, one for each model covariate.
 #' @seealso \code{\link{vd_Run}}

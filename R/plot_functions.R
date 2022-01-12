@@ -109,24 +109,33 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10){
 
 #' QC violin plots
 #'
-#' Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by barcode labels.
+#' Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by grouping variable.
 #'
 #' @param so Seurat Object
+#' @param features meta data features to plot. Default is c("nFeature_RNA", "nCount_RNA", "percent.mt").
+#' @param group.by meta data field to group plots by.
 #' @param plt.log.flag Logical specifying whether data are plotted on log scale. Default is True.
 #' @name QC.violinPlot
 #' @return list of ggplot handles
 #'
-QC.violinPlot <- function(so, plt.log.flag = T){
+QC.violinPlot <- function(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = NULL, plt.log.flag = T){
 
-  # Overall and cell-type specific QC parameters
+  stopifnot("'so' must be seurat object"  = "Seurat" %in% class(so))
+  if (!is.null(group.by)){
+    if (!(group.by %in% colnames(so@meta.data))) group.by <- NULL
+  }
+
+  features2plot <- features
+  features2plot <- features2plot[features2plot %in% colnames(so@meta.data)]
+
   if (plt.log.flag){
     # logarithmic scale
-    plt1 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, log = TRUE)
-    plt2 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = "subset_group", ncol = 3, log = TRUE)
+    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = TRUE)
+    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = TRUE)
   } else{
     # raw scale
-    plt1 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, log = FALSE)
-    plt2 <- VlnPlot(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = "subset_group", ncol = 3, log = FALSE)
+    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = FALSE)
+    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = FALSE)
   }
 
   output <- list(plt1, plt2)
@@ -145,6 +154,8 @@ QC.violinPlot <- function(so, plt.log.flag = T){
 #'
 QC.scatterPlot <- function(so, legend.width = 1, ...){
 
+  stopifnot("'so' must be seurat object"  = "Seurat" %in% class(so))
+  stopifnot("'nFeature_RNA', 'nCount_RNA', 'percent.mt' must all be provided in seurat object meta data"  = all(c("nFeature_RNA", "nCount_RNA", "percent.mt") %in%  colnames(so@meta.data)))
   df.meta <- so@meta.data
 
   # correlations
@@ -169,12 +180,12 @@ QC.scatterPlot <- function(so, legend.width = 1, ...){
     labs(title = paste0("r = ", rho1p, "; rho = ", rho1s)) + scale_color_viridis("Density") +
     theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
 
-  plt.handle2 <- df.meta %>% ggplot(aes(x = nFeature_RNA, y = percent.mt, color = density1)) + geom_point() + theme_miko(legend = T) +
+  plt.handle2 <- df.meta %>% ggplot(aes(x = nFeature_RNA, y = percent.mt, color = density2)) + geom_point() + theme_miko(legend = T) +
     xlab("Genes/cell") + ylab("Mitochondrial Content (%)")  +
     labs(title = paste0("r = ", rho2p, "; rho = ", rho2s)) + scale_color_viridis("Density") +
     theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
 
-  plt.handle3 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = density1)) + geom_point() + theme_miko(legend = T) +
+  plt.handle3 <- df.meta %>% ggplot(aes(x = nCount_RNA, y = nFeature_RNA, color = density3)) + geom_point() + theme_miko(legend = T) +
     xlab("UMI/cell") + ylab("Genes/cell")  +
     labs(title = paste0("r = ", rho3p, "; rho = ", rho3s)) + scale_color_viridis("Density") +
     theme(legend.position="bottom", legend.key.width=unit(legend.width,"cm"))
@@ -186,52 +197,6 @@ QC.scatterPlot <- function(so, legend.width = 1, ...){
 }
 
 
-
-
-#' Save ggplot as image file
-#'
-#' Export ggplot to image file
-#'
-#' @param plt.handle ggplot handle
-#' @param save.as save file name. A character.
-#' @param format Format of saved image
-#' \itemize{
-#' \item "png" - Default
-#' \item "pdf"
-#' \item "jpeg"
-#' \item "ps"
-#' \item "bmp"
-#' \item "wmf"
-#' }
-#' @param ... pass additional arguments to graphics device functions.
-#' @name savePlot
-#' @return
-#'
-savePlot <- function(plt.handle, save.as, format = "png", ...){
-
-  formats <- c("pdf", "png", "jpeg", "ps", "bmp", "wmf")
-
-  if (!(format %in% formats)) stop("Format incorrectly specified")
-
-  filename <- paste(save.as, ".", format, sep = "")
-
-  if (format == "pdf"){
-    pdf(filename, ...)
-  } else if (format == "png"){
-    png(filename, ...)
-  } else if (format == "jpeg"){
-    jpeg(filename, ...)
-  } else if (format == "ps"){
-    postscript(filename, ...)
-  } else if (format == "bmp"){
-    bmp(filename, ...)
-  } else if (format == "wmf"){
-    win.metafile(filename, ...)
-  }
-  print(plt.handle)
-  print.suppres <- capture.output(dev.off())
-
-}
 
 #' Plot relationship showing percentage of cells expressing atleast percentage of genes
 #'
@@ -810,6 +775,8 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #'
 exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.size = 10, slot = "data", assay = DefaultAssay(object), reduction = "umap", size = autoPointSize(ncol(object)), ...){
 
+  require(RColorBrewer)
+
   DefaultAssay(object) <- assay
   if (!do.neb){
     scExpression.UMAP(object,feature, adjust.pt.size =size, slot = slot, reduction = reduction,...) +
@@ -933,4 +900,67 @@ scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("
 #'
 scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("red")){
   scale_fill_gradient2(low = low, high = high)
+}
+
+#' Highlight cells on UMAP plot
+#'
+#' Highlight cells on UMAP plot
+#'
+#' @param object Seurat object.
+#' @param group grouping variable in object's meta data.
+#' @param reduction reduction used to visualize cells. Default is "umap".
+#' @param highlight.color color of highlighted cells. Default is "tomato".
+#' @name highlightUMAP
+#' @return list of ggplot handles
+#' @examples
+#'
+#'  plot.highlight <-  highlightUMAP(object = so, group = "seurat_clusters")
+#'
+highlightUMAP <- function(object, group = "seurat_clusters", reduction = "umap", highlight.color = "tomato"){
+
+
+  df.red.group <- data.frame(object@reductions[[reduction]]@cell.embeddings)
+  colnames(df.red.group) <- c("x", "y")
+
+  stopifnot("group is not specified in object metadata" = group %in% colnames(object@meta.data))
+  df.red.group$cluster <- object@meta.data[[group]]
+  plt.cluster.umap <- list()
+
+  cluster.lab <- group
+  cluster.membership <- object@meta.data[[cluster.lab]]
+  #
+  # # get unique clusters
+  if (group == "seurat_clusters"){
+    u.clusters <- unique(as.numeric(as.character((cluster.membership))))
+    u.clusters <- u.clusters[order(u.clusters)]
+  } else {
+    u.clusters <- unique((as.character((cluster.membership))))
+  }
+
+
+  for (i in 1:length(u.clusters)){
+
+    cluster.name <- u.clusters[i]
+
+    df.red.group$do.color <- "grey"
+    df.red.group$do.color[df.red.group$cluster %in% cluster.name] <- highlight.color
+
+    ncell <- sum(df.red.group$cluster %in% cluster.name)
+
+    df.red.group <- df.red.group %>% dplyr::arrange(do.color)
+
+    plt.cluster.umap[[paste0("group_", cluster.name)]] <- df.red.group %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(color = df.red.group$do.color, size = autoPointSize(nrow(df.red.group))) +
+      theme_miko() +
+      theme_void() +
+      xlab("UMAP 1") + ylab("UMAP 2") +
+      labs(title = "UMAP", subtitle = paste0("Group: ", cluster.name, " (", ncell, " cells)"))
+
+
+  }
+
+
+  return(plt.cluster.umap)
+
 }

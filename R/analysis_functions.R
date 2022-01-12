@@ -957,3 +957,479 @@ signatureCoherence <- function(object = NULL, ms.result = NULL, genelist,
 }
 
 
+#' Cluster seurat object at several resolutions
+#'
+#' Cluster seurat object at several resolutions. Wrapper for Seurat::FindClusters(...).
+#'
+#' @param object Seurat object
+#' @param resolutions Numeric vector of resolutions to cluster object at.
+#' @param assay Seurat assay to use. If not specified, default assay is used.
+#' @param nworkers Number of workers for parallel implementation. Default is 1.
+#' @param pca_var If nearest neighbor graph is absent in object, FindNeighbors(...) is run using the numebr of principal components that explains `pca_var` fraction of variance.
+#' @param group_singletons Group singletons into nearest cluster. If FALSE, assign all singletons to a "singleton" group
+#' @param algorithm Algorithm for modularity optimization (1 = original Louvain algorithm; 2 = Louvain algorithm with multilevel refinement; 3 = SLM algorithm; 4 = Leiden algorithm). Leiden requires the leidenalg python.
+#' @param return_object Return seurat object with multi-resolution clusters in meta data if TRUE, otherwise return list containing additional results. Default is T.
+#' @param verbose Print progress. Default is TRUE.
+#' @name multiCluster
+#' @seealso \code{\link{FindClusters}}
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#' # clustering data
+#' mc.list <- multiCluster(object = so.query,
+#'                         resolutions = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1) ,
+#'                         assay = NULL, nworkers = 10,
+#'                         pca_var = 0.9,
+#'                         group_singletons = F,
+#'                         algorithm = 1,
+#'                         return_object = F)
+#'
+#' plt.umap_by_cluster <- mc.list$plots
+#' so.query <- mc.list$object
+#' cr_names <- mc.list$resolution_names
+#' cluster.name <- mc.list$cluster_names
+#' assay.pattern <- mc.list$assay_pattern
+multiCluster <- function(object, resolutions, assay = NULL, nworkers = 1, pca_var = 0.9, group_singletons = F, algorithm = 1, return_object = T, verbose = T){
+
+  require(parallel);
+  require(foreach);
+
+
+  # initiate list to store cluster plots
+  plt.umap_by_cluster <- list()
+  cluster.name <- c()
+
+
+  # get cluster identify pattern
+  if (is.null(assay)){
+    assay.names <- names(object@assays)
+    assay.holder <- DefaultAssay(object)
+    if ("integrated" %in% assay.names){
+      DefaultAssay(object) <- "integrated"
+    }
+  } else {
+    assay.holder <- DefaultAssay(object)
+    if (assay %in% names(object@assays)){
+      DefaultAssay(object) <- assay
+    }
+  }
+  miko_message("Using '", DefaultAssay(object), "' assay for clustering...", verbose = verbose)
+
+  current.assay <- DefaultAssay(object)
+  assay.pattern <- paste0(current.assay, "_snn_res.")
+
+  # start cluster
+
+  if (nworkers > length(resolutions)) nworkers <-length(resolutions)
+  cl <- parallel::makeCluster(nworkers)
+  doParallel::registerDoParallel(cl)
+
+  # ensure neighbors computed
+  if (length(object@graphs) == 0){
+    miko_message("Constructing nearest neighbor graph...", verbose = verbose)
+    pca.prop <- propVarPCA(object)
+    target.pc <- max(pca.prop$pc.id[pca.prop$pc.cum_sum<pca_var])+1
+    object <- FindNeighbors(object, verbose = F, reduction = "pca", dims = 1:target.pc)
+  }
+
+  # iterate through each input file
+  miko_message("Clustering data...")
+  cluster.membership <- foreach(i = 1:length(resolutions), .packages = c("Seurat"))  %dopar% {
+    object <- FindClusters(object = object, resolution = resolutions[i],
+                           group.singletons = group_singletons,
+                           verbose = 0, algorithm = algorithm, modularity.fxn = 1)
+    return(object@meta.data[[paste0(assay.pattern, resolutions[i])]])
+  }
+
+  # stop workers
+  parallel::stopCluster(cl)
+
+
+  # retrieve data
+  miko_message("Consolidating results...", verbose = verbose)
+  suppressMessages({
+    suppressWarnings({
+      for (i in 1:length(resolutions)) {
+
+        # get cluster name
+        current.cluster <- paste0(assay.pattern, resolutions[i])
+        object@meta.data[[current.cluster]] <-cluster.membership[[i]]
+        cluster.name[i] <- paste(DefaultAssay(object),"_snn_res.", resolutions[i], sep = "")
+
+        # enforce correct cluster order
+        ordered.clusters <- getOrderedGroups(object, which.group = cluster.name[i], is.number = T)
+        object@meta.data[[cluster.name[i]]] <- factor(object@meta.data[[cluster.name[i]]], levels = ordered.clusters)
+
+        # generate plot
+        if (!return_object){
+          plt.umap_by_cluster[[current.cluster]] <- cluster.UMAP( object, group.by = cluster.name[i],
+                                                                  x.label = "UMAP 1", y.label = "UMAP 2",
+                                                                  plot.name = "UMAP", include.labels = T, reduction = "umap") +
+            theme_miko(legend = T) +
+            labs(title = "UMAP", subtitle = paste("Resolution: ", resolutions[i], " (", ulength(ordered.clusters), " clusters)", sep = "")) +
+            theme(legend.position = "none")
+        }
+
+
+      }
+
+      # clean baggage
+      rm(cluster.membership); invisible({gc()})
+
+      DefaultAssay(object) <- assay.holder
+      cr_names <- as.character(resolutions)
+
+
+    })
+  })
+
+
+  if (return_object){
+    return(object)
+  } else {
+    return(
+      list(
+        object = object,
+        plots = plt.umap_by_cluster,
+        resolution_names=  cr_names,
+        cluster_names = cluster.name,
+        assay_pattern = assay.pattern
+      )
+    )
+  }
+
+
+
+}
+
+
+
+#' Evaluate specificity of single-cell markers across several cluster resolutions.
+#'
+#' Evaluate specificity of single-cell markers across several cluster resolutions using co-dependency index-based specificity measure. Consider running multiCluster(...) first.
+#'
+#' @param object Seurat object with multi-resolution clusters provided in meta data.
+#' @param cluster_names Vector specifying names of all cluster configurations found in meta data.
+#' @param features If specified, marker specificity analysis is limited to specified features. Otherwise all features are used (more computationally intensive).
+#' @param deg_prefilter If TRUE, wilcoxon analysis is performed first to subset DEG features for downstream analysis. Results in faster performance. Default is TRUE.
+#' @param cdi_bins Vector specifying binning for CDI-based specificity curve. Must range [0,1]. Default is seq(0, 1, by = 0.01).
+#' @param min.pct Minimal expression of features that are considered in specificity analysis. Represents fraction of expression cells and must range [0,1]. Higher values result in faster performance. Default is 0.1.
+#' @param n.workers Number of workers used for parallel implementation. Default is 4.
+#' @param return_dotplot If TRUE, dot plots visualizing expression of top specific markers are returned. Default is T.
+#' @param verbose Print progress. Default is TRUE.
+#' @name multiSpecificity
+#' @seealso \code{\link{multiCluster}}
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#' # clustering data
+#' ms.list <- multiSpecificity(object = so.query, cluster_names = cluster.name, features = NULL, deg_prefilter = T,
+#' cdi_bins = seq(0, 1, by = 0.01), min.pct = 0.1,
+#' n.workers = 4, return_dotplot = T,  verbose = T)
+#' df.auc.spec <- ms.list$specificity_summary
+#' qm.res.sum.sum.all <- ms.list$specificity_raw
+#' plt.clust.spec <- ms.list$auc_plot
+#' plt.auc.spec <- ms.list$resolution_plot
+#' plt.auc.dot <- ms.list$dot_plot
+multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilter = T,
+                             cdi_bins = seq(0, 1, by = 0.01), min.pct = 0.1, n.workers = 4, return_dotplot = T,  verbose = T){
+
+  require(parallel);
+  require(foreach);
+
+  if (verbose){
+    mylapply <- pbapply::pblapply
+  } else {
+    mylapply <- lapply
+  }
+  if(!("Seurat" %in% class(object))) stop("'object' is not a Seurat object")
+  available_clusters <- unique(cluster_names[cluster_names %in% colnames(object@meta.data)])
+  if (length(available_clusters) == 0) stop(cluster_names, " not found in 'object' meta data")
+  miko_message("Assessing specificity scores for ", length(available_clusters), " unique groupings...", verbose = verbose)
+
+  df.group_size <- as.data.frame(apply(object@meta.data[ ,available_clusters], 2, ulength))
+  colnames(df.group_size) <- "n"; df.group_size$group = rownames(df.group_size)
+  maxClustName <- df.group_size$group[which.max(df.group_size$n)]
+
+  # get expressed genes
+  expr_genes <- getExpressedGenes(object = object, min.pct = min.pct, group = maxClustName)
+  if (is.null(features)) features <- rownames(object)
+
+  # deg prefilter (to improve computational speed)
+  if (deg_prefilter){
+
+    miko_message("Prefiltering features by presto differential expression analysis...", verbose = verbose)
+
+    try({
+
+
+
+      if (is.null(n.workers)) n.workers <- 4
+      if (n.workers > parallel::detectCores()) n.workers <- parallel::detectCores()
+      all.deg.list <- multiDEG(object = object, groups = cluster_names,
+                               only_pos = T,
+                               nworkers =n.workers,
+                               fdr_threshold = 1,
+                               logfc_threshold = 0, verbose = T )
+
+      deg_top <- unique(unlist(mylapply(all.deg.list, function(x){
+        x <- x %>% dplyr::group_by(group) %>% dplyr::top_n(100, auc)
+        unique(x$feature)
+      })))
+
+      features <- features[features %in% deg_top]
+
+
+    }, silent = T)
+
+  }
+
+  features <- features[features %in% expr_genes]
+
+
+
+  # use presto to nominate top AUC and run CDI on subset. faster performance?
+  cdi_cluster <- findCDIMarkers(object = object,
+                                features.x = available_clusters,
+                                features.y = features)
+
+
+  cdi_cluster_top <- cdi_cluster %>%
+    dplyr::group_by(feature.x) %>%
+    dplyr::mutate(cdi_rank = rank(ncdi, ties.method = "random")) %>%
+    dplyr::top_n(1, cdi_rank)
+
+  df.feature.x <- NULL
+  for (i in 1:length(available_clusters)){
+    meta.list <- group2list(object = object, group = available_clusters[i])
+    group_names <- names(meta.list)
+    group_names_full <- paste0(available_clusters[i], "_", names(meta.list))
+    df.feature.x <- bind_rows(
+      df.feature.x,
+      data.frame(
+        cluster_name = available_clusters[i],
+        entry_name = group_names_full,
+        entry_id = group_names,
+        resolution = stringr::str_extract(available_clusters[i], "\\d+\\.*\\d*")
+      )
+    )
+  }
+
+  n2r <- df.feature.x$resolution
+  names(n2r) <- df.feature.x$entry_name
+  n2c <- df.feature.x$entry_id
+  names(n2c) <- df.feature.x$entry_name
+  cdi_cluster_top$resolution <- n2r[cdi_cluster_top$feature.x]
+  cdi_cluster_top$cluster <- n2c[cdi_cluster_top$feature.x]
+
+  ures <- unique(cdi_cluster_top$resolution )
+  ures <- ures[order(ures)]
+
+  auc_bins = cdi_bins
+  qm.res.sum.all <- NULL
+  for (j in 1:(length(auc_bins))){
+    qm.res.sum <- cdi_cluster_top %>%
+      dplyr::group_by(resolution) %>%
+      dplyr::summarize(pdeg = sum((ncdi > auc_bins[j]))/length(ncdi),
+                       bin = auc_bins[j], .groups = 'drop')
+    qm.res.sum.all <- bind_rows(qm.res.sum.all, qm.res.sum)
+
+  }
+
+  df.cdi.spec <- NULL
+  for (i in 1:length(ures)){
+    qm.res.sum.sum.cur <- qm.res.sum.all %>% dplyr::filter(resolution %in% ures[i])
+    x = qm.res.sum.sum.cur$bin
+    y = qm.res.sum.sum.cur$pdeg
+    id <- order(x)
+    auc.spec <- sum(diff(x[id])*zoo::rollmean(y[id],2))
+    df.cdi.spec <- bind_rows(df.cdi.spec,
+                             data.frame(
+                               res = ures[i],
+                               auc = auc.spec
+                             ))
+  }
+
+  df.cdi.spec2 <- df.cdi.spec
+
+  plt.cdi.spec <- df.cdi.spec2 %>%
+    ggplot(aes(x = as.numeric(res), y = auc)) +
+    geom_point(size = 3) + geom_line() +
+    theme_miko() +
+    labs(x = "Resolution", y = "Specificity Score", title = "CDI Specificity Scores") +
+    theme(panel.grid.minor = element_line(colour="grey95", size=0.1),
+          panel.grid.major = element_line(colour="grey85", size=0.1),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank()) +
+    scale_x_continuous(minor_breaks = seq(0 , max(df.cdi.spec2$res, na.rm = T), 0.1) ,
+                       breaks = seq(0, max(df.cdi.spec2$res, na.rm = T), 0.2))
+
+  plt.allClustSpec <- qm.res.sum.all %>%
+    ggplot(aes(x = bin, y = pdeg, group = resolution , color = resolution)) +
+    geom_line() + theme_miko(legend = T) +
+    labs(x = "nCDI", y = "Fraction > nCDI Threshold") +
+    labs(title = "Cluster Specificity Curves", color = "Resolution")
+
+  if (return_dotplot){
+    df.feature.x.unique <- unique(df.feature.x[ ,c("cluster_name", "resolution")])
+
+    miko_message("Generating dot plots...", verbose = verbose)
+    plt_cdi_dot.list <- mylapply(1:nrow(df.feature.x.unique), function(x){
+      suppressWarnings({
+        suppressMessages({
+          ind <- x[[1]]
+
+          plt_cdi_dot <- NULL
+          try({
+            whichres <-df.feature.x.unique$resolution[ind]
+            whichclust <- df.feature.x.unique$cluster_name[ind]
+
+            cdi_cluster_top2 <- cdi_cluster_top %>% dplyr::filter(resolution %in% whichres)
+            cdi_cluster_top2$cluster <- as.numeric(as.character(cdi_cluster_top2$cluster))
+            cdi_cluster_top2 <- cdi_cluster_top2 %>% dplyr::arrange(cluster)
+            cdi_features <- unique(cdi_cluster_top2$feature.y)
+            whichauc <-df.cdi.spec2$auc[df.cdi.spec2$res == whichres]
+            plt_cdi_dot <- DotPlot(object = so.query, features = cdi_features, group.by = whichclust) +
+              scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
+              theme(legend.position = "bottom") +
+              labs(x = "Genes", y = "Cluster", title = "Top Cluster-Specific Markers",
+                   subtitle = paste0("Resolution = ",
+                                     whichres, ", Specificity Score = ", signif(whichauc, 3)))
+          }, silent= T)
+
+          return(plt_cdi_dot)
+
+        })
+      })
+    })
+
+    names(plt_cdi_dot.list) <- as.character(df.feature.x.unique$resolution)
+
+  } else {
+    plt_cdi_dot.list <- NULL
+  }
+
+
+  return(
+    list(
+      specificity_summary = df.cdi.spec2,
+      specificity_raw = qm.res.sum.all,
+      auc_plot = plt.allClustSpec,
+      resolution_plot = plt.cdi.spec,
+      dot_plot = plt_cdi_dot.list,
+      cdi_results = cdi_cluster
+    )
+  )
+
+}
+
+
+
+
+#' Evaluate silhouette indices of clustered single cell data across several cluster resolutions.
+#'
+#' Evaluate silhouette indices of clustered single cell data across several cluster resolutions. Consider running multiCluster(...) first.
+#'
+#' @param object Seurat object with multi-resolution clusters provided in meta data.
+#' @param groups Vector specifying names of all cluster configurations found in meta data.
+#' @param assay_pattern Cluster naming prefix.
+#' @param assay Seurat assay used for clustering. If not specified, default assay is used.
+#' @param verbose Print progress. Default is TRUE.
+#' @name multiSilhouette
+#' @seealso \code{\link{multiCluster}}
+#' @author Nicholas Mikolajewicz
+#' @return Seurat object
+#' @examples
+#' msil_list <- multiSilhouette(object = so.query, groups = cluster.name, assay_pattern = assay.pattern, verbose = T)
+#' sil.plot <- msil_list$silhouette_plots
+#' plt.silw.dep <- msil_list$resolution_plot
+#' df.silw <- msil_list$silhouette_raw
+#' df.silw.sum <- msil_list$silhouette_summary
+#' rm(msil_list); invisible({gc()})
+multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, verbose = T){
+
+  if (is.null(assay_pattern) & is.null(assay)){
+    assay_pattern <- paste0(DefaultAssay(object), "_snn_res.")
+  } else if (is.null(assay_pattern) & !is.null(assay)){
+    assay_pattern <- paste0(assay, "_snn_res.")
+  }
+
+  sil.plot <- list()
+  df.umap <- getUMAP(object)[["df.umap"]]
+  umap.dist <- dist(x = (df.umap[,c("x", "y")]), method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
+
+  miko_message("Generating silhouette plots...", verbose = verbose)
+  mean.silw <- c()
+  suppressWarnings({
+    suppressMessages({
+
+      for (i in 1:length(groups)){
+        set.name <- groups[i]
+        sil.plot.success <- F
+        try({
+
+          sil <- cluster::silhouette(
+            x = as.numeric(as.character(object@meta.data[,set.name] )),
+            dist = umap.dist)
+
+          sil.plot[[ set.name]] <- factoextra::fviz_silhouette(sil, print.summary = F)
+
+          gtitle <-  sil.plot[[set.name]][["labels"]][["title"]]
+          mean.silw[i] <- as.numeric(gsub("Clusters silhouette plot \nAverage silhouette width: ", "", gtitle))
+          gtitle <- gsub("Clusters silhouette plot", paste("resolution: ", set.name, sep = ""), gtitle)
+
+          sil.plot[[set.name]] <- sil.plot[[set.name]] + ggtitle(gtitle)
+          sil.plot.success <- T
+        }, silent = T)
+      }
+
+    })
+  })
+
+  # cluster.name
+
+  miko_message("Calculating silhouette widths...", verbose = verbose)
+  df.silw <- NULL
+  for (i in 1:length(sil.plot)){
+    set.name <- names(sil.plot)[i]
+
+    if (is.null(set.name)) next
+    clust.id <- as.numeric(gsub(assay_pattern, "", set.name))
+    df.silw <- bind_rows(df.silw, data.frame(
+      cluster.resolution = as.character(clust.id),
+      sil.width = sil.plot[[set.name]][["data"]][["sil_width"]]
+    ))
+  }
+
+  miko_message("Summarizing results...", verbose = verbose)
+  if (!is.null(df.silw)){
+
+    df.silw.sum <- df.silw %>%
+      dplyr::group_by(cluster.resolution) %>%
+      dplyr::summarize(sil.mean = mean(sil.width, na.rm = T), .groups = 'drop')
+    plt.silw.dep <- df.silw.sum %>%
+      ggplot(aes(x = as.numeric(cluster.resolution), y = sil.mean)) +
+      geom_point(size = 3) + geom_line() +
+      theme_miko() +
+      labs(x = "Resolution", y = "Silhouette Width", title = "Silhouette Width") +
+      theme(panel.grid.minor = element_line(colour="grey95", size=0.1),
+            panel.grid.major = element_line(colour="grey85", size=0.1),
+            panel.grid.minor.y = element_blank(),
+            panel.grid.major.y = element_blank()) +
+      scale_x_continuous(minor_breaks = seq(0 , max(df.silw$cluster.resolution, na.rm = T), 0.1) ,
+                         breaks = seq(0, max(df.silw$cluster.resolution, na.rm = T), 0.2))
+
+
+  }
+
+
+  return(
+    list(
+      silhouette_plots = sil.plot,
+      resolution_plot = plt.silw.dep,
+      silhouette_raw = df.silw,
+      silhouette_summary = df.silw.sum
+    )
+  )
+
+}

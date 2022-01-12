@@ -8,7 +8,7 @@
 #' @param min.gs.size minimum gene set size
 #' @param max.gs.size maximum gene set size
 #' @param step.size step size; increment of sequence between `min.gs.size` and `max.gs.size`.
-#' @param nworkers
+#' @param nworkers number of workers used for parallel implementation. Default is 1.
 #' @param subsample.n Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.
 #' @param nbin Number of bins of aggregate expression levels for all analyzed features. See `AddModuleScore` for details.
 #' @param verbose Print progress. Default is TRUE.
@@ -18,7 +18,6 @@
 #' @return list of results that are used as input into `mikoScore`.
 #' @seealso \code{\link{AddSModuleScore}} for standardized module scoring, \code{\link{mikoScore}} for miko scoring, \code{\link{sigScore}} for derivation of p values for miko scores.
 #' @examples
-#'
 #' maxgs <- max(unlist(lapply(gene.list, length)))
 #' if (maxgs > 200) maxgs <- 200
 #' stepsize <- round(maxgs / 15)
@@ -45,6 +44,8 @@
 nullScore <- function(object, assay = DefaultAssay(object), n.replicate = 25,
                       min.gs.size = 2, max.gs.size = 100, step.size = 2, nworkers = 1, subsample.n = NULL, nbin = 24, verbose = T){
 
+
+  require(foreach)
   if (!is.numeric(min.gs.size)) min.gs.size <- 2
   if (min.gs.size < 0) min.gs.size <- 2
   if (!is.numeric(max.gs.size)) max.gs.size <- 100
@@ -275,13 +276,13 @@ nullScore <- function(object, assay = DefaultAssay(object), n.replicate = 25,
 #' @author Nicholas Mikolajewicz
 #' @return Returns seurat object with standardized module scores added to object meta data; each module is stored as name# for each module program present in `features`
 #' @seealso \code{\link{AddModuleScore}} for original module scoring function implemented in `Seurat`.
-#' @examples
 AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 100, nworkers = 1,
                              k = FALSE, assay = NULL, name = "Cluster", seed = 1, search = FALSE, ...){
 
   require(parallel)
   ncore <- nworkers
   if (is.null(names(features))) names(features) <- paste0("gs", 1:length(features))
+  names(features) <- make.names(names(features))
 
   if (is.null(nbin)) nbin <- optimalBinSize(object)
   if (!is.null(x = seed)) {
@@ -499,6 +500,8 @@ mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), 
 
   nonrelevant.field <- colnames(object@meta.data)[grepl("cell|cluster", colnames(object@meta.data))]
 
+  names(geneset) <- make.names(names(geneset))
+
   if (nworkers > length(geneset)) nworkers <- length(geneset)
 
 
@@ -525,7 +528,8 @@ mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), 
   }
   colnames(df.raw) <- names(geneset)
 
-  raw.scores <- as.matrix(df.raw)
+  # raw.scores <- as.matrix(df.raw)
+  object@misc[["raw_score"]] <-df.raw
 
   # cell scores
   df.ms <- object@meta.data[ ,grepl("cell", colnames(object@meta.data) )]
@@ -589,7 +593,6 @@ mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), 
 #' @concept miko_score
 #' @return list of benchmark results.
 #' @seealso \code{\link{AddSModuleScore}} for standardized module scoring, \code{\link{wilcoxauc}} for differential expression analysis
-#' @examples
 benchmarkScores <- function(object, geneset.size = 15, group_by = "seurat_clusters", assay = DefaultAssay(object),deg.logFC.threshold = 0.5, deg.fdr.threshold = 0.05, miko.fdr.threshold = 0.05, verbose = T, nworkers = 1){
 
   miko_message("Performing differential expression analysis...", verbose = verbose)
@@ -825,6 +828,7 @@ benchmarkCluster <- function(object, benchmark_data, benchmark_genesets, which_c
 #'
 sigScore <- function(object, geneset, reduction = "umap"){
 
+  names(geneset) <- make.names(names(geneset))
   df.cs <- object@meta.data[ ,paste0("cluster_", names(geneset))]
   df.rs <- object@misc[["raw_score"]]
 
@@ -893,7 +897,6 @@ sigScore <- function(object, geneset, reduction = "umap"){
 }
 
 
-
 #' Calculate coherent fraction for feature expression program.
 #'
 #' Calculate fraction of genes that are correlated with feature expression program. Performed on a per-cluster basis ("seurat_clusters" in `object` meta data).
@@ -926,6 +929,9 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
 
   set.seed(1023)
 
+  stopifnot("Seurat" %in% class(object))
+  names(genelist) <- make.names(names(genelist))
+  colnames(score.matrix) <- make.names(colnames(score.matrix))
   all.genes <- unique(unlist(genelist))
 
   expr.mat <- getExpressionMatrix(so = object, only.variable = F, which.data = slot, which.assay = assay)
@@ -936,7 +942,13 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
     return(t(as.matrix(expr.mat)))
   })
 
-  df.meta <- data.frame(cluster = object@meta.data$seurat_clusters)
+  if ("seurat_clusters" %in% colnames(object@meta.data)){
+    df.meta <- data.frame(cluster = object@meta.data$seurat_clusters)
+  } else {
+    object <- setResolution(object = object, resolution = 0.8)
+    df.meta <- data.frame(cluster = object@meta.data$seurat_clusters)
+  }
+
   uclust <- as.numeric(as.character(unique(df.meta$cluster))); uclust <- uclust[order(uclust)]
 
   # prerank

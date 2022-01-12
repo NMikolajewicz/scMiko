@@ -306,7 +306,7 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
     bin.mat.log.df <- as.data.frame(bin.mat.log)
     all.col <- colnames(bin.mat.log.df )
     bin.mat.log.df$gene <- rownames(bin.mat.log.df)
-    bin.mat.log.df.long <- pivot_longer(data = bin.mat.log.df, cols = all.col)
+    bin.mat.log.df.long <- tidyr::pivot_longer(data = bin.mat.log.df, cols = all.col)
     return(bin.mat.log.df.long)
   })
   colnames(df.cdi) <- c("feature.x", "feature.y", "cdi")

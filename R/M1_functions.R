@@ -67,15 +67,13 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
   # add gene symbols as meta data in seurat object
   mat_ens <- rownames(so@assays[["RNA"]])
   match.id <- match(mat_ens, names(gNames))
-  # gNames_filtered <- gNames[match.id]
 
   # Add gene symbols as meta data that we can use later
-  # so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=gNames_filtered,col.name="gene_name");
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=names(gNames[match.id]),col.name="ENSEMBL");
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=as.vector(gNames[match.id]),col.name="SYMBOL");
 
   # Add in inferred organism
-  so$Organism <- orgs;
+  so$Species <- orgs;
 
   # Specify barcodes
   so$Barcode <- "unspecified";
@@ -217,7 +215,7 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
   so.merge <- merge(so.meta, df_cell, by = "sample", all.x = T)
   so.merge <- so.merge %>% dplyr::arrange(ind)
   if ("unmatched_rate" %in% colnames(df_cell))  so[["unmatched.rate"]] <- so.merge$unmatched_rate
-  so[["Organism"]] <- so.merge$orgs
+  so[["Species"]] <- so.merge$orgs
 
   if (length(import_set) > 1){ # same as above, if barecode and well info. provided, assign to so structure
     # Add group #s for mapping cells to PCR condition groups
@@ -245,61 +243,22 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
 
 #' Load gene x cell count matrix into seurat object
 #'
-#' Load gene x cell count matrix into seurat object
+#' Load gene x cell count matrix into seurat object. For intended performance, first column of spreadsheet must contain gene names, and first row of spreadsheet must contain cell names.
 #'
-#' @param import_set Character specifying matrix file name.
-#' @param input_organisms All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
-#' \itemize{
-#' \item "Hs" - Human
-#' \item "Mm" - Mouse
-#' }
+#' @param file Matrix file name.
 #' @param dir Character. folder containing import_set file
 #' @name loadMat
 #' @return list containing Seurat Object and named gene vector.
 #'
-loadMat <- function(import_set, input_organisms, dir) {
+loadMat <- function(file, dir) {
 
-  import_set_path <- paste(dir, import_set, sep ="")
+  import_set_path <- paste(dir, file, sep ="")
 
-  # import expression matrix data
-
-  which.set <- "richards" # options: "kumal", "rambow", richards
-  # is.kumal <- F # specificy fixes made to accomodate Kumal 2018 EMT6 data
-  if (which.set == "kumal"){
-    expression_matrix<-read.csv(import_set_path[1],header=F, stringsAsFactors = F)
-    expression_matrix <- as.data.frame(t(expression_matrix))
-  } else if (which.set == "rambow"){
-    expression_matrix<-read.table(import_set_path[1],sep = ",",header=TRUE)
-    rownames(expression_matrix) <- expression_matrix$X
-    expression_matrix <- expression_matrix %>% dplyr::select(-c("X"))
-    my.ensembl <-rownames(expression_matrix)
-    my.symbol <- ensembl2sym(my.ensembl, input_organisms)
-    my.symbol <- my.symbol[complete.cases(my.symbol), ]
-    expression_matrix <- expression_matrix[rownames(expression_matrix) %in% my.symbol$ENSEMBL, ]
-    e2g.list <- my.symbol$SYMBOL; names(e2g.list) <- my.symbol$ENSEMBL
-    rownames(expression_matrix) <- make.unique(e2g.list[ rownames(expression_matrix)])
-    expression_matrix$GENE <- rownames(expression_matrix)
-  } else if (which.set == "richards"){
-    expression_matrix<-read.csv(import_set_path[1],header=T, stringsAsFactors = F)
-    expression_matrix$GENE <- expression_matrix$X
-    expression_matrix <- col2rowname(expression_matrix, "X")
-
-    # expression_matrix <- as.data.frame((expression_matrix))
-  } else {
-    expression_matrix<-read.table(import_set_path[1],header=TRUE)
-  }
-
-  # sum(is.na(expression_matrix))
+  expression_matrix <- data.table::fread(import_set_path[1], header = T, stringsAsFactors = F, showProgress = T)
+  first_col <- colnames(expression_matrix)[1]
+  expression_matrix <- col2rowname(expression_matrix, first_col)
+  expression_matrix$GENE <- rownames(expression_matrix)
   expression_matrix[is.na(expression_matrix)] <- 0
-
-  # get gene and ensembl names
-  if (which.set == "kumal"){
-    features.df<-read.csv(import_set_path[3],header=T, stringsAsFactors = F)
-    cell.df <-read.csv(import_set_path[2],header=T, stringsAsFactors = F)
-    colnames(expression_matrix) <- cell.df$NM_ID
-    expression_matrix$GENE <- as.character(features.df$GeneSymbol)
-  }
-
   feature.names <- as.vector(expression_matrix$GENE)
 
 
@@ -333,15 +292,53 @@ loadMat <- function(import_set, input_organisms, dir) {
 
 
   feature.names <- as.vector(expression_matrix2$GENE)
-
   expression_matrix2 <- dplyr::select(expression_matrix2, -c("GENE"))
   rownames(expression_matrix2) <- feature.names
-  stopifnot(length(input_organisms) == 1)
-  g2eNames <- sym2ens(my.symbols =  feature.names, my.species = input_organisms)
-  gNames <- g2eNames$SYMBOL
-  names(gNames) <- g2eNames$ENSEMBL
+
+  # if (length(input_organisms) != 1){
+  ens.sum <-  sum(grepl("ENS", feature.names))
+  ens.mus.sum <-  sum(grepl("ENSMUS", feature.names))
+  hi.cap.sum <-  sum(feature.names == toupper(feature.names))
+  lo.cap.sum <-  sum(feature.names == firstup(feature.names))
+
+  df.rep <-as.data.frame(t(data.frame(
+    ens.sum = ens.sum,
+    ens.mus.sum = ens.mus.sum,
+    hi.cap.sum = hi.cap.sum,
+    lo.cap.sum = lo.cap.sum
+  )))
+
+  which.rep <- rownames(df.rep)[which.max(df.rep[, 1])]
+
+  if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum > ens.mus.sum)) {
+    species <- "Hs"
+    rep_gene <- "ENS"
+  } else if ((which.rep %in% c("ens.sum", "ens.mus.sum")) & (ens.sum <= ens.mus.sum)) {
+    species <- "Mm"
+    rep_gene <- "ENS"
+  } else if (which.rep == "hi.cap.sum") {
+    species <- "Hs"
+    rep_gene <- "SYMBOL"
+  } else if (which.rep == "lo.cap.sum") {
+    species <- "Mm"
+    rep_gene <- "SYMBOL"
+  }
+
+  input_organisms <- species
+  # }
+
+  if (rep_gene == "SYMBOL"){
+    g2eNames <- sym2ens(my.symbols =  feature.names, my.species = input_organisms)
+    gNames <- g2eNames$SYMBOL
+    names(gNames) <- g2eNames$ENSEMBL
+  } else if (rep_gene == "ENS"){
+    e2gNames <- ensembl2sym(my.ensembl =  feature.names, my.species = input_organisms)
+    gNames <- e2gNames$SYMBOL
+    names(gNames) <- e2gNames$ENSEMBL
+  }
   gNames <- gNames[!is.na(gNames)]
   names(gNames) <-gsub("\\..*","",as.vector( names(gNames)))
+
 
   # assign organism
   orgs <- rep(input_organisms,ncol(expression_matrix2));
@@ -349,7 +346,7 @@ loadMat <- function(import_set, input_organisms, dir) {
 
 
   # create seurat object
-  so = CreateSeuratObject(counts = expression_matrix2,project=import_set[1],min.cells=0,min.features=0)
+  so = CreateSeuratObject(counts = expression_matrix2, min.cells=0, min.features=0)
 
   # add gene symbols as meta data in seurat object
   mat_ens <- rownames(so@assays[["RNA"]])
@@ -360,29 +357,14 @@ loadMat <- function(import_set, input_organisms, dir) {
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=gNames_filtered,col.name="ENSEMBL");
   so[["RNA"]] <- AddMetaData( object=so[["RNA"]],metadata=as.vector((gNames)[match.id]),col.name="SYMBOL");
 
-  # Additional metadata
-  if (which.set == "kumal"){
-    kumal.id <- match( colnames(so), cell.df$NM_ID)
-    so@meta.data[["Sample_ID"]] <- cell.df$Sample_ID[kumal.id]
-    so@meta.data[["Model"]] <- cell.df$Model[kumal.id]
-    so@meta.data[["Protocol"]] <- cell.df$Protocol[kumal.id]
-    so@meta.data[["Experiment"]] <- cell.df$Experiment[kumal.id]
-
-
-    which.emt6 <- grepl("B16F10",  so@meta.data[["Model"]])
-
-    so <- so[ ,which.emt6]
-  }
-
   # Add in inferred organism
-  so$Organism <- orgs;
+  so$Species <- orgs;
 
   # Specify barcodes
   so$Barcode <- "unspecified";
 
-  output <- list(so, gNames)
-
-  return(output)
+  return(list(object = so,
+              genes = gNames))
 }
 
 
@@ -431,13 +413,18 @@ getMitoContent <- function(so, gNames = NULL, assay = NULL, omit.na = T) {
   if (!("Seurat" %in% class(so))) stop("'object' does not belong to Seurat class")
 
   assay <- DefaultAssay(so)
-if (!is.null(gNames)){
-  f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
-} else {
-  f <- intersect(rownames(so)[ grep("^(MT|mt)-",rownames(so)) ],rownames(so[[assay]]))
-}
+  if (!is.null(gNames)){
+    f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
+  } else {
+    f <- intersect(rownames(so)[ grep("^(MT|mt)-",rownames(so)) ],rownames(so[[assay]]))
+  }
 
-  so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
+  if (length(f) == 0){
+    so[["percent.mt"]] <- 0
+  } else {
+    so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
+  }
+
 
   if (omit.na) {
     # omit nan entries - they occur when cell ranger output data is unfiltered.
@@ -533,7 +520,7 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #'
 #' Applies one of two normalization/scaling approaches supported by Seurat.
 #'
-#' @param so Seurat Object
+#' @param object Seurat Object
 #' @param method Character specifying data normalization and scaling method. One of:
 #' \itemize{
 #' \item "NFS" - Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow. Parameters are set to use LogNormalization method with a scale.factor of 1000. Variable features are selceted using 'mvp' method, and var2regress is regressed out during data scaling.
@@ -554,11 +541,11 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @name scNormScale
 #' @return Seurat Object
 #'
-scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 1, max.memory = (20480 * 1024^2), variable.features.n = NULL,
+scNormScale <- function(object,  method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 1, max.memory = (20480 * 1024^2), variable.features.n = NULL,
                            variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA", ...){
-#gNames,
-  #' @param gNames Named vector of genes. Names are ensemble, entries are Symbols.
 
+
+  stopifnot("'object' is not Seurat object"= ("Seurat" %in% class(object)))
 
   # enable parallelization
   if (enable.parallelization){
@@ -574,14 +561,14 @@ scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.paralle
     stopifnot(length(dispersion.cutoff) == 2)
 
     # Normalize data
-    so <- NormalizeData(so, normalization.method = "LogNormalize", scale.factor = 10000, assay = assay)
+    object <- NormalizeData(object, normalization.method = "LogNormalize", scale.factor = 10000, assay = assay)
     # Find variable features
-    so <- FindVariableFeatures(object = so, selection.method = 'mvp', mean.cutoff = mean.cutoff, dispersion.cutoff = dispersion.cutoff, assay = assay)
+    object <- FindVariableFeatures(object = object, selection.method = 'mvp', mean.cutoff = mean.cutoff, dispersion.cutoff = dispersion.cutoff, assay = assay)
     # Scale data
     if (is.null(vars2regress)){
-      so <- ScaleData(so, features = rownames(so), assay = assay)
+      object <- ScaleData(object, features = rownames(object), assay = assay)
     } else {
-      so <- ScaleData(so, features = rownames(so), vars.to.regress = vars2regress, assay = assay)
+      object <- ScaleData(object, features = rownames(object), vars.to.regress = vars2regress, assay = assay)
     }
 
 
@@ -590,7 +577,7 @@ scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.paralle
     # apply sctransform (regularized negative binomial regression)
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
     if (is.null(vars2regress)){
-      so <- SCTransform(object = so,
+      object <- SCTransform(object = object,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
@@ -600,7 +587,7 @@ scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.paralle
                         conserve.memory = conserve.memory,
                         ...)
     } else {
-      so <- SCTransform(object = so,
+      object <- SCTransform(object = object,
                         vars.to.regress = vars2regress,
                         verbose = FALSE,
                         return.only.var.genes = return.only.var.genes,
@@ -615,7 +602,7 @@ scNormScale <- function(so,  method = "SCT", vars2regress = NULL, enable.paralle
 
   }
 
-  return(so)
+  return(object)
 }
 
 
