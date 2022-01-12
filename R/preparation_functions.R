@@ -74,9 +74,8 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param e2s ensemble to gene symbol mapping vector. Is a named character vector where names are ENSEMBL and entries are SYMBOLs.
 #' @param species Species. One of "Mm" or "Hs".
 #' @param resolution cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.
-#' @param subset.data Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.
+#' @param subset.data Data.frame specifying how to subset seurat object. Data.frame must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.
 #' @param subsample Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.
-#' @param M00_subgroup.path Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.
 #' @param terms2drop Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".
 #' @param rmv.pattern Provided as input into scMiko::clearGlobalEnv(pattern = rmv.pattern). Character specifying name of variables to remove from global environment. Useful if object is large.
 #' @param reprocess.n.var Number of variable genes to use if data is reprocessed. Default is 3000. Note that if integrated assay is available, variable features are first identified for reprocessed data set, and subsequently merged with the variable features present in the integrated assay, thus allows for potentially more variable features than specified by this parameter.
@@ -85,15 +84,14 @@ addLogEntry <- function(entry.name, entry, df.log, entry.variable.name = ""){
 #' @param scale.reprocessed if reprocessing data (i.e., normalizing), specify whether scaling should also be performed. Default is FALSE.
 #' @param keep.default.assay.only Specify whether to omit assays that are not default. Default is FALSE.
 #' @param coerce.assay.used.to.default Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.
-#' @param barcode.recode Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.
-#' @param M00_barcode_recode.path Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.
+#' @param barcode.recode List specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.
 #' @name prepSeurat2
 #' @author Nicholas Mikolajewicz
 #' @return list containing prepped Seurat object, default assay, and number of cells in seurat object.
 #'
-prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1, M00_subgroup.path = "M00_subgroups.csv",
+prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, subset.data = NULL, subsample = 1,
                          terms2drop = NULL, rmv.pattern = NULL, reprocess.n.var = 3000, neighbors.reprocessed = F, scale.reprocessed = F, use.integrated = T,
-                         keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL, M00_barcode_recode.path = "M00_barcode_recode.csv"){
+                         keep.default.assay.only = F, coerce.assay.used.to.default = T, barcode.recode = NULL){
 
   miko_message("Checking seurat object...")
   # assertion
@@ -168,30 +166,11 @@ prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, s
   }
   n.postsubsample <- ncol(object)
 
-  # subgroup data ##############################################################
-  if (!is.null(subset.data) && is.character(subset.data)) {
-    subset.input <- read.csv(M00_subgroup.path, header = TRUE)
-    colnames(subset.input) <- rmvCSVprefix(colnames(subset.input))
-
-    subset.list <- list()
-    for (i in 1:nrow(subset.input)){
-      subset.list[[subset.input$subset[i]]] <- data.frame(
-        field = subset.input$field[i],
-        subgroups =  stringr::str_trim(unlist(strsplit(as.character(subset.input$subgroups[i]), ",")))
-      )
-      if (!is.na(subset.input$field[i]) && subset.input$field[i] == "seurat_clusters"){
-        subset.list[[subset.input$subset[i]]]$subgroups <- as.numeric(subset.list[[subset.input$subset[i]]]$subgroups)
-      }
-    }
-    subset.data <- as.data.frame(subset.list[[subset.data]]) # NA specified as "no.subset"
-  }
-
   n.presubset <- ncol(object)
   if (!is.null(subset.data) && ("data.frame" %in% class(subset.data)) && !is.na(unique(subset.data[,1]))) {
     miko_message("Subsetting data...")
     object <- scMiko::subsetSeurat(object,subset.data)
     invisible({gc()})
-
   }
   n.postsubset <- ncol(object)
 
@@ -426,7 +405,7 @@ prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, s
 
   # Recode Barcodes ############################################################
   if (!is.null(barcode.recode)){
-    object <- scMiko::recodeBarcode(object, barcode.recode, M00_barcode_recode.path)
+    object <- scMiko::recodeBarcode(object, barcode.recode)
   }
 
   # enforce ordered clusters  ##################################################
@@ -509,62 +488,33 @@ clearGlobalEnv <- function(pattern, exact.match = T){
 }
 
 
-#' Recode (i.e., relabel) barcode metadata field in Seurat object
+#' Recode (i.e., relabel) metadata in Seurat object
 #'
-#' Recode (i.e., relabel) barcode metadata field in Seurat object. If old barcode is specified as NA, treated as wildcard that captures all remaining barcodes that have not been relabeled.
+#' Recode (i.e., relabel) metadata in Seurat object. If old label is specified as NA, treated as wildcard that captures all remaining barcodes that have not been relabeled.
 #'
 #' @param object Seurat Object
-#' @param barcode.recode Character or list specifying how to relabel barcodes.
-#' \itemize{
-#' \item "Character" - Name of barcode recoding entries in M00_barcode_recode.path (.csv file)
-#' \item "List" - Named list where names are new barcodes, entries are old barcodes (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
-#' }
-#' @param M00_barcode_recode.path Path to .csv file containing old and new barcodes. Only used if barcode.recode is character. Default is "M00_barcode_recode.csv".
+#' @param barcode.recode Named list where names are new labels, entries are old labels (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
+#' @param old.field.name name of field in which meta dat for recoding is stored. Default is "Barcode".
+#' @param new.field.name name of new field in meta data where recoded data will be stored. Default is "Barcode".
 #' @name recodeBarcode
 #' @author Nicholas Mikolajewicz
-#' @return Seurat Object with relabeled 'Barcode' metadata
+#' @return Seurat Object with relabeled metadata
 #'
-recodeBarcode <- function(object, barcode.recode, M00_barcode_recode.path = "M00_barcode_recode.csv"){
+recodeBarcode <- function(object, barcode.recode, old.field.name = "Barcode", new.field.name = "Barcode"){
 
   # input options ##############################################################
-  # option 1 ##############
   # named list where names are new barcodes, entries are old barcodes (can be vector of characters)
   # e.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
-  #
-  # option 2 ##############
-  # name of barcode recoding entries specified in M00_barcode_recode.path (.csv file), with 3 columns (name, old.barcode, new.barcode)
-  # e.g., name   old.barcode   new.barcode
-  #       gbm_1  invitro       in.vitro
-  #       gbm_1  NA            in.vivo
   #
   # Note that if NA is specified as old name, this is equivalent to getting all remainder cells that aren't specified by other old barcodes.
   #
   ##############################################################################
 
-  if (exists("barcode.recode") && (((!is.null(barcode.recode)) | (!is.na(barcode.recode))) & is.character(barcode.recode))){
-
-    br.input <- read.csv(M00_barcode_recode.path, header = TRUE, stringsAsFactors  = F)
-    colnames(br.input) <- rmvCSVprefix(colnames(br.input))
-
-    br.input <- br.input[br.input$name %in% barcode.recode, ]
-    if (nrow(br.input) == 0) stop("Barcode recoding failed.\n")
-
-    br.list <- list()
-
-    new.br <- unique(br.input$new.barcode)
-    for (i in 1:length(new.br)){
-      cur.br <-  br.input[br.input$new.barcode %in% new.br[i], ]
-      if (nrow(cur.br) == 0)  next
-      for (j in 1:nrow(cur.br)){
-        br.list[[new.br[i]]] <- c( br.list[[new.br[i]]], cur.br$old.barcode[j])
-      }
-    }
-
-    barcode.recode <- br.list
-  }
+  stopifnot("'object' is not a Seurat object" = ("Seurat" %in% class(object)))
+  stopifnot("'old.field.name' is not found in meta data of Seurat object" = (old.field.name %in% colnames(object@meta.data)))
 
   if (exists("barcode.recode") && (((!is.null(barcode.recode)) | (!is.na(barcode.recode))) & is.list(barcode.recode))){
-    barcodes.old <- as.character(object@meta.data[["Barcode"]])
+    barcodes.old <- as.character(object@meta.data[[old.field.name]])
     barcodes.new <- barcodes.old
 
     recode.log <- c()
@@ -589,7 +539,7 @@ recodeBarcode <- function(object, barcode.recode, M00_barcode_recode.path = "M00
     }
 
 
-    object@meta.data[["Barcode"]] <- barcodes.new
+    object@meta.data[[new.field.name]] <- barcodes.new
   }
 
   return(object)
