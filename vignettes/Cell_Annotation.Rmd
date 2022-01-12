@@ -1,0 +1,380 @@
+---
+title: "Cell Annotation using the Miko Scoring Pipeline"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+## Load Seurat object
+
+For this tutorial we will annotate the Human Gastrulation dataset reported by Tyser 2021 using the gene set-based miko scoring workflow.
+
+We start by reading in the data and visualizing the (ground-truth) annotated population. 
+
+```{r load data, fig.width=7, fig.height=5}
+
+# load package
+library(scMiko)
+# library(RColorBrewer)
+
+# load human gastrulation data
+so.query <- readRDS("../data/so_tyser2021_220621.rds")
+
+
+# visualize clusters
+cluster.UMAP(so = so.query, group.by = "sub_cluster") + 
+  theme_void() + 
+  labs(title = "Tyser 2021", subtitle = "Human Gastrulation")
+
+```
+
+## Perform differential gene expression analysis
+ 
+To identifying cell-type specific markers, we will perform CDI- and Wilcoxon-based differentially-expressed gene (DEG) analyses. Since CDI is more computationally intensive, we will focus on the subset of genes that are expressed within the dataset. 
+
+```{r run DEG analyses}
+
+# Wilcoxon DEG
+wilcoxon_output <- getDEG(object = so.query, group_by = "sub_cluster", 
+                          auc.thresh = NA, fdr.thresh = NA, return.all = T, return.list = F)
+
+# get top cell-type specific genes
+wilcoxon_output.top <- wilcoxon_output %>% dplyr::group_by(group) %>% dplyr::top_n(n = 15, wt = auc)
+
+# consolidate gene list
+gene.list <- longDF2namedList(wilcoxon_output.top, group_by = "group", values = "feature")
+# names(gene.list) <- make.names(names(gene.list))
+
+```
+
+
+```{r calculate null model, fig.width=14, fig.height=4.5}
+
+ns.res <- nullScore(object = so.query, assay = DefaultAssay(so.query), n.replicate = 10, nbin = 24, 
+                    min.gs.size = 2, max.gs.size = 200, step.size = 10, 
+                    nworkers = 16, verbose = T, subsample.n = 5000)
+
+variance.mean.plot <- ns.res$variance.mean.plot
+plt.null.model <- ns.res$mean.plot
+plt.corrected.plot <- ns.res$corrected.plot
+
+cowplot::plot_grid(variance.mean.plot + labs( subtitle = ""), 
+                   plt.null.model, 
+                   plt.corrected.plot + labs(title = "Gene Set-Size Corrected Null Scores", subtitle = ""), 
+                   nrow = 1, align = "h", labels = "AUTO")
+
+```
+
+
+
+```{r cell-level scores,  fig.width=16, fig.height=15}
+
+so.query <- mikoScore(object = so.query, geneset = gene.list, nbin = 24, 
+                            nullscore = ns.res, assay = DefaultAssay(so.query), nworkers = 16)
+
+
+# set_names <- names(so.query@misc[["raw_score"]])
+set_names <- colnames(so.query@meta.data)[grepl("cell_", colnames(so.query@meta.data))]
+set_names <- set_names[!(set_names %in% "cell_name")]
+
+
+plt_cell_umap <- lapply(set_names, function(x){
+  exprUMAP(so.query,x[[1]] ) + 
+    labs(title = gsub("cell_", "", x[[1]] )) + 
+    scale_color_miko()})
+
+cowplot::plot_grid(plotlist = plt_cell_umap, ncol = 4)
+
+
+```
+
+
+
+```{r significantly enriched gene sets}
+
+# identify significantly enriched genesets 
+score.result <- sigScore(object = so.query,  geneset = gene.list, reduction = "umap")
+
+score.result$score_plot
+
+```
+
+```{r}
+
+raw.mat <- so.query@misc[["raw_score"]]
+colnames(raw.mat) <- gsub("raw_", "", colnames(raw.mat))
+
+df.cscore <- coherentFraction(object = so.query, score.matrix =raw.mat, nworkers = 16,
+                              method = "pearson",
+                            genelist = gene.list, 
+                            assay = DefaultAssay(so.query), 
+                            slot = "data", subsample.cluster.n = 500)
+
+df.score <- score.result$cluster_stats
+df.score$gs <- df.score$name
+df.score$cluster <- df.score$cluster
+df.merge <- merge(df.cscore, df.score, by = c("gs", "cluster"))
+
+df.merge$sig <- df.merge$coherence_fraction >= 0.8 & df.merge$miko_score > 0 & df.merge$fdr < 0.05
+plt.score.vs.coh <- df.merge %>%
+  ggplot(aes(x = (miko_score), y = coherence_fraction, label = gs, fill = sig)) + 
+  geom_point(pch = 21, color = "white", size = 2) + 
+  theme_miko(legend = T) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0) + 
+  scale_fill_manual(values = c("TRUE" = "tomato", "FALSE" = "grey")) + 
+  labs(x = "Signature Score", y = "Coherence Fraction", fill = "Enriched & Coherent\n(FDR<0.05)", 
+       title = "Coherent Enrichments", 
+       subtitle = paste0(100*signif(sum( df.merge$sig) / nrow(df.merge), 3), "% Significance Rate"))
+
+
+  plt.score.vs.coh
+
+
+```
+
+
+```{r consolidate results}
+
+df.score_summary <- data.frame(cluster = df.merge$cluster, 
+                              cell.type = df.merge$gs, 
+                              miko_score = df.merge$miko_score,
+                              p = df.merge$p,
+                              fdr = df.merge$fdr,
+                              coherence_fraction = df.merge$coherence_fraction,
+                              r_mean = df.merge$r_mean
+)
+
+```
+
+
+
+```{r flag frequent fliers}
+
+
+ugrp <- unique(df.score_summary$cluster)
+df.score_summary.sig <- df.score_summary %>% dplyr::filter(fdr < 0.05)
+df.tally.ff <- as.data.frame(table(df.score_summary.sig$cell.type))
+df.tally.ff$Freq2 <- df.tally.ff$Freq/length(ugrp)
+
+ff.thresh <- 0.6
+plt.ff <- df.tally.ff %>%
+  ggplot(aes(x = Freq2)) + 
+  geom_histogram(binwidth = 0.1) + 
+  geom_vline(xintercept = ff.thresh, linetype = "dashed", color = "tomato") + 
+  labs(title = "Frequent Flier Distribution", subtitle = paste0(signif(100*sum(df.tally.ff$Freq2 > ff.thresh)/nrow(df.tally.ff), 3), "% enriched genesets are frequent fliers (significant > ", 100*ff.thresh, "% of clusters)"),
+       x = "Proportion of significant clusters", y = "Number of gene sets") + 
+  theme_miko()
+
+
+which.ff <- as.character(df.tally.ff$Var1[df.tally.ff$Freq2 >= ff.thresh])
+df.score_summary$frequent_flier = (df.score_summary$cell.type  %in% which.ff)
+
+```
+
+
+```{r cloud helper}
+
+annotationCloud <- function(object, 
+                            object.group = "seurat_clusters", 
+                            score,
+                            score.group,
+                            score.cell.type,
+                            score.p,
+                            score.fdr = NULL,
+                            score.coherence.fraction = NULL,
+                             score.frequenct.flier = F,
+                            fdr.correction = T, 
+                            p.threshold = 0.05, 
+                            coherence.threshold = 0.8, 
+                            show.n.terms = 15, 
+                            verbose = T){
+  
+  
+  require(ggwordcloud)
+
+  miko_message("Generating annotation wordclouds...", verbose = verbose)
+
+  
+  # df.score_summary <- data.fra
+  
+    if (is.null(score.coherence.fraction)) coherence.threshold <- 0
+  if (is.null(score.frequenct.flier)) score.frequenct.flier <- F
+  
+  vst.merge.cloud <- data.frame(
+    miko_score = score, 
+    cluster = score.group, 
+    cell.type = score.cell.type,
+    p = score.p,
+    fdr = score.fdr,
+    coherence_fraction = score.coherence.fraction,
+    frequent_flier = score.frequenct.flier
+  )
+
+  u.cl <- unique(vst.merge.cloud$cluster)
+  plt.ww.list <- list()
+  
+  show.w <- show.n.terms
+  
+  
+  plt.cluster.umap <- highlightUMAP(object = object, group = object.group, 
+                                    reduction = "umap", highlight.color = "tomato")
+  names(plt.cluster.umap) <- as.character(gsub("group_", "",  names(plt.cluster.umap)))
+  
+    u.cl <- object@meta.data[[object.group]]
+  #
+  # # get unique clusters
+  if (object.group == "seurat_clusters"){
+    u.cl <- unique(as.numeric(as.character((u.cl))))
+    u.cl <- u.cl[order(u.cl)]
+  } else {
+    u.cl <- unique((as.character((u.cl))))
+  }
+  
+  
+  
+  for (i in 1:length(u.cl)){
+    
+    vst.merge.subset <- vst.merge.cloud[vst.merge.cloud$cluster %in% u.cl[i], ]
+    vst.merge.subset$coh.score <- vst.merge.subset$coherence_fraction
+    vst.merge.subset$coh.score[vst.merge.subset$coh.score < coherence.threshold] <- 0
+    
+    vst.merge.subset <- vst.merge.subset %>% dplyr::filter(miko_score > 0, 
+                                                           coherence_fraction >= coherence.threshold, 
+                                                           !frequent_flier) 
+    
+    if (nrow(vst.merge.subset) >0){
+      
+      
+      n.sig.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold, miko_score > 0))
+      n.coh.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold,miko_score > 0, 
+                                                             coherence_fraction >= coherence.threshold)) #, coh.score 
+      
+      if (fdr.correction){
+        enrich.label <- paste0(n.sig.score, "/", length(gene.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")      
+      } else {
+        enrich.label <- paste0(n.sig.score, "/", length(gene.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+      }
+      
+      
+      vst.merge.subset$sig.stringent <- vst.merge.subset$fdr < p.threshold & 
+        vst.merge.subset$coherence_fraction > coherence.threshold
+      df.f1 <- vst.merge.subset %>% dplyr::filter(sig.stringent) %>% 
+        dplyr::filter( miko_score > 0, coherence_fraction >= coherence.threshold) %>% #| (coh.fdr < 0.05)
+        dplyr::top_n(show.w, miko_score)
+      if (nrow(df.f1) < show.w){
+        ndif <- show.w - nrow(df.f1)
+        df.f1 <- bind_rows(df.f1, vst.merge.subset %>% 
+                             dplyr::filter(!sig.stringent) %>%
+                             dplyr::filter(miko_score > 0) %>% #| (coh.fdr < 0.05) #fdr < 0.05, 
+                             dplyr::top_n(ndif, miko_score))
+      }
+      if (nrow(df.f1) == 0) next
+      
+      df.f1$cell.type <- gsub("_|-", " ", df.f1$cell.type)
+      df.f1$cell.type <- stringr::str_wrap(df.f1$cell.type, 40)
+      
+      maxlim <- max(df.f1$miko_score)
+      if (maxlim > 30){
+        maxlim <- 30
+      }
+      
+      minlim.coh <-  min(df.f1$coh.score)
+      maxlim.coh <- max(df.f1$coh.score)
+      
+      df.f1$miko_score[(df.f1$miko_score) > maxlim] <- maxlim
+      df.f1$coh.score[(df.f1$coh.score) > maxlim.coh] <- maxlim.coh
+      
+      df.f1$cell.type2 <- df.f1$cell.type
+      df.f1$cell.type2[df.f1$fdr < p.threshold] <- paste0( df.f1$cell.type[df.f1$fdr < p.threshold], "*")
+      df.f1$cell.type2[df.f1$fdr < 1e-5] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-5], "**")
+      df.f1$cell.type2[df.f1$fdr < 1e-8] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-8], "***")
+      
+      df.f1$cell.type3 <- df.f1$cell.type2
+      
+      limseq <- unique(round( seq(-log10(p.threshold), maxlim, by = signif((maxlim-(-log10(p.threshold)))/4, 1))))
+      
+      if (fdr.correction){
+        col.label <- "-log10(FDR)"
+      } else {
+        col.label <- "-log10(p)"
+      }
+      
+      w1 <- df.f1 %>%
+        ggplot(aes(label = cell.type3, color = -log10(fdr), size = abs(miko_score))) +
+        geom_text_wordcloud(scale_size_area = 40, rm_outside = TRUE, eccentricity = 1, show.legend = T) +
+        theme_minimal() +
+        labs(title  = "Enriched", subtitle = enrich.label,  size = "Score", color = col.label) + 
+        theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) + 
+        theme(legend.position = "bottom") + 
+        scale_color_gradient2(low = "grey", mid = "grey", high = scales::muted("red"), midpoint = -log10(p.threshold)) + 
+        scale_size(range = c(1, 5)) +
+        theme( #
+          legend.title = element_text(color = "black", size = 10),
+          legend.text = element_text(color = "black", size = 8) ,
+          legend.box.background = element_rect(colour = "black")
+        )
+      
+      plt.ww.list[[as.character(u.cl[i])]] <- cowplot::plot_grid(plt.cluster.umap[[as.character(u.cl[i])]],w1, ncol = 2) 
+      
+    } 
+  }  
+  return(plt.ww.list)
+}
+
+
+
+```
+
+
+```{r}
+
+   plt.cloud <- annotationCloud(object = so.query, 
+                                object.group = "seurat_clusters", 
+                                score = df.score_summary$miko_score,
+                                score.group = df.score_summary$cluster,
+                                score.cell.type = df.score_summary$cell.type,
+                                score.p = df.score_summary$p,
+                                score.fdr = df.score_summary$fdr,
+                                score.coherence.fraction = df.score_summary$coherence_fraction,
+                                score.frequenct.flier = F,
+                                fdr.correction = T, 
+                                p.threshold = 0.05, 
+                                coherence.threshold = 0.8, 
+                                show.n.terms = 15, 
+                                verbose = T)
+
+plt.cloud[[1]]
+
+```
+
+```{r}
+
+```
+
