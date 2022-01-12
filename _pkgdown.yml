@@ -10,35 +10,24 @@ template:
 development:
   mode: unreleased
 
-
 navbar:
   title: "scMiko"
   left:
-    - text: "Install"
+    - text: "Getting Started"
       href: articles/install.html
     - text: "Vignettes"
       menu:
-        - text: Introductory Vignettes
-        - text: "PBMC 3K guided tutorial"
-          href: articles/pbmc3k_tutorial.html
-        - text: "Using Seurat with multi-modal data"
-          href: articles/multimodal_vignette.html
-        - text: "Analysis, visualization, and integration of spatial datasets with Seurat"
-          href: articles/spatial_vignette.html
+        - text: scMiko Vignettes
+        - text: "Differentially-Expressed Genes"
+          href: articles/DEG.html
+        - text: "Cluster Resolution Optimization"
+          href: articles/Cluster_Optimization.html
+        - text: "Cell-Type Annotation"
+          href: articles/Cell_Annotation.html
         - text: -------
-        - text: Data Integration
-        - text: "Introduction to scRNA-seq integration"
-          href: articles/integration_introduction.html
-        - text: "Mapping and annotating query datasets"
-          href: articles/integration_mapping.html
-        - text: "Fast integration using reciprocal PCA (RPCA)"
-          href: articles/integration_rpca.html
-        - text: "Tips for integrating large datasets"
-          href: articles/integration_large_datasets.html
-        - text: "Integrating scRNA-seq and scATAC-seq data"
-          href: articles/atacseq_integration_vignette.html
-        - text: "Multimodal reference mapping"
-          href: articles/multimodal_reference_mapping.html
+        - text: scPipeline Dashboard Reports
+        - text: "QC and Preprocessing Module"
+          href: articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html
     - text: "News"
       href: news/index.html
     - text: "Reference"
@@ -50,25 +39,237 @@ navbar:
 
 
 reference:
+
+- title: "Filters and QC"
+- contents:
+  - filterSeurat
+  - clusterFilter
+  - cleanCluster
+  - cleanFilterGenes
+  - findArtifactGenes
+  - getExpressedGenes
+  - getExpressingCells
+  - getMitoContent
+  - QC.scatterPlot
+  - QC.violinPlot
+
+- title: "Dimensional Reduction"
+- contents:
+  - pcaElbow
+  - projectReduction
+  - propVarPCA
+  - getReductionGenes
+  - runRPCA
+
+- title: "Clustering"
+- contents:
+  - setResolution
+  - multiCluster
+  - multiSpecificity
+  - multiSilhouette
+
+- title: "Cell-Type Annotation"
+  desc: "Module detection"
+- contents:
+  - mikoScore
+  - nullScore
+  - sigScore
+
+- title: "Gene Set Functions"
+- contents:
+  - AddSModuleScore
+  - aggGroupExpression
+  - avgGroupExpression
+  - coherentFraction
+  - consolidateNMF
+  - getJaccard
+  - id2geneset
+  - id2term
+  - jaccardSimilarityMatrix
+  - optimalBinSize
+  - runAUC
+  - runMS
+  - has_concept("enrichment")
+  - baderPathways
+  - getAnnotationPathways
+  - runGSEA
+  - runHG
+  - searchAnnotations
+  - signatureCoherence
+  - summarizeHG
+  - term2id
+  - upset.Plot
+
+
+- title: "Expression Functions"
+- contents:
+  - findCDIMarkers
+  - findGiniMarkers
+  - getDEG
+  - getExpressionMatrix
+  - miko_volcano
+  - parCor
+  - pseudotimeRF
+
 - title: "Variance Decomposition"
   desc: "Variance decomposition analyses"
 - contents:
-  - has_concept("vd")
+  - matches("vd")
+
 - title: "Scale-Free Shared Nearest Neighbor Network Analysis (SSN)"
   desc: "Module detection"
 - contents:
   - SSNConnectivity
   - SSNResolution
-- title: "Cell-Type Annotation"
-  desc: "Module detection"
+  - matches("SSN")
+  - findNetworkFeatures
+  - getModuleGenes
+  - pruneSSN
+  - runSSN
+  - scaleFreeNet
+  - SSNExpression
+  - summarizeModules
+
+- title: "Independent Component Analysis"
+  desc: "ICA Module detection"
 - contents:
-  - has_concept("miko_score")
-- title: "Pathway Enrichment"
-  desc: "Pathway Enrichment"
+  - getICAGenes
+  - runICA
+
+- title: "Non-Negative Matrix Factorization"
+  desc: "NMF Module detection"
 - contents:
-  - has_concept("enrichment")
+  - getNMFGenes
+  - runNMF
+
+- title: "WGCNA"
+  desc: "WGCNA Module detection"
+- contents:
+  - getModulePreservation
+  - getSoftThreshold
+  - getSoftThreshold2
+  - optimalDS
+  - runWGCNA
+  - scaleTOM
+  - wgcna2graphDF
 
 
+- title: "Differential Abundance Analysis"
+- contents:
+  - da_DEG
+  - da_Run
+
+
+- title: "Visualization"
+- contents:
+  - cluster.UMAP
+  - expression.Plot
+  - exprUMAP
+  - featureGradient
+  - geneRepCurve
+  - geom_split_violin
+  - getUMAP
+  - miko_heatmap
+  - scale_color_miko
+  - scale_fill_miko
+  - scExpression.UMAP
+  - theme_miko
+  - variableGenes.Plot
+  - highlightUMAP
+
+- title: "Data"
+- contents:
+  - geneSets
+  - LR.db
+
+- title: "Miscellaneous Utilities"
+- contents:
+  - autoPointSize
+  - balanceMatrixSize
+  - categoricalColPal
+  - citationCheck
+  - clearGlobalEnv
+  - col2rowname
+  - dist2hclust
+  - fixBarcodeLabel
+  - getClusterCenters
+  - getConnectivity
+  - getDensity
+  - getNodesEdges
+  - getOrderedGroups
+  - group2list
+  - lintersect
+  - longDF2namedList
+  - miko_message
+  - namedList2longDF
+  - namedList2wideDF
+  - orderedFactor
+  - pseudoReplicates
+  - qNorm
+  - rescaleValues
+  - rmvCSVprefix
+  - scoreGBM
+  - snip
+  - sim2adj
+  - sparse2dense
+  - sparse2df
+  - ulength
+  - value2col
+  - wideDF2namedList
+
+- title: "Seurat Functions"
+- contents:
+  - balanceSamples
+  - downsampleSeurat
+  - mergeSeuratList
+  - miko_integrate
+  - neighborPurity
+  - prepSeurat
+  - prepSeurat2
+  - recodeBarcode
+  - rmDuplicateGenes
+  - scNormScale
+  - subsetDimRed
+  - uniqueFeatures
+  - updateDimNames
+  - wnn_Components
+  - wnn_Run
+
+- title: "Gene Representation"
+- contents:
+  - checkGeneRep
+  - detectSpecies
+  - ens2sym.so
+  - ensembl2sym
+  - entrez2sym
+  - firstup
+  - inferSpecies
+  - prepGeneList
+  - speciesConvert
+  - sym2ens
+  - sym2entrez
+
+- title: "Dashboard Utilities"
+- contents:
+  - addLogEntry
+  - barcodeLabels
+  - flex.asDT
+  - flex.multiTabLogs
+  - flex.multiTabPlot
+  - flex.multiTabPlotly
+  - flex.multiTabTables
+  - getLoadPath
+  - initiateLog
+  - loadCellRanger
+  - loadMat
+  - loadMoffat
+  - updateCentralLog
+
+- title: "Save Functions"
+- contents:
+  - saveHTML
+  - savePDF
+  - savePlot
 
 
 
@@ -77,3 +278,4 @@ reference:
 
 # Run to build the website
 # pkgdown::build_site()
+# pkgdown::build_site(lazy = T)
