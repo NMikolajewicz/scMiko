@@ -1,1 +1,13 @@
 exportPattern("^[[:alpha:]]+")
+importFrom("grDevices", "bmp", "colorRampPalette", "dev.off", "jpeg",
+               "pdf", "png", "postscript", "win.metafile")
+importFrom("graphics", "hist")
+importFrom("stats", "Gamma", "as.dist", "as.formula", "binom.test",
+               "complete.cases", "cor", "dist", "dnorm", "end", "filter",
+               "gaussian", "glm", "hclust", "inverse.gaussian", "lm",
+               "mad", "median", "model.matrix", "p.adjust", "pnorm",
+               "predict", "predict.glm", "quantile", "reorder", "rnorm",
+               "sd", "shapiro.test", "start", "var")
+importFrom("utils", "capture.output", "data", "head", "read.csv",
+               "read.csv2", "read.delim", "read.table", "tail",
+               "write.csv")
