@@ -292,7 +292,7 @@ passed to scanpy.pp.neighbors())</p>
 
 <span class='co'># run PAGA analysis</span>
 <span class='va'>pr</span> <span class='op'>&lt;-</span> <span class='fu'>PAGA</span><span class='op'>(</span><span class='va'>so.query</span>,assay <span class='op'>=</span> <span class='st'>"RNA"</span>, seurat_grouping <span class='op'>=</span> <span class='cn'>NULL</span>, edge_filter_weight <span class='op'>=</span> <span class='fl'>0.1</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in compareVersion(as.character(obj@version), "3.0.0"): object 'so.query' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in PAGA(so.query, assay = "RNA", seurat_grouping = NULL, edge_filter_weight = 0.1): could not find function "PAGA"</span></div><div class='input'>
 <span class='co'># get PAGA results</span>
 <span class='va'>pr.list</span> <span class='op'>&lt;-</span> <span class='va'>pr</span><span class='op'>@</span><span class='va'>misc</span><span class='op'>[[</span><span class='st'>"paga"</span><span class='op'>]</span><span class='op'>]</span>
 </div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'pr' not found</span></div><div class='input'>

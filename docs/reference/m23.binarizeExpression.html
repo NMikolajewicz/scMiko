@@ -40,8 +40,7 @@
 
 
 <meta property="og:title" content="Stratify gene expression into high and low expression groups — m23.binarizeExpression" />
-<meta property="og:description" content="Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned.
-Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned." />
+<meta property="og:description" content="Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned." />
 
 
 
@@ -80,7 +79,7 @@ Creates new metadata field stratifying gene expression (for queried gene) into h
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../articles/install.html">Install</a>
+  <a href="../articles/install.html">Getting Started</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -89,35 +88,20 @@ Creates new metadata field stratifying gene expression (for queried gene) into h
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Introductory Vignettes</li>
+    <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/pbmc3k_tutorial.html">PBMC 3K guided tutorial</a>
+      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
     </li>
     <li>
-      <a href="../articles/multimodal_vignette.html">Using Seurat with multi-modal data</a>
+      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
-      <a href="../articles/spatial_vignette.html">Analysis, visualization, and integration of spatial datasets with Seurat</a>
+      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
     </li>
     <li class="divider"></li>
-    <li class="dropdown-header">Data Integration</li>
+    <li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
-      <a href="../articles/integration_introduction.html">Introduction to scRNA-seq integration</a>
-    </li>
-    <li>
-      <a href="../articles/integration_mapping.html">Mapping and annotating query datasets</a>
-    </li>
-    <li>
-      <a href="../articles/integration_rpca.html">Fast integration using reciprocal PCA (RPCA)</a>
-    </li>
-    <li>
-      <a href="../articles/integration_large_datasets.html">Tips for integrating large datasets</a>
-    </li>
-    <li>
-      <a href="../articles/atacseq_integration_vignette.html">Integrating scRNA-seq and scATAC-seq data</a>
-    </li>
-    <li>
-      <a href="../articles/multimodal_reference_mapping.html">Multimodal reference mapping</a>
+      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
     </li>
   </ul>
 </li>
@@ -155,17 +139,9 @@ Creates new metadata field stratifying gene expression (for queried gene) into h
 
     <div class="ref-description">
     <p>Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned.</p>
-<p>Creates new metadata field stratifying gene expression (for queried gene) into high and low expresion groups. If return.plt is true, histogram illustrating threshold is generated; Otherwise seurat object with new metadata entry is returned.</p>
     </div>
 
     <pre class="usage"><span class='fu'>m23.binarizeExpression</span><span class='op'>(</span>
-  <span class='va'>so</span>,
-  <span class='va'>query.gene</span>,
-  quantile.threshold <span class='op'>=</span> <span class='fl'>0.25</span>,
-  return.plt <span class='op'>=</span> <span class='cn'>F</span>
-<span class='op'>)</span>
-
-<span class='fu'>m23.binarizeExpression</span><span class='op'>(</span>
   <span class='va'>so</span>,
   <span class='va'>query.gene</span>,
   quantile.threshold <span class='op'>=</span> <span class='fl'>0.25</span>,
@@ -196,7 +172,6 @@ Creates new metadata field stratifying gene expression (for queried gene) into h
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Seurat object (unless return.plt is T, in which case ggplot handle)</p>
-<p>Seurat object (unless return.plt is T, in which case ggplot handle)</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -13,9 +13,6 @@
     <loc>https://github.com/NMikolajewicz//reference/aggGroupExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/analysisParameters.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/autoPointSize.html</loc>
   </url>
   <url>
@@ -214,6 +211,9 @@
     <loc>https://github.com/NMikolajewicz//reference/group2list.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/highlightUMAP.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/id2geneset.html</loc>
   </url>
   <url>
@@ -268,6 +268,15 @@
     <loc>https://github.com/NMikolajewicz//reference/miko_volcano.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/multiCluster.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/multiSilhouette.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/multiSpecificity.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/namedList2longDF.html</loc>
   </url>
   <url>
@@ -289,12 +298,6 @@
     <loc>https://github.com/NMikolajewicz//reference/orderedFactor.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/PAGA.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/PAGAplot.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/parCor.html</loc>
   </url>
   <url>
@@ -314,6 +317,9 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/propVarPCA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/pruneSSN.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/pseudoReplicates.html</loc>
@@ -376,9 +382,6 @@
     <loc>https://github.com/NMikolajewicz//reference/savePDF.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/savePlot.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/scaleFreeNet.html</loc>
   </url>
   <url>
@@ -434,6 +437,9 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/SSNConnectivity.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/SSNExpression.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/SSNResolution.html</loc>
@@ -506,6 +512,15 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/wnn_Run.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/Cell_Annotation.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/Cluster_Optimization.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/DEG.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//articles/install.html</loc>
