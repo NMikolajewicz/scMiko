@@ -1,11 +1,47 @@
 Package: scMiko
 Type: Package
-Title: Utility functions that complement Seurat. Developed for Moffat Lab. 
+Title: scRNAseq analysis functions. Developed by Moffat Lab using Seurat framework 
 Version: 0.1.0
 Author: Nicholas Mikolajewicz
 Maintainer: Nicholas Mikolajewicz <n.mikolajewicz@utoronto.ca>
-Description: Set of general and module-specific utility functions used to conduct scRNAseq analysis. Build on functionality of Seurat Package. 
+Description: Set of utility functions used to conduct scRNAseq analysis. Build on functionality of Seurat Package. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
+Depends:
+    R (>= 3.5.0),
+    ggplot2,
+    dplyr,
+    Seurat,
+    tidyr,
+    flexdashboard
+Imports:
+    Matrix,
+    stringr,
+    foreach,
+    doParallel,
+    plyr,
+    reshape2,
+    tidyverse,
+    RColorBrewer,
+    gridExtra,
+    DT,
+    ggpmisc,
+    ggExtra,
+    grid,
+    ggrepel,
+    scales,
+    viridis,
+    presto,
+    zoo
+Suggests:
+  miloR,
+  scater,
+  reticulate,
+  destiny,
+  clusterExperiment,
+  ggformula,
+  tidymodels,
+  s2a,
+  glue
