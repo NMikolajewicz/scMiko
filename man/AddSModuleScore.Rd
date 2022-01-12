@@ -56,3 +56,4 @@ Calculates the standardized expression level of each program on single-cell leve
 \author{
 Nicholas Mikolajewicz
 }
+\concept{miko_score}

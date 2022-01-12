@@ -48,8 +48,9 @@ plt.var <- plotVarPart( res.var2 ) +
 
 }
 \seealso{
-\code{\link{vd_Input}}
+\code{\link{vd_Inputs}}
 }
 \author{
 Nicholas Mikolajewicz
 }
+\concept{vd}

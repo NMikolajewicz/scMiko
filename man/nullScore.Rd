@@ -30,6 +30,8 @@ nullScore(
 
 \item{step.size}{step size; increment of sequence between `min.gs.size` and `max.gs.size`.}
 
+\item{nworkers}{number of workers used for parallel implementation. Default is 1.}
+
 \item{subsample.n}{Numeric [1,ncol(object)]. Number of cells to subsample. If specified, overides subsample.factor.}
 
 \item{nbin}{Number of bins of aggregate expression levels for all analyzed features. See `AddModuleScore` for details.}
@@ -48,3 +50,4 @@ Downsample number of cells in Seurat object by specified factor
 \author{
 Nicholas Mikolajewicz
 }
+\concept{miko_score}

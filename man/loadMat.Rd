@@ -4,16 +4,10 @@
 \alias{loadMat}
 \title{Load gene x cell count matrix into seurat object}
 \usage{
-loadMat(import_set, input_organisms, dir)
+loadMat(file, dir)
 }
 \arguments{
-\item{import_set}{Character specifying matrix file name.}
-
-\item{input_organisms}{All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:
-\itemize{
-\item "Hs" - Human
-\item "Mm" - Mouse
-}}
+\item{file}{Matrix file name.}
 
 \item{dir}{Character. folder containing import_set file}
 }
@@ -21,5 +15,5 @@ loadMat(import_set, input_organisms, dir)
 list containing Seurat Object and named gene vector.
 }
 \description{
-Load gene x cell count matrix into seurat object
+Load gene x cell count matrix into seurat object. For intended performance, first column of spreadsheet must contain gene names, and first row of spreadsheet must contain cell names.
 }

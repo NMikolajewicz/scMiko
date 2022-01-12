@@ -4,10 +4,19 @@
 \alias{QC.violinPlot}
 \title{QC violin plots}
 \usage{
-QC.violinPlot(so, plt.log.flag = T)
+QC.violinPlot(
+  so,
+  features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+  group.by = NULL,
+  plt.log.flag = T
+)
 }
 \arguments{
 \item{so}{Seurat Object}
+
+\item{features}{meta data features to plot. Default is c("nFeature_RNA", "nCount_RNA", "percent.mt").}
+
+\item{group.by}{meta data field to group plots by.}
 
 \item{plt.log.flag}{Logical specifying whether data are plotted on log scale. Default is True.}
 }
@@ -15,5 +24,5 @@ QC.violinPlot(so, plt.log.flag = T)
 list of ggplot handles
 }
 \description{
-Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by barcode labels.
+Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by grouping variable.
 }

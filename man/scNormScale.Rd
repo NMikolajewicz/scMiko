@@ -5,7 +5,7 @@
 \title{Normalize and Scale scRNAseq Data}
 \usage{
 scNormScale(
-  so,
+  object,
   method = "SCT",
   vars2regress = NULL,
   enable.parallelization = T,
@@ -22,7 +22,7 @@ scNormScale(
 )
 }
 \arguments{
-\item{so}{Seurat Object}
+\item{object}{Seurat Object}
 
 \item{method}{Character specifying data normalization and scaling method. One of:
 \itemize{
@@ -53,8 +53,6 @@ scNormScale(
 \item{...}{additional parameters passed to SCTransform.}
 
 \item{n.works}{Number of works to used during parallel processing. Default is 1.}
-
-\item{gNames}{Named vector of genes. Names are ensemble, entries are Symbols.}
 }
 \value{
 Seurat Object

@@ -45,7 +45,7 @@ miko_integrate(
 
 \item{conserve.memory}{If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE}
 
-\item{vars.to.regress}{meta features to regress out. Default is "percent.mt"}
+\item{vars.to.regress}{meta features to regress out. Default is "percent.mt". Set to NULL if unspecified.}
 }
 \value{
 Integrated seurat object

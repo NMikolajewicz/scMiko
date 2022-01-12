@@ -15,6 +15,9 @@ sparse2df(mat.sparse, block.size = 10000, transpose = F, verbose.error = F)
 
 \item{verbose.error}{Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.}
 }
+\value{
+data frame
+}
 \description{
 Convert sparse matrix to data.frame. Developed to handle large datasets, by constructing data.frame block-by-block.
 }

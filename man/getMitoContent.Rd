@@ -4,12 +4,14 @@
 \alias{getMitoContent}
 \title{Calculate mitochondrial content}
 \usage{
-getMitoContent(so, gNames, omit.na = T)
+getMitoContent(so, gNames = NULL, assay = NULL, omit.na = T)
 }
 \arguments{
 \item{so}{Seurat Object}
 
 \item{gNames}{Named gene list; entries are Symbols, names are Ensemble.}
+
+\item{assay}{assay to use.}
 
 \item{omit.na}{Logical specifying whether to omit NA entries (present when unfiltered 10x dataset is used). Default is True.}
 }

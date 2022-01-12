@@ -39,6 +39,9 @@ runGSEA(
 
 \item{path.name.wrap.width}{Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)}
 }
+\value{
+list of enrichment results
+}
 \description{
 Run gene-set enrichment analysis (GSEA)
 }

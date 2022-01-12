@@ -53,3 +53,4 @@ plt.var <- plotVarPart( res.var2 ) +
 \author{
 Nicholas Mikolajewicz
 }
+\concept{vd}

@@ -15,6 +15,9 @@ sparse2dense(mat.sparse, block.size = 10000, transpose = F, verbose.error = F)
 
 \item{verbose.error}{Logical specifying whether to print error message in case of large dataset which requires block-by-block construction.}
 }
+\value{
+dense matrix
+}
 \description{
 Convert sparse matrix to dense matrix. Developed to handle large datasets, by constructing dense matrix block-by-block.
 }

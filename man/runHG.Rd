@@ -44,6 +44,9 @@ runHG(
 
 \item{verbose}{Print progress. Default is TRUE.}
 }
+\value{
+enrichment results
+}
 \description{
 Run hypergeometric gene enrichment analysis.
 }

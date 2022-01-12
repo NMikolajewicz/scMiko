@@ -13,13 +13,15 @@ getDensity(x, y, ...)
 
 \item{...}{additional parameters passed to MASS::kde2d}
 }
+\value{
+density values
+}
 \description{
 Get local density (z) of bivariate relationship (x,y)
 }
 \examples{
-
 # get data and compute densities
-df.meta <- so@meta.data
+df.meta <- so@meta.data # so is seurat object
 df.meta$density1 <- getDensity(df.meta$nCount_RNA, df.meta$percent.mt, n = 100)
 
 # generate scatter plot with overlayed density values

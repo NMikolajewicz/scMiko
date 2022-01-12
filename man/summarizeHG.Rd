@@ -42,3 +42,4 @@ Summarize hypergeometric enrichment results. Collapses HG result list into dataf
 \author{
 Nicholas Mikolajewicz
 }
+\concept{enrichment}

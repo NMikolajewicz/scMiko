@@ -9,6 +9,9 @@ orderedFactor(f)
 \arguments{
 \item{factor}{factor with numerical entries.}
 }
+\value{
+ordered factor
+}
 \description{
 Sort factor levels in numerical order
 }
