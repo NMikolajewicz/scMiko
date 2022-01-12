@@ -641,7 +641,7 @@ getLoadPath <- function (file, directory = NULL){
 
 #' Subset Seurat Object
 #'
-#' Subset Seurat object according to specific metadata field. Only specified metadata entries are retained, while remaining of data is omitted.
+#' Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted.
 #'
 #'
 #' @param object Seurat object
@@ -659,7 +659,7 @@ getLoadPath <- function (file, directory = NULL){
 subsetSeurat <- function (object, subset.df){
 
   # assertion
-  if (class(object) != "Seurat") stop("input must be Seurat Object")
+  if (class(object) != "Seurat") stop("'object' must be Seurat Object")
 
   # check if subset input is validd
   if (is.na(unique(subset.df$field))){
