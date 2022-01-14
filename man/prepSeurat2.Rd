@@ -11,7 +11,6 @@ prepSeurat2(
   resolution = NULL,
   subset.data = NULL,
   subsample = 1,
-  M00_subgroup.path = "M00_subgroups.csv",
   terms2drop = NULL,
   rmv.pattern = NULL,
   reprocess.n.var = 3000,
@@ -20,8 +19,7 @@ prepSeurat2(
   use.integrated = T,
   keep.default.assay.only = F,
   coerce.assay.used.to.default = T,
-  barcode.recode = NULL,
-  M00_barcode_recode.path = "M00_barcode_recode.csv"
+  barcode.recode = NULL
 )
 }
 \arguments{
@@ -33,11 +31,9 @@ prepSeurat2(
 
 \item{resolution}{cluster resolution. Numeric [0,Inf] that specifies resolution for data clustering. If requested resolution exists, no new clustering is performed.}
 
-\item{subset.data}{Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.}
+\item{subset.data}{Data.frame specifying how to subset seurat object. Data.frame must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.}
 
 \item{subsample}{Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.}
-
-\item{M00_subgroup.path}{Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.}
 
 \item{terms2drop}{Reduce memory footprint of seurat object by omitting terms that will not be used for current analysis. Supported terms for omission include: "pca", "umap", "ica", "tsne", "nmf", "corr", "gsva", "deg", "counts", "data", "scale", "rna", "sct", "integrated", "graphs", "integration.anchors".}
 
@@ -55,9 +51,7 @@ prepSeurat2(
 
 \item{coerce.assay.used.to.default}{Specify whether to coerce assay used to default assay. Necessary if omitting assays (e.g., integrated). Default is TRUE.}
 
-\item{barcode.recode}{Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.}
-
-\item{M00_barcode_recode.path}{Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.}
+\item{barcode.recode}{List specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.}
 }
 \value{
 list containing prepped Seurat object, default assay, and number of cells in seurat object.

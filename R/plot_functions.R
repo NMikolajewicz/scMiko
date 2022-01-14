@@ -265,6 +265,7 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 #' @param x.label.angle rotation angle for x axis title (a numeric). Default is NULL.
 #' @param show.violin Show expression as violin plot. Default is T.
 #' @param show.full.axis Show full normalized axis [0,1], rather than adapting to data. Default is T.
+#' @param font.size Size of font.
 #' @param verbose print progress. Default is T.
 #' @name expression.Plot
 #' @return ggplot object
@@ -277,7 +278,7 @@ geneRepCurve <- function(so, which.genes = NULL, only.variable = F, which.data =
 #'
 expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
                             which.group = "seurat_clusters", which.data = "data", which.assay = DefaultAssay(so),
-                            x.label = NULL, x.label.angle = NULL, show.violin = T, show.full.axis = T, verbose = T){
+                            x.label = NULL, x.label.angle = NULL, show.violin = T, show.full.axis = T, font.size = NULL,  verbose = T){
 
   if (!("Seurat" %in% class(so))) stop("'so' is not a Seurat object")
   which.gene <- which.gene[which.gene %in% rownames(so)]
@@ -428,6 +429,10 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
       plt.em <- plt.em + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
     }
 
+    if (!is.null(font.size)){
+      plt.em <- plt.em + theme(text = element_text(size=font.size))
+    }
+
     # combine plots
     plt.sgExp <-  cowplot::plot_grid(p.query.clust, plt.em, ncol = 1, align = "v", rel_heights = c(1,3))
 
@@ -464,6 +469,10 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
     if (!is.null(x.label.angle) && is.numeric(x.label.angle)){
       plt.sgExp <- plt.sgExp + theme(axis.text.x = element_text(angle = x.label.angle, hjust = 1))
+    }
+
+    if (!is.null(font.size)){
+      plt.sgExp <- plt.sgExp + theme(text = element_text(size=font.size))
     }
   }
 

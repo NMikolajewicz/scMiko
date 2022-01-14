@@ -2,30 +2,29 @@
 % Please edit documentation in R/preparation_functions.R
 \name{recodeBarcode}
 \alias{recodeBarcode}
-\title{Recode (i.e., relabel) barcode metadata field in Seurat object}
+\title{Recode (i.e., relabel) metadata in Seurat object}
 \usage{
 recodeBarcode(
   object,
   barcode.recode,
-  M00_barcode_recode.path = "M00_barcode_recode.csv"
+  old.field.name = "Barcode",
+  new.field.name = "Barcode"
 )
 }
 \arguments{
 \item{object}{Seurat Object}
 
-\item{barcode.recode}{Character or list specifying how to relabel barcodes.
-\itemize{
-\item "Character" - Name of barcode recoding entries in M00_barcode_recode.path (.csv file)
-\item "List" - Named list where names are new barcodes, entries are old barcodes (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
-}}
+\item{barcode.recode}{Named list where names are new labels, entries are old labels (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)}
 
-\item{M00_barcode_recode.path}{Path to .csv file containing old and new barcodes. Only used if barcode.recode is character. Default is "M00_barcode_recode.csv".}
+\item{old.field.name}{name of field in which meta dat for recoding is stored. Default is "Barcode".}
+
+\item{new.field.name}{name of new field in meta data where recoded data will be stored. Default is "Barcode".}
 }
 \value{
-Seurat Object with relabeled 'Barcode' metadata
+Seurat Object with relabeled metadata
 }
 \description{
-Recode (i.e., relabel) barcode metadata field in Seurat object. If old barcode is specified as NA, treated as wildcard that captures all remaining barcodes that have not been relabeled.
+Recode (i.e., relabel) metadata in Seurat object. If old label is specified as NA, treated as wildcard that captures all remaining barcodes that have not been relabeled.
 }
 \author{
 Nicholas Mikolajewicz

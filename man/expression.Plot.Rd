@@ -16,6 +16,7 @@ expression.Plot(
   x.label.angle = NULL,
   show.violin = T,
   show.full.axis = T,
+  font.size = NULL,
   verbose = T
 )
 }
@@ -41,6 +42,8 @@ expression.Plot(
 \item{show.violin}{Show expression as violin plot. Default is T.}
 
 \item{show.full.axis}{Show full normalized axis [0,1], rather than adapting to data. Default is T.}
+
+\item{font.size}{Size of font.}
 
 \item{verbose}{print progress. Default is T.}
 }

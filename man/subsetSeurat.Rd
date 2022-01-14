@@ -15,7 +15,7 @@ subsetSeurat(object, subset.df)
 Seurat object
 }
 \description{
-Subset Seurat object according to specific metadata field. Only specified metadata entries are retained, while remaining of data is omitted.
+Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted.
 }
 \examples{
 
