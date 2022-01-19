@@ -1263,6 +1263,7 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
+  # geneSets_MASTER_190122update
   geneSets <- list()
 
   if (dev.directory.flag){
@@ -2515,6 +2516,7 @@ getSoftThreshold2 <- function(s.mat, power =c(seq(0.5,5, by = 0.5), seq(6,10)), 
   r2.sf <- c()
 
   # start cluster
+  if (n.cores > length(powers)) n.cores <- length(powers)
   cl <- parallel::makeCluster(n.cores)
   doParallel::registerDoParallel(cl)
 
