@@ -97,10 +97,14 @@ flex.multiTabLogs <- function(module.logs) {
 #' Outputs datatable with print button options
 #'
 #' @param df data.frame
+#' @param page_length number of entries shown per page. Default is 50.
+#' @param ... additional parameters passed to option list
 #' @name flex.asDT
 #' @return data.table
 #'
-flex.asDT <- function(df) {
+flex.asDT <- function(df, page_length = 50, ...) {
+
+  require(DT)
 
   df <- as.data.frame(df)
 
@@ -108,9 +112,10 @@ flex.asDT <- function(df) {
     dt <-  datatable(df,
                      filter = 'top',
                      extensions = 'Buttons',
-                     options = list(pageLength = 50,
+                     options = list(pageLength = page_length,
                                     dom = 'Bfrtip',
-                                    buttons = c('copy', 'csv', 'pdf')))
+                                    buttons = c('copy', 'csv', 'pdf'),
+                                    ...))
   } else {
     dt <- NULL
   }
