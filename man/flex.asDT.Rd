@@ -4,10 +4,14 @@
 \alias{flex.asDT}
 \title{Outputs datatable with print button options}
 \usage{
-flex.asDT(df)
+flex.asDT(df, page_length = 50, ...)
 }
 \arguments{
 \item{df}{data.frame}
+
+\item{page_length}{number of entries shown per page. Default is 50.}
+
+\item{...}{additional parameters passed to option list}
 }
 \value{
 data.table
