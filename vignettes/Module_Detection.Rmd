@@ -1,0 +1,214 @@
+---
+title: "Module Detection"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+## Load Seurat object
+
+For this tutorial we will perform unsupervised module detection and annotation to characterize the biological processes that comprise the Human Gastrulation (Tyser 2021). 
+
+We start by reading in the data,
+
+```{r load data, fig.width=7, fig.height=5}
+
+# load package
+library(scMiko)
+
+# load human gastrulation data
+so.query <- readRDS("../data/so_tyser2021_220621.rds")
+
+```
+
+## Feature Selection
+
+We begin by identifying features used for downstream module detection. In general, lowly-expressed genes yield poorly constructed networks due to the high degree of sparsity. We offer 3 approaches to identifying genes for module detection:
+
+- **Expression-based selection** ("expr"): Feature exceeding a minimal expression fraction (`min_pct`) AND features that are highly-variable (`FindVariableFeatures`) are selected using this criterion. 
+- **Highly-variable genes** ("hvg"): Only features that are highly-variable (`FindVariableFeatures`) are selected using this criterion.
+- **Deviance-based selection**: Features that are highly deviant are selected using this criterion. Implemented with `scry::devianceFeatureSelection(..., fam = "binomial")`
+
+We can see that while there are some genes that overlap between the different approaches, there are many features that are also criterion-specific. In general, our expression-based selection criterion is the most widely encompassing approach, and is set as the default selection method. 
+
+
+```{r}
+
+# Expression-based feature selection
+features_expr <- findNetworkFeatures(object = so.query, method = "expr", 
+                                     min_pct = 0.5)
+
+# Highly-variable genes
+features_hvg <- findNetworkFeatures(object = so.query, method = "hvg", 
+                                    n_features =  2000)
+
+# Deviance-based feature selection
+features_dev <- findNetworkFeatures(object = so.query, method = "deviance", 
+                                    n_features =  2000)
+
+# examine overlap between feature sets
+feature.list <- list(
+  expr = features_expr,
+  hvg = features_hvg,
+  deviance = features_dev
+)
+ggVennDiagram::ggVennDiagram(feature.list) + scale_color_manual(values = rep("white", 3))
+
+```
+
+
+## Module Detection with SSN Workflow
+
+We can now perform module detection using our scale-free shared-nearest neighbor network (SSN) analysis pipeline, implemented in the `runSSN` function. 
+
+
+```{r, include = FALSE}
+
+so.gene <- runSSN(object = so.query , 
+                  features = unique(c(features_hvg, features_dev)),
+                  scale_free = T, 
+                  robust_pca = F, 
+                  data_type = "pearson", 
+                  reprocess_sct = T, 
+                  slot = c("scale"), 
+                  batch_feature = NULL, 
+                  pca_var_explained = 0.9, 
+                  optimize_resolution = T, 
+                  target_purity = 0.8, 
+                  step_size =  0.05,
+                  n_workers = parallel::detectCores(), 
+                  verbose = T)
+
+```
+The resulting object contains a `cell x feature` Seurat object, with the scale-free nearest neighbor graph stored in `so.gene@graphs[["RNA_snn_power"]]` and the corresponding UMAP embedding in `so.gene@reductions[["umap"]]`. 
+
+We can visualize the scale-free optimization and transformation that was performed by calling the scale-free plots that are stored in the output object:
+
+```{r, fig.width=8, fig.height=4}
+
+cowplot::plot_grid(so.gene@misc$scale_free$optimization.plot,
+                   so.gene@misc$scale_free$distribution.plot$`0.5`,
+                   labels = "AUTO")
+
+```
+
+Using the UMAP layout and scale-free-transformed shared-nearest-neighbor graph, we can visualize the network connectivity using `SSNConnectivity`.
+
+```{r}
+plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.9, raster_dpi = 200)
+
+plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+```
+
+The module membership of each gene is stored in `so.gene@meta.data[["seurat_clusters"]]` and can be functionally-annotated as-is. However, we have introduced a filtering step to clean up each module by pruning away features with low network degree or connectivity. This is implemented using the `pruneSSN` function. 
+
+```{r}
+
+# specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+prune.threshold <- 0.1
+
+# get feature-specific connectivities (wi)
+df.wi   <- pruneSSN(object = so.gene, 
+                        graph = "RNA_snn_power", 
+                        prune.threshold = prune.threshold, 
+                        return.df = T)
+
+# visualize
+plt.prune <- df.wi %>%
+  ggplot(aes(x = wi_l2)) +
+  geom_histogram(bins = 30) +
+  geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+  labs(x = "Degree (L2 norm)", y = "Count",
+       title = "Network Pruning", 
+       subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3), 
+                         "% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +   
+  theme_miko(grid = T)
+
+print(plt.prune)
+
+
+```
+
+
+```{r}
+
+# get (pruned) gene module list
+mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
+str(mod.list)
+```
+An updated version of the connectivity plot can not be generated using the refined gene module sets. 
+
+```{r}
+
+message("Preparing connectivity objects...")
+plt_connectivity_with_features <- SSNConnectivity(so.gene, gene.list = mod.list, 
+                                          quantile_threshold = 0.9, raster_dpi = 200)
+
+plt_connectivity_with_features$plot_network
+
+```
+
+Finally, we summarize the expression and functional annotation of each gene module using `summarizeModules`. 
+
+```{r}
+
+# summarize modules
+ssn.summary <- summarizeModules(cell.object = so.query, 
+                                gene.object = so.gene,
+                                gene.list = mod.list,
+                                module.type = "ssn", 
+                                n.workers = parallel::detectCores(), 
+                                connectivity_plot = plt_connectivity_with_features$plot_edge)
+
+
+# cluster-level heatmap of module activities
+plt.ssn.gene.hm.expr <- heatmaply::heatmaply((ssn.summary$data.heatmap), scale = "column",
+                     scale_fill_gradient_fun = scale_fill_miko(),
+                     xlab = "Module", ylab = "Cluster", main = "SSN Module Activity")
+
+plt.ssn.gene.hm.expr
+
+```
+
+```{r, fig.width=25, fig.height=5}
+
+
+# get list of module-level summary plots 
+plt.ssn.gene <- ssn.summary$plt.summary
+
+# visualize
+plt.ssn.gene$m14
+
+```
+## Module Detection with ICA and NMF
+
+```{r}
+
+```
+
