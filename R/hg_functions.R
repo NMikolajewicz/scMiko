@@ -50,7 +50,7 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
           y = gsub("_", " ", res.df.cur$pathway),
           z = res.df.cur$padj,
           ov = res.df.cur$overlap / res.df.cur$size,
-          set = "Geneset Overlap",
+          set = "Overlap",
           threshold = 0
         ),
         data.frame(
@@ -63,7 +63,7 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
         )
       )
 
-      res.df.cur2$set <- factor(res.df.cur2$set, levels = c("log10(FDR)","Geneset Overlap"))
+      res.df.cur2$set <- factor(res.df.cur2$set, levels = c("log10(FDR)","Overlap"))
 
       res.df.cur2 <- res.df.cur2 %>% dplyr::arrange(z)
       res.df.cur2$y <- factor(res.df.cur2$y, levels = unique(res.df.cur2$y))
@@ -81,12 +81,6 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
         scale_x_continuous(expand = c(0, 0),  labels = function(x) signif(abs(x), 3)) +
         theme(panel.spacing.x = unit(0, "mm"),
               axis.text.y = element_text(size = pathway.name.size ))
-
-      # if (!is.null(genesets)){
-      #   plt.enrich <- plt.enrich + labs(caption = paste0(length(current.gene.set), " genes\nDashed line = 5% FDR"),fill = "-log10(FDR)")
-      # } else {
-      #   plt.enrich <- plt.enrich + labs(caption = "Dashed line = 5% FDR",fill = "-log10(FDR)")
-      # }
 
       plt.enrich.list[[current.mod]] <- plt.enrich
 
