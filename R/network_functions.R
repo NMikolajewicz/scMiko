@@ -12,7 +12,7 @@
 #' @param n_features Number of features to use when calculating variable or deviant features. Default is 2000.
 #' @param min_pct Minimum expression within spilt_var. Ignored if `method` is not "expr". Default is 0.5.
 #' @param split_var Grouping variable to enforce `min_pct` criteria within. Default is 'seurat_clusters'.
-#' @param batch_feature Variables to regress out. Default is NULL.
+#' @param batch_feature Variables to regress out. Ignored if `method` is not "deviance". Default is NULL.
 #' @param verbose Show progress. Default is T.
 #' @name findNetworkFeatures
 #' @seealso \code{\link{runSSN}}
@@ -57,7 +57,7 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
     m <- m[rownames(m) %in% rownames(so.sub), ]
     m <- as.matrix(m)
 
-    if (batch_feature %in% colnames(object@meta.data)){
+    if ((!is.null(batch_feature)) && batch_feature %in% colnames(object@meta.data)){
       batch.factor <- as.factor(so.sub@meta.data[ ,batch_feature])
       devs <- scry::devianceFeatureSelection(object = m, batch = batch.factor, fam = "binomial")
     } else {
@@ -298,6 +298,7 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 #' @param n_workers Number of workers for parallel implementation. Default is 1.
 #' @param verbose Print progress. Default is T.
 #' @name runSSN
+#' @import foreach parallel
 #' @seealso \code{\link{findNetworkFeatures}} for finding features, \code{\link{SCTransform}} for gene count normalization and scaling, \code{\link{nullResiduals}} for deviance calculations, \code{\link{scaleFreeNet}} for scale-free topology transform.
 #' @author Nicholas Mikolajewicz
 #' @return Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene modules.
@@ -306,6 +307,8 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type = c("pearson", "deviance"), reprocess_sct = F, slot = c("scale", "data"), batch_feature = NULL, do_scale = F, do_center = F, pca_var_explained = 0.9, weight_by_var = F, umap_knn = 10, optimize_resolution = T,
                    target_purity = 0.8, step_size = 0.05, n_workers = 1, verbose = T){
 
+  require(parallel)
+  require(foreach)
 
   if (!(class(object) %in% "Seurat")) stop("'object' is not Seurat object")
   which.rep.common <- features
@@ -331,7 +334,6 @@ runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type =
     # get SCTransform-scaled expression values
     if (data_type == "pearson"){
 
-
       if ((!("SCT" %in% names(object@assays))) | reprocess_sct){
         if ( "percent.mt" %in% colnames(object@meta.data)){
           v2r <- "percent.mt"
@@ -339,7 +341,7 @@ runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type =
           v2r <-NULL
         }
 
-        if (batch_feature %in% colnames(object@meta.data)) v2r <- unique(c(v2r, batch_feature))
+        if ((!is.null(batch_feature)) && batch_feature %in% colnames(object@meta.data)) v2r <- unique(c(v2r, batch_feature))
 
         object <- Seurat::SCTransform(object = object, method = "glmGamPoi", verbose = verbose,
                                       assay = "RNA", conserve.memory = T,
@@ -1058,7 +1060,7 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' generates SSN connectivity plot used to visualize transcriptomic gene network.
 #'
 #' @param gene.object Seurat object (cell x gene) obtained from SSN analysis.
-#' @param gene.list named list of module features.
+#' @param gene.list named list of module features. If omitted, feature-annotated connectivity plot is not generated.
 #' @param quantile_threshold Quantile threshold for visualized SSN graph edges. Default is 0.9.
 #' @param raster_dpi prefix added to each named entry in list. Default is "".
 #' @param edge.alpha alpha [0,1] parameter (i.e., transparency) for network edges. Default is 0.015. Use larger values for less dense networks.
@@ -1071,7 +1073,7 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
 #' @examples
 #'
-SSNConnectivity <- function(gene.object, gene.list, quantile_threshold = 0.9, raster_dpi = 200,edge.alpha = 0.015, do.label = T, label.size = 5,  verbose = T){
+SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 0.9, raster_dpi = 200,edge.alpha = 0.015, do.label = T, label.size = 5,  verbose = T){
 
   # get connectivity ########################################
   # snn.graph <- as.matrix(gene.object@graphs[["RNA_snn"]])
@@ -1160,39 +1162,49 @@ SSNConnectivity <- function(gene.object, gene.list, quantile_threshold = 0.9, ra
   names(col.pal) <- c(paste0("m", umod), "other")
 
 
+  if (!is.null(gene.list)){
+    plt.wnn.umap.connectivity.net.all <- df.snn.umap %>%
+      dplyr::filter(var %in% unique(unlist(gene.list))) %>%
+      ggplot(aes(x = x, y = y)) +
+      ggrastr::rasterise(geom_segment(data = df.umap.merge, aes(x = x.start, y = y.start,
+                                                                xend = x.end, yend= y.end,
+      ), color = "black", alpha = edge.alpha)) +   #alpha = weights.x , alpha = 0.8
+      geom_point(aes(fill = module), pch = 21, color = "grey") + theme_miko(legend = T) +
+      # geom_point(aes(fill = seurat_clusters), shape = 21, color = "grey", ...) + theme_miko(legend = T) +  #, size = wi
+      scale_size_continuous(range = c(1, 5)) +
+      theme(
+        panel.border = element_blank(),
+        axis.text = element_blank(),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank()
+      ) + xlab("") + ylab("")  +
 
-  plt.wnn.umap.connectivity.net.all <- df.snn.umap %>%
-    dplyr::filter(var %in% unique(unlist(gene.list))) %>%
-    ggplot(aes(x = x, y = y)) +
-    ggrastr::rasterise(geom_segment(data = df.umap.merge, aes(x = x.start, y = y.start,
-                                                              xend = x.end, yend= y.end,
-    ), color = "black", alpha = edge.alpha)) +   #alpha = weights.x , alpha = 0.8
-    geom_point(aes(fill = module), pch = 21, color = "grey") + theme_miko(legend = T) +
-    # geom_point(aes(fill = seurat_clusters), shape = 21, color = "grey", ...) + theme_miko(legend = T) +  #, size = wi
-    scale_size_continuous(range = c(1, 5)) +
-    theme(
-      panel.border = element_blank(),
-      axis.text = element_blank(),
-      panel.grid = element_blank(),
-      axis.ticks = element_blank()
-    ) + xlab("") + ylab("")  +
+      labs(size = "Degree", alpha = "Weight", fill = "Module") +
+      scale_fill_manual(values = col.pal)
 
-    labs(size = "Degree", alpha = "Weight", fill = "Module") +
-    scale_fill_manual(values = col.pal)
+    if (do.label){
+      # plt.wnn.umap.connectivity.net.all <- plt.wnn.umap.connectivity.net.all + ggrepel::geom_text_repel(data = df.wnn.umap.sum, aes(x = x.mean, y = y.mean, label = seurat_clusters), size = label.size)
+      plt.wnn.umap.connectivity.net.all <- plt.wnn.umap.connectivity.net.all + geom_text(data = df.wnn.umap.sum, aes(x = x.mean, y = y.mean, label = seurat_clusters), size = label.size)
+    }
 
-  if (do.label){
-    # plt.wnn.umap.connectivity.net.all <- plt.wnn.umap.connectivity.net.all + ggrepel::geom_text_repel(data = df.wnn.umap.sum, aes(x = x.mean, y = y.mean, label = seurat_clusters), size = label.size)
-    plt.wnn.umap.connectivity.net.all <- plt.wnn.umap.connectivity.net.all + geom_text(data = df.wnn.umap.sum, aes(x = x.mean, y = y.mean, label = seurat_clusters), size = label.size)
-  }
-
-
-  return(
-    list(
+    output.list <-   list(
       plot_edge = plt.general.connectivitiy,
       plot_network = plt.wnn.umap.connectivity.net.all,
       df.snn.umap = df.snn.umap,
       df.umap.merge = df.umap.merge
     )
+  } else {
+    output.list <-   list(
+      plot_edge = plt.general.connectivitiy,
+      # plot_network = plt.wnn.umap.connectivity.net.all,
+      df.snn.umap = df.snn.umap,
+      df.umap.merge = df.umap.merge
+    )
+  }
+
+
+  return(
+    output.list
   )
 }
 
@@ -1319,15 +1331,19 @@ SSNExpression <- function(cell.object, gene.object, group_by = "seurat_clusters"
 #' @param connecitivity.plot "plot_edge" generated by SSNConnectivity function. If not specified, not edges are plotted in SSN graph plot.
 #' @param group_by which meta feature to group by. Default is "seurat_clusters".
 #' @param raster whether UMAPs are rasterized (recommended for large datasets).
+#' @param show.n.pathways number of pathway annotations to show in each enrichment plot. Default is 10.
+#' @param n.workers number of workers for parallel implementation of pathway enrichment analysis. Default is 1.
 #' @param raster.threshold cell count threshold at which to switch to rasterized plots. Default is 10000.
 #' @param verbose Print progress. Default is T.
-#' @name SNNExpression
+#' @name summarizeModules
 #' @author Nicholas Mikolajewicz
 #' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for module features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
 #' @return List of summarize gene module results, including expression heatmaps and pathway enrichments
 #' @examples
 #'
-summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "ica", "nmf"), gene.list = NULL, reduction = NULL, connectivity_plot, group_by = "seurat_clusters", raster = F, raster.threshold = 10000, verbose = T){
+summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "ica", "nmf"), gene.list = NULL,
+                             reduction = NULL, connectivity_plot = NULL, group_by = "seurat_clusters", raster = F,
+                             show.n.pathways = 10, n.workers = 1, raster.threshold = 10000, verbose = T){
 
 
   if (!(group_by %in% colnames(cell.object@meta.data))) stop("'group_by' is not in 'cell.object'")
@@ -1380,7 +1396,12 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
       })
     })
 
-    df.con <- connectivity_plot[["plot_env"]][["df.snn.umap"]]
+    if (!is.null(connectivity_plot)){
+      df.con <- connectivity_plot[["plot_env"]][["df.snn.umap"]]
+    } else {
+      df.con <- NULL
+    }
+
     subtitle_label <- "x = SSN modules; y = Cell Clusters; z = Module Activity (Scaled)"
 
   }
@@ -1436,8 +1457,8 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
       })
     })
 
-
-    plt.expr <- miko_heatmap(df.mod.wide, scale ="column") +
+    cluster.activity <- df.mod.wide
+    plt.expr <- miko_heatmap(cluster.activity, scale ="column") +
       labs(title = "Module Activities",
            subtitle = subtitle_label)
 
@@ -1448,23 +1469,17 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
   #
   # get ica genes
   if (module.type == "ica"){
-    # ica.module.genes <- getICAGenes(feat.emb)
     module.genes = cell.object@reductions[[reduction]]@misc$genes
     names(module.genes) <- gsub("_", "", names(module.genes))
   } else if (module.type == "nmf"){
     module.genes = cell.object@reductions[[reduction]]@misc$genes
-    # names(module.genes) <- gsub("_", "", names(module.genes))
   } else if (module.type == "ssn"){
     module.genes = gene.list
-
-    # df.connectivity <- get
   }
 
 
 
   module.merge.genes <- module.genes
-  # names(ica.module.merge.genes) <- paste0("ICM", seq(1:length(ica.module.merge.genes)))
-  # ica.hg.res <- runHG(ica.module.merge.genes, gene.universe = rownames(so.query), species = parameter.list$species, pathway.db = parameter.list$pathway.db)
 
   miko_message("Running pathway enrichments...", verbose = verbose)
 
@@ -1472,50 +1487,42 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
   miko_message("\tGO Biological Processes...", verbose = verbose, time = F)
   suppressMessages({
     suppressWarnings({
-      bp.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
+      bp.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object), n.workers = n.workers,
                       species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "BP", verbose = F)
     })
   })
   miko_message("\tGO Molecular Functions...", verbose = verbose, time = F)
   suppressMessages({
     suppressWarnings({
-      mf.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
+      mf.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),n.workers = n.workers,
                       species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "MF", verbose = F)
     })
   })
   miko_message("\tGO Cellular Compartments...", verbose = verbose, time = F)
   suppressMessages({
     suppressWarnings({
-      cc.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object),
+      cc.res <- runHG(module.merge.genes, gene.universe = rownames(cell.object), n.workers = n.workers,
                       species = detectSpecies(cell.object), pathway.db = "GO", go.ontology = "CC", verbose = F)    })
   })
 
 
 
-  bp.sum <- summarizeHG(bp.res, show.n = 10, pathway.name.size = 10)
-  mf.sum <- summarizeHG(mf.res, show.n = 10, pathway.name.size = 10)
-  cc.sum <- summarizeHG(cc.res, show.n = 10, pathway.name.size = 10)
-
-  # ica.hg.sum <- summarizeHG(ica.hg.res, show.n = 10)
-  # ica.hg.sum$plots
+  bp.sum <- summarizeHG(bp.res, show.n = show.n.pathways, pathway.name.size = 10)
+  mf.sum <- summarizeHG(mf.res, show.n = show.n.pathways, pathway.name.size = 10)
+  cc.sum <- summarizeHG(cc.res, show.n = show.n.pathways, pathway.name.size = 10)
 
   col.pal <- categoricalColPal(names(module.merge.genes))
 
   df.umap.gene <- getUMAP(gene.object)[["df.umap"]]
   df.umap.cell2 <- getUMAP(cell.object, meta.features = group_by)[["df.umap"]]
   df.umap.gene$gene <- df.umap.gene$var
-  # plt.list <- list()
   miko_message("Consolidating results...", verbose = verbose)
 
   all.names <- names(module.merge.genes)
   plt.list <- pbapply::pblapply(all.names,function(x){
 
-    # for (i in 1:length(module.merge.genes)){
-
     mod.name <- unlist(x[[1]])
     ngenes <- length(module.merge.genes[[mod.name]])
-    # print(mod.name)
-    # mod.name <- names(module.merge.genes)[i]
 
     if (module.type == "ica"){
       df.umap.cell <- df.umap.cell2
@@ -1598,47 +1605,66 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
                                  loading = feat.emb[,mod.name])
     } else if (module.type == "ssn"){
 
-      feat.emb.cur <-       df.con[ ,c("genes", "wi")]
-      colnames(feat.emb.cur) <- c("gene", "loading")
+      if (!is.null(df.con)){
+        feat.emb.cur <-       df.con[ ,c("genes", "wi")]
+        colnames(feat.emb.cur) <- c("gene", "loading")
+      } else {
+        feat.emb.cur <- NULL
+      }
+
     }
 
-
-    df.umap.cur <- merge(df.umap.cur, feat.emb.cur, by = "gene", all.x = T)
-    min.size <- 0.1 * min(abs(df.umap.cur$loading[df.umap.cur$is.mod]), na.rm = T)
-    df.umap.cur$loading[!df.umap.cur$is.mod] <- min.size
-
+    if (!is.null(feat.emb.cur)){
+      df.umap.cur <- merge(df.umap.cur, feat.emb.cur, by = "gene", all.x = T)
+      min.size <- 0.1 * min(abs(df.umap.cur$loading[df.umap.cur$is.mod]), na.rm = T)
+      df.umap.cur$loading[!df.umap.cur$is.mod] <- min.size
+    } else {
+      min.size <- 0.01
+      df.umap.cur$loading <- 1
+      df.umap.cur$loading[!df.umap.cur$is.mod] <- 0.01
+    }
 
     df.umap.cur$loading <- abs(df.umap.cur$loading)
     df.umap.top <- df.umap.cur %>% dplyr::top_n(top.n, loading)
     df.umap.top <- df.umap.top %>% dplyr::filter(loading != min.size)
-    if (nrow(df.umap.top) > top.n) df.umap.top <- df.umap.top[1:top.n, ]
+    if (nrow(df.umap.top) > top.n) df.umap.top <- df.umap.top[1:top.n, ][1:top.n, ]
+
+    if (is.null(connectivity_plot)){
+      plt.net <-  ggplot(data = df.umap.cur) +
+        geom_point( pch = 21, aes(x = x, y = y, fill = is.mod, color = is.mod, size = loading)) + theme_miko() +
+        theme_void() + theme(legend.position = "none") +
+        labs(x = "geneUMAP 1", y = "geneUMAP 2",
+             title = "Transcription network", subtitle = paste0(mod.name , " (", ngenes, " genes)")  ) +
+        scale_fill_manual(values = c("TRUE" = as.vector(col.pal[mod.name]), "FALSE" = "grey98")) +
+        scale_color_manual(values = c("TRUE" = "grey", "FALSE" = "grey80")) +
+        scale_size(range = c(0.5,5)) +
+        ggrepel::geom_text_repel(data = df.umap.top, aes(x = x,  y =y, label = gene),
+                                 inherit.aes = F, max.overlaps = Inf)
+    } else {
+      df.umap.cur <- df.umap.cur %>% dplyr::filter(is.mod)
+      plt.net <-  connectivity_plot +
+        geom_point(data = df.umap.cur, pch = 21, aes(x = x, y = y, fill = is.mod, color = is.mod, size = loading)) + theme_miko() +
+        theme_void() + theme(legend.position = "none") +
+        labs(x = "geneUMAP 1", y = "geneUMAP 2",
+             title = "Transcription network", subtitle = paste0(mod.name , " (", ngenes, " genes)")  ) +
+        scale_fill_manual(values = c("TRUE" = as.vector(col.pal[mod.name]), "FALSE" = "grey98")) +
+        scale_color_manual(values = c("TRUE" = "grey", "FALSE" = "grey80")) +
+        scale_size(range = c(0.5,5)) +
+        ggrepel::geom_text_repel(data = df.umap.top, aes(x = x,  y =y, label = gene), inherit.aes = F, max.overlaps = Inf)
+    }
 
 
-    df.umap.cur <- df.umap.cur %>% dplyr::filter(is.mod)
-    plt.net <-  connectivity_plot +
-      geom_point(data = df.umap.cur, pch = 21, aes(x = x, y = y, fill = is.mod, color = is.mod, size = loading)) + theme_miko() +
-      theme_void() + theme(legend.position = "none") +
-      labs(x = "geneUMAP 1", y = "geneUMAP 2", title = "Transcription network", subtitle = paste0(mod.name , " (", ngenes, " genes)")  ) +
-      scale_fill_manual(values = c("TRUE" = as.vector(col.pal[mod.name]), "FALSE" = "grey98")) +
-      scale_color_manual(values = c("TRUE" = "grey", "FALSE" = "grey80")) +
-      scale_size(range = c(0.5,5)) +
-      ggrepel::geom_text_repel(data = df.umap.top, aes(x = x,  y =y, label = gene), inherit.aes = F, max.overlaps = Inf)
-
-
-    # plt.icm.hg <- ica.hg.sum$plots[[names(ica.module.merge.genes)[i]]]
-
-    # ic_comp <- gsub("IC_", "ICM", names(ica.module.genes)[i])
-    # ic_comp <- ic.name
     plt.bp <- bp.sum$plots[[mod.name]] + labs(subtitle = "BP")
     plt.mf <- mf.sum$plots[[mod.name]] + labs(subtitle = "MF")
     plt.cc <-cc.sum$plots[[mod.name]] + labs(subtitle = "CC")
 
-    plt.sum <- cowplot::plot_grid(plt.cell, plt.net, plt.bp, plt.mf, plt.cc, ncol = 5)
-    # plt.list[[mod.name]] <-plt.sum
+    # plt.sum <- cowplot::plot_grid(plt.cell, plt.net, plt.bp, plt.mf, plt.cc, ncol = 5)
+    plt.sum <- list(cell.umap = plt.cell,
+                    gene.umap = plt.net,
+                    bp.enrich = plt.bp,
+                    mf.enrich = plt.mf,
+                    cc.enrich = plt.cc)
     return(plt.sum)
-
-    # }
-
   })
 
   names(plt.list) <- all.names
@@ -1647,12 +1673,11 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
     list(
       plt.summary = plt.list,
       plt.heatmap = plt.expr,
-      # ica.fuz.df = ica.fuz.df,
+      data.heatmap = cluster.activity,
+      bp.enrichment = bp.res,
+      mf.enrichment = mf.res,
+      cc.enrichment = cc.res,
       module.genes = module.merge.genes
-      # plt.ica.list = plt.ica.list,
-      # plt.ica.expr = plt.ica.expr,
-      # ica.fuz.df = ica.fuz.df,
-      # ica.module.genes = ica.module.merge.genes
     )
   )
 }
