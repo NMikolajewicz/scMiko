@@ -1,6 +1,6 @@
 Package: scMiko
 Type: Package
-Title: scRNAseq analysis functions. Developed by Moffat Lab using Seurat framework 
+Title: scRNAseq analysis functions. Developed by Moffat Lab using Seurat framework.
 Version: 0.1.0
 Author: Nicholas Mikolajewicz
 Maintainer: Nicholas Mikolajewicz <n.mikolajewicz@utoronto.ca>
