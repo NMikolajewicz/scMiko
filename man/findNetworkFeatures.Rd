@@ -30,7 +30,7 @@ findNetworkFeatures(
 
 \item{split_var}{Grouping variable to enforce `min_pct` criteria within. Default is 'seurat_clusters'.}
 
-\item{batch_feature}{Variables to regress out. Default is NULL.}
+\item{batch_feature}{Variables to regress out. Ignored if `method` is not "deviance". Default is NULL.}
 
 \item{verbose}{Show progress. Default is T.}
 }

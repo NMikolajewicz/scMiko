@@ -6,7 +6,7 @@
 \usage{
 SSNConnectivity(
   gene.object,
-  gene.list,
+  gene.list = NULL,
   quantile_threshold = 0.9,
   raster_dpi = 200,
   edge.alpha = 0.015,
@@ -18,7 +18,7 @@ SSNConnectivity(
 \arguments{
 \item{gene.object}{Seurat object (cell x gene) obtained from SSN analysis.}
 
-\item{gene.list}{named list of module features.}
+\item{gene.list}{named list of module features. If omitted, feature-annotated connectivity plot is not generated.}
 
 \item{quantile_threshold}{Quantile threshold for visualized SSN graph edges. Default is 0.9.}
 
