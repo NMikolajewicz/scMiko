@@ -1046,3 +1046,197 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
 
 }
 
+
+
+#' Word cloud visualization of cell-type annotations from the Miko scoring pipeline
+#'
+#' Given outputs from the Miko scoring pipeline, the top cell-type annotations fare visualized using word clouds.
+#'
+#' @param object Seurat Object.
+#' @param object.group name of object meta data field specifying cluster membership. Default is "seurat_clusters".
+#' @param score vector of Miko scores
+#' @param score.group vector of group memberships
+#' @param score.cell.type vector of cell-type names/labels.
+#' @param score.p vector of p values.
+#' @param score.fdr vector of fdr values. Optional.
+#' @param score.coherence.fraction vector of coherence fractions. See coherentFraction(...) for details.
+#' @param score.frequent.flier vector of logicals specifying whether score belongs to frequent flier.
+#' @param fdr.correction Specify whether p-value should be corrected using Benjamini & Hochberg method. Default is T.
+#' @param p.threshold p value threshold. Default is 0.05.
+#' @param coherence.threshold Numerical [0,1] specifying minimal coherence required to qualify for visualization. Default is 0.8.
+#' @param show.n.terms Maximal number of cell-type terms shown in word cloud. Default is 15.
+#' @param verbose Logical, specify whether process is printed. Default is T.
+#' @name annotationCloud
+#' @author Nicholas Mikolajewicz
+#' @return list of ggplot handles
+#' @seealso \code{\link{mikoScore}} for miko scoring, \code{\link{coherentFraction}} for coherence scoring
+#' @examples
+#'
+#' df.score_summary <- data.frame(cluster = df.merge$cluster,
+#'                               cell.type = df.merge$gs,
+#'                               miko_score = signif(df.merge$miko_score, 3) ,
+#'                               p =  signif(df.merge$p),
+#'                               fdr =  signif(df.merge$fdr),
+#'                               coherence_fraction =  signif(df.merge$coherence_fraction))
+#'
+#'
+#' plt.cloud <- annotationCloud(object = so.query_scored,
+#'                              object.group = "seurat_clusters",
+#'                              score = df.score_summary$miko_score,
+#'                              score.group = df.score_summary$cluster,
+#'                              score.cell.type = df.score_summary$cell.type,
+#'                              score.p = df.score_summary$p,
+#'                              score.fdr = df.score_summary$fdr,
+#'                              score.coherence.fraction = df.score_summary$coherence_fraction,
+#'                              score.frequenct.flier = NULL,
+#'                              fdr.correction = T,
+#'                              p.threshold = 0.05,
+#'                              coherence.threshold = 0.9,
+#'                              show.n.terms = 15,
+#'                              verbose = T)
+#'
+annotationCloud <- function(object,
+                            object.group = "seurat_clusters",
+                            score,
+                            score.group,
+                            score.cell.type,
+                            score.p,
+                            score.fdr = NULL,
+                            score.coherence.fraction = NULL,
+                            score.frequenct.flier = NULL,
+                            fdr.correction = T,
+                            p.threshold = 0.05,
+                            coherence.threshold = 0.8,
+                            show.n.terms = 15,
+                            verbose = T){
+
+
+  require(ggwordcloud)
+
+  miko_message("Generating annotation wordclouds...", verbose = verbose)
+
+  if (is.null(score.coherence.fraction)) coherence.threshold <- 0
+  if (is.null(score.frequenct.flier)) score.frequenct.flier <- F
+
+  vst.merge.cloud <- data.frame(
+    miko_score = score,
+    cluster = score.group,
+    cell.type = score.cell.type,
+    p = score.p,
+    fdr = score.fdr,
+    coherence_fraction = score.coherence.fraction,
+    frequent_flier = score.frequenct.flier
+  )
+
+  u.cl <- unique(vst.merge.cloud$cluster)
+  plt.ww.list <- list()
+
+  show.w <- show.n.terms
+
+
+  plt.cluster.umap <- highlightUMAP(object = object, group = object.group,
+                                    reduction = "umap", highlight.color = "tomato")
+  names(plt.cluster.umap) <- as.character(gsub("group_", "",  names(plt.cluster.umap)))
+
+  u.cl <- object@meta.data[[object.group]]
+  #
+  # # get unique clusters
+  if (object.group == "seurat_clusters"){
+    u.cl <- unique(as.numeric(as.character((u.cl))))
+    u.cl <- u.cl[order(u.cl)]
+  } else {
+    u.cl <- unique((as.character((u.cl))))
+  }
+
+
+
+  for (i in 1:length(u.cl)){
+
+    vst.merge.subset <- vst.merge.cloud[vst.merge.cloud$cluster %in% u.cl[i], ]
+    vst.merge.subset$coh.score <- vst.merge.subset$coherence_fraction
+    vst.merge.subset$coh.score[vst.merge.subset$coh.score < coherence.threshold] <- 0
+
+    vst.merge.subset <- vst.merge.subset %>% dplyr::filter(miko_score > 0,
+                                                           coherence_fraction >= coherence.threshold,
+                                                           !frequent_flier)
+
+    if (nrow(vst.merge.subset) >0){
+
+
+      n.sig.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold, miko_score > 0))
+      n.coh.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold,miko_score > 0,
+                                                             coherence_fraction >= coherence.threshold)) #, coh.score
+
+      if (fdr.correction){
+        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+      } else {
+        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+      }
+
+
+      vst.merge.subset$sig.stringent <- vst.merge.subset$fdr < p.threshold &
+        vst.merge.subset$coherence_fraction > coherence.threshold
+      df.f1 <- vst.merge.subset %>% dplyr::filter(sig.stringent) %>%
+        dplyr::filter( miko_score > 0, coherence_fraction >= coherence.threshold) %>% #| (coh.fdr < 0.05)
+        dplyr::top_n(show.w, miko_score)
+      if (nrow(df.f1) < show.w){
+        ndif <- show.w - nrow(df.f1)
+        df.f1 <- bind_rows(df.f1, vst.merge.subset %>%
+                             dplyr::filter(!sig.stringent) %>%
+                             dplyr::filter(miko_score > 0) %>% #| (coh.fdr < 0.05) #fdr < 0.05,
+                             dplyr::top_n(ndif, miko_score))
+      }
+      if (nrow(df.f1) == 0) next
+
+      df.f1$cell.type <- gsub("_|-", " ", df.f1$cell.type)
+      df.f1$cell.type <- stringr::str_wrap(df.f1$cell.type, 40)
+
+      maxlim <- max(df.f1$miko_score)
+      if (maxlim > 30){
+        maxlim <- 30
+      }
+
+      minlim.coh <-  min(df.f1$coh.score)
+      maxlim.coh <- max(df.f1$coh.score)
+
+      df.f1$miko_score[(df.f1$miko_score) > maxlim] <- maxlim
+      df.f1$coh.score[(df.f1$coh.score) > maxlim.coh] <- maxlim.coh
+
+      df.f1$cell.type2 <- df.f1$cell.type
+      df.f1$cell.type2[df.f1$fdr < p.threshold] <- paste0( df.f1$cell.type[df.f1$fdr < p.threshold], "*")
+      df.f1$cell.type2[df.f1$fdr < 1e-5] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-5], "**")
+      df.f1$cell.type2[df.f1$fdr < 1e-8] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-8], "***")
+
+      df.f1$cell.type3 <- df.f1$cell.type2
+
+      limseq <- unique(round( seq(-log10(p.threshold), maxlim, by = signif((maxlim-(-log10(p.threshold)))/4, 1))))
+
+      if (fdr.correction){
+        col.label <- "-log10(FDR)"
+      } else {
+        col.label <- "-log10(p)"
+      }
+
+      w1 <- df.f1 %>%
+        ggplot(aes(label = cell.type3, color = -log10(fdr), size = abs(miko_score))) +
+        geom_text_wordcloud(scale_size_area = 40, rm_outside = TRUE, eccentricity = 1, show.legend = T) +
+        theme_minimal() +
+        labs(title  = "Enriched", subtitle = enrich.label,  size = "Score", color = col.label) +
+        theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+        theme(legend.position = "bottom") +
+        scale_color_gradient2(low = "grey", mid = "grey", high = scales::muted("red"), midpoint = -log10(p.threshold)) +
+        scale_size(range = c(1, 5)) +
+        theme( #
+          legend.title = element_text(color = "black", size = 10),
+          legend.text = element_text(color = "black", size = 8) ,
+          legend.box.background = element_rect(colour = "black")
+        )
+
+      plt.ww.list[[as.character(u.cl[i])]] <- cowplot::plot_grid(plt.cluster.umap[[as.character(u.cl[i])]],w1, ncol = 2)
+
+    }
+  }
+  return(plt.ww.list)
+}
+
+

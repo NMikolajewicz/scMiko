@@ -41,52 +41,69 @@ We start by reading in the data and visualizing the (ground-truth) annotated pop
 
 # load package
 library(scMiko)
-# library(RColorBrewer)
 
 # load human gastrulation data
 so.query <- readRDS("../data/so_tyser2021_220621.rds")
 
-
-# visualize clusters
+# visualize annotated populations. 
 cluster.UMAP(so = so.query, group.by = "sub_cluster") + 
   theme_void() + 
   labs(title = "Tyser 2021", subtitle = "Human Gastrulation")
 
 ```
 
-## Perform differential gene expression analysis
- 
+Prior to running the Miko scoring pipeline, you must ensure that the loaded Seurat object has been clustered using `FindClusters(...)` and that cluster information is available in the 'seurat_clusters' meta data field. 
+
+```{r seurat clusters}
+
+# ensure that seurat_clusters are available
+stopifnot("seurat_clusters" %in% colnames(so.query@meta.data))
+
+# visualize seurat clusters
+cluster.UMAP(so.query, group.by = "seurat_clusters")
+```
 
 
-```{r run DEG analyses}
+## Prepare cell-type markers
+
+Prior to performing marker-based cell-type annotation, we first prepare a comprehensive list of cell-type markers. We will use a cell-type catalog derived from multiple public scRNAseq atlases (see Cell-type marker catalog vignette for details). 
+
+In the absence of a-priori sample information, we would include all the cell-type markers in the catalog. However, given the known early embryonic age of the profiled sample, we will proceed with cell-markers derived from murine organogenesis (Cao 2019), human fetus (Cao 2020), developing murine brain (La Manno 2021), and murine gastrulation (Pijuan-Sala 2019):
 
 
-# To identifying cell-type specific markers, we will perform CDI- and Wilcoxon-based differentially-expressed gene (DEG) analyses. Since CDI is more computationally intensive, we will focus on the subset of genes that are expressed within the dataset. 
-# # Wilcoxon DEG
-# wilcoxon_output <- getDEG(object = so.query, group_by = "sub_cluster", 
-#                           auc.thresh = NA, fdr.thresh = NA, return.all = T, return.list = F)
-# 
-# # get top cell-type specific genes
-# wilcoxon_output.top <- wilcoxon_output %>% dplyr::group_by(group) %>% dplyr::top_n(n = 15, wt = auc)
-# 
-# # consolidate gene list
-# gene.list <- longDF2namedList(wilcoxon_output.top, group_by = "group", values = "feature")
-# # names(gene.list) <- make.names(names(gene.list))
+
+```{r cell markers}
+
+# cell-type catalog 
+marker.list <- geneSets[["Cell_Catalog"]]
+
+# only include gene sets with more than 3 markers
+marker.list <- marker.list[unlist(lapply(marker.list, length)) > 3]
+
+# subset markers
+marker.list <- marker.list[grepl("Cao2019|Cao2020|Manno|Pijuan", names(marker.list))]
 
 ```
 
 
-```{r}
+## Miko scoring pipeline
 
-```
-
+The miko scoring pipeline is a 3-step workflow that is implemented in `nullScore`, `mikoScore`, and `sigScore` functions. In step 1 we run `nullScore`, which fits a null model that corrects for gene set-size biases. 
 
 
 ```{r calculate null model, fig.width=14, fig.height=4.5}
 
+# step 1
 ns.res <- nullScore(object = so.query, assay = DefaultAssay(so.query), n.replicate = 10, nbin = 24, 
                     min.gs.size = 2, max.gs.size = 200, step.size = 10, 
                     nworkers = 16, verbose = T, subsample.n = 5000)
+
+
+```
+
+From this example, the variance-gene set-size relationship can be appreciated in panel `A` and `B`. Panel `C` illustrates the correction that is applied to ensure that the null score variance is constant across all gene set sizes.  
+
+```{r visualize null model,  fig.width=14, fig.height=4.5}
 
 variance.mean.plot <- ns.res$variance.mean.plot
 plt.null.model <- ns.res$mean.plot
@@ -96,52 +113,45 @@ cowplot::plot_grid(variance.mean.plot + labs( subtitle = ""),
                    plt.null.model, 
                    plt.corrected.plot + labs(title = "Gene Set-Size Corrected Null Scores", subtitle = ""), 
                    nrow = 1, align = "h", labels = "AUTO")
-
 ```
 
-
+In step 2, cell-type marker sets are scored using `mikoScore`. 
 
 ```{r cell-level scores,  fig.width=16, fig.height=15}
 
-so.query <- mikoScore(object = so.query, geneset = gene.list, nbin = 24, 
-                            nullscore = ns.res, assay = DefaultAssay(so.query), nworkers = 16)
-
-
-# set_names <- names(so.query@misc[["raw_score"]])
-set_names <- colnames(so.query@meta.data)[grepl("cell_", colnames(so.query@meta.data))]
-set_names <- set_names[!(set_names %in% "cell_name")]
-
-
-plt_cell_umap <- lapply(set_names, function(x){
-  exprUMAP(so.query,x[[1]] ) + 
-    labs(title = gsub("cell_", "", x[[1]] )) + 
-    scale_color_miko()})
-
-cowplot::plot_grid(plotlist = plt_cell_umap, ncol = 4)
-
+# step 2
+so.query_scored <- mikoScore(object = so.query, geneset = marker.list, nbin = 24, 
+                            nullscore = ns.res, assay = DefaultAssay(so.query), nworkers = 18)
 
 ```
 
-
+Finally, in step 3, we identify which cell-type marker sets are significantly enriched in each cluster. 
 
 ```{r significantly enriched gene sets}
 
-# identify significantly enriched genesets 
-score.result <- sigScore(object = so.query,  geneset = gene.list, reduction = "umap")
+# step 3
+score.result <- sigScore(object = so.query_scored,  geneset = marker.list, reduction = "umap")
 
+# visualize 
 score.result$score_plot
 
 ```
 
-```{r}
+## Post-scoring filters
 
-raw.mat <- so.query@misc[["raw_score"]]
+We use two additional post-scoring filters to fine tune which gene sets are enriched. The first is a coherence filter in which a positive correlation between component gene expression and the Miko score is enforced for a minimum fraction of component genes. The second is a frequent flier filter, which flags gene sets that exceed a minimum significance rate and represent gene sets that enrich across most cell clusters. 
+
+### Coherence filter
+
+```{r coh filter}
+
+raw.mat <- so.query_scored@misc[["raw_score"]]
 colnames(raw.mat) <- gsub("raw_", "", colnames(raw.mat))
 
-df.cscore <- coherentFraction(object = so.query, score.matrix =raw.mat, nworkers = 16,
+df.cscore <- coherentFraction(object = so.query_scored, score.matrix =raw.mat, nworkers = 16,
                               method = "pearson",
-                            genelist = gene.list, 
-                            assay = DefaultAssay(so.query), 
+                            genelist = marker.list, 
+                            assay = DefaultAssay(so.query_scored), 
                             slot = "data", subsample.cluster.n = 500)
 
 df.score <- score.result$cluster_stats
@@ -157,7 +167,7 @@ plt.score.vs.coh <- df.merge %>%
   geom_hline(yintercept = 0) + 
   geom_vline(xintercept = 0) + 
   scale_fill_manual(values = c("TRUE" = "tomato", "FALSE" = "grey")) + 
-  labs(x = "Signature Score", y = "Coherence Fraction", fill = "Enriched & Coherent\n(FDR<0.05)", 
+  labs(x = "Miko Score", y = "Coherence Fraction", fill = "Enriched & Coherent\n(FDR<0.05)", 
        title = "Coherent Enrichments", 
        subtitle = paste0(100*signif(sum( df.merge$sig) / nrow(df.merge), 3), "% Significance Rate"))
 
@@ -172,16 +182,16 @@ plt.score.vs.coh <- df.merge %>%
 
 df.score_summary <- data.frame(cluster = df.merge$cluster, 
                               cell.type = df.merge$gs, 
-                              miko_score = df.merge$miko_score,
-                              p = df.merge$p,
-                              fdr = df.merge$fdr,
-                              coherence_fraction = df.merge$coherence_fraction,
-                              r_mean = df.merge$r_mean
+                              miko_score = signif(df.merge$miko_score, 3) ,
+                              p =  signif(df.merge$p),
+                              fdr =  signif(df.merge$fdr),
+                              coherence_fraction =  signif(df.merge$coherence_fraction)
+                              # r_mean =  signif(df.merge$r_mean)
 )
 
 ```
 
-
+### Frequent flier filter
 
 ```{r flag frequent fliers}
 
@@ -191,7 +201,17 @@ df.score_summary.sig <- df.score_summary %>% dplyr::filter(fdr < 0.05)
 df.tally.ff <- as.data.frame(table(df.score_summary.sig$cell.type))
 df.tally.ff$Freq2 <- df.tally.ff$Freq/length(ugrp)
 
-ff.thresh <- 0.6
+ff.thresh <- 0.75
+which.ff <- as.character(df.tally.ff$Var1[df.tally.ff$Freq2 >= ff.thresh])
+df.score_summary$frequent_flier = (df.score_summary$cell.type  %in% which.ff)
+
+```
+
+
+We can visualize the frequent flier distribution to verify that an appropriate frequent flier threshold was used. In the current sample, we can see that there are a subset of marker sets that enrich indiscriminately in all clusters. In this case a threshold of 0.75 was appropriate (the threshold usually varies 0.6-0.8). 
+
+```{r}
+
 plt.ff <- df.tally.ff %>%
   ggplot(aes(x = Freq2)) + 
   geom_histogram(binwidth = 0.1) + 
@@ -199,10 +219,7 @@ plt.ff <- df.tally.ff %>%
   labs(title = "Frequent Flier Distribution", subtitle = paste0(signif(100*sum(df.tally.ff$Freq2 > ff.thresh)/nrow(df.tally.ff), 3), "% enriched genesets are frequent fliers (significant > ", 100*ff.thresh, "% of clusters)"),
        x = "Proportion of significant clusters", y = "Number of gene sets") + 
   theme_miko()
-
-
-which.ff <- as.character(df.tally.ff$Var1[df.tally.ff$Freq2 >= ff.thresh])
-df.score_summary$frequent_flier = (df.score_summary$cell.type  %in% which.ff)
+plt.ff
 
 ```
 
@@ -217,7 +234,7 @@ annotationCloud <- function(object,
                             score.p,
                             score.fdr = NULL,
                             score.coherence.fraction = NULL,
-                             score.frequenct.flier = F,
+                             score.frequenct.flier = NULL,
                             fdr.correction = T, 
                             p.threshold = 0.05, 
                             coherence.threshold = 0.8, 
@@ -228,9 +245,6 @@ annotationCloud <- function(object,
   require(ggwordcloud)
 
   miko_message("Generating annotation wordclouds...", verbose = verbose)
-
-  
-  # df.score_summary <- data.fra
   
     if (is.null(score.coherence.fraction)) coherence.threshold <- 0
   if (is.null(score.frequenct.flier)) score.frequenct.flier <- F
@@ -285,9 +299,9 @@ annotationCloud <- function(object,
                                                              coherence_fraction >= coherence.threshold)) #, coh.score 
       
       if (fdr.correction){
-        enrich.label <- paste0(n.sig.score, "/", length(gene.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")      
+        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")      
       } else {
-        enrich.label <- paste0(n.sig.score, "/", length(gene.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
       }
       
       
@@ -363,7 +377,13 @@ annotationCloud <- function(object,
 
 ```{r}
 
-   plt.cloud <- annotationCloud(object = so.query, 
+flex.asDT(df.score_summary)
+```
+
+
+```{r, fig.width=8, fig.height=4}
+
+   plt.cloud <- annotationCloud(object = so.query_scored, 
                                 object.group = "seurat_clusters", 
                                 score = df.score_summary$miko_score,
                                 score.group = df.score_summary$cluster,
@@ -371,14 +391,15 @@ annotationCloud <- function(object,
                                 score.p = df.score_summary$p,
                                 score.fdr = df.score_summary$fdr,
                                 score.coherence.fraction = df.score_summary$coherence_fraction,
-                                score.frequenct.flier = F,
+                                score.frequenct.flier = df.score_summary$frequent_flier, # 
                                 fdr.correction = T, 
                                 p.threshold = 0.05, 
-                                coherence.threshold = 0.8, 
+                                coherence.threshold = 0.9, 
                                 show.n.terms = 15, 
                                 verbose = T)
 
-plt.cloud[[1]]
+
+plt.cloud
 
 ```
 
