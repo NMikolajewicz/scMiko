@@ -431,6 +431,7 @@ expression.Plot <- function(so, which.gene, e.mat = NULL, f.mat = NULL,
 
     if (!is.null(font.size)){
       plt.em <- plt.em + theme(text = element_text(size=font.size))
+      p.query.clust <- p.query.clust + theme(text = element_text(size=font.size))
     }
 
     # combine plots
