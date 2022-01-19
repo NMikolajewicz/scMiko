@@ -424,9 +424,6 @@
     <loc>https://github.com/NMikolajewicz//reference/snip.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/SNNExpression.html</loc>
-  </url>
-  <url>
     <loc>https://github.com/NMikolajewicz//reference/sparse2dense.html</loc>
   </url>
   <url>
@@ -452,6 +449,9 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/summarizeHG.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/summarizeModules.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/sym2ens.html</loc>
@@ -524,5 +524,11 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//articles/install.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/Marker_Catalog.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//articles/Module_Detection.html</loc>
   </url>
 </urlset>

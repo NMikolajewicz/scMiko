@@ -35,7 +35,7 @@ A list of data.frames containing the following genesets:
 \item{Liddelow_Nature_2017}{Astrocyte gene panels}
 \item{Zhong_Nature_2018}{Neural cell gene panels}
 \item{Verhaak_CancerCell_2010}{Verhaak GBM-subtype genesets}
-\item{Cell_Catalog}{Cell-type markers derived from public scRNAseq atlases.}{link}{https://github.com/NMikolajewicz/scMiko}
+\item{Cell_Catalog}{Cell-type markers derived from public scRNAseq atlases.(\href{https://github.com/NMikolajewicz/scMiko}{link})}
 }
 }
 \usage{

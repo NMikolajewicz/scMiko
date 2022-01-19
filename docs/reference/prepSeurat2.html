@@ -96,7 +96,13 @@
       <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
+      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+    </li>
+    <li>
       <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+    </li>
+    <li>
+      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -148,7 +154,6 @@
   resolution <span class='op'>=</span> <span class='cn'>NULL</span>,
   subset.data <span class='op'>=</span> <span class='cn'>NULL</span>,
   subsample <span class='op'>=</span> <span class='fl'>1</span>,
-  M00_subgroup.path <span class='op'>=</span> <span class='st'>"M00_subgroups.csv"</span>,
   terms2drop <span class='op'>=</span> <span class='cn'>NULL</span>,
   rmv.pattern <span class='op'>=</span> <span class='cn'>NULL</span>,
   reprocess.n.var <span class='op'>=</span> <span class='fl'>3000</span>,
@@ -157,8 +162,7 @@
   use.integrated <span class='op'>=</span> <span class='cn'>T</span>,
   keep.default.assay.only <span class='op'>=</span> <span class='cn'>F</span>,
   coerce.assay.used.to.default <span class='op'>=</span> <span class='cn'>T</span>,
-  barcode.recode <span class='op'>=</span> <span class='cn'>NULL</span>,
-  M00_barcode_recode.path <span class='op'>=</span> <span class='st'>"M00_barcode_recode.csv"</span>
+  barcode.recode <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -182,15 +186,11 @@
     </tr>
     <tr>
       <th>subset.data</th>
-      <td><p>Character or data.frame specifying how to subset seurat object. If character, subsetting information must be provided in M00_subgroup.path file. If data.frame, must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.</p></td>
+      <td><p>Data.frame specifying how to subset seurat object. Data.frame must contain two columns: 'field' and 'subgroups'. 'field' column specifies which meta.data field to subset on, and 'subgroups' column specifies which subgroup to include within specified field. See scMiko::subsetSeurat() for details.</p></td>
     </tr>
     <tr>
       <th>subsample</th>
       <td><p>Numeric [0,1] specifying what fraction of cells to include for analysis. Default is 1. See scMiko::downsampleSeurat() for details.</p></td>
-    </tr>
-    <tr>
-      <th>M00_subgroup.path</th>
-      <td><p>Path for .csv file containing subsetting information. Read scPipeline documentation for instructions on use.</p></td>
     </tr>
     <tr>
       <th>terms2drop</th>
@@ -226,11 +226,7 @@
     </tr>
     <tr>
       <th>barcode.recode</th>
-      <td><p>Character or list specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.</p></td>
-    </tr>
-    <tr>
-      <th>M00_barcode_recode.path</th>
-      <td><p>Path for .csv file containing barcode recoding information. Read recodeBarcode() and scPipeline documentation for instructions on use.</p></td>
+      <td><p>List specifying how to recode barcodes. Default is NULL. See recodeBarcode() for details.</p></td>
     </tr>
     </table>
 

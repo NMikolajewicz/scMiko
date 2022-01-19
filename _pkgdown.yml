@@ -22,8 +22,12 @@ navbar:
           href: articles/DEG.html
         - text: "Cluster Resolution Optimization"
           href: articles/Cluster_Optimization.html
+        - text: "Cell-Type Marker Catalog"
+          href: articles/Marker_Catalog.html
         - text: "Cell-Type Annotation"
           href: articles/Cell_Annotation.html
+        - text: "Gene Module Detection"
+          href: articles/Module_Detection.html
         - text: -------
         - text: scPipeline Dashboard Reports
         - text: "QC and Preprocessing Module"
@@ -269,7 +273,6 @@ reference:
 - contents:
   - saveHTML
   - savePDF
-  - savePlot
 
 
 

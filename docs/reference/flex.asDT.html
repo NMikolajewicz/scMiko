@@ -96,7 +96,13 @@
       <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
+      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+    </li>
+    <li>
       <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+    </li>
+    <li>
+      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -141,7 +147,7 @@
     <p>Outputs datatable with print button options</p>
     </div>
 
-    <pre class="usage"><span class='fu'>flex.asDT</span><span class='op'>(</span><span class='va'>df</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>flex.asDT</span><span class='op'>(</span><span class='va'>df</span>, page_length <span class='op'>=</span> <span class='fl'>50</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,6 +155,14 @@
     <tr>
       <th>df</th>
       <td><p>data.frame</p></td>
+    </tr>
+    <tr>
+      <th>page_length</th>
+      <td><p>number of entries shown per page. Default is 50.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional parameters passed to option list</p></td>
     </tr>
     </table>
 

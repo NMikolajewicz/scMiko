@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Load gene x cell count matrix into seurat object — loadMat" />
-<meta property="og:description" content="Load gene x cell count matrix into seurat object" />
+<meta property="og:description" content="Load gene x cell count matrix into seurat object. For intended performance, first column of spreadsheet must contain gene names, and first row of spreadsheet must contain cell names." />
 
 
 
@@ -96,7 +96,13 @@
       <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
+      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+    </li>
+    <li>
       <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+    </li>
+    <li>
+      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -138,24 +144,17 @@
     </div>
 
     <div class="ref-description">
-    <p>Load gene x cell count matrix into seurat object</p>
+    <p>Load gene x cell count matrix into seurat object. For intended performance, first column of spreadsheet must contain gene names, and first row of spreadsheet must contain cell names.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>loadMat</span><span class='op'>(</span><span class='va'>import_set</span>, <span class='va'>input_organisms</span>, <span class='va'>dir</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>loadMat</span><span class='op'>(</span><span class='va'>file</span>, <span class='va'>dir</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>import_set</th>
-      <td><p>Character specifying matrix file name.</p></td>
-    </tr>
-    <tr>
-      <th>input_organisms</th>
-      <td><p>All species included in input files. If multiple species are provided, error will thrown; only one expected. One of:</p><ul>
-<li><p>"Hs" - Human</p></li>
-<li><p>"Mm" - Mouse</p></li>
-</ul></td>
+      <th>file</th>
+      <td><p>Matrix file name.</p></td>
     </tr>
     <tr>
       <th>dir</th>

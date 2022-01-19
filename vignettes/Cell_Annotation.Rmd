@@ -56,22 +56,30 @@ cluster.UMAP(so = so.query, group.by = "sub_cluster") +
 
 ## Perform differential gene expression analysis
  
-To identifying cell-type specific markers, we will perform CDI- and Wilcoxon-based differentially-expressed gene (DEG) analyses. Since CDI is more computationally intensive, we will focus on the subset of genes that are expressed within the dataset. 
+
 
 ```{r run DEG analyses}
 
-# Wilcoxon DEG
-wilcoxon_output <- getDEG(object = so.query, group_by = "sub_cluster", 
-                          auc.thresh = NA, fdr.thresh = NA, return.all = T, return.list = F)
 
-# get top cell-type specific genes
-wilcoxon_output.top <- wilcoxon_output %>% dplyr::group_by(group) %>% dplyr::top_n(n = 15, wt = auc)
-
-# consolidate gene list
-gene.list <- longDF2namedList(wilcoxon_output.top, group_by = "group", values = "feature")
-# names(gene.list) <- make.names(names(gene.list))
+# To identifying cell-type specific markers, we will perform CDI- and Wilcoxon-based differentially-expressed gene (DEG) analyses. Since CDI is more computationally intensive, we will focus on the subset of genes that are expressed within the dataset. 
+# # Wilcoxon DEG
+# wilcoxon_output <- getDEG(object = so.query, group_by = "sub_cluster", 
+#                           auc.thresh = NA, fdr.thresh = NA, return.all = T, return.list = F)
+# 
+# # get top cell-type specific genes
+# wilcoxon_output.top <- wilcoxon_output %>% dplyr::group_by(group) %>% dplyr::top_n(n = 15, wt = auc)
+# 
+# # consolidate gene list
+# gene.list <- longDF2namedList(wilcoxon_output.top, group_by = "group", values = "feature")
+# # names(gene.list) <- make.names(names(gene.list))
 
 ```
+
+
+```{r}
+
+```
+
 
 
 ```{r calculate null model, fig.width=14, fig.height=4.5}

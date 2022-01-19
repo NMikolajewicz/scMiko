@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="QC violin plots — QC.violinPlot" />
-<meta property="og:description" content="Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by barcode labels." />
+<meta property="og:description" content="Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by grouping variable." />
 
 
 
@@ -96,7 +96,13 @@
       <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
+      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+    </li>
+    <li>
       <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+    </li>
+    <li>
+      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -138,10 +144,15 @@
     </div>
 
     <div class="ref-description">
-    <p>Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by barcode labels.</p>
+    <p>Number of genes/cell, UMI/cell and mitochondiral content/cell are visualized with violin plots. Two ggplot handles are generated. First contains QC metrics pooled across all cells, while second stratifies dataset by grouping variable.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>QC.violinPlot</span><span class='op'>(</span><span class='va'>so</span>, plt.log.flag <span class='op'>=</span> <span class='cn'>T</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>QC.violinPlot</span><span class='op'>(</span>
+  <span class='va'>so</span>,
+  features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"nFeature_RNA"</span>, <span class='st'>"nCount_RNA"</span>, <span class='st'>"percent.mt"</span><span class='op'>)</span>,
+  group.by <span class='op'>=</span> <span class='cn'>NULL</span>,
+  plt.log.flag <span class='op'>=</span> <span class='cn'>T</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,6 +160,14 @@
     <tr>
       <th>so</th>
       <td><p>Seurat Object</p></td>
+    </tr>
+    <tr>
+      <th>features</th>
+      <td><p>meta data features to plot. Default is c("nFeature_RNA", "nCount_RNA", "percent.mt").</p></td>
+    </tr>
+    <tr>
+      <th>group.by</th>
+      <td><p>meta data field to group plots by.</p></td>
     </tr>
     <tr>
       <th>plt.log.flag</th>

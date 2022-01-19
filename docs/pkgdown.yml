@@ -6,7 +6,9 @@ articles:
   Cluster_Optimization: Cluster_Optimization.html
   DEG: DEG.html
   install: install.html
-last_built: 2022-01-11T02:39Z
+  Marker_Catalog: Marker_Catalog.html
+  Module_Detection: Module_Detection.html
+last_built: 2022-01-19T18:56Z
 urls:
   reference: https://github.com/NMikolajewicz//reference
   article: https://github.com/NMikolajewicz//articles
