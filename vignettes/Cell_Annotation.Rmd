@@ -31,11 +31,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Load Seurat object
+Here we demonstrate the Miko scoring pipeline, a cell cluster scoring method that accounts for variations in gene set sizes, while simultaneously offering a hypothesis-testing framework capable of rejecting non-significantly enriched gene sets.  For a given single cell dataset, query and size-matched random gene sets are scored, and the difference between query and random module scores is scaled  using the size-adjusted standard deviation estimate obtained from a gene set-size dependent null model to yield the Miko score. Scaling by the size-adjusted standard deviation estimate corrects for size-dependencies and results in a test statistic from which a p-value can be derived. 
 
-For this tutorial we will annotate the Human Gastrulation dataset reported by Tyser 2021 using the gene set-based miko scoring workflow.
-
-We start by reading in the data and visualizing the (ground-truth) annotated population. 
+Using the Miko scoring pipeline, we will annotate the Human Gastrulation dataset reported by [Tyser 2021](https://www.nature.com/articles/s41586-021-04158-y). We start by reading in the data and visualizing the author-annotated population. 
 
 ```{r load data, fig.width=7, fig.height=5}
 
@@ -75,7 +73,11 @@ In the absence of a-priori sample information, we would include all the cell-typ
 ```{r cell markers}
 
 # cell-type catalog 
-marker.list <- geneSets[["Cell_Catalog"]]
+marker.df <- geneSets[["Cell_Catalog"]]
+marker.list <- wideDF2namedList(marker.df)
+
+# ensure that all genes are UPPER CASE (human)
+marker.list <- lapply(marker.list, toupper)
 
 # only include gene sets with more than 3 markers
 marker.list <- marker.list[unlist(lapply(marker.list, length)) > 3]
@@ -88,7 +90,9 @@ marker.list <- marker.list[grepl("Cao2019|Cao2020|Manno|Pijuan", names(marker.li
 
 ## Miko scoring pipeline
 
-The miko scoring pipeline is a 3-step workflow that is implemented in `nullScore`, `mikoScore`, and `sigScore` functions. In step 1 we run `nullScore`, which fits a null model that corrects for gene set-size biases. 
+The miko scoring pipeline is a 3-step workflow that is implemented in `nullScore`, `mikoScore`, and `sigScore` functions. 
+
+In **step 1** we run `nullScore`, which fits a null model that corrects for gene set-size biases. 
 
 
 ```{r calculate null model, fig.width=14, fig.height=4.5}
@@ -115,7 +119,7 @@ cowplot::plot_grid(variance.mean.plot + labs( subtitle = ""),
                    nrow = 1, align = "h", labels = "AUTO")
 ```
 
-In step 2, cell-type marker sets are scored using `mikoScore`. 
+In **step 2**, cell-type marker sets are scored using `mikoScore`. 
 
 ```{r cell-level scores,  fig.width=16, fig.height=15}
 
@@ -125,7 +129,7 @@ so.query_scored <- mikoScore(object = so.query, geneset = marker.list, nbin = 24
 
 ```
 
-Finally, in step 3, we identify which cell-type marker sets are significantly enriched in each cluster. 
+Finally, in **step 3**, we identify which cell-type marker sets are significantly enriched in each cluster. 
 
 ```{r significantly enriched gene sets}
 
@@ -133,7 +137,31 @@ Finally, in step 3, we identify which cell-type marker sets are significantly en
 score.result <- sigScore(object = so.query_scored,  geneset = marker.list, reduction = "umap")
 
 # visualize 
-score.result$score_plot
+# score.result$score_plot 
+
+```
+```{r visualize v2, echo = FALSE}
+
+score.result$score_plot$data$raw_score <- signif(score.result$score_plot$data$raw_score, 3)
+score.result$score_plot$data$miko_score <- signif(score.result$score_plot$data$miko_score, 3)
+score.result$score_plot$data$significant <- score.result$score_plot$data$fdr < 0.05 & score.result$score_plot$data$miko_score > 0
+score.result$score_plot$data$annotation <- paste0(score.result$score_plot$data$cluster, "_", score.result$score_plot$data$name)
+
+plotly::ggplotly(
+score.result$score_plot$data %>%
+    ggplot(aes(x = raw_score, y = miko_score, 
+               fill = significant,
+               label = annotation)) +
+    scale_fill_manual(values = c("TRUE" = "tomato", "FALSE" = "grey")) +
+    geom_point(pch = 21, color = "white", size = 2) +
+    theme_miko(legend = T, grid=  T) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    labs(title = "Raw vs. Miko Enrichment Scores", x = "Raw Score", y = "Miko Score",
+         subtitle = paste0(signif(sum(score.result$score_plot$data$fdr < 0.05 & 
+                                        score.result$score_plot$data$miko_score > 0)/nrow(score.result$score_plot$data), 3)*100, "% Significance Rate (FDR < 0.05)"),
+         fill = "FDR<0.05")
+)
 
 ```
 
@@ -169,7 +197,7 @@ plt.score.vs.coh <- df.merge %>%
   scale_fill_manual(values = c("TRUE" = "tomato", "FALSE" = "grey")) + 
   labs(x = "Miko Score", y = "Coherence Fraction", fill = "Enriched & Coherent\n(FDR<0.05)", 
        title = "Coherent Enrichments", 
-       subtitle = paste0(100*signif(sum( df.merge$sig) / nrow(df.merge), 3), "% Significance Rate"))
+       subtitle = paste0(100*signif(sum( df.merge$sig, na.rm = T) / nrow(df.merge), 3), "% Significance Rate"))
 
 
   plt.score.vs.coh
@@ -183,10 +211,9 @@ plt.score.vs.coh <- df.merge %>%
 df.score_summary <- data.frame(cluster = df.merge$cluster, 
                               cell.type = df.merge$gs, 
                               miko_score = signif(df.merge$miko_score, 3) ,
-                              p =  signif(df.merge$p),
-                              fdr =  signif(df.merge$fdr),
-                              coherence_fraction =  signif(df.merge$coherence_fraction)
-                              # r_mean =  signif(df.merge$r_mean)
+                              p =  signif(df.merge$p, 3),
+                              fdr =  signif(df.merge$fdr, 3),
+                              coherence_fraction =  signif(df.merge$coherence_fraction, 3)
 )
 
 ```
@@ -223,163 +250,22 @@ plt.ff
 
 ```
 
+## Interpretting Annotations {.tabset}
 
-```{r cloud helper}
+Annotations are interpreted using the following statistics:
 
-annotationCloud <- function(object, 
-                            object.group = "seurat_clusters", 
-                            score,
-                            score.group,
-                            score.cell.type,
-                            score.p,
-                            score.fdr = NULL,
-                            score.coherence.fraction = NULL,
-                             score.frequenct.flier = NULL,
-                            fdr.correction = T, 
-                            p.threshold = 0.05, 
-                            coherence.threshold = 0.8, 
-                            show.n.terms = 15, 
-                            verbose = T){
-  
-  
-  require(ggwordcloud)
+- **miko_score**: cell-type marker enrichment score. 
+- **p** and **fdr**: p- and adjusted p-values (fdr) for determining significance. 
+- **coherence_fraction**: Fraction of genes that are correlated to aggregate gene set expression.  
+- **frequent_flier**: Flag specifying whether annotation exceeds a given significance rate (i.e., is non-specific).
 
-  miko_message("Generating annotation wordclouds...", verbose = verbose)
-  
-    if (is.null(score.coherence.fraction)) coherence.threshold <- 0
-  if (is.null(score.frequenct.flier)) score.frequenct.flier <- F
-  
-  vst.merge.cloud <- data.frame(
-    miko_score = score, 
-    cluster = score.group, 
-    cell.type = score.cell.type,
-    p = score.p,
-    fdr = score.fdr,
-    coherence_fraction = score.coherence.fraction,
-    frequent_flier = score.frequenct.flier
-  )
+Example thresholds: miko_score > 0, fdr < 0.05, coherence_fraction > 0.8, frequent_flier = F
 
-  u.cl <- unique(vst.merge.cloud$cluster)
-  plt.ww.list <- list()
-  
-  show.w <- show.n.terms
-  
-  
-  plt.cluster.umap <- highlightUMAP(object = object, group = object.group, 
-                                    reduction = "umap", highlight.color = "tomato")
-  names(plt.cluster.umap) <- as.character(gsub("group_", "",  names(plt.cluster.umap)))
-  
-    u.cl <- object@meta.data[[object.group]]
-  #
-  # # get unique clusters
-  if (object.group == "seurat_clusters"){
-    u.cl <- unique(as.numeric(as.character((u.cl))))
-    u.cl <- u.cl[order(u.cl)]
-  } else {
-    u.cl <- unique((as.character((u.cl))))
-  }
-  
-  
-  
-  for (i in 1:length(u.cl)){
-    
-    vst.merge.subset <- vst.merge.cloud[vst.merge.cloud$cluster %in% u.cl[i], ]
-    vst.merge.subset$coh.score <- vst.merge.subset$coherence_fraction
-    vst.merge.subset$coh.score[vst.merge.subset$coh.score < coherence.threshold] <- 0
-    
-    vst.merge.subset <- vst.merge.subset %>% dplyr::filter(miko_score > 0, 
-                                                           coherence_fraction >= coherence.threshold, 
-                                                           !frequent_flier) 
-    
-    if (nrow(vst.merge.subset) >0){
-      
-      
-      n.sig.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold, miko_score > 0))
-      n.coh.score <- nrow(vst.merge.subset %>% dplyr::filter(fdr < p.threshold,miko_score > 0, 
-                                                             coherence_fraction >= coherence.threshold)) #, coh.score 
-      
-      if (fdr.correction){
-        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")      
-      } else {
-        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
-      }
-      
-      
-      vst.merge.subset$sig.stringent <- vst.merge.subset$fdr < p.threshold & 
-        vst.merge.subset$coherence_fraction > coherence.threshold
-      df.f1 <- vst.merge.subset %>% dplyr::filter(sig.stringent) %>% 
-        dplyr::filter( miko_score > 0, coherence_fraction >= coherence.threshold) %>% #| (coh.fdr < 0.05)
-        dplyr::top_n(show.w, miko_score)
-      if (nrow(df.f1) < show.w){
-        ndif <- show.w - nrow(df.f1)
-        df.f1 <- bind_rows(df.f1, vst.merge.subset %>% 
-                             dplyr::filter(!sig.stringent) %>%
-                             dplyr::filter(miko_score > 0) %>% #| (coh.fdr < 0.05) #fdr < 0.05, 
-                             dplyr::top_n(ndif, miko_score))
-      }
-      if (nrow(df.f1) == 0) next
-      
-      df.f1$cell.type <- gsub("_|-", " ", df.f1$cell.type)
-      df.f1$cell.type <- stringr::str_wrap(df.f1$cell.type, 40)
-      
-      maxlim <- max(df.f1$miko_score)
-      if (maxlim > 30){
-        maxlim <- 30
-      }
-      
-      minlim.coh <-  min(df.f1$coh.score)
-      maxlim.coh <- max(df.f1$coh.score)
-      
-      df.f1$miko_score[(df.f1$miko_score) > maxlim] <- maxlim
-      df.f1$coh.score[(df.f1$coh.score) > maxlim.coh] <- maxlim.coh
-      
-      df.f1$cell.type2 <- df.f1$cell.type
-      df.f1$cell.type2[df.f1$fdr < p.threshold] <- paste0( df.f1$cell.type[df.f1$fdr < p.threshold], "*")
-      df.f1$cell.type2[df.f1$fdr < 1e-5] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-5], "**")
-      df.f1$cell.type2[df.f1$fdr < 1e-8] <- paste0( df.f1$cell.type[df.f1$fdr < 1e-8], "***")
-      
-      df.f1$cell.type3 <- df.f1$cell.type2
-      
-      limseq <- unique(round( seq(-log10(p.threshold), maxlim, by = signif((maxlim-(-log10(p.threshold)))/4, 1))))
-      
-      if (fdr.correction){
-        col.label <- "-log10(FDR)"
-      } else {
-        col.label <- "-log10(p)"
-      }
-      
-      w1 <- df.f1 %>%
-        ggplot(aes(label = cell.type3, color = -log10(fdr), size = abs(miko_score))) +
-        geom_text_wordcloud(scale_size_area = 40, rm_outside = TRUE, eccentricity = 1, show.legend = T) +
-        theme_minimal() +
-        labs(title  = "Enriched", subtitle = enrich.label,  size = "Score", color = col.label) + 
-        theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) + 
-        theme(legend.position = "bottom") + 
-        scale_color_gradient2(low = "grey", mid = "grey", high = scales::muted("red"), midpoint = -log10(p.threshold)) + 
-        scale_size(range = c(1, 5)) +
-        theme( #
-          legend.title = element_text(color = "black", size = 10),
-          legend.text = element_text(color = "black", size = 8) ,
-          legend.box.background = element_rect(colour = "black")
-        )
-      
-      plt.ww.list[[as.character(u.cl[i])]] <- cowplot::plot_grid(plt.cluster.umap[[as.character(u.cl[i])]],w1, ncol = 2) 
-      
-    } 
-  }  
-  return(plt.ww.list)
-}
-
-
-
+```{r score table}
+flex.asDT(df.score_summary %>% dplyr::arrange(miko_score), page_length = 15)
 ```
 
-
-```{r}
-
-flex.asDT(df.score_summary)
-```
-
+The `annotationCloud` function can be used to facilitate visualization and interpretation of annotations. 
 
 ```{r, fig.width=8, fig.height=4}
 
@@ -398,12 +284,41 @@ flex.asDT(df.score_summary)
                                 show.n.terms = 15, 
                                 verbose = T)
 
-
-plt.cloud
-
 ```
 
+
+### Example 1
+
+This is an example of a clean annotation. Consistently across marker sets derived from independent studies, we find that the population is enriched for *erythroid/erythrocyte/'erythroblast* markers. Accordingly, the original authors had annotated this cluster as *erythroblasts*. 
+
+```{r fig.width=8, fig.height=4}
+plt.cloud[[9]]
+```
+
+### Example 2
+
+In this example there is no consensus annotation. However we can see that annotations consistently identify mesenchymal-like annotations from multiple independent sources (e.g., Cao 2019 - osteoblasts; Cao 2020 - smooth muscle cells; Manno 2021 - mesenchymal progenitors; Pijuan-Sala - mesenchyme). Based on our annotations, we conclude that this cluster represents a mesenchymal population present during early human gastulation. The original authors had annotated this as *Advanced Mesoderm*. 
+
+```{r fig.width=8, fig.height=4}
+plt.cloud[[4]]
+```
+
+### Example 3
+
+In this example one of the top annotations is *Distal Visceral Endoderm* suggesting an endodermal identity. While endoderm is not present among the other annotations, we find that *Gut* (Pijuan Sala 2019) and *Hepatoblasts* (Cao 2020) are both significantly enriched, and based on their endodermal origins, we have additional support for this cluster represents the endoderm. The original authors had annotated this cluster as *yolk sac endoderm*, *definitive endoderm* and *hypoblast*, thereby confirming our *endoderm* annotation. 
+
+
+```{r fig.width=8, fig.height=4}
+plt.cloud[[5]]
+```
+
+
+## {-}
+
+<details>
+  <summary>**Session Info**</summary>
 ```{r}
-
+sessionInfo()
 ```
+</details>
 

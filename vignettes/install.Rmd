@@ -1,17 +1,80 @@
 ---
-title: "Installation Instructions for scMiko"
-output: html_document
+title: "Getting Started"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
 ---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+## Install
 
 To install scMiko, [R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
 
-# Install
- 
-To install, run: 
+To install `scMiko`, run: 
 
 ```{r eval = FALSE}
 # Enter commands in R (or R studio, if installed)
 devtools::install_github(repo = "NMikolajewicz/scMiko")
+```
+
+```{r}
+# load scMiko
 library(scMiko)
 ```
 
+
+## scMiko within the Seurat framework 
+
+The scMiko package was developed using the [Seurat](https://satijalab.org/seurat/index.html) framework. Consequently, Seurat objects preprocessed using [sctransform](https://github.com/satijalab/sctransform) are expected in scMiko-implemented workflows. To preprocess data, users can either refer to the excellent [vignette](https://satijalab.org/seurat/articles/sctransform_vignette.html) offered by Seurat, or follow the adapted workflow shown here.  
+
+```{r seurat object preprocess}
+# load Seurat
+library(Seurat)
+
+# load data
+count_matrix <- readRDS("../data/ps_count_matrix.rds")
+meta_data <-  readRDS("../data/ps_meta_data.rds")
+
+# create and preprocess seurat object
+so.query <- CreateSeuratObject(counts = count_matrix, meta.data = meta_data)
+so.query <- PercentageFeatureSet(so.query, pattern = "^mt-", col.name = "percent.mt")
+so.query <- SCTransform(so.query, method = "glmGamPoi", vars.to.regress = "percent.mt", verbose = FALSE)
+so.query <- RunPCA(so.query, verbose = FALSE)
+so.query <- RunUMAP(so.query, dims = 1:30, verbose = FALSE)
+so.query <- FindNeighbors(so.query, dims = 1:30, verbose = FALSE)
+so.query <- FindClusters(so.query, verbose = FALSE)
+
+# visualize
+cluster.UMAP(so.query) + theme_void() + theme(legend.position = "none")
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>

@@ -929,7 +929,7 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
 
   set.seed(1023)
 
-  stopifnot("Seurat" %in% class(object))
+  stopifnot("'object' is not a Seurat object" = ("Seurat" %in% class(object)))
   names(genelist) <- make.names(names(genelist))
   colnames(score.matrix) <- make.names(colnames(score.matrix))
   all.genes <- unique(unlist(genelist))
@@ -963,7 +963,7 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
 
 
   df.cscore <- NULL
-  miko_message("Computing cluster-level correlations between gene expression and scores...")
+  miko_message("Computing cluster-level correlations between gene expression and scores...", verbose = verbose)
 
   # nworkers <- nworkers
   if (length(uclust) < nworkers) nworkers <- length(uclust)

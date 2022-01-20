@@ -537,12 +537,13 @@ filterSeurat <- function(so, RNA.upperlimit = 9000, RNA.lowerlimit = 200, mt.upp
 #' @param dispersion.cutoff If method = NFS, a two-length numeric vector with low- and high-cutoffs for feature dispersions.
 #' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE.
 #' @param assay Name of assay to pull the count data from; default is 'RNA'
+#' @param verbose print progress report. Default is FALSE.
 #' @param ... additional parameters passed to SCTransform.
 #' @name scNormScale
 #' @return Seurat Object
 #'
 scNormScale <- function(object,  method = "SCT", vars2regress = NULL, enable.parallelization = T, n.workers = 1, max.memory = (20480 * 1024^2), variable.features.n = NULL,
-                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA", ...){
+                           variable.features.rv.th = 1.3, return.only.var.genes = F, mean.cutoff = c(0.1, 8), dispersion.cutoff = c(1, Inf), conserve.memory = FALSE, assay = "RNA", verbose = F, ...){
 
 
   stopifnot("'object' is not Seurat object"= ("Seurat" %in% class(object)))
@@ -578,7 +579,7 @@ scNormScale <- function(object,  method = "SCT", vars2regress = NULL, enable.par
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
     if (is.null(vars2regress)){
       object <- SCTransform(object = object,
-                        verbose = FALSE,
+                        verbose = verbose,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,
@@ -589,7 +590,7 @@ scNormScale <- function(object,  method = "SCT", vars2regress = NULL, enable.par
     } else {
       object <- SCTransform(object = object,
                         vars.to.regress = vars2regress,
-                        verbose = FALSE,
+                        verbose = verbose,
                         return.only.var.genes = return.only.var.genes,
                         variable.features.n = variable.features.n,
                         variable.features.rv.th = variable.features.rv.th,

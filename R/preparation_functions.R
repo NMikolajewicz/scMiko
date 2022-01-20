@@ -421,7 +421,16 @@ prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, s
 
   # generate UMAP if missing ###################################################
   if (!("umap" %in% names(object@reductions))){
-    object <- RunUMAP(object, dims = 1:30)
+    if (!("pca" %in% names(object@reductions))){
+      if (length(object@assays[[DefaultAssay(object)]]@var.features) == 0){
+        object <- FindVariableFeatures(object = object)
+      }
+      if (length(object@assays[[DefaultAssay(object)]]@scale.data) == 0){
+        object <- scNormScale(object = object, enable.parallelization = F)
+      }
+      object <- RunPCA(object = object, verbose = F)
+    }
+    object <- RunUMAP(object = object, dims = 1:30)
   }
 
   # Return results #############################################################

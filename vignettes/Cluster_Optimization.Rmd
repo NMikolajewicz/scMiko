@@ -31,7 +31,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Load Seurat object
+
+ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The specificity-based resolution selection criterion described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution
+
 
 For this tutorial we will analyze the Human Gastrulation dataset reported by Tyser 2021. The dataset consists of 1195 cells. We will identify the optimal clustering resolution using a specificity-based relution selection criterion.  
 

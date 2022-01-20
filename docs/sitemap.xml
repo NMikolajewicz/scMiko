@@ -13,6 +13,9 @@
     <loc>https://github.com/NMikolajewicz//reference/aggGroupExpression.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/annotationCloud.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/autoPointSize.html</loc>
   </url>
   <url>
@@ -245,9 +248,6 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/LR.db.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/NMikolajewicz//reference/m23.binarizeExpression.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/mergeSeuratList.html</loc>
