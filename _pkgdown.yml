@@ -32,8 +32,6 @@ navbar:
         - text: scPipeline Dashboard Reports
         - text: "QC and Preprocessing Module"
           href: articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html
-    - text: "News"
-      href: news/index.html
     - text: "Reference"
       href: reference/index.html
   right:

@@ -55,7 +55,13 @@
       <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
     </li>
     <li>
+      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+    </li>
+    <li>
       <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+    </li>
+    <li>
+      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -63,9 +69,6 @@
       <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -93,7 +96,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Cluster Optimization</h1>
             
-            <h4 class="date">Compiled: 2022-01-10</h4>
+            <h4 class="date">Compiled: 2022-01-20</h4>
       
       
       <div class="hidden name"><code>Cluster_Optimization.Rmd</code></div>
@@ -102,9 +105,7 @@
 
     
     
-<div id="load-seurat-object" class="section level2">
-<h2 class="hasAnchor">
-<a href="#load-seurat-object" class="anchor"></a>Load Seurat object</h2>
+<p>ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The specificity-based resolution selection criterion described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution</p>
 <p>For this tutorial we will analyze the Human Gastrulation dataset reported by Tyser 2021. The dataset consists of 1195 cells. We will identify the optimal clustering resolution using a specificity-based relution selection criterion.</p>
 <p>We start by reading in the data and visualizing the annotated population.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -119,7 +120,6 @@
 <span class="fu"><a href="../reference/cluster.UMAP.html">cluster.UMAP</a></span><span class="op">(</span>so <span class="op">=</span> <span class="va">so.query</span>, group.by <span class="op">=</span> <span class="st">"sub_cluster"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">theme_void</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Tyser 2021"</span>,
     subtitle <span class="op">=</span> <span class="st">"Human Gastrulation"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/load%20data-1.png" width="672"></p>
-</div>
 <div id="multi-resolution-clustering" class="section level2">
 <h2 class="hasAnchor">
 <a href="#multi-resolution-clustering" class="anchor"></a>Multi-Resolution Clustering</h2>

@@ -79,7 +79,8 @@ Cao, J., Spielmann, M., Qiu, X., Huang, X., Ibrahim, D. M., Hill, A. J., . . . S
 
 ```{r cao 2019, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_cao2019.png")
+# knitr::include_graphics("assets/atlas_cao2019.png")
+knitr::include_graphics("../vignettes/assets/atlas_cao2019.png")
 
 ```
 
@@ -88,7 +89,7 @@ Cao, J., O’Day, D. R., Pliner, H. A., Kingsley, P. D., Deng, M., Daza, R. M., 
 
 ```{r Cao 2020, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_cao2020.png")
+knitr::include_graphics("../vignettes/assets/atlas_cao2020.png")
 
 ```
 
@@ -97,7 +98,7 @@ La Manno, G., Siletti, K., Furlan, A., Gyllborg, D., Vinsland, E., Mossi Albiach
 
 ```{r La Mannos 2021, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_mannos2021.png")
+knitr::include_graphics("../vignettes/assets/atlas_mannos2021.png")
 
 ```
 
@@ -106,7 +107,7 @@ Pijuan-Sala, B., Griffiths, J. A., Guibentif, C., Hiscock, T. W., Jawaid, W., Ca
 
 ```{r PS 2019, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_ps2019.png")
+knitr::include_graphics("../vignettes/assets/atlas_ps2019.png")
 
 ```
 
@@ -115,7 +116,7 @@ Consortium, T. M. (2018). Single-cell transcriptomics of 20 mouse organs creates
 
 ```{r TM, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_tm.png")
+knitr::include_graphics("../vignettes/assets/atlas_tm.png")
 
 ```
 
@@ -124,7 +125,7 @@ Quake, S. R., & Consortium, T. S. (2021). The Tabula Sapiens: a single cell tran
 
 ```{r TS, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_ts.png")
+knitr::include_graphics("../vignettes/assets/atlas_ts.png")
 
 ```
 
@@ -133,7 +134,7 @@ Tyser, R. C., Mahammadov, E., Nakanoh, S., Vallier, L., Scialdone, A., & Sriniva
 
 ```{r Tyser 2021, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_tyser2021.png")
+knitr::include_graphics("../vignettes/assets/atlas_tyser2021.png")
 
 ```
 
@@ -142,7 +143,7 @@ Zeisel, A., Hochgerner, H., Lönnerberg, P., Johnsson, A., Memic, F., Van Der Zw
 
 ```{r Zeisel 2018, echo = FALSE}
 
-knitr::include_graphics("assets/atlas_zeisel2018.png")
+knitr::include_graphics("../vignettes/assets/atlas_zeisel2018.png")
 
 ```
 
