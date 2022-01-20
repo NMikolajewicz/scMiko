@@ -49,7 +49,11 @@ library(scMiko)
 
 ## scMiko within the Seurat framework 
 
-The scMiko package was developed using the [Seurat](https://satijalab.org/seurat/index.html) framework. Consequently, Seurat objects preprocessed using [sctransform](https://github.com/satijalab/sctransform) are expected in scMiko-implemented workflows. To preprocess data, users can either refer to the excellent [vignette](https://satijalab.org/seurat/articles/sctransform_vignette.html) offered by Seurat, or follow the adapted workflow shown here.  
+The scMiko package was developed using the [Seurat](https://satijalab.org/seurat/index.html) framework. Consequently, Seurat objects preprocessed using [sctransform](https://github.com/satijalab/sctransform) are expected in scMiko-implemented workflows. 
+
+### Option 1: Preprocess data using Seurat workflow
+
+To preprocess data, users can either refer to the excellent [vignette](https://satijalab.org/seurat/articles/sctransform_vignette.html) offered by Seurat, or follow the adapted workflow shown here.  
 
 ```{r seurat object preprocess}
 # load Seurat
@@ -71,6 +75,11 @@ so.query <- FindClusters(so.query, verbose = FALSE)
 # visualize
 cluster.UMAP(so.query) + theme_void() + theme(legend.position = "none")
 ```
+
+
+### Option 2: Preprocess data using scPipeline QC & Preprocessing Module.
+
+Another way to preprocess single-cell data is to use our QC & Preprocessing Module implemented in [scPipeline](...). Given a gene x cell count matrix, or cell ranger output, the QC & Preprocessing Module applies quality-control filters and preprocesses the data. The output from the module is a Seurat object, compatible with all downstream analysis work flows, and an intuitive dashboard report summarizing the data set and results. 
 
 <details>
   <summary>**Session Info**</summary>
