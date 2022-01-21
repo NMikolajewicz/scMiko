@@ -644,15 +644,27 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
   tm.list <- list()
   list.ind <- 1
   if (!is.na(fill.palette)){
-    require(ggthemes)
-    tm.list[[list.ind]] <- do.call(paste0("scale_fill_", fill.palette), args = list())
-    list.ind <- list.ind + 1
+    if (fill.palette == "flatly"){
+      flatly.colors <- c('#18BC9C','#2C3E50','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_fill_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else {
+      require(ggthemes)
+      tm.list[[list.ind]] <- do.call(paste0("scale_fill_", fill.palette), args = list())
+      list.ind <- list.ind + 1
+    }
   }
 
   if (!is.na(color.palette)){
+    if (fill.palette == "flatly"){
+      flatly.colors <- c('#18BC9C','#2C3E50','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_color_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else {
     require(ggthemes)
     tm.list[[list.ind]] <- do.call(paste0("scale_colour_", color.palette), args = list())
     list.ind <- list.ind + 1
+    }
   }
 
   tm.list[[list.ind]] <- tm

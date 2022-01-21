@@ -18,15 +18,15 @@ navbar:
     - text: "Vignettes"
       menu:
         - text: scMiko Vignettes
-        - text: "Differentially-Expressed Genes"
+        - text: "Diffenetial-expression using CDI"
           href: articles/DEG.html
-        - text: "Cluster Resolution Optimization"
+        - text: "Cluster resolution selection using marker-specificity criterion"
           href: articles/Cluster_Optimization.html
-        - text: "Cell-Type Marker Catalog"
+        - text: "Cell-type marker catalog"
           href: articles/Marker_Catalog.html
-        - text: "Cell-Type Annotation"
+        - text: "Cell-type annotation using Miko Scoring"
           href: articles/Cell_Annotation.html
-        - text: "Gene Module Detection"
+        - text: "Gene Module Detection using SSN analysis"
           href: articles/Module_Detection.html
         - text: -------
         - text: scPipeline Dashboard Reports

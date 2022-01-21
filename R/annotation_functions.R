@@ -1103,7 +1103,7 @@ annotationCloud <- function(object,
                             score.p,
                             score.fdr = NULL,
                             score.coherence.fraction = NULL,
-                            score.frequenct.flier = NULL,
+                            score.frequent.flier = NULL,
                             fdr.correction = T,
                             p.threshold = 0.05,
                             coherence.threshold = 0.8,
@@ -1149,6 +1149,9 @@ annotationCloud <- function(object,
   }
 
 
+  n_marker_sets <- ulength(vst.merge.cloud$cell.type)
+
+
 
   for (i in 1:length(u.cl)){
 
@@ -1168,9 +1171,9 @@ annotationCloud <- function(object,
                                                              coherence_fraction >= coherence.threshold)) #, coh.score
 
       if (fdr.correction){
-        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+        enrich.label <- paste0(n.sig.score, "/", n_marker_sets, " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (FDR < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
       } else {
-        enrich.label <- paste0(n.sig.score, "/", length(marker.list), " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
+        enrich.label <- paste0(n.sig.score, "/", n_marker_sets, " (", signif(n.sig.score/  ulength(vst.merge.cloud$cell.type), 2)*100, "%) gene sets are enriched (p < 5e-2*, 1e-5**, 1e-8***)\nand exceed ", 100*coherence.threshold, "% coherence")
       }
 
 
@@ -1236,6 +1239,7 @@ annotationCloud <- function(object,
 
     }
   }
+
   return(plt.ww.list)
 }
 

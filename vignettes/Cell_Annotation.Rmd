@@ -277,7 +277,7 @@ The `annotationCloud` function can be used to facilitate visualization and inter
                                 score.p = df.score_summary$p,
                                 score.fdr = df.score_summary$fdr,
                                 score.coherence.fraction = df.score_summary$coherence_fraction,
-                                score.frequenct.flier = df.score_summary$frequent_flier, # 
+                                score.frequent.flier = df.score_summary$frequent_flier, # 
                                 fdr.correction = T, 
                                 p.threshold = 0.05, 
                                 coherence.threshold = 0.9, 

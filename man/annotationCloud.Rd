@@ -13,7 +13,7 @@ annotationCloud(
   score.p,
   score.fdr = NULL,
   score.coherence.fraction = NULL,
-  score.frequenct.flier = NULL,
+  score.frequent.flier = NULL,
   fdr.correction = T,
   p.threshold = 0.05,
   coherence.threshold = 0.8,
@@ -38,6 +38,8 @@ annotationCloud(
 
 \item{score.coherence.fraction}{vector of coherence fractions. See coherentFraction(...) for details.}
 
+\item{score.frequent.flier}{vector of logicals specifying whether score belongs to frequent flier.}
+
 \item{fdr.correction}{Specify whether p-value should be corrected using Benjamini & Hochberg method. Default is T.}
 
 \item{p.threshold}{p value threshold. Default is 0.05.}
@@ -47,8 +49,6 @@ annotationCloud(
 \item{show.n.terms}{Maximal number of cell-type terms shown in word cloud. Default is 15.}
 
 \item{verbose}{Logical, specify whether process is printed. Default is T.}
-
-\item{score.frequent.flier}{vector of logicals specifying whether score belongs to frequent flier.}
 }
 \value{
 list of ggplot handles
