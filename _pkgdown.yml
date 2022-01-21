@@ -24,11 +24,11 @@ navbar:
         - text: scMiko Vignettes
         - text: "Diffenetial-expression using CDI"
           href: articles/DEG.html
-        - text: "Cluster resolution selection using marker-specificity criterion"
+        - text: "Selecting cluster resolution using specificity criterion"
           href: articles/Cluster_Optimization.html
         - text: "Cell-type marker catalog"
           href: articles/Marker_Catalog.html
-        - text: "Cell-type annotation using Miko Scoring"
+        - text: "Marker-based cell-type annotation using Miko Scoring"
           href: articles/Cell_Annotation.html
         - text: "Gene Module Detection using SSN analysis"
           href: articles/Module_Detection.html
