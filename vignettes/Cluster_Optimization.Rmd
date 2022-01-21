@@ -47,7 +47,6 @@ library(scMiko)
 # load human gastrulation data
 so.query <- readRDS("../data/so_tyser2021_220621.rds")
 
-
 # visualize clusters
 cluster.UMAP(so = so.query, group.by = "sub_cluster") + 
   theme_void() + 

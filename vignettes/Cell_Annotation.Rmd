@@ -262,7 +262,7 @@ Annotations are interpreted using the following statistics:
 Example thresholds: miko_score > 0, fdr < 0.05, coherence_fraction > 0.8, frequent_flier = F
 
 ```{r score table}
-flex.asDT(df.score_summary %>% dplyr::arrange(miko_score), page_length = 15)
+flex.asDT(df.score_summary %>% dplyr::arrange(miko_score), page_length = 10,  scrollX = TRUE)
 ```
 
 The `annotationCloud` function can be used to facilitate visualization and interpretation of annotations. 
@@ -286,7 +286,6 @@ The `annotationCloud` function can be used to facilitate visualization and inter
 
 ```
 
-
 ### Example 1
 
 This is an example of a clean annotation. Consistently across marker sets derived from independent studies, we find that the population is enriched for *erythroid/erythrocyte/'erythroblast* markers. Accordingly, the original authors had annotated this cluster as *erythroblasts*. 
@@ -307,13 +306,10 @@ plt.cloud[[4]]
 
 In this example one of the top annotations is *Distal Visceral Endoderm* suggesting an endodermal identity. While endoderm is not present among the other annotations, we find that *Gut* (Pijuan Sala 2019) and *Hepatoblasts* (Cao 2020) are both significantly enriched, and based on their endodermal origins, we have additional support for this cluster represents the endoderm. The original authors had annotated this cluster as *yolk sac endoderm*, *definitive endoderm* and *hypoblast*, thereby confirming our *endoderm* annotation. 
 
-
 ```{r fig.width=8, fig.height=4}
 plt.cloud[[5]]
 ```
 
-
-## {-}
 
 <details>
   <summary>**Session Info**</summary>

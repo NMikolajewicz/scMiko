@@ -81,6 +81,11 @@ cluster.UMAP(so.query) + theme_void() + theme(legend.position = "none")
 
 Another way to preprocess single-cell data is to use our QC & Preprocessing Module implemented in [scPipeline](...). Given a gene x cell count matrix, or cell ranger output, the QC & Preprocessing Module applies quality-control filters and preprocesses the data. The output from the module is a Seurat object, compatible with all downstream analysis work flows, and an intuitive dashboard report summarizing the data set and results. 
 
+## Optional data features
+
+Sample-level meta data is often of interest in single cell analyses. To accommodate this information, we have included sample-wise stratification and visualization throughout our `scPipeline` workflows which can be leveraged by including sample-level information in the `Barcodes` field of the Seurat object meta data. This is an optional feature and will not affect the performance of your analysis if omitted.   
+
+
 <details>
   <summary>**Session Info**</summary>
 ```{r}
