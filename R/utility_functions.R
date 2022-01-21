@@ -5569,11 +5569,27 @@ miko_message <- function(..., time = T, verbose = T){
 #' @param x Numeric vector
 #' @param lower.quantile lower quantile [0, 1]. Default = 0.01
 #' @param upper.quantile lower quantile [0, 1]. Default = 0.99
+#' @param lower.cutoff lower bound value to truncate data at. If specified, lower.quantile argument is ignored. Default = NA.
+#' @param upper.cutoff upper bound value to truncate data at. If specified, upper.quantile argument is ignored. Default = NA.
+#' @param verbose print truncation values. Default is F.
 #' @name snip
 #' @author Nicholas Mikolajewicz
-snip <- function(x, lower.quantile = 0.01, upper.quantile = 0.99){
-  lq <- quantile(x, lower.quantile, na.rm = T)
-  uq <- quantile(x, upper.quantile, na.rm = T)
+snip <- function(x, lower.quantile = 0.01, upper.quantile = 0.99, lower.cutoff = NA, upper.cutoff = NA, verbose = F){
+
+  if ((!is.na(lower.cutoff)) && is.numeric(lower.cutoff)){
+    lq <- lower.cutoff
+  } else {
+    lq <- quantile(x, lower.quantile, na.rm = T)
+  }
+
+  if ((!is.na(upper.cutoff)) && is.numeric(upper.cutoff)){
+    uq <- upper.cutoff
+  } else {
+    uq <- quantile(x, upper.quantile, na.rm = T)
+  }
+
+  if (lq > uq) stop(paste0("lower truncation value (", signif(lq, 3), ") must be lower than upper truncation value (", signif(uq, 3), ")"))
+  miko_message(paste0("data clipped at [",signif(lq, 3), ", ", signif(uq, 3), "]"), verbose = verbose )
 
   x[x < lq] <- lq
   x[x > uq] <- uq

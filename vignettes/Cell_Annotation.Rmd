@@ -50,7 +50,7 @@ cluster.UMAP(so = so.query, group.by = "sub_cluster") +
 
 ```
 
-Prior to running the Miko scoring pipeline, you must ensure that the loaded Seurat object has been clustered using `FindClusters(...)` and that cluster information is available in the 'seurat_clusters' meta data field. 
+Prior to running the Miko scoring pipeline, you must ensure that the loaded Seurat object has been clustered using `FindClusters()` and that cluster information is available in the 'seurat_clusters' meta data field. 
 
 ```{r seurat clusters}
 
@@ -67,7 +67,6 @@ cluster.UMAP(so.query, group.by = "seurat_clusters")
 Prior to performing marker-based cell-type annotation, we first prepare a comprehensive list of cell-type markers. We will use a cell-type catalog derived from multiple public scRNAseq atlases (see Cell-type marker catalog vignette for details). 
 
 In the absence of a-priori sample information, we would include all the cell-type markers in the catalog. However, given the known early embryonic age of the profiled sample, we will proceed with cell-markers derived from murine organogenesis (Cao 2019), human fetus (Cao 2020), developing murine brain (La Manno 2021), and murine gastrulation (Pijuan-Sala 2019):
-
 
 
 ```{r cell markers}
@@ -90,9 +89,9 @@ marker.list <- marker.list[grepl("Cao2019|Cao2020|Manno|Pijuan", names(marker.li
 
 ## Miko scoring pipeline
 
-The miko scoring pipeline is a 3-step workflow that is implemented in `nullScore`, `mikoScore`, and `sigScore` functions. 
+The miko scoring pipeline is a 3-step workflow that is implemented in `nullScore()`, `mikoScore()`, and `sigScore()` functions. 
 
-In **step 1** we run `nullScore`, which fits a null model that corrects for gene set-size biases. 
+In **step 1** we run `nullScore()`, which fits a null model that corrects for gene set-size biases. 
 
 
 ```{r calculate null model, fig.width=14, fig.height=4.5}
@@ -105,7 +104,7 @@ ns.res <- nullScore(object = so.query, assay = DefaultAssay(so.query), n.replica
 
 ```
 
-From this example, the variance-gene set-size relationship can be appreciated in panel `A` and `B`. Panel `C` illustrates the correction that is applied to ensure that the null score variance is constant across all gene set sizes.  
+From this example, the variance-gene set-size relationship can be appreciated in panel **A** and **B**. Panel **C** illustrates the correction that is applied to ensure that the null score variance is constant across all gene set sizes.  
 
 ```{r visualize null model,  fig.width=14, fig.height=4.5}
 
@@ -119,7 +118,7 @@ cowplot::plot_grid(variance.mean.plot + labs( subtitle = ""),
                    nrow = 1, align = "h", labels = "AUTO")
 ```
 
-In **step 2**, cell-type marker sets are scored using `mikoScore`. 
+In **step 2**, cell-type marker sets are scored using `mikoScore()`. 
 
 ```{r cell-level scores,  fig.width=16, fig.height=15}
 
@@ -129,7 +128,7 @@ so.query_scored <- mikoScore(object = so.query, geneset = marker.list, nbin = 24
 
 ```
 
-Finally, in **step 3**, we identify which cell-type marker sets are significantly enriched in each cluster. 
+Finally, in **step 3**, we identify which cell-type marker sets are significantly enriched in each cluster using `sigScore()`. 
 
 ```{r significantly enriched gene sets}
 
@@ -265,7 +264,7 @@ Example thresholds: miko_score > 0, fdr < 0.05, coherence_fraction > 0.8, freque
 flex.asDT(df.score_summary %>% dplyr::arrange(miko_score), page_length = 10,  scrollX = TRUE)
 ```
 
-The `annotationCloud` function can be used to facilitate visualization and interpretation of annotations. 
+The `annotationCloud()` function can be used to facilitate visualization and interpretation of annotations. 
 
 ```{r, fig.width=8, fig.height=4}
 

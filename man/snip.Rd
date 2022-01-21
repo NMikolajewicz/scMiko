@@ -4,7 +4,14 @@
 \alias{snip}
 \title{Winsorize values at lower and upper quantiles.}
 \usage{
-snip(x, lower.quantile = 0.01, upper.quantile = 0.99)
+snip(
+  x,
+  lower.quantile = 0.01,
+  upper.quantile = 0.99,
+  lower.cutoff = NA,
+  upper.cutoff = NA,
+  verbose = F
+)
 }
 \arguments{
 \item{x}{Numeric vector}
@@ -12,6 +19,12 @@ snip(x, lower.quantile = 0.01, upper.quantile = 0.99)
 \item{lower.quantile}{lower quantile [0, 1]. Default = 0.01}
 
 \item{upper.quantile}{lower quantile [0, 1]. Default = 0.99}
+
+\item{lower.cutoff}{lower bound value to truncate data at. If specified, lower.quantile argument is ignored. Default = NA.}
+
+\item{upper.cutoff}{upper bound value to truncate data at. If specified, upper.quantile argument is ignored. Default = NA.}
+
+\item{verbose}{print truncation values. Default is F.}
 }
 \description{
 Winsorize values at lower and upper quantiles.

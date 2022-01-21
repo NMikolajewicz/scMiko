@@ -32,7 +32,7 @@ knitr::opts_chunk$set(
 ```
 
 
-ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The specificity-based resolution selection criterion described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution
+ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The **specificity-based resolution selection criterion** described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution
 
 
 For this tutorial we will analyze the Human Gastrulation dataset reported by Tyser 2021. The dataset consists of 1195 cells. We will identify the optimal clustering resolution using a specificity-based relution selection criterion.  
@@ -56,7 +56,7 @@ cluster.UMAP(so = so.query, group.by = "sub_cluster") +
 
 ## Multi-Resolution Clustering
 
-Next, we cluster the data across a range of candidate resolutions. Cluster configurations can be visually assessed, and compared to cell populations annotated by the authors (above). 
+Next, we cluster the data across a range of candidate resolutions. Cluster configurations can be visually assessed, and compared to cell populations annotated by the authors *(above)*. 
 
 
 ```{r cluster data, fig.width=16, fig.height=10}
@@ -123,7 +123,7 @@ cowplot::plot_grid(plt.auc.spec +
 
 ```
 
-
+### Multi-level resolutions
 
 Acknowledging that there exist multiple levels of resolutions that are biologically relevant (e.g., cell types vs. cell subtypes), we can also specify valid cluster configurations at higher resolutions, as suggested by the “elbows” in the specificity plot. In the current dataset, we observe an "elbow" at a resolution of 1.0. 
 
@@ -141,9 +141,9 @@ cowplot::plot_grid(plt.auc.spec +
 
 ```
 
-## Alternative Approach: Silhouette Width
+## Alternative Method 1: Silhouette Width
 
-For comparison, we can also evaluate each cluster resolution using silhouette widths. 
+For comparison, we also evaluate each cluster resolution using silhouette widths. 
 
 ```{r silhouette analyses, fig.width=20, fig.height=16}
 
@@ -158,7 +158,7 @@ ncol = 4)
 
 However, we can see that the silhouette width-based approach tends to favor lower resolutions that amalgamate cell clusters into larger populations. 
 
-```{r}
+```{r sil resolution, fig.width=5.3, fig.height=5}
 
 msil_list$resolution_plot
 

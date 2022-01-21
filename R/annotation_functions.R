@@ -1088,7 +1088,7 @@ coherentFraction <- function(object, score.matrix, genelist, method = c("pearson
 #'                              score.p = df.score_summary$p,
 #'                              score.fdr = df.score_summary$fdr,
 #'                              score.coherence.fraction = df.score_summary$coherence_fraction,
-#'                              score.frequenct.flier = NULL,
+#'                              score.frequent.flier = NULL,
 #'                              fdr.correction = T,
 #'                              p.threshold = 0.05,
 #'                              coherence.threshold = 0.9,
@@ -1116,7 +1116,7 @@ annotationCloud <- function(object,
   miko_message("Generating annotation wordclouds...", verbose = verbose)
 
   if (is.null(score.coherence.fraction)) coherence.threshold <- 0
-  if (is.null(score.frequenct.flier)) score.frequenct.flier <- F
+  if (is.null(score.frequent.flier)) score.frequent.flier <- F
 
   vst.merge.cloud <- data.frame(
     miko_score = score,
@@ -1125,7 +1125,7 @@ annotationCloud <- function(object,
     p = score.p,
     fdr = score.fdr,
     coherence_fraction = score.coherence.fraction,
-    frequent_flier = score.frequenct.flier
+    frequent_flier = score.frequent.flier
   )
 
   u.cl <- unique(vst.merge.cloud$cluster)
