@@ -78,8 +78,19 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/install.html">Getting Started</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install">scMiko Package</a>
+    </li>
+    <li class="dropdown-header">scPipeline Reports</li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -90,19 +101,19 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -153,7 +164,7 @@
   <span class='va'>score.p</span>,
   score.fdr <span class='op'>=</span> <span class='cn'>NULL</span>,
   score.coherence.fraction <span class='op'>=</span> <span class='cn'>NULL</span>,
-  score.frequenct.flier <span class='op'>=</span> <span class='cn'>NULL</span>,
+  score.frequent.flier <span class='op'>=</span> <span class='cn'>NULL</span>,
   fdr.correction <span class='op'>=</span> <span class='cn'>T</span>,
   p.threshold <span class='op'>=</span> <span class='fl'>0.05</span>,
   coherence.threshold <span class='op'>=</span> <span class='fl'>0.8</span>,
@@ -197,6 +208,10 @@
       <td><p>vector of coherence fractions. See coherentFraction(...) for details.</p></td>
     </tr>
     <tr>
+      <th>score.frequent.flier</th>
+      <td><p>vector of logicals specifying whether score belongs to frequent flier.</p></td>
+    </tr>
+    <tr>
       <th>fdr.correction</th>
       <td><p>Specify whether p-value should be corrected using Benjamini &amp; Hochberg method. Default is T.</p></td>
     </tr>
@@ -215,10 +230,6 @@
     <tr>
       <th>verbose</th>
       <td><p>Logical, specify whether process is printed. Default is T.</p></td>
-    </tr>
-    <tr>
-      <th>score.frequent.flier</th>
-      <td><p>vector of logicals specifying whether score belongs to frequent flier.</p></td>
     </tr>
     </table>
 
@@ -250,13 +261,13 @@
                              score.p <span class='op'>=</span> <span class='va'>df.score_summary</span><span class='op'>$</span><span class='va'>p</span>,
                              score.fdr <span class='op'>=</span> <span class='va'>df.score_summary</span><span class='op'>$</span><span class='va'>fdr</span>,
                              score.coherence.fraction <span class='op'>=</span> <span class='va'>df.score_summary</span><span class='op'>$</span><span class='va'>coherence_fraction</span>,
-                             score.frequenct.flier <span class='op'>=</span> <span class='cn'>NULL</span>,
+                             score.frequent.flier <span class='op'>=</span> <span class='cn'>NULL</span>,
                              fdr.correction <span class='op'>=</span> <span class='cn'>T</span>,
                              p.threshold <span class='op'>=</span> <span class='fl'>0.05</span>,
                              coherence.threshold <span class='op'>=</span> <span class='fl'>0.9</span>,
                              show.n.terms <span class='op'>=</span> <span class='fl'>15</span>,
                              verbose <span class='op'>=</span> <span class='cn'>T</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Loading required package: ggwordcloud</span></div><div class='output co'>#&gt; <span class='message'>2022-01-20 18:17:49: Generating annotation wordclouds...</span></div><div class='output co'>#&gt; <span class='error'>Error in annotationCloud(object = so.query_scored, object.group = "seurat_clusters",     score = df.score_summary$miko_score, score.group = df.score_summary$cluster,     score.cell.type = df.score_summary$cell.type, score.p = df.score_summary$p,     score.fdr = df.score_summary$fdr, score.coherence.fraction = df.score_summary$coherence_fraction,     score.frequenct.flier = NULL, fdr.correction = T, p.threshold = 0.05,     coherence.threshold = 0.9, show.n.terms = 15, verbose = T): object 'df.score_summary' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='message'>Loading required package: ggwordcloud</span></div><div class='output co'>#&gt; <span class='message'>2022-01-21 15:25:47: Generating annotation wordclouds...</span></div><div class='output co'>#&gt; <span class='error'>Error in annotationCloud(object = so.query_scored, object.group = "seurat_clusters",     score = df.score_summary$miko_score, score.group = df.score_summary$cluster,     score.cell.type = df.score_summary$cell.type, score.p = df.score_summary$p,     score.fdr = df.score_summary$fdr, score.coherence.fraction = df.score_summary$coherence_fraction,     score.frequent.flier = NULL, fdr.correction = T, p.threshold = 0.05,     coherence.threshold = 0.9, show.n.terms = 15, verbose = T): object 'df.score_summary' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

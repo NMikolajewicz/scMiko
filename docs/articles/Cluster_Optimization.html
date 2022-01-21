@@ -37,8 +37,19 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/install.html">Getting Started</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install">scMiko Package</a>
+    </li>
+    <li class="dropdown-header">scPipeline Reports</li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -49,19 +60,19 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -96,7 +107,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Cluster Optimization</h1>
             
-            <h4 class="date">Compiled: 2022-01-20</h4>
+            <h4 class="date">Compiled: 2022-01-21</h4>
       
       
       <div class="hidden name"><code>Cluster_Optimization.Rmd</code></div>
@@ -105,7 +116,7 @@
 
     
     
-<p>ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The specificity-based resolution selection criterion described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution</p>
+<p>ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The <strong>specificity-based resolution selection criterion</strong> described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution</p>
 <p>For this tutorial we will analyze the Human Gastrulation dataset reported by Tyser 2021. The dataset consists of 1195 cells. We will identify the optimal clustering resolution using a specificity-based relution selection criterion.</p>
 <p>We start by reading in the data and visualizing the annotated population.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -122,7 +133,7 @@
 <div id="multi-resolution-clustering" class="section level2">
 <h2 class="hasAnchor">
 <a href="#multi-resolution-clustering" class="anchor"></a>Multi-Resolution Clustering</h2>
-<p>Next, we cluster the data across a range of candidate resolutions. Cluster configurations can be visually assessed, and compared to cell populations annotated by the authors (above).</p>
+<p>Next, we cluster the data across a range of candidate resolutions. Cluster configurations can be visually assessed, and compared to cell populations annotated by the authors <em>(above)</em>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># clustering data</span>
 <span class="va">mc.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiCluster.html">multiCluster</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, resolutions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>,
@@ -167,6 +178,9 @@
     <span class="va">plt.auc.dot</span><span class="op">$</span><span class="va">`0.5`</span> <span class="op">+</span> <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>, axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>,
         hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.25</span><span class="op">)</span>, labels <span class="op">=</span> <span class="st">"AUTO"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/evaluate%20specificity-1.png" width="1536"></p>
+<div id="multi-level-resolutions" class="section level3">
+<h3 class="hasAnchor">
+<a href="#multi-level-resolutions" class="anchor"></a>Multi-level resolutions</h3>
 <p>Acknowledging that there exist multiple levels of resolutions that are biologically relevant (e.g., cell types vs. cell subtypes), we can also specify valid cluster configurations at higher resolutions, as suggested by the “elbows” in the specificity plot. In the current dataset, we observe an “elbow” at a resolution of 1.0.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plt.auc.dot$</span>
@@ -176,10 +190,11 @@
     labels <span class="op">=</span> <span class="st">"AUTO"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/sub%20population-1.png" width="1152"></p>
 </div>
-<div id="alternative-approach-silhouette-width" class="section level2">
+</div>
+<div id="alternative-method-1-silhouette-width" class="section level2">
 <h2 class="hasAnchor">
-<a href="#alternative-approach-silhouette-width" class="anchor"></a>Alternative Approach: Silhouette Width</h2>
-<p>For comparison, we can also evaluate each cluster resolution using silhouette widths.</p>
+<a href="#alternative-method-1-silhouette-width" class="anchor"></a>Alternative Method 1: Silhouette Width</h2>
+<p>For comparison, we also evaluate each cluster resolution using silhouette widths.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">msil_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiSilhouette.html">multiSilhouette</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, groups <span class="op">=</span> <span class="va">cluster.name</span>, assay_pattern <span class="op">=</span> <span class="va">assay.pattern</span>,
     verbose <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>
@@ -191,7 +206,7 @@
 <p>However, we can see that the silhouette width-based approach tends to favor lower resolutions that amalgamate cell clusters into larger populations.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">msil_list</span><span class="op">$</span><span class="va">resolution_plot</span></code></pre></div>
-<p><img src="Cluster_Optimization_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
+<p><img src="Cluster_Optimization_files/figure-html/sil%20resolution-1.png" width="508.8"></p>
 </div>
   </div>
 

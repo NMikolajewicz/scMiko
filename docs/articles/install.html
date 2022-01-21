@@ -37,8 +37,19 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../articles/install.html">Getting Started</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install">scMiko Package</a>
+    </li>
+    <li class="dropdown-header">scPipeline Reports</li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -49,19 +60,19 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -96,7 +107,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Getting Started</h1>
             
-            <h4 class="date">Compiled: 2022-01-20</h4>
+            <h4 class="date">Compiled: 2022-01-21</h4>
       
       
       <div class="hidden name"><code>install.Rmd</code></div>
@@ -152,10 +163,15 @@
 <p>Another way to preprocess single-cell data is to use our QC &amp; Preprocessing Module implemented in <a href="...">scPipeline</a>. Given a gene x cell count matrix, or cell ranger output, the QC &amp; Preprocessing Module applies quality-control filters and preprocesses the data. The output from the module is a Seurat object, compatible with all downstream analysis work flows, and an intuitive dashboard report summarizing the data set and results.</p>
 </div>
 </div>
-<div id="optional-data-features" class="section level2">
+<div id="sample-stratification" class="section level2">
 <h2 class="hasAnchor">
-<a href="#optional-data-features" class="anchor"></a>Optional data features</h2>
+<a href="#sample-stratification" class="anchor"></a>Sample stratification</h2>
 <p>Sample-level meta data is often of interest in single cell analyses. To accommodate this information, we have included sample-wise stratification and visualization throughout our <code>scPipeline</code> workflows which can be leveraged by including sample-level information in the <code>Barcodes</code> field of the Seurat object meta data. This is an optional feature and will not affect the performance of your analysis if omitted.</p>
+</div>
+<div id="species-support" class="section level2">
+<h2 class="hasAnchor">
+<a href="#species-support" class="anchor"></a>Species support</h2>
+<p>The <code>scMiko</code> package has been optimized for <em>human</em> and <em>murine</em> samples.</p>
 <details><p><summary><strong>Session Info</strong></summary></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>

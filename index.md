@@ -7,15 +7,21 @@ New features offered in scMiko include:
 - Differential expression analysis using the **co-dependency index (CDI)**
     - CDI identified binary DEGs
     - binary DEGs are highly-specific 
+    - [Vignette](articles/DEG.html)
 - Specificity-based cluster **resolution selection criterion**
     - method to identify optimal clustering configurations 
     - out-performs resampling-based approaches
+    - [Vignette](articles/Cluster_Optimization.html)
 - Cell-type annotation using **Miko Scoring pipeline**
     - unbiased scoring of variably-sized gene sets
     - hypothesis-testing frame work that accepts or rejects of candidate annotations
+    - [Vignette](articles/Cell_Annotation.html)
 - Gene module detection using **scale-free shared-nearest neighbor network (SSN) analysis**
     - module detection algorithm to identify and functionally annotate gene modules in an unsupervised manner
     - outperforms ICA and NMF methods in terms of GO term recovery and STRING PPI enrichment
+    - [Vignette](articles/Module_Detection.html)
+    
+Details can be found in our recent work: [Mikolajewicz, et al., BioRxiv](...)
     
 ## About scPipeline
 

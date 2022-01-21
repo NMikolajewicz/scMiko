@@ -78,8 +78,19 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/install.html">Getting Started</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install">scMiko Package</a>
+    </li>
+    <li class="dropdown-header">scPipeline Reports</li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -90,19 +101,19 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -144,7 +155,14 @@
     <p>Winsorize values at lower and upper quantiles.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>snip</span><span class='op'>(</span><span class='va'>x</span>, lower.quantile <span class='op'>=</span> <span class='fl'>0.01</span>, upper.quantile <span class='op'>=</span> <span class='fl'>0.99</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>snip</span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  lower.quantile <span class='op'>=</span> <span class='fl'>0.01</span>,
+  upper.quantile <span class='op'>=</span> <span class='fl'>0.99</span>,
+  lower.cutoff <span class='op'>=</span> <span class='cn'>NA</span>,
+  upper.cutoff <span class='op'>=</span> <span class='cn'>NA</span>,
+  verbose <span class='op'>=</span> <span class='cn'>F</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -160,6 +178,18 @@
     <tr>
       <th>upper.quantile</th>
       <td><p>lower quantile [0, 1]. Default = 0.99</p></td>
+    </tr>
+    <tr>
+      <th>lower.cutoff</th>
+      <td><p>lower bound value to truncate data at. If specified, lower.quantile argument is ignored. Default = NA.</p></td>
+    </tr>
+    <tr>
+      <th>upper.cutoff</th>
+      <td><p>upper bound value to truncate data at. If specified, upper.quantile argument is ignored. Default = NA.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>print truncation values. Default is F.</p></td>
     </tr>
     </table>
 

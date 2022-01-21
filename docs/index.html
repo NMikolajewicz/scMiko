@@ -37,8 +37,19 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="articles/install.html">Getting Started</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="articles/install">scMiko Package</a>
+    </li>
+    <li class="dropdown-header">scPipeline Reports</li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -49,19 +60,19 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
     </li>
     <li>
-      <a href="articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
@@ -94,22 +105,57 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="scmiko" class="section level3">
-<h3 class="hasAnchor">
-<a href="#scmiko" class="anchor"></a>scMiko</h3>
-<p>Single-cell RNA-seq analysis toolbox. Builds upon <a href="https://satijalab.org/seurat/">Seurat</a> Package.</p>
-<p>Visit <a href="https://nmikolajewicz.github.io/scMiko/">scMiko</a> site for documentation.</p>
-</div>
-<div id="installation" class="section level2">
+<div id="about-scmiko" class="section level2">
 <h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<p>Firstly, please install or update the package devtools by running</p>
-<pre><code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("devtools")</a></code></pre>
-<p>Then the <a href="https://nmikolajewicz.github.io/scMiko/">scMiko</a> package can be installed via</p>
-<pre><code><a href="https://devtools.r-lib.org/reference/remote-reexports.html">devtools::install_github(
-    repo = "NMikolajewicz/scMiko",
-    ref = "master",
-    auth_token = "a3c1c9b15c496991c952d1fe3ccc52db770f22fa")</a></code></pre>
+<a href="#about-scmiko" class="anchor"></a>About scMiko</h2>
+<p>scMiko is an R package developed for single-cell RNA-seq analysis. It was designed using the <a href="https://satijalab.org/seurat/">Seurat</a> framework, and offers existing and novel single-cell analytic work flows.</p>
+<p>New features offered in scMiko include:</p>
+<ul>
+<li>Differential expression analysis using the <strong>co-dependency index (CDI)</strong>
+<ul>
+<li>CDI identified binary DEGs</li>
+<li>binary DEGs are highly-specific</li>
+<li><a href="articles/DEG.html">Vignette</a></li>
+</ul>
+</li>
+<li>Specificity-based cluster <strong>resolution selection criterion</strong>
+<ul>
+<li>method to identify optimal clustering configurations</li>
+<li>out-performs resampling-based approaches</li>
+<li><a href="articles/Cluster_Optimization.html">Vignette</a></li>
+</ul>
+</li>
+<li>Cell-type annotation using <strong>Miko Scoring pipeline</strong>
+<ul>
+<li>unbiased scoring of variably-sized gene sets</li>
+<li>hypothesis-testing frame work that accepts or rejects of candidate annotations</li>
+<li><a href="articles/Cell_Annotation.html">Vignette</a></li>
+</ul>
+</li>
+<li>Gene module detection using <strong>scale-free shared-nearest neighbor network (SSN) analysis</strong>
+<ul>
+<li>module detection algorithm to identify and functionally annotate gene modules in an unsupervised manner</li>
+<li>outperforms ICA and NMF methods in terms of GO term recovery and STRING PPI enrichment</li>
+<li><a href="articles/Module_Detection.html">Vignette</a></li>
+</ul>
+</li>
+</ul>
+<p>Details can be found in our recent work: <a href="...">Mikolajewicz, et al., BioRxiv</a></p>
+</div>
+<div id="about-scpipeline" class="section level2">
+<h2 class="hasAnchor">
+<a href="#about-scpipeline" class="anchor"></a>About scPipeline</h2>
+<p>The scPipeline analysis pipeline is a modular collection of R markdown scripts that generates dashboard reports for scRNAseq analyses, and is dependent on the scMiko package. The modular framework permits flexible usage, without necessitating complete reliance on a single analysis platform. Additionally, the self-contained reports that are generated by each module provide a comprehensive analysis summary and log of analytic parameters and scripts, thereby ensuring reproducible and shareable analysis workflows.</p>
+<p>Current the following analysis modules are available:</p>
+<ul>
+<li>QC &amp; preprocessing</li>
+<li>Integration</li>
+<li>Cluster optimization</li>
+<li>Cell-type annotation</li>
+<li>Gene expression and association analyses</li>
+<li>Gene module detection</li>
+</ul>
+<p><strong>scMiko</strong> and <strong>scPipeline</strong> are developed and maintained by the Moffat lab.</p>
 </div>
 <div id="authors" class="section level2">
 <h2 class="hasAnchor">
@@ -117,11 +163,6 @@
 <ul>
 <li><a href="https://scholar.google.ca/citations?user=LBWQMXsAAAAJ&amp;hl=en&amp;oi=ao">Nicholas Mikolajewicz</a></li>
 </ul>
-</div>
-<div id="license" class="section level2">
-<h2 class="hasAnchor">
-<a href="#license" class="anchor"></a>License</h2>
-<p>This project is licensed under the MIT License - see the <a href="LICENSE.html">LICENSE.md</a> file for details</p>
 </div>
 <div id="acknowledgments" class="section level2">
 <h2 class="hasAnchor">
