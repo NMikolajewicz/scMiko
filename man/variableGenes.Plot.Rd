@@ -4,7 +4,7 @@
 \alias{variableGenes.Plot}
 \title{Plot variable genes in Seurat Object}
 \usage{
-variableGenes.Plot(so, gNames, set_name = NULL, top.n.genes = 10)
+variableGenes.Plot(so, gNames, set_name = NULL, top.n.genes = 10, ...)
 }
 \arguments{
 \item{so}{Seurat Object}
@@ -14,10 +14,12 @@ variableGenes.Plot(so, gNames, set_name = NULL, top.n.genes = 10)
 \item{set_name}{Character specfiying name of dataset. Optional.}
 
 \item{top.n.genes}{Numeric. Top n genes to label on plot.}
+
+\item{...}{additional arguments passed to Seurat::VariableFeaturePlot(...)}
 }
 \value{
 ggplot handle
 }
 \description{
-Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labelled.
+Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labeled.
 }

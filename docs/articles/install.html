@@ -46,9 +46,11 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">Computational Resources</li>
     <li>
-      <a href="../articles/install">scMiko Package</a>
+      <a href="../articles/install.html">scMiko Package</a>
     </li>
-    <li class="dropdown-header">scPipeline Reports</li>
+    <li>
+      <a href="../articles/scPipeline_getting_started.html">scPipeline Reports</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -63,13 +65,13 @@
       <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster resolution selection using marker-specificity criterion</a>
+      <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
     </li>
     <li>
       <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-type annotation using Miko Scoring</a>
+      <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
       <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
@@ -119,10 +121,10 @@
 <div id="install" class="section level2">
 <h2 class="hasAnchor">
 <a href="#install" class="anchor"></a>Install</h2>
-<p>To install scMiko, <a href="https://www.r-project.org/">R</a> version 4.0 or greater is required. We also recommend installing <a href="https://www.rstudio.com/">R Studio</a>.</p>
-<p>To install <code>scMiko</code>, run:</p>
+<p><a href="https://www.r-project.org/">R</a> version 4.0 or greater is required. We also recommend installing <a href="https://www.rstudio.com/">R Studio</a>.</p>
+<p>To install scMiko, run:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Enter commands in R (or R studio, if installed)</span>
+<code class="sourceCode R"><span class="co"># Enter commands in R (or R studio)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html">install_github</a></span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"NMikolajewicz/scMiko"</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load scMiko</span>

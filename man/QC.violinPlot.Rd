@@ -8,7 +8,8 @@ QC.violinPlot(
   so,
   features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
   group.by = NULL,
-  plt.log.flag = T
+  plt.log.flag = T,
+  ...
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ QC.violinPlot(
 \item{group.by}{meta data field to group plots by.}
 
 \item{plt.log.flag}{Logical specifying whether data are plotted on log scale. Default is True.}
+
+\item{...}{additional arguments passed to Seurat::VlnPlot(...)}
 }
 \value{
 list of ggplot handles

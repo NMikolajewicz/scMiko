@@ -41,11 +41,12 @@ git clone https://github.com/NMikolajewicz/scPipeline
 cd scPipeline
 ```
 
-### Basic resources
+### Requirements
 
-Each scPipeline module depends on various R packages to run, and these packages are all listed and loaded at the start of each module script. 
+Foremost, scPipeline is dependent on [flexdashboards](https://rstudio.github.io/flexdashboard/index.html) to generate interactive dashboards using R Markdown. The [flexdashboard](https://rstudio.github.io/flexdashboard/index.html) package can be installed from CRAN as follows:
 
-```{r}
-
+```{r, eval = FALSE}
+install.packages("flexdashboard")
 ```
 
+Additionally, each scPipeline module depends on a variety of R packages to run, and a complete list of required packages can be found at the beginning of each module script. 

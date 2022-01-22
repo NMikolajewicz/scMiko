@@ -1,0 +1,88 @@
+---
+title: "scPipeline analysis workflows"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+
+The following workflows are outlined in this section:
+
+1. Prepare data for custom downstream analysis
+2. Determine cluster-Specific Genes
+3. Annotate cell types
+4. Evaluate gene set expression(s) and associations
+5. Identify gene modules
+
+### 1. Prepare data for custom downstream analysis
+1. **M01: Pre-process data**
+    * Generates Seurat object with normalized and scaled single-cell data. 
+2. **M02: Integrate data** (*optional*)
+    * Only necessary if batch correction and integration is required for multiple data sets. 
+3. **M18: Identify optimal cluster resolution** (*optional*)
+    * Evaluate cell population clusters at several resolutions to identify optimal resolution.
+
+### 2. Determine cluster-specific genes
+1. **M01: Pre-process data**
+    * Generates Seurat object with normalized and scaled single-cell data. 
+2. **M02: Integrate data** (*optional*)
+    * Only necessary if batch correction and integration is required for multiple data sets. 
+3. **M18: Identify optimal cluster resolution**
+    * Evaluate cell population clusters at several resolutions to identify optimal resolution.
+    * Differential genes are computed for each evaluated cluster using *Wilcoxon* and *CDI* DE methods. 
+
+### 3. Annotate cell types
+
+1. **M01: Pre-process data**
+    * Generates Seurat object with normalized and scaled single-cell data. 
+2. **M02: Integrate data** (*optional*)
+    * Only necessary if batch correction and integration is required for multiple data sets. 
+3. **M18: Identify optimal cluster resolution** (*optional*)
+    * Evaluate cell population clusters at several resolutions to identify optimal resolution.
+4. **M05: Annotate cell types**
+    * Annotate clusters at resolution identified in M18. 
+
+### 4. Evaluate gene expression(s) and associations
+
+1. **M01: Pre-process data**
+    * Generates Seurat object with normalized and scaled single-cell data.  
+2. **M02: Integrate data** (*optional*)
+    * Only necessary if batch correction and integration is required for multiple data sets. 
+3. **M18: Identify optimal cluster resolution** (*optional*)
+    * Evaluate cell population clusters at several resolutions to identify optimal resolution.
+4. **M09: Evaluate gene expression and association profiles**
+
+### 5. Identify gene modules
+
+1. **M01: Pre-process data**
+    * Generates Seurat object with normalized and scaled single-cell data. 
+2. **M02: Integrate data** (*optional*)
+    * Only necessary if batch correction and integration is required for multiple data sets. 
+3. **M18: Identify optimal cluster resolution** (*optional*)
+    * Evaluate cell population clusters at several resolutions to identify optimal resolution.
+5. **M24: Identify gene modules**. 

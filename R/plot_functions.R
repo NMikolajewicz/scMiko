@@ -72,22 +72,23 @@ scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = 
 
 #' Plot variable genes in Seurat Object
 #'
-#' Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labelled.
+#' Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labeled.
 #'
 #' @param so Seurat Object
 #' @param gNames Named gene list; entries are Symbols, names are Ensemble.
 #' @param set_name Character specfiying name of dataset. Optional.
 #' @param top.n.genes Numeric. Top n genes to label on plot.
+#' @param ... additional arguments passed to Seurat::VariableFeaturePlot(...)
 #' @name variableGenes.Plot
 #' @return ggplot handle
 #'
-variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10){
+variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ...){
 
   # top 10 most and least variable genes
   top10 <- head(VariableFeatures(so), assay = "gene_name", top.n.genes)
 
   # Plot variable features
-  plt.handle <- VariableFeaturePlot(so)
+  plt.handle <- VariableFeaturePlot(so, ...)
 
   # plot title
   if (is.null(set_name)){
@@ -115,10 +116,11 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10){
 #' @param features meta data features to plot. Default is c("nFeature_RNA", "nCount_RNA", "percent.mt").
 #' @param group.by meta data field to group plots by.
 #' @param plt.log.flag Logical specifying whether data are plotted on log scale. Default is True.
+#' @param ... additional arguments passed to Seurat::VlnPlot(...)
 #' @name QC.violinPlot
 #' @return list of ggplot handles
 #'
-QC.violinPlot <- function(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = NULL, plt.log.flag = T){
+QC.violinPlot <- function(so, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), group.by = NULL, plt.log.flag = T, ...){
 
   stopifnot("'so' must be seurat object"  = "Seurat" %in% class(so))
   if (!is.null(group.by)){
@@ -130,12 +132,12 @@ QC.violinPlot <- function(so, features = c("nFeature_RNA", "nCount_RNA", "percen
 
   if (plt.log.flag){
     # logarithmic scale
-    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = TRUE)
-    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = TRUE)
+    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = TRUE, ...)
+    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = TRUE, ...)
   } else{
     # raw scale
-    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = FALSE)
-    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = FALSE)
+    plt1 <- VlnPlot(so, features = features2plot, ncol = 3, log = FALSE, ...)
+    plt2 <- VlnPlot(so, features = features2plot, group.by = group.by, ncol = 3, log = FALSE, ...)
   }
 
   output <- list(plt1, plt2)
@@ -648,6 +650,18 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
       flatly.colors <- c('#18BC9C','#2C3E50','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
       tm.list[[list.ind]] <- do.call(paste0("scale_fill_manual"), args = list(values = flatly.colors))
       list.ind <- list.ind + 1
+    } else if (fill.palette == "flatly2"){
+      flatly.colors <- c('#2C3E50','#18BC9C','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_fill_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else if (fill.palette == "flatly3"){
+      flatly.colors <- c('#2C3E50','#F39C12','#18BC9C','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_fill_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else if (fill.palette == "flatly4"){
+      flatly.colors <- c('#F39C12','#2C3E50','#18BC9C','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_fill_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
     } else {
       require(ggthemes)
       tm.list[[list.ind]] <- do.call(paste0("scale_fill_", fill.palette), args = list())
@@ -656,8 +670,20 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
   }
 
   if (!is.na(color.palette)){
-    if (fill.palette == "flatly"){
+    if (color.palette == "flatly"){
       flatly.colors <- c('#18BC9C','#2C3E50','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_color_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else if (color.palette == "flatly2"){
+      flatly.colors <- c('#2C3E50','#18BC9C','#F39C12','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_color_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else if (color.palette == "flatly3"){
+      flatly.colors <- c('#2C3E50','#F39C12','#18BC9C','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
+      tm.list[[list.ind]] <- do.call(paste0("scale_color_manual"), args = list(values = flatly.colors))
+      list.ind <- list.ind + 1
+    } else if (color.palette == "flatly4"){
+      flatly.colors <- c('#F39C12','#2C3E50','#18BC9C','#E74C3C','#3498DB','#18BC9C','#2C3E50','#F39C12')
       tm.list[[list.ind]] <- do.call(paste0("scale_color_manual"), args = list(values = flatly.colors))
       list.ind <- list.ind + 1
     } else {

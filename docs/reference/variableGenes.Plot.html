@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Plot variable genes in Seurat Object — variableGenes.Plot" />
-<meta property="og:description" content="Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labelled." />
+<meta property="og:description" content="Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labeled." />
 
 
 
@@ -78,8 +78,21 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/install.html">Getting Started</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install.html">scMiko Package</a>
+    </li>
+    <li>
+      <a href="../articles/scPipeline_getting_started.html">scPipeline Reports</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -90,22 +103,26 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
+    <li class="dropdown-header">Analysis workflows</li>
+    <li>
+      <a href="../articles/RscPipeline_analysis_workflows.html"></a>
+    </li>
     <li>
       <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
     </li>
@@ -141,10 +158,10 @@
     </div>
 
     <div class="ref-description">
-    <p>Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labelled.</p>
+    <p>Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labeled.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>variableGenes.Plot</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>gNames</span>, set_name <span class='op'>=</span> <span class='cn'>NULL</span>, top.n.genes <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>variableGenes.Plot</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>gNames</span>, set_name <span class='op'>=</span> <span class='cn'>NULL</span>, top.n.genes <span class='op'>=</span> <span class='fl'>10</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -164,6 +181,10 @@
     <tr>
       <th>top.n.genes</th>
       <td><p>Numeric. Top n genes to label on plot.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>additional arguments passed to Seurat::VariableFeaturePlot(...)</p></td>
     </tr>
     </table>
 
