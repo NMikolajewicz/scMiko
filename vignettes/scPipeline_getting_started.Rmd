@@ -1,5 +1,5 @@
 ---
-title: "Getting Started"
+title: "Getting Started with scPipeline"
 output:
   html_document:
     theme: united
@@ -30,16 +30,27 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Setup
+### Setup
 
 [R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
 
 scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on [scPipeline GitHut repository](https://github.com/NMikolajewicz/scPipeline). To setup and run scPipeline, download the repository locally:
 
+#### Option 1: Clone git repository with Bash
+
 ``` bash
 git clone https://github.com/NMikolajewicz/scPipeline
 cd scPipeline
 ```
+
+#### Option 2: Clone git repository with RStudio
+
+In RStudio, navigate to `file` -> `New Project...` -> `Version Control` -> `Git`. You will then be prompted to provide the git repository information:
+
+    Repository URL: https://github.com/NMikolajewicz/scPipeline
+    Project Directory Name: scPipeline
+    
+Press `Create Project` and you're good to go!
 
 ### Requirements
 
@@ -50,3 +61,29 @@ install.packages("flexdashboard")
 ```
 
 Additionally, each scPipeline module depends on a variety of R packages to run, and a complete list of required packages can be found at the beginning of each module script. 
+
+To install multiple R packages simultaneously, the following command can be used:
+
+```{r, eval = FALSE}
+# example
+install.packages(c("Seurat", "presto", "dplyr", "tidyr", "stringr", "RColorBrewer", "ggplot2", "DT", "flexdashboard", "ggrepel", "future",  "ggwordcloud", "scales",  "org.Mm.eg.db", "org.Hs.eg.db","parallel", "doParallel", "foreach"))
+```
+
+### Running scPipeline Modules
+
+Running scPipeline modules is like running any other Rmarkdown script:
+
+1. **Open** a scPipeline module script (.Rmd) in RStudio.
+2. **Specify** analysis parameters
+    * See [Module Overviews](...) for instructions. 
+3. **Run** scPipeline Module. Each scPipeline module can be run in one of two ways:
+    1. `knit` document (*recommended*)
+        * Renders an .HTML report
+    2. Run chunk-by-chunk
+        * If `print.inline = TRUE`, figures are printing within the R markdown file. 
+        * Does not render an .HTML report. 
+        * This option permit users to customize their analyses beyond what has been provided by us. 
+
+### scPipeline .HTML reports
+
+Every scPipeline Module generates an HTML report summarizing the analysis results. These can be viewed using any browser. Given their portability (i.e., self-contained), these can be shared easily shared among users. HTML reports are generated using [flexdashboard](https://rstudio.github.io/flexdashboard/index.html).

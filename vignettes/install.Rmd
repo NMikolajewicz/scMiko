@@ -1,5 +1,5 @@
 ---
-title: "Getting Started"
+title: "Getting Started with scMiko"
 output:
   html_document:
     theme: united
@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Install
+## Setup
 
 [R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
 
