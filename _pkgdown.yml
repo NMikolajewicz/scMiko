@@ -17,8 +17,9 @@ navbar:
       menu:
         - text: Computational Resources
         - text: "scMiko Package"
-          href: articles/install
+          href: articles/install.html
         - text: "scPipeline Reports"
+          href: articles/scPipeline_getting_started.html
     - text: "Vignettes"
       menu:
         - text: scMiko Vignettes

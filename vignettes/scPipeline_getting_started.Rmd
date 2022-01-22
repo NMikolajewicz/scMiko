@@ -1,0 +1,51 @@
+---
+title: "Getting Started"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+## Setup
+
+[R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
+
+scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on [scPipeline GitHut repository](https://github.com/NMikolajewicz/scPipeline). To setup and run scPipeline, download the repository locally:
+
+``` bash
+git clone https://github.com/NMikolajewicz/scPipeline
+cd scPipeline
+```
+
+### Basic resources
+
+Each scPipeline module depends on various R packages to run, and these packages are all listed and loaded at the start of each module script. 
+
+```{r}
+
+```
+
