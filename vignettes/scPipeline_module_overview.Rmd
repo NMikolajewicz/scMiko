@@ -52,7 +52,7 @@ Initial appraisal of scRNA-seq count matrix data and overview of quality control
 
 ### Example Reports
 
-- placeholder
+- Ochocka 2021: [immune infiltrates in GL261-engrafted murine brain](articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html)       
 
 ### Implementation
 
@@ -213,6 +213,7 @@ Parameter |Description |Argument
 **general.rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
 **general.barcode.recode** | Named list where names are new labels, and entries are old labels. If is provided for old labels, treated as wild card. e.g. list(in.vitro = c("invitro), in.vivo = NA). See `scMiko::recordBarcode(...)` for details. | Named list where names are new labels, and entries are old labels. 
 **expression.do.hex** | show UMAP expression using schex. Default is FALSE | logical
+**n.workers** | number of workers used for parallel implementation. Set to 1 for non-parallel run. | numeric
 **developer** | Developer mode. Default is FALSE. | logical
 
 ## Module 18: Cluster Optimization

@@ -1114,7 +1114,7 @@ multiCluster <- function(object, resolutions, assay = NULL, nworkers = 1, pca_va
 #' @param deg_prefilter If TRUE, wilcoxon analysis is performed first to subset DEG features for downstream analysis. Results in faster performance. Default is TRUE.
 #' @param cdi_bins Vector specifying binning for CDI-based specificity curve. Must range [0,1]. Default is seq(0, 1, by = 0.01).
 #' @param min.pct Minimal expression of features that are considered in specificity analysis. Represents fraction of expression cells and must range [0,1]. Higher values result in faster performance. Default is 0.1.
-#' @param n.workers Number of workers used for parallel implementation. Default is 4.
+#' @param n.workers Number of workers used for parallel implementation. Default is 1.
 #' @param return_dotplot If TRUE, dot plots visualizing expression of top specific markers are returned. Default is T.
 #' @param verbose Print progress. Default is TRUE.
 #' @name multiSpecificity
@@ -1132,7 +1132,7 @@ multiCluster <- function(object, resolutions, assay = NULL, nworkers = 1, pca_va
 #' plt.auc.spec <- ms.list$resolution_plot
 #' plt.auc.dot <- ms.list$dot_plot
 multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilter = T,
-                             cdi_bins = seq(0, 1, by = 0.01), min.pct = 0.1, n.workers = 4, return_dotplot = T,  verbose = T){
+                             cdi_bins = seq(0, 1, by = 0.01), min.pct = 0.1, n.workers = 1, return_dotplot = T, verbose = T){
 
   require(parallel);
   require(foreach);
@@ -1164,7 +1164,7 @@ multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilt
 
 
 
-      if (is.null(n.workers)) n.workers <- 4
+      if (is.null(n.workers)) n.workers <- 1
       if (n.workers > parallel::detectCores()) n.workers <- parallel::detectCores()
       all.deg.list <- multiDEG(object = object, groups = cluster_names,
                                only_pos = T,
@@ -1191,6 +1191,7 @@ multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilt
   # use presto to nominate top AUC and run CDI on subset. faster performance?
   cdi_cluster <- findCDIMarkers(object = object,
                                 features.x = available_clusters,
+                                n.workers = n.workers,
                                 features.y = features)
 
 

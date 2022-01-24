@@ -11,7 +11,7 @@ multiSpecificity(
   deg_prefilter = T,
   cdi_bins = seq(0, 1, by = 0.01),
   min.pct = 0.1,
-  n.workers = 4,
+  n.workers = 1,
   return_dotplot = T,
   verbose = T
 )
@@ -29,7 +29,7 @@ multiSpecificity(
 
 \item{min.pct}{Minimal expression of features that are considered in specificity analysis. Represents fraction of expression cells and must range [0,1]. Higher values result in faster performance. Default is 0.1.}
 
-\item{n.workers}{Number of workers used for parallel implementation. Default is 4.}
+\item{n.workers}{Number of workers used for parallel implementation. Default is 1.}
 
 \item{return_dotplot}{If TRUE, dot plots visualizing expression of top specific markers are returned. Default is T.}
 

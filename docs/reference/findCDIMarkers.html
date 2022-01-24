@@ -119,16 +119,11 @@
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
     <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_analysis_workflows.html">Analysis workflows</a>
     </li>
   </ul>
 </li>
@@ -172,6 +167,7 @@
   ncell.subset <span class='op'>=</span> <span class='fl'>5000</span>,
   assay <span class='op'>=</span> <span class='fu'>DefaultAssay</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>,
   slot <span class='op'>=</span> <span class='st'>"data"</span>,
+  n.workers <span class='op'>=</span> <span class='fl'>1</span>,
   verbose <span class='op'>=</span> <span class='cn'>T</span>
 <span class='op'>)</span></pre>
 
@@ -201,6 +197,10 @@
     <tr>
       <th>slot</th>
       <td><p>slot to run CDI scoring on. Default is data.</p></td>
+    </tr>
+    <tr>
+      <th>n.workers</th>
+      <td><p>number of workers for parallel implementation. Default is 1 (no parallel).</p></td>
     </tr>
     <tr>
       <th>verbose</th>

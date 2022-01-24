@@ -166,7 +166,7 @@ score.result$score_plot$data %>%
 
 ## Post-scoring filters
 
-We use two additional post-scoring filters to fine tune which gene sets are enriched. The first is a coherence filter in which a positive correlation between component gene expression and the Miko score is enforced for a minimum fraction of component genes. The second is a frequent flier filter, which flags gene sets that exceed a minimum significance rate and represent gene sets that enrich across most cell clusters. 
+We use two additional post-scoring filters to fine tune which gene sets are enriched. The first is a **coherence filter** in which a positive correlation between component gene expression and the Miko score is enforced for a minimum fraction of component genes. The second is a **frequent flier filter**, which flags gene sets that exceed a minimum significance rate and represent gene sets that enrich across most cell clusters. 
 
 ### Coherence filter
 
@@ -295,7 +295,7 @@ plt.cloud[[9]]
 
 ### Example 2
 
-In this example there is no consensus annotation. However we can see that annotations consistently identify mesenchymal-like annotations from multiple independent sources (e.g., Cao 2019 - osteoblasts; Cao 2020 - smooth muscle cells; Manno 2021 - mesenchymal progenitors; Pijuan-Sala - mesenchyme). Based on our annotations, we conclude that this cluster represents a mesenchymal population present during early human gastulation. The original authors had annotated this as *Advanced Mesoderm*. 
+In this example there is no consensus annotation. However we can see that annotations consistently identify mesenchymal-like annotations from multiple independent sources (e.g., Manno 2021 - mesenchymal progenitors; Cao 2019 - osteoblasts; Cao 2020 - smooth muscle cells; Pijuan-Sala - mesenchyme). Based on our annotations, we conclude that this cluster represents a mesenchymal population present during early human gastulation. The original authors had annotated this as *Advanced Mesoderm*. 
 
 ```{r fig.width=8, fig.height=4}
 plt.cloud[[4]]
@@ -303,7 +303,7 @@ plt.cloud[[4]]
 
 ### Example 3
 
-In this example one of the top annotations is *Distal Visceral Endoderm* suggesting an endodermal identity. While endoderm is not present among the other annotations, we find that *Gut* (Pijuan Sala 2019) and *Hepatoblasts* (Cao 2020) are both significantly enriched, and based on their endodermal origins, we have additional support for this cluster represents the endoderm. The original authors had annotated this cluster as *yolk sac endoderm*, *definitive endoderm* and *hypoblast*, thereby confirming our *endoderm* annotation. 
+In this example the top annotations are *Distal Visceral Endoderm* and *Embyonic Definitive Endoderm* suggesting an endodermal identity. However we must be cautious when interpretting annotations using marker sets from a single source (i.e., La Manno 2021). While endoderm is not present among the other annotations, we find that *Gut* (Pijuan Sala 2019) and *Hepatoblasts* (Cao 2020) are both significantly enriched, and based on their endodermal origins, we have additional support for this cluster represents the endoderm. The original authors had annotated this cluster as *yolk sac endoderm*, *definitive endoderm* and *hypoblast*, thereby confirming our *endoderm* annotation. 
 
 ```{r fig.width=8, fig.height=4}
 plt.cloud[[5]]

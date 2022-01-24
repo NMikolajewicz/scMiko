@@ -78,16 +78,11 @@
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
     <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_analysis_workflows.html">Analysis workflows</a>
     </li>
   </ul>
 </li>
@@ -117,7 +112,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>scPipeline analysis workflows</h1>
             
-            <h4 class="date">Compiled: 2022-01-23</h4>
+            <h4 class="date">Compiled: 2022-01-24</h4>
       
       
       <div class="hidden name"><code>scPipeline_module_overview.Rmd</code></div>
@@ -143,7 +138,8 @@
 <h3 class="hasAnchor">
 <a href="#example-reports" class="anchor"></a>Example Reports</h3>
 <ul>
-<li>placeholder</li>
+<li>Ochocka 2021: <a href="articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">immune infiltrates in GL261-engrafted murine brain</a>
+</li>
 </ul>
 </div>
 <div id="implementation" class="section level3">
@@ -691,6 +687,11 @@
 <td>logical</td>
 </tr>
 <tr class="even">
+<td><strong>n.workers</strong></td>
+<td>number of workers used for parallel implementation. Set to 1 for non-parallel run.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
 <td><strong>developer</strong></td>
 <td>Developer mode. Default is FALSE.</td>
 <td>logical</td>

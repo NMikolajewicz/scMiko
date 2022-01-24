@@ -36,11 +36,9 @@ navbar:
         - text: -------
         - text: scPipeline Dashboard Reports
         - text: "Overview of modules"
-        - href: articles/scPipeline_module_overview.html
+          href: articles/scPipeline_module_overview.html
         - text: "Analysis workflows"
-        - href: articles/scPipeline_analysis_workflows.html
-        - text: "QC and Preprocessing Module"
-          href: articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html
+          href: articles/scPipeline_analysis_workflows.html
     - text: "Reference"
       href: reference/index.html
   right:
