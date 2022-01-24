@@ -134,6 +134,7 @@ findGiniMarkers <- function(object, features = NULL, group.by = "seurat_clusters
 #' @param ncell.subset max number of cells to run analysis on. Default is 5000. Computationally intensive for larger datasets.
 #' @param assay Assay to run CDI scoring on. Default is DefaultAssay(object).
 #' @param slot slot to run CDI scoring on. Default is data.
+#' @param n.workers number of workers for parallel implementation. Default is 1 (no parallel).
 #' @param verbose print progress. Default is T.
 #' @name findCDIMarkers
 #' @seealso \code{\link{binom.test}}
@@ -142,7 +143,7 @@ findGiniMarkers <- function(object, features = NULL, group.by = "seurat_clusters
 #' @examples
 #'
 findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(object),
-                           ncell.subset = 5000, assay =  DefaultAssay(object), slot = "data", verbose = T){
+                           ncell.subset = 5000, assay =  DefaultAssay(object), slot = "data", n.workers = 1, verbose = T){
 
   miko_message("Running CDI specificity analysis...", verbose = verbose)
   if (verbose){
@@ -222,7 +223,7 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 
   # which cells express
   miko_message("Identifying cells with non-zero gene expression...", verbose = verbose)
-  # which.cells2 <- myapply(emat, 1, which)
+  # which.cells2 <- myapply(emat, 1, which) # slow
 
   nonzero <- function(x){
     ## function to get a two-column matrix containing the indices of the
@@ -240,13 +241,17 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 
   split_tibble <- function(tibble, col = 'col') tibble %>% split(., .[, col])
 
-  # t1 <- proc.time()
-  which.cells2 <- as.data.frame(nonzero(t( as.sparse(emat))))
+  emat.sparse <- Matrix::t( SeuratObject::as.sparse(emat))
+  which.cells2 <- as.data.frame(nonzero(x = emat.sparse))
   which.cells2$gene <- rownames(emat)[which.cells2$col]
   which.cells2 <- as_tibble(which.cells2)
-  which.cells2 <- mylapply(split_tibble(b, col = "gene"), function(x){
+  which.cells2 <- mylapply(split_tibble(which.cells2, col = "gene"), function(x){
     c(as.integer(unlist(x$row)))
   })
+  n_cell <- unlist(lapply(which.cells2, length))
+  which.cells2 <- which.cells2[n_cell != 0]
+  which.zero <- rownames(emat)[!(rownames(emat)  %in% names(which.cells2))]
+  which.cells2 <- c(which.cells2, sapply(which.zero,function(x) c()))
   which.cells2 <- which.cells2[rownames(emat)]
 
   if (!is.null(x_av)){
@@ -271,9 +276,6 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
     if (is.null(colnames(M))) colnames(M) <- 1:ncol(M)
     if (is.null(rownames(M))) rownames(M) <- 1:ncol(M)
     if (!identical(rownames(M), colnames(M))) stop("rownames(M) != colnames(M)")
-    # xy <- t(combn(colnames(M), 2))
-    # xy <- t(combn(colnames(M), 2, simplify = F))
-    # t(combn(colnames(M), 2))
     xy <- rbind(admisc::permutations(colnames(M)),
                 matrix(nrow = length(colnames(M)), ncol = 2, data = c(colnames(M), colnames(M))))
     data.frame(id1=xy[,1], id2=xy[,2], value=M[xy], stringsAsFactors = FALSE)
@@ -301,27 +303,35 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
       rownames(fmat) <- names(which.cells2);
       colnames(fmat) <- names(which.cells);
     }
-    # bin.mat <- matrix(ncol = length(imat), nrow =1)
   }
 
-  # else {
-  #   bin.mat <- matrix(ncol = ncol(imat), nrow = nrow(imat))
-  # }
-
-  # bin.mat2 <- matrix(ncol = ncol(imat), nrow = nrow(imat))
-  # miko_message("Computing co-dependency indices...", verbose = verbose)
-  # for (i in 1:nrow(bin.mat)){
-  #   for (j in 1:ncol(bin.mat)){
-  #     bin.mat2[i,j] <- binom.test(x = imat[i,j], n = ncol(emat), p = fmat[i,j], alternative = "greater")[["p.value"]]
-  #   }
-  # }
-
   miko_message("Computing co-dependency indices...", verbose = verbose)
-  bin.mat.vec <- unlist(mylapply(1:nrow(imat), function(i){
-    unlist(lapply(1:ncol(imat), function(j){
-      binom.test(x = imat[i,j], n = ncol(emat), p = fmat[i,j], alternative = "greater")[["p.value"]]
+
+  if (n.workers > 1){
+    cl <- parallel::makeCluster(n.workers)
+    doParallel::registerDoParallel(cl)
+
+    bin.mat.vec <- list()
+    bin.mat.vec <- unlist(foreach(i = 1:nrow(imat), .packages = c("dplyr", "fgsea", "plyr"))  %dopar% {
+      return(unlist(lapply(1:ncol(imat), function(j){
+        binom.test(x = imat[i,j], n = ncol(emat), p = fmat[i,j], alternative = "greater")[["p.value"]]
+      })))
+    })
+    parallel::stopCluster(cl)
+  } else {
+    bin.mat.vec <- unlist(mylapply(1:nrow(imat), function(i){
+      unlist(lapply(1:ncol(imat), function(j){
+        binom.test(x = imat[i,j], n = ncol(emat), p = fmat[i,j], alternative = "greater")[["p.value"]]
+      }))
     }))
-  }))
+  }
+
+
+  # bin.mat.vec <- unlist(mylapply(1:nrow(imat), function(i){
+  #   unlist(lapply(1:ncol(imat), function(j){
+  #     binom.test(x = imat[i,j], n = ncol(emat), p = fmat[i,j], alternative = "greater")[["p.value"]]
+  #   }))
+  # }))
   bin.mat <- matrix(ncol = ncol(imat), nrow = nrow(imat), data = bin.mat.vec, byrow = T)
 
   bin.mat.log <- -log10(bin.mat+ 1e-300) # 1e-300 offset included to avoid Inf values
@@ -336,14 +346,6 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
   })
   colnames(df.cdi) <- c("feature.x", "feature.y", "cdi")
   miko_message("Normalizing CDI...", verbose = verbose)
-  # df.cdi <- df.cdi %>%
-  #   dplyr::group_by(feature.x) %>%
-  #   dplyr::mutate(denominator = max(cdi, na.rm = T))
-
-  # handle infinite values
-  # df.cdi$denominator[is.infinite(denominator)] <- NA
-  # df.cdi$denominator[is.na(df.cdi$denominator)] <- max(df.cdi$denominator, na.rm = T)
-  # df.cdi$ncdi <- df.cdi$cdi / df.cdi$denominator
   df.cdi <- df.cdi %>%
     dplyr::group_by(feature.x) %>%
     dplyr::mutate(ncdi = cdi/max(cdi, na.rm = T),
