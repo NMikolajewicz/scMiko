@@ -1264,6 +1264,7 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
   # geneSets_MASTER_190122update
+  # geneSets_MASTER_240122update.xlsx
   geneSets <- list()
 
   if (dev.directory.flag){
