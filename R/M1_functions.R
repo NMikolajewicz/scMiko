@@ -258,6 +258,7 @@ loadMat <- function(file, dir) {
     expression_matrix <- readRDS(import_set_path[1])
     expression_matrix[is.na(expression_matrix)] <- 0
     feature.names <- rownames(expression_matrix)
+    expression_matrix <- as.data.frame(expression_matrix)
     expression_matrix$GENE <- feature.names
   } else {
     expression_matrix <- data.table::fread(import_set_path[1], header = T, stringsAsFactors = F, showProgress = T)
@@ -267,6 +268,7 @@ loadMat <- function(file, dir) {
     expression_matrix[is.na(expression_matrix)] <- 0
     feature.names <- as.vector(expression_matrix$GENE)
   }
+
 
 
   # average duplicate rows (i.e., duplicate genes)
@@ -409,7 +411,7 @@ barcodeLabels <- function(so, which.strata) {
 #' Calculate cell-level mitochondrial content based on mapped transcripts and store in Seurat "percent.mt' metadata field.
 #'
 #' @param so Seurat Object
-#' @param gNames Named gene list; entries are Symbols, names are Ensemble.
+#' @param gNames Named gene vector; entries are gene symbols, names are Ensembl.
 #' @param assay assay to use.
 #' @param omit.na Logical specifying whether to omit NA entries (present when unfiltered 10x dataset is used). Default is True.
 #' @name getMitoContent
@@ -421,17 +423,25 @@ getMitoContent <- function(so, gNames = NULL, assay = NULL, omit.na = T) {
 
   assay <- DefaultAssay(so)
   if (!is.null(gNames)){
-    f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
+
+    gene.rep <- checkGeneRep(query.genes = rownames(so), reference.genes = gNames)
+    if (gene.rep == "ensembl"){
+      f <- intersect(names(gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
+    } else if (gene.rep == "symbol"){
+      f <- intersect((gNames)[ grep("^(MT|mt)-",gNames) ],rownames(so[[assay]]))
+    }
+
   } else {
     f <- intersect(rownames(so)[ grep("^(MT|mt)-",rownames(so)) ],rownames(so[[assay]]))
   }
+
+  f <- f[!is.na(f)]
 
   if (length(f) == 0){
     so[["percent.mt"]] <- 0
   } else {
     so[["percent.mt"]] <- PercentageFeatureSet(so, features=f)
   }
-
 
   if (omit.na) {
     # omit nan entries - they occur when cell ranger output data is unfiltered.
