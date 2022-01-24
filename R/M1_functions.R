@@ -245,7 +245,7 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
 #'
 #' Load gene x cell count matrix into seurat object. For intended performance, first column of spreadsheet must contain gene names, and first row of spreadsheet must contain cell names.
 #'
-#' @param file Matrix file name.
+#' @param file Matrix file name. (.csv, .tsv supported)
 #' @param dir Character. folder containing import_set file
 #' @name loadMat
 #' @return list containing Seurat Object and named gene vector.
@@ -254,12 +254,19 @@ loadMat <- function(file, dir) {
 
   import_set_path <- paste(dir, file, sep ="")
 
-  expression_matrix <- data.table::fread(import_set_path[1], header = T, stringsAsFactors = F, showProgress = T)
-  first_col <- colnames(expression_matrix)[1]
-  expression_matrix <- col2rowname(expression_matrix, first_col)
-  expression_matrix$GENE <- rownames(expression_matrix)
-  expression_matrix[is.na(expression_matrix)] <- 0
-  feature.names <- as.vector(expression_matrix$GENE)
+  if (grepl(".rds", import_set_path[1])){
+    expression_matrix <- readRDS(import_set_path[1])
+    expression_matrix[is.na(expression_matrix)] <- 0
+    feature.names <- rownames(expression_matrix)
+    expression_matrix$GENE <- feature.names
+  } else {
+    expression_matrix <- data.table::fread(import_set_path[1], header = T, stringsAsFactors = F, showProgress = T)
+    first_col <- colnames(expression_matrix)[1]
+    expression_matrix <- col2rowname(expression_matrix, first_col)
+    expression_matrix$GENE <- rownames(expression_matrix)
+    expression_matrix[is.na(expression_matrix)] <- 0
+    feature.names <- as.vector(expression_matrix$GENE)
+  }
 
 
   # average duplicate rows (i.e., duplicate genes)

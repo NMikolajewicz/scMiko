@@ -7,7 +7,7 @@
 loadMat(file, dir)
 }
 \arguments{
-\item{file}{Matrix file name.}
+\item{file}{Matrix file name. (.csv, .tsv supported)}
 
 \item{dir}{Character. folder containing import_set file}
 }
