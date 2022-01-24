@@ -78,8 +78,21 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/install.html">Getting Started</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Getting Started
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Computational Resources</li>
+    <li>
+      <a href="../articles/install.html">scMiko Package</a>
+    </li>
+    <li>
+      <a href="../articles/scPipeline_getting_started.html">scPipeline Reports</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -90,22 +103,30 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Differentially-Expressed Genes</a>
+      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
     </li>
     <li>
-      <a href="../articles/Cluster_Optimization.html">Cluster Resolution Optimization</a>
+      <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
     </li>
     <li>
-      <a href="../articles/Marker_Catalog.html">Cell-Type Marker Catalog</a>
+      <a href="../articles/Marker_Catalog.html">Cell-type marker catalog</a>
     </li>
     <li>
-      <a href="../articles/Cell_Annotation.html">Cell-Type Annotation</a>
+      <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection</a>
+      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
+    <li class="dropdown-header">Overview of modules</li>
+    <li>
+      <a href="../articles/scPipeline_module_overview.html"></a>
+    </li>
+    <li class="dropdown-header">Analysis workflows</li>
+    <li>
+      <a href="../articles/scPipeline_analysis_workflows.html"></a>
+    </li>
     <li>
       <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
     </li>
@@ -204,7 +225,7 @@
 </div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'datExpr' not found</span></div><div class='input'>
 <span class='co'># run WGCNA</span>
 <span class='va'>output.all</span> <span class='op'>&lt;-</span> <span class='fu'><a href='runWGCNA.html'>runWGCNA</a></span><span class='op'>(</span><span class='va'>datExpr.noz</span>, cor.metric <span class='op'>=</span> <span class='st'>"rho_p"</span>, soft.power <span class='op'>=</span> <span class='fl'>2</span>, use.TOM <span class='op'>=</span> <span class='cn'>T</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>2022-01-20 18:17:59: Computing similarity matrix...</span></div><div class='output co'>#&gt; <span class='error'>Error in dismay::dismay(e.mat, metric = cor.metric): object 'datExpr.noz' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='message'>2022-01-23 19:44:39: Computing similarity matrix...</span></div><div class='output co'>#&gt; <span class='error'>Error in dismay::dismay(e.mat, metric = cor.metric): object 'datExpr.noz' not found</span></div><div class='input'>
 <span class='co'># unpack output</span>
 <span class='va'>s.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"s.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># similar matrix</span>
 </div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'output.all' not found</span></div><div class='input'><span class='va'>a.mat</span> <span class='op'>&lt;-</span> <span class='va'>output.all</span><span class='op'>[[</span><span class='st'>"a.mat"</span><span class='op'>]</span><span class='op'>]</span> <span class='co'># adjacency matrix</span>

@@ -11,6 +11,7 @@ findCDIMarkers(
   ncell.subset = 5000,
   assay = DefaultAssay(object),
   slot = "data",
+  n.workers = 1,
   verbose = T
 )
 }
@@ -26,6 +27,8 @@ findCDIMarkers(
 \item{assay}{Assay to run CDI scoring on. Default is DefaultAssay(object).}
 
 \item{slot}{slot to run CDI scoring on. Default is data.}
+
+\item{n.workers}{number of workers for parallel implementation. Default is 1 (no parallel).}
 
 \item{verbose}{print progress. Default is T.}
 }
