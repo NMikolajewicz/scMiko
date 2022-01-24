@@ -222,7 +222,32 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 
   # which cells express
   miko_message("Identifying cells with non-zero gene expression...", verbose = verbose)
-  which.cells2 <- myapply(emat, 1, which)
+  # which.cells2 <- myapply(emat, 1, which)
+
+  nonzero <- function(x){
+    ## function to get a two-column matrix containing the indices of the
+    ### non-zero elements in a "dgCMatrix" class matrix
+
+    stopifnot(inherits(x, "dgCMatrix"))
+    if (all(x@p == 0))
+      return(matrix(0, nrow=0, ncol=2,
+                    dimnames=list(character(0), c("row","col"))))
+    res <- cbind(x@i+1, rep(seq(dim(x)[2]), diff(x@p)))
+    colnames(res) <- c("row", "col")
+    res <- res[x@x != 0, , drop = FALSE]
+    return(res)
+  }
+
+  split_tibble <- function(tibble, col = 'col') tibble %>% split(., .[, col])
+
+  # t1 <- proc.time()
+  which.cells2 <- as.data.frame(nonzero(t( as.sparse(emat))))
+  which.cells2$gene <- rownames(emat)[which.cells2$col]
+  which.cells2 <- as_tibble(which.cells2)
+  which.cells2 <- mylapply(split_tibble(b, col = "gene"), function(x){
+    c(as.integer(unlist(x$row)))
+  })
+  which.cells2 <- which.cells2[rownames(emat)]
 
   if (!is.null(x_av)){
     which.cells <- which.cells2[names(which.cells2) %in% x_av]
