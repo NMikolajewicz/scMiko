@@ -10,7 +10,8 @@ articles:
   Module_Detection: Module_Detection.html
   scPipeline_analysis_workflows: scPipeline_analysis_workflows.html
   scPipeline_getting_started: scPipeline_getting_started.html
-last_built: 2022-01-22T18:05Z
+  scPipeline_module_overview: scPipeline_module_overview.html
+last_built: 2022-01-24T00:40Z
 urls:
   reference: https://github.com/NMikolajewicz//reference
   article: https://github.com/NMikolajewicz//articles

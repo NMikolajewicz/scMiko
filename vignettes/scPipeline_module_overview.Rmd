@@ -1,0 +1,329 @@
+---
+title: "scPipeline analysis workflows"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+  pdf_document: default
+date: 'Compiled: `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now, units = "secs")
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 95),
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE
+)
+```
+
+In this article we overview each scPipeline, and provide details on how to specify parameters for analysis. 
+
+Our convention is to stored all analysis parameters in a list named `parameter.list` at the start of the script:
+
+```{r eval = FALSE}
+# example
+parameter.list <- list(
+  input.file = "../data.rds",
+  ...,
+  print.inline = F,
+  save.flag = T
+)
+```
+
+
+## Module 01: Quality Control (QC) & Preprocessing
+
+### Description
+Initial appraisal of scRNA-seq count matrix data and overview of quality control metrics, data filtering, and normalization.  Generates initial UMAP clusters, and PCA analyses. M01 output saves seurat object. 
+
+### Example Reports
+
+- placeholder
+
+### Implementation
+
+#### Inputs
+
+Any of the following data formats is expected as an input:
+
+- **Seurat object**: must contain RNA assay with gene x cell count matrix
+- **Cell Ranger output**: folder must contain `barcodes.tsv`, `genes.tsv`, `matrix.mtx`
+- **gene x cell count matrix**
+
+#### Outputs
+
+- **Seurat object** (.Rdata file)
+- **Analysis report** (.HTML file)
+
+#### Analysis Parameters
+
+Parameter |Description |Argument
+--| ---------- | ------
+**input.object** | path to seurat object | character
+**input.cell_ranger** | path to folder containing cell ranger output | character
+**input.matrix** | path gene x cell count matrix (.tsv, .csv format) | character
+**save.flag** | save Seurat object from current analysis | logical
+**output.object.directory** | path to folder in which to save Seurat object | character
+**output.object.file** | name of file to which Seurat object is saved. Must have ".Rdata" suffix (e.g., 'object.Rdata') | character
+**subsample.n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
+**cluster.resolution** | value of the resolution parameter passed to `Seurat::FindClusters(...)`. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1. | numeric
+**gene.upperlimit** | Upper limit of genes per cell. Value between [0, Inf], but more than `gene.lowerlimit`. Any cells exceeding this threshold are filtered out. Default is 9000. | numeric
+**gene.lowerlimit** | Lower limit of genes per cell. Value between [0, Inf], but less than `gene.upperlimit`. Any cells below this threshold are filtered out. Default is 200. | numeric
+**mt.upperlimit** | Upper limit of mitochondrial content per cell. Value between [0, 100]. Cells exceeding this threshold are filtered out. Default is 10. | numeric
+**unmatched.rate.filter.flag** | Logical specifying whether to filtered cells using unmatched rates. Default is TRUE. 
+**vars2regress** | Variables to regress out during scaling step. Default is 'percent.mt'. | vector of character(s)
+**correct.artifact** | identify artifact cells and omit from dimensional reduction. Default is TRUE. | logical 
+**feature.select.method** | Feature selection method for dimensional reduction.| - hvg (default): highly-variable genes <br>- deviance
+**scale.method** | Expression scaling method. | - sct (default): SCTransform residuals <br>- null_residuals
+**pca.method** | principal component analysis method. | - pca (default) <br>- glmpca
+**pca.component.select.method** | method for selecting number of principal components for clustering and UMAP embedding. | - cum_var (default) <br>- elbow
+**pca.var.threshold** | value between [0, 1] specifying cumulative variance explained by pca. Ignored if `pca.component.select.method` is not 'cum_var'. | numeric 
+**conserve.memory** | If TRUE, the residual matrix for all genes computed using SCTransform is never created in full; useful for large data sets, but will take longer to run. Default is FALSE | logical 
+**species.filter.flag** | Logical specifying whether to filter species. Default is FALSE. | logical 
+**species.include** | Specify which species to retain in analysis. Ignored if `species.filter.flag` is FALSE | - Hs: human <br>- Mm: murine
+**nworkers** | Number of workers used for parallel implementation of SCTransform. Default is 1. | numeric
+**save.pdf** | Logical specifying whether to save figures and tables in separate directory. | logical
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**developer** | Developer mode. Default is FALSE. | logical
+  
+
+## Module 02: Data Integration
+
+### Description
+Batch correction and integration of independent experiments. Generates a new Seurat `integrated` assay using one of two approaches:
+
+1. **rPCA**: reciprocal PCA integration 
+    * Recommended for larger datasets
+2. **CCA**: canonical correlation analysis
+    * Recommended method, however computationally demanding and incompatible with larger data
+
+See [Stuart et al. (2019). Cell](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) for detailed description. 
+
+The primary aim of data integration is to identify common cell populations between datasets. However, because each method involves non-linear warping, many statistical assumptions are broken in the process, and thus expression matrix from the `integrated` assay is not appropriate for downstream differential gene expression. Specifically, the `integrated` assay should only be used for clustering and visualization. If downstream differential expression (DEG) analysis is performed, it is recommended that the existing `RNA` assay is normalized and scaled. 
+
+
+## Module 05: Cell-Type Annotation
+
+
+### Description
+Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline. 
+
+### Example Reports
+
+- placeholder
+
+### Implementation
+
+#### Inputs
+
+- **Seurat object** (.Rds or .RData file)
+
+#### Outputs
+
+- **Analysis report** (.HTML file)
+
+#### Analysis Parameters
+
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**external.markers** | cell-type markers used for annotation | named list; names are cell-types, entries are genes. <br>E.g., list(cell_A = c("gene1", "gene2", "gene3"), cell_B = c("gene4", "gene5", "gene6"))
+**internal.markers** | name of scMiko internal gene set(s). Run `names(geneSets)` for list of available gene sets. | character
+**marker.filter** | filter marker sets using `grepl` pattern matching. E.g., Manno2021 for all La Manno 2021 atlas-derived markers in `Cell_Catalogy` stored in scMiko `geneSets`. | character
+**coherence.threshold** | value of minimum gene set coherence. Gene sets with coherence scores below this threshold are disqualified from consideration. Value must be between [0,1]. Default is 0.8. | numeric
+**p.threshold** | p-value significance threshold. Value between [0,1]. Default is 0.05. | numeric
+**frequent.filter.threshold** | path to seurat object | character
+**filter.frequent.fliers** | path to seurat object | character
+**min.representation** | minimum fraction of genes required for gene set consideration. If fraction of genes present in seurat object is below this threshold, gene set is disqualified. Value between [0,1]. Default is 0.5. | numeric
+**cluster.resolution** | value of the resolution parameter passed to `Seurat::FindClusters(...)`. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1. | numeric
+**fdr.correction** | apply Benjamini & Hochberg correction | logical
+**clean.clusters** | filter cells that exceed 3 median absolute deviations from cluster center in UMAP coordinate space. Default is FALSE. | logical
+**max.cells** | max number of cells used in Miko scoring pipeline. Default is 20000. | numeric
+**subsample_factor** | value specifying fraction of cells to sub sample. Value between [0,1] | numeric
+**min.geneset.size** | maximal gene set size. Default is 200. | numeric
+**max.geneset.size** | minimal gene set size. Default is 3. | numeric
+**pathway.db** | database used for functional annotation of gene sets |- GO <br>- Bader
+**n.workers** | number of workers used for parallel implementation. Default is `parallel::detectCores()`. | numeric
+**save.pdf** | save figures and tables. | logical
+**show.top.n.gene.panels** | max number of gene sets per cluster to show in report. Default is 5 | numeric
+**max.gene.panels.allowed** | max number of overall gene sets to show in report. Default is 75 | numeric
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** | Developer mode. Default is FALSE. | logical
+
+
+## Module 09: Gene Expression and Associations
+
+### Description
+Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes. 
+
+### Example Reports
+
+- placeholder
+
+### Implementation
+
+#### Inputs
+
+- **Seurat object** (.Rds or .RData file)
+
+#### Outputs
+
+- **Analysis report** (.HTML file)
+
+#### Analysis Parameters
+
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**features** | features used for analysis. <br>If `feature.format` = 1, `features` must be vector of features present in seurat object (e.g., c("PRRX1", "TCF4")). <br>If `feature.format` = 2, `features` must be name of column spreadsheet containing features (e.g., "HALLMARK_genes"). <br>If `feature.format` = 3, `features` argument is ignored.
+**feature.format** | format of features provided by user. | - 0: user-provided genes <br>- 1: features are stored in spreadsheet. <br>- 2: discovery mode. 
+**feature.csv.path** | Path to spreadsheet containing features. Required if using `feature.format` = 1. For intended use, features in spreadsheet must be organized in columns that can be referenced by the column header using the `features` argument. | character
+**discovery.method** | Differential expression algorithm used in discovery mode (`feature.format` = 2) | - Wilcoxon: Identifies DEGs using Wilcoxon Rank Sum test genes <br>- CDI: Identifies DEGs using co-dependency test <br>- Gini: Identifies group-specific features using gini inequality index 
+**discovery.pct.min** | Features that are expressed below this value are omitted from differential expression analysis.  Range between [0,1], 0.1 is recommended. Required only if `feature.format` = 2.  | numeric
+**discovery.group.by** | Name of object meta data field to group cells by when performing differential expression. E.g., "seurat_clusters". Required only if `feature.format` = 2.  | character
+**discovery.top.n** | path to seurat object | character
+**discovery.max.n** | minimum fraction of genes required for gene set consideration. If fraction of genes present in seurat object is below this threshold, gene set is disqualified. Value between [0,1]. Default is 0.5. | numeric
+**as.module** | aggregate features into single meta-program. Default is FALSE. | logical
+**cor.method** | feature association method | - pearson: Pearson correlation  <br>- spearman: Spearman correlation  <br>- rho_p: Proportionality constant <br>- cdi: co-dependency index
+**cor.top.n** | Number of top associated features to show. 70 is recommended. | numeric
+**cor.which.data** | aslot to use for feature association analysis. "data" is recommended. | - data  <br>- scale
+**cor.min.expr** | Features that are expressed below this value are omitted from feature association analysis. Range between [0,1], 0.025-0.1 is recommended. | numeric
+**general.cluster.resolution** | Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities. | numeric
+**general.subsample.factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
+**general.subset** | Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as "no.subset" for not subsetting. | data frame specifying which field (`df$field`) to subset on, and which field entries to retain (`df$subgroups`)
+**general.clean.clusters** | omit cells exceeding 3 median absolute deviations from cluster center in UMAP coordinate space. | logical
+**general.save.pdf** | save figures and tables | logical
+**general.print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**general.rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**general.barcode.recode** | Named list where names are new labels, and entries are old labels. If is provided for old labels, treated as wild card. e.g. list(in.vitro = c("invitro), in.vivo = NA). See `scMiko::recordBarcode(...)` for details. | Named list where names are new labels, and entries are old labels. 
+**expression.do.hex** | show UMAP expression using schex. Default is FALSE | logical
+**developer** | Developer mode. Default is FALSE. | logical
+
+## Module 18: Cluster Optimization
+
+### Description
+
+Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:
+
+- Marker specificity analysis (CDI-based)
+- Silhouette analysis.
+- Nearest-neighbor purity analysis
+- Differential gene expression (Wilcoxon, CDI)
+
+### Example Reports
+
+- placeholder
+
+### Implementation
+
+#### Inputs
+
+- **Seurat object** (.Rds or .RData file)
+
+#### Outputs
+
+- **Analysis report** (.HTML file)
+
+#### Analysis Parameters
+
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**cluster.resolution** | range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5,  0.75,  1, 1.25, 1.5, 1.75, 2, 3) | vector of numeric(s)
+**lfc.threshold** | log-fold change threshold used in differential-expression analysis. 0.5 is recommended. | numeric 
+**fdr.threshold** | fdr-value significance threshold. Value between [0,1]. Default is 0.05.  | numeric
+**group.singletons** | Group singletons into nearest cluster. If FALSE, assign all singletons to a "singleton" group. For certain difficult-to-cluster data sets, `group.singletons` = FALSE may yield faster results. Default is FALSE | logical
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
+**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
+**n.workers** | number of workers used for parallel implementation. `parallel::detectCores()` is recommended. | numeric
+**only.pos** | only included genes with logFC > 0. Default is TRUE. | logical
+**save.pdf** | save figures and tables | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** |Developer mode. Default is FALSE. | logical
+
+## Module 37: Gene Module Detection
+
+### Description
+
+Gene module or meta-gene identification. Three independent methods are used in an ensemble approach to perform gene network analysis and identify gene module of interest:
+
+- Scale-free shared nearest neighbor network analysis (SSN)
+- Independent component analysis (ICA)
+- Non-negative matrix factorization (NMF)
+
+Gene set enrichement is performed on each module to facilitate functional annotation. 
+
+### Example Reports
+
+- placeholder
+
+### Implementation
+
+#### Inputs
+
+- **Seurat object** (.Rds or .RData file)
+
+#### Outputs
+
+- **Analysis report** (.HTML file)
+
+#### Analysis Parameters
+
+ <!-- expr, hvg, deviance (Default is expr) -->
+ 
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**cluster.resolution** | Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities. | numeric
+**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
+**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
+**subset.data** | Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as "no.subset" for not subsetting. | data frame specifying which field (`df$field`) to subset on, and which field entries to retain (`df$subgroups`)
+**batch.feature** | meta data field to use for batch correction (set to NA if unspecified) | character
+**feature.selection.method** | method used to select features for module detection analysis. | - expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion
+**max.features** | max number of features to include in module detection analysis (NA if unspecified)
+**min.pct** | minimal feature expression (applicable only if `select.method` = "expr"). Value between [0,1], use 0.1 for large network and 0.5 for small network. | numeric
+**data.type** | Data representation used for module detection | - pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model
+**purity.optimization.step.size** | value of step size used for optimizing module purity. 0.5 recommended. | numeric
+**pathway.db** | database used for functional annotation of gene sets |- GO <br>- Bader
+**filter.parameters** | specify which clusters to include or omit | named list with 2 sets of entries; 'include' entries specify which clusters to retain; 'omit' entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))
+**general.weight.by.var** | Weight feature embeddings by the variance of each PC. Default is FALSE. | logical
+**general.pca.cum.sum** | cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended. | numeric
+**general.umap.knn** | number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50. | numeric
+**general.cluster.purity** | target purity of network modules. Value between [0,1], 0.8 is recommended. | logical
+**general.scale.free.topology** | apply scale-free transform to shared nearest neighbor graph. Default is TRUE. | logical
+**general.ica** | perform independent component analysis (ICA). | logical
+**general.nmf** | perform non-negative matrix factorization (NMF). | logical
+**general.nmf.k** | number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15)) | vector of numeric(s)
+**general.robust.pca** | use robust PCA for dimensional reduction (*warning*: computationally intensive) | logical
+**n.workers** | number of workers used for parallel implementations. | numeric
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**save.pdf** | save figures and tables | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** |Developer mode. Default is FALSE. | logical
+
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>

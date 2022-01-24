@@ -35,6 +35,8 @@ navbar:
           href: articles/Module_Detection.html
         - text: -------
         - text: scPipeline Dashboard Reports
+        - text: "Overview of modules"
+        - href: articles/scPipeline_module_overview.html
         - text: "Analysis workflows"
         - href: articles/scPipeline_analysis_workflows.html
         - text: "QC and Preprocessing Module"
@@ -126,7 +128,7 @@ reference:
   - matches("vd")
 
 - title: "Scale-Free Shared Nearest Neighbor Network Analysis (SSN)"
-  desc: "Module detection"
+  desc: "SSN Module detection"
 - contents:
   - SSNConnectivity
   - SSNResolution
