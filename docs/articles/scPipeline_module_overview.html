@@ -121,11 +121,13 @@
 
     
     
-<p>In this article we overview each scPipeline, and provide details on how to specify parameters for analysis.</p>
-<p>Our convention is to stored all analysis parameters in a list named <code>parameter.list</code> at the start of the script:</p>
+<hr>
+<p>In this article we overview each scPipeline, and provide details on how to specify parameters for analysis. For each module, we provide a description, example reports and documentation for implementation (i.e., parameter specification).</p>
+<p>In general, our convention is to store all analysis parameters in a list named <code>parameter.list</code> at the start of the script.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># example</span>
 <span class="va">parameter.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>input.file <span class="op">=</span> <span class="st">"../data.rds"</span>, <span class="va">...</span>, print.inline <span class="op">=</span> <span class="cn">F</span>, save.flag <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
+<hr>
 <div id="module-01-quality-control-qc-preprocessing" class="section level2">
 <h2 class="hasAnchor">
 <a href="#module-01-quality-control-qc-preprocessing" class="anchor"></a>Module 01: Quality Control (QC) &amp; Preprocessing</h2>
@@ -138,16 +140,18 @@
 <h3 class="hasAnchor">
 <a href="#example-reports" class="anchor"></a>Example Reports</h3>
 <ul>
-<li>Ochocka 2021: <a href="articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">immune infiltrates in GL261-engrafted murine brain</a>
-</li>
+<li><a href="Reports/M01_QC_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M01_QC_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M01_QC_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M01_QC_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
 </ul>
+<p>All datasets were subsampled to 10,000 cells and minimal cell filtering was performed due to original count matrices having been cleaned by authors.</p>
 </div>
-<div id="implementation" class="section level3">
+<div id="inputs-and-outputs" class="section level3">
 <h3 class="hasAnchor">
-<a href="#implementation" class="anchor"></a>Implementation</h3>
-<div id="inputs" class="section level4">
-<h4 class="hasAnchor">
-<a href="#inputs" class="anchor"></a>Inputs</h4>
+<a href="#inputs-and-outputs" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
 <p>Any of the following data formats is expected as an input:</p>
 <ul>
 <li>
@@ -157,20 +161,18 @@
 </li>
 <li><strong>gene x cell count matrix</strong></li>
 </ul>
-</div>
-<div id="outputs" class="section level4">
-<h4 class="hasAnchor">
-<a href="#outputs" class="anchor"></a>Outputs</h4>
+<p><u>Outputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rdata file)</li>
 <li>
 <strong>Analysis report</strong> (.HTML file)</li>
-</ul>
+</ul></details>
 </div>
-<div id="analysis-parameters" class="section level4">
-<h4 class="hasAnchor">
-<a href="#analysis-parameters" class="anchor"></a>Analysis Parameters</h4>
+<div id="analysis-parameters" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
 <col width="11%">
@@ -314,8 +316,7 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table>
-</div>
+</table></details><hr>
 </div>
 </div>
 <div id="module-02-data-integration" class="section level2">
@@ -341,6 +342,7 @@
 </ol>
 <p>See <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8">Stuart et al. (2019). Cell</a> for detailed description.</p>
 <p>The primary aim of data integration is to identify common cell populations between datasets. However, because each method involves non-linear warping, many statistical assumptions are broken in the process, and thus expression matrix from the <code>integrated</code> assay is not appropriate for downstream differential gene expression. Specifically, the <code>integrated</code> assay should only be used for clustering and visualization. If downstream differential expression (DEG) analysis is performed, it is recommended that the existing <code>RNA</code> assay is normalized and scaled.</p>
+<hr>
 </div>
 </div>
 <div id="module-05-cell-type-annotation" class="section level2">
@@ -350,36 +352,37 @@
 <h3 class="hasAnchor">
 <a href="#description-2" class="anchor"></a>Description</h3>
 <p>Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline.</p>
+<p>Prior to running this module, we recommend running the cluster optimization module to identify the appropriate resolution for clustering.</p>
 </div>
 <div id="example-reports-1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#example-reports-1" class="anchor"></a>Example Reports</h3>
 <ul>
-<li>placeholder</li>
+<li><a href="Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="implementation-1" class="section level3">
+<div id="inputs-and-outputs-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#implementation-1" class="anchor"></a>Implementation</h3>
-<div id="inputs-1" class="section level4">
-<h4 class="hasAnchor">
-<a href="#inputs-1" class="anchor"></a>Inputs</h4>
+<a href="#inputs-and-outputs-1" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)</li>
 </ul>
-</div>
-<div id="outputs-1" class="section level4">
-<h4 class="hasAnchor">
-<a href="#outputs-1" class="anchor"></a>Outputs</h4>
+<p><u>Outputs</u></p>
 <ul>
 <li>
 <strong>Analysis report</strong> (.HTML file)</li>
-</ul>
+</ul></details>
 </div>
-<div id="analysis-parameters-1" class="section level4">
-<h4 class="hasAnchor">
-<a href="#analysis-parameters-1" class="anchor"></a>Analysis Parameters</h4>
+<div id="analysis-parameters-1" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-1" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
 <col width="11%">
@@ -518,8 +521,7 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table>
-</div>
+</table></details><hr>
 </div>
 </div>
 <div id="module-09-gene-expression-and-associations" class="section level2">
@@ -537,28 +539,25 @@
 <li>placeholder</li>
 </ul>
 </div>
-<div id="implementation-2" class="section level3">
+<div id="inputs-and-outputs-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#implementation-2" class="anchor"></a>Implementation</h3>
-<div id="inputs-2" class="section level4">
-<h4 class="hasAnchor">
-<a href="#inputs-2" class="anchor"></a>Inputs</h4>
+<a href="#inputs-and-outputs-2" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)</li>
 </ul>
-</div>
-<div id="outputs-2" class="section level4">
-<h4 class="hasAnchor">
-<a href="#outputs-2" class="anchor"></a>Outputs</h4>
+<p><u>Outputs</u></p>
 <ul>
 <li>
 <strong>Analysis report</strong> (.HTML file)</li>
-</ul>
+</ul></details>
 </div>
-<div id="analysis-parameters-2" class="section level4">
-<h4 class="hasAnchor">
-<a href="#analysis-parameters-2" class="anchor"></a>Analysis Parameters</h4>
+<div id="analysis-parameters-2" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-2" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
 <col width="11%">
@@ -697,8 +696,7 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table>
-</div>
+</table></details><hr>
 </div>
 </div>
 <div id="module-18-cluster-optimization" class="section level2">
@@ -719,31 +717,31 @@
 <h3 class="hasAnchor">
 <a href="#example-reports-3" class="anchor"></a>Example Reports</h3>
 <ul>
-<li>placeholder</li>
+<li><a href="Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M18_ClusterOptimization_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M18_ClusterOptimization_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="implementation-3" class="section level3">
+<div id="inputs-and-outputs-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#implementation-3" class="anchor"></a>Implementation</h3>
-<div id="inputs-3" class="section level4">
-<h4 class="hasAnchor">
-<a href="#inputs-3" class="anchor"></a>Inputs</h4>
+<a href="#inputs-and-outputs-3" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)</li>
 </ul>
-</div>
-<div id="outputs-3" class="section level4">
-<h4 class="hasAnchor">
-<a href="#outputs-3" class="anchor"></a>Outputs</h4>
+<p><u>Outputs</u></p>
 <ul>
 <li>
 <strong>Analysis report</strong> (.HTML file)</li>
-</ul>
+</ul></details>
 </div>
-<div id="analysis-parameters-3" class="section level4">
-<h4 class="hasAnchor">
-<a href="#analysis-parameters-3" class="anchor"></a>Analysis Parameters</h4>
+<div id="analysis-parameters-3" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-3" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
 <col width="11%">
@@ -827,8 +825,7 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table>
-</div>
+</table></details><hr>
 </div>
 </div>
 <div id="module-37-gene-module-detection" class="section level2">
@@ -852,29 +849,26 @@
 <li>placeholder</li>
 </ul>
 </div>
-<div id="implementation-4" class="section level3">
+<div id="inputs-and-outputs-4" class="section level3">
 <h3 class="hasAnchor">
-<a href="#implementation-4" class="anchor"></a>Implementation</h3>
-<div id="inputs-4" class="section level4">
-<h4 class="hasAnchor">
-<a href="#inputs-4" class="anchor"></a>Inputs</h4>
+<a href="#inputs-and-outputs-4" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)</li>
 </ul>
-</div>
-<div id="outputs-4" class="section level4">
-<h4 class="hasAnchor">
-<a href="#outputs-4" class="anchor"></a>Outputs</h4>
+<p><u>Outputs</u></p>
 <ul>
 <li>
 <strong>Analysis report</strong> (.HTML file)</li>
-</ul>
+</ul></details>
 </div>
-<div id="analysis-parameters-4" class="section level4">
-<h4 class="hasAnchor">
-<a href="#analysis-parameters-4" class="anchor"></a>Analysis Parameters</h4>
+<div id="analysis-parameters-4" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-4" class="anchor"></a>Analysis Parameters</h3>
 <p><!-- expr, hvg, deviance (Default is expr) --></p>
+<details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
 <col width="11%">
@@ -1028,7 +1022,8 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table>
+</table></details><p><br></p>
+<hr>
 <details><p><summary><strong>Session Info</strong></summary></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
@@ -1056,7 +1051,6 @@
 ## [25] compiler_4.0.3    systemfonts_1.0.2 memoise_2.0.0     htmltools_0.5.2  
 ## [29] knitr_1.36        sass_0.4.0</code></pre>
 </details>
-</div>
 </div>
 </div>
   </div>

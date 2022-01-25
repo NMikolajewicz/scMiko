@@ -97,10 +97,20 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
     plt.title <- paste(set_name, ": Variable Genes")
   }
 
+  var_labs <- c()
+  try({
+    gene.rep <- checkGeneRep(reference.genes = top10, query.genes = gNames.list)
+    if (gene.rep == "ensembl"){
+      var_labs <- as.vector(gNames[top10])
+    } else if (gene.rep == "symbol"){
+      var_labs <- as.vector(top10)
+    }
+  }, silent = T)
+
   # label genes
   plt.handle <- LabelPoints(plot = plt.handle,
                             points = top10,
-                            labels = as.vector(gNames[top10]),
+                            labels = var_labs,
                             repel = TRUE) +
     ggtitle(label = plt.title)
 

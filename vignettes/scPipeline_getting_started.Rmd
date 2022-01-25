@@ -30,20 +30,20 @@ knitr::opts_chunk$set(
 )
 ```
 
-### Setup
+## Setup
 
 [R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
 
 scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on [scPipeline GitHut repository](https://github.com/NMikolajewicz/scPipeline). To setup and run scPipeline, download the repository locally:
 
-#### Option 1: Clone git repository with Bash
+### Option 1: Clone git repository with Bash
 
 ``` bash
 git clone https://github.com/NMikolajewicz/scPipeline
 cd scPipeline
 ```
 
-#### Option 2: Clone git repository with RStudio
+### Option 2: Clone git repository with RStudio
 
 In RStudio, navigate to `file` -> `New Project...` -> `Version Control` -> `Git`. You will then be prompted to provide the git repository information:
 
@@ -52,7 +52,7 @@ In RStudio, navigate to `file` -> `New Project...` -> `Version Control` -> `Git`
     
 Press `Create Project` and you're good to go!
 
-### Requirements
+## Required Packages
 
 Foremost, scPipeline is dependent on [flexdashboards](https://rstudio.github.io/flexdashboard/index.html) to generate interactive dashboards using R Markdown. The [flexdashboard](https://rstudio.github.io/flexdashboard/index.html) package can be installed from CRAN as follows:
 
@@ -69,7 +69,7 @@ To install multiple R packages simultaneously, the following command can be used
 install.packages(c("Seurat", "presto", "dplyr", "tidyr", "stringr", "RColorBrewer", "ggplot2", "DT", "flexdashboard", "ggrepel", "future",  "ggwordcloud", "scales",  "org.Mm.eg.db", "org.Hs.eg.db","parallel", "doParallel", "foreach"))
 ```
 
-### Running scPipeline Modules
+## Running scPipeline Modules
 
 Running scPipeline modules is like running any other Rmarkdown script:
 
@@ -84,6 +84,6 @@ Running scPipeline modules is like running any other Rmarkdown script:
         * Does not render an .HTML report. 
         * This option permit users to customize their analyses beyond what has been provided by us. 
 
-### scPipeline .HTML reports
+## scPipeline .HTML reports
 
 Every scPipeline Module generates an HTML report summarizing the analysis results. These can be viewed using any browser. Given their portability (i.e., self-contained), these can be shared easily shared among users. HTML reports are generated using [flexdashboard](https://rstudio.github.io/flexdashboard/index.html).
