@@ -1064,6 +1064,12 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' @param quantile_threshold Quantile threshold for visualized SSN graph edges. Default is 0.9.
 #' @param raster_dpi prefix added to each named entry in list. Default is "".
 #' @param edge.alpha alpha [0,1] parameter (i.e., transparency) for network edges. Default is 0.015. Use larger values for less dense networks.
+#' @param edge.color color of network edges. Default is 'black'.
+#' @param node.color color of node edges. Default is 'grey'.
+#' @param node.alpha alpha [0,1] parameter for nodes. Default is 1 (obaque).
+#' @param node.weights scale node size by connectivity weights. Default is F.
+#' @param node.size.min minimal node size. Ignored if node.weights = F. Default is 1.
+#' @param node.size.max maximal node size. Ignored if node.weights = F. Default is 5.
 #' @param do.label Show module number on network graph. Default is T.
 #' @param label.size Size of module numbers on network graph. Default is 5.
 #' @param verbose Print progress. Default is T.
@@ -1073,12 +1079,11 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
 #' @examples
 #'
-SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 0.9, raster_dpi = 200,edge.alpha = 0.015, do.label = T, label.size = 5,  verbose = T){
+SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 0.9, raster_dpi = 200,edge.alpha = 0.015,
+                            edge.color = "black", node.color = "grey", node.alpha = 1,node.weights = F, node.size.min = 1, node.size.max = 5, do.label = T, label.size = 5,  verbose = T){
 
   # get connectivity ########################################
-  # snn.graph <- as.matrix(gene.object@graphs[["RNA_snn"]])
-
-
+  stopifnot("'gene.object' is not a Seurat object" = ("Seurat" %in% class(gene.object)))
   if ("RNA_snn_power" %in% names(gene.object@graphs)){
     graph <- "RNA_snn_power"
   } else {
@@ -1091,7 +1096,6 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
 
   graph.threshold <- quantile(snn.graph[snn.graph > 0], quantile_threshold)
   miko_message(paste0("Edge threshold set at SNN = ", signif(graph.threshold,3), " (", quantile_threshold, " quantile)"), verbose = verbose)
-  # miko_message(paste0(quantile_threshold, " quantile SNN = ", signif(graph.threshold,3)), verbose = verbose)
   df.graph.edges <- NULL
 
   miko_message("Getting network edges...", verbose = verbose)
@@ -1134,7 +1138,7 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
   plt.general.connectivitiy <- ggplot() +
     ggrastr::rasterise(geom_segment(data = df.umap.merge, aes(x = x.start, y = y.start,
                                                               xend = x.end, yend= y.end,
-    ), color = "black", alpha = 0.015), dpi = raster_dpi)  +
+    ), color = edge.color, alpha =edge.alpha), dpi = raster_dpi)  +
     theme_miko(legend = T) +
     theme(
       panel.border = element_blank(),
@@ -1163,22 +1167,31 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
 
 
   if (!is.null(gene.list)){
+
+    if (node.weights){
+      gp <- geom_point(aes(fill = module, label = gene, size = wi), pch = 21, color = node.color, alpha = node.alpha)
+    } else {
+      gp <- geom_point(aes(fill = module, label = gene), pch = 21, color = node.color, alpha = node.alpha)
+    }
+
+    df.snn.umap$gene <- df.snn.umap$genes
     plt.wnn.umap.connectivity.net.all <- df.snn.umap %>%
       dplyr::filter(var %in% unique(unlist(gene.list))) %>%
       ggplot(aes(x = x, y = y)) +
       ggrastr::rasterise(geom_segment(data = df.umap.merge, aes(x = x.start, y = y.start,
                                                                 xend = x.end, yend= y.end,
-      ), color = "black", alpha = edge.alpha)) +   #alpha = weights.x , alpha = 0.8
-      geom_point(aes(fill = module), pch = 21, color = "grey") + theme_miko(legend = T) +
+      ), color = edge.color, alpha = edge.alpha), dpi = raster_dpi) +   #alpha = weights.x , alpha = 0.8
+      gp +
+      # geom_point(aes(fill = module, label = gene), pch = 21, color = node.color) +
+      theme_miko(legend = T) +
       # geom_point(aes(fill = seurat_clusters), shape = 21, color = "grey", ...) + theme_miko(legend = T) +  #, size = wi
-      scale_size_continuous(range = c(1, 5)) +
+      scale_size_continuous(range = c(node.size.min, node.size.max)) +
       theme(
         panel.border = element_blank(),
         axis.text = element_blank(),
         panel.grid = element_blank(),
         axis.ticks = element_blank()
       ) + xlab("") + ylab("")  +
-
       labs(size = "Degree", alpha = "Weight", fill = "Module") +
       scale_fill_manual(values = col.pal)
 

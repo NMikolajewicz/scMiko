@@ -10,6 +10,11 @@ SSNConnectivity(
   quantile_threshold = 0.9,
   raster_dpi = 200,
   edge.alpha = 0.015,
+  edge.color = "black",
+  node.color = "grey",
+  node.weights = F,
+  node.size.min = 1,
+  node.size.max = 5,
   do.label = T,
   label.size = 5,
   verbose = T
@@ -25,6 +30,16 @@ SSNConnectivity(
 \item{raster_dpi}{prefix added to each named entry in list. Default is "".}
 
 \item{edge.alpha}{alpha [0,1] parameter (i.e., transparency) for network edges. Default is 0.015. Use larger values for less dense networks.}
+
+\item{edge.color}{color of network edges. Default is 'black'.}
+
+\item{node.color}{color of node edges. Default is 'grey'.}
+
+\item{node.weights}{scale node size by connectivity weights. Default is F.}
+
+\item{node.size.min}{minimal node size. Ignored if node.weights = F. Default is 1.}
+
+\item{node.size.max}{maximal node size. Ignored if node.weights = F. Default is 5.}
 
 \item{do.label}{Show module number on network graph. Default is T.}
 
