@@ -101,7 +101,7 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
 #'
 #' @param object Seurat object
 #' @param graph.name name of SNN graph in `object`. Default is "RNA_snn".
-#' @param sf soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(0.5, 5, by = 0.5), seq(6, 10)).
+#' @param sf soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(1, 5, by = 0.5), seq(6, 10)).
 #' @param sf_threshold R2 threshold [0,1] for identifying optimal soft threshold. Default is 0.9 (recommended 0.8-0.9).
 #' @param umap_knn This determines the number of neighboring points used in local approximations of UMAP manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50. default is 10.
 #' @param n_dim Number of PC dimensions to use in generating UMAP. Default is PCA.
@@ -118,7 +118,7 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
 #' }
 #' @examples
 #'
-scaleFreeNet <- function(object, graph_name = "RNA_snn", sf = c(seq(0.5, 5, by = 0.5), seq(6, 10)), sf_threshold = 0.9, umap_knn = 10, n_dim = 30, binary_threshold = 0.9, n_workers = 1, verbose = T){
+scaleFreeNet <- function(object, graph_name = "RNA_snn", sf = c(seq(1, 5, by = 0.5), seq(6, 10)), sf_threshold = 0.9, umap_knn = 10, n_dim = 30, binary_threshold = 0.9, n_workers = 1, verbose = T){
 
   suppressMessages({
     suppressWarnings({
