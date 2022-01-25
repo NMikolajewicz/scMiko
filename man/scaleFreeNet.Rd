@@ -7,7 +7,7 @@
 scaleFreeNet(
   object,
   graph_name = "RNA_snn",
-  sf = c(seq(0.5, 5, by = 0.5), seq(6, 10)),
+  sf = c(seq(1, 5, by = 0.5), seq(6, 10)),
   sf_threshold = 0.9,
   umap_knn = 10,
   n_dim = 30,
@@ -19,7 +19,7 @@ scaleFreeNet(
 \arguments{
 \item{object}{Seurat object}
 
-\item{sf}{soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(0.5, 5, by = 0.5), seq(6, 10)).}
+\item{sf}{soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(1, 5, by = 0.5), seq(6, 10)).}
 
 \item{sf_threshold}{R2 threshold [0,1] for identifying optimal soft threshold. Default is 0.9 (recommended 0.8-0.9).}
 
