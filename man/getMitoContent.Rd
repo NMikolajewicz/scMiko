@@ -9,7 +9,7 @@ getMitoContent(so, gNames = NULL, assay = NULL, omit.na = T)
 \arguments{
 \item{so}{Seurat Object}
 
-\item{gNames}{Named gene list; entries are Symbols, names are Ensemble.}
+\item{gNames}{Named gene vector; entries are gene symbols, names are Ensembl.}
 
 \item{assay}{assay to use.}
 
