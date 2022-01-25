@@ -1,6 +1,6 @@
-#' Identify gene module features.
+#' Identify features for gene program discovery.
 #'
-#' Identify features for gene module analysis.
+#' Identify features for gene program discovery.
 #'
 #' @param object Seurat object
 #' @param method Feature selection method.
@@ -267,9 +267,9 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 }
 
 
-#' Run SNN
+#' Perform gene program discovery using SNN analysis
 #'
-#' Runs scale-free shared nearest neighbor network (SNN) on subset of features specified in Seurat object.
+#' Runs scale-free shared nearest neighbor network (SNN) analysis on subset of features specified in Seurat object.
 #'
 #' @param object Seurat object
 #' @param features features to compute SNN on. If features are missing from scaled data, scaled data is recomputed.
@@ -301,7 +301,7 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 #' @import foreach parallel
 #' @seealso \code{\link{findNetworkFeatures}} for finding features, \code{\link{SCTransform}} for gene count normalization and scaling, \code{\link{nullResiduals}} for deviance calculations, \code{\link{scaleFreeNet}} for scale-free topology transform.
 #' @author Nicholas Mikolajewicz
-#' @return Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene modules.
+#' @return Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene programs
 #' @examples
 #'
 runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type = c("pearson", "deviance"), reprocess_sct = F, slot = c("scale", "data"), batch_feature = NULL, do_scale = F, do_center = F, pca_var_explained = 0.9, weight_by_var = F, umap_knn = 10, optimize_resolution = T,
@@ -579,7 +579,7 @@ runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type =
 #' @name getICAGenes
 #' @seealso \code{\link{runICA}} for independent component analysis.
 #' @author Nicholas Mikolajewicz
-#' @return named list of ICA gene modules
+#' @return named list of ICA gene programs
 #' @examples
 #'
 getICAGenes <- function(feature.loading, fdr.cutoff = 0.0001, local.fdr = T, assert.positive.skew = T, only.pos = T){
@@ -708,14 +708,14 @@ runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_ce
 #'
 #' @param object Seurat object
 #' @param assay assay. Default is DefaultAssay(object).
-#' @param k Number of NMF modules. Default is 6.
+#' @param k Number of NMF gene programs Default is 6.
 #' @param raster rasterize output plot. Default is F.
 #' @param n.threads Number of threads to use when running NMF. Default is 2.
 #' @param features features to run NMF on.
 #' @param feature.min.pct minimum expressing fraction for feature to run NMF on. Default is 0. Ignored if `features` are specified.
 #' @param max.iter Maximum iteration of alternating NNLS solutions to H and W
 #' @param gene.cutoff Feature loading cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.
-#' @param gene.n number of genes to return per module.
+#' @param gene.n number of genes to return per gene program
 #' @param sample.name sample name. Default is NULL.
 #' @param show.top.n number of enrichment terms to show in summary plots. Ignoried if do.enrichment = F.
 #' @param pathway.db pathway database to use for enrichment analysis. Options are "GO" or "Bader". Default is "Bader". Ignored if do.enrichment = F.
@@ -725,7 +725,7 @@ runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_ce
 #' @name runNMF
 #' @seealso \code{\link{nnmf}}
 #' @author Nicholas Mikolajewicz
-#' @return Seurat object with NMF results in reduction slot. Module genes are stored in "misc" slot of NMF reduction slot.
+#' @return Seurat object with NMF results in reduction slot. Program genes are stored in "misc" slot of NMF reduction slot.
 #' @examples
 #'
 runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, features = NULL, feature.min.pct = 0, max.iter = 50, gene.cutoff = 0.5, gene.n = 50,sample.name = NULL, show.top.n = 10,  pathway.db = "Bader", do.enrichment = T, verbose = T, ...){
@@ -818,7 +818,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 
   # object[[nmf_name]]
 
-  miko_message("Getting module genes...", verbose = verbose)
+  miko_message("Getting gene program features...", verbose = verbose)
   nmf.gene <- getNMFGenes.dev(feature.loading = nmf.opt$W, norm.cutoff = gene.cutoff, n.cutoff = gene.n)
   # df.cell.load <- data.frame(t(nmf.opt$H))
   df.cell.load <- data.frame(object@reductions[[nmf_name]]@cell.embeddings)
@@ -1004,9 +1004,9 @@ group2list <- function(object, group = "seurat_clusters", is.num = F, prefix = "
 }
 
 
-#' Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)
+#' Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)
 #'
-#' Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)
+#' Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)
 #'
 #' @param object Seurat object objected from SSN analysis.
 #' @param graph name of shared nearest neighbor (SNN) graph used for SSN analysis.
@@ -1014,7 +1014,7 @@ group2list <- function(object, group = "seurat_clusters", is.num = F, prefix = "
 #' @param return.df whether to return data.frame instead of named list.
 #' @name pruneSSN
 #' @author Nicholas Mikolajewicz
-#' @return Returns named list of SSN module features.
+#' @return Returns named list of SSN gene program features.
 #' @seealso \code{\link{runSSN}} for SSN analysis
 #' @examples
 #'
@@ -1060,7 +1060,7 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' generates SSN connectivity plot used to visualize transcriptomic gene network.
 #'
 #' @param gene.object Seurat object (cell x gene) obtained from SSN analysis.
-#' @param gene.list named list of module features. If omitted, feature-annotated connectivity plot is not generated.
+#' @param gene.list named list of gene program features/genes. If omitted, feature-annotated connectivity plot is not generated.
 #' @param quantile_threshold Quantile threshold for visualized SSN graph edges. Default is 0.9.
 #' @param raster_dpi prefix added to each named entry in list. Default is "".
 #' @param edge.alpha alpha [0,1] parameter (i.e., transparency) for network edges. Default is 0.015. Use larger values for less dense networks.
@@ -1070,12 +1070,12 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' @param node.weights scale node size by connectivity weights. Default is F.
 #' @param node.size.min minimal node size. Ignored if node.weights = F. Default is 1.
 #' @param node.size.max maximal node size. Ignored if node.weights = F. Default is 5.
-#' @param do.label Show module number on network graph. Default is T.
-#' @param label.size Size of module numbers on network graph. Default is 5.
+#' @param do.label Show gene program IDs  on network graph. Default is T.
+#' @param label.size Size of gene program IDs on network graph. Default is 5.
 #' @param verbose Print progress. Default is T.
 #' @name SSNConnectivity
 #' @author Nicholas Mikolajewicz
-#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for module features (gene.list)
+#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list)
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
 #' @examples
 #'
@@ -1192,7 +1192,7 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
         panel.grid = element_blank(),
         axis.ticks = element_blank()
       ) + xlab("") + ylab("")  +
-      labs(size = "Degree", alpha = "Weight", fill = "Module") +
+      labs(size = "Degree", alpha = "Weight", fill = "Gene Program") +
       scale_fill_manual(values = col.pal)
 
     if (do.label){
@@ -1234,7 +1234,7 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
 #' @param connecitivity.plot "plot_edge" generated by SSNConnectivity function. If not specified, not edges are plotted in SSN graph plot.
 #' @name SSNExpression
 #' @author Nicholas Mikolajewicz
-#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for module features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
+#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
 #' @examples
 #'
@@ -1327,13 +1327,13 @@ SSNExpression <- function(cell.object, gene.object, group_by = "seurat_clusters"
 }
 
 
-#' Summarize SSN, ICA or NMF gene module analyses
+#' Summarize SSN, ICA or NMF gene program/module analyses
 #'
-#' Summarize SSN, ICA or NMF gene module analyses. Expression heatmaps and gene module enrichments are generated to facilitate analysis and interpretation of gene modules.
+#' Summarize SSN, ICA or NMF gene program/module analyses. Expression heatmaps and gene program enrichments are generated to facilitate analysis and interpretation of gene programs
 #'
 #' @param cell.object Seurat object (gene x cell). Same as input to runSSN(object = cell.object, ...).
 #' @param gene.object Seurat object (cell x gene) obtained from SSN analysis.
-#' @param module.type Which gene modules to summarize
+#' @param module.type Which gene program results to summarize
 #' \itemize{
 #' \item "ssn" - scale-free shared nearest neighbor network
 #' \item "ica" - independent component analysis
@@ -1350,8 +1350,8 @@ SSNExpression <- function(cell.object, gene.object, group_by = "seurat_clusters"
 #' @param verbose Print progress. Default is T.
 #' @name summarizeModules
 #' @author Nicholas Mikolajewicz
-#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for module features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
-#' @return List of summarize gene module results, including expression heatmaps and pathway enrichments
+#' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
+#' @return List of summarize gene program results, including expression heatmaps and pathway enrichments
 #' @examples
 #'
 summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "ica", "nmf"), gene.list = NULL,
@@ -1363,7 +1363,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
   # cell to cluster mapping
 
   if (module.type == "ica"){
-    miko_message("Summarizing results for ICA-derived gene modules...", verbose = verbose)
+    miko_message("Summarizing ICA gene programs...", verbose = verbose)
     df.meta <- cell.object@reductions[[reduction]]@misc[["meta.data"]]
     cellClusterMap <- data.frame(cell = rownames(df.meta),
                                  cluster = df.meta[ ,group_by])
@@ -1371,9 +1371,9 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
     feat.emb <- cell.object@reductions[[reduction]]@feature.loadings
     feat.emb <- data.frame(feat.emb)
 
-    subtitle_label <- "x = IC modules; y = Cell Clusters; z = Cell Loading (Scaled)"
+    subtitle_label <- "x = IC programs; y = Cell Clusters; z = Cell Loading (Scaled)"
   } else if (module.type == "nmf"){
-    miko_message("Summarizing results for NMF-derived gene modules...", verbose = verbose)
+    miko_message("Summarizing NMF gene programs", verbose = verbose)
     df.meta <- cell.object@reductions[[reduction]]@misc[["meta.data"]]
     cellClusterMap <- data.frame(cell = rownames(df.meta),
                                  cluster = df.meta[ ,group_by])
@@ -1382,13 +1382,13 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
     feat.emb <- cell.object@reductions[[reduction]]@feature.loadings
     feat.emb <- data.frame(feat.emb)
 
-    subtitle_label <- "x = NMF modules; y = Cell Clusters; z = Cell Loading (Scaled)"
+    subtitle_label <- "x = NMF programs; y = Cell Clusters; z = Cell Loading (Scaled)"
 
   } else if (module.type == "ssn"){
-    miko_message("Summarizing results for SSN-derived gene modules...", verbose = verbose)
-    if (is.null(gene.list)) stop("'gene.list' is required for summarizing SSN modules")
+    miko_message("Summarizing SSN gene programs...", verbose = verbose)
+    if (is.null(gene.list)) stop("'gene.list' is required for summarizing SSN programs")
 
-    miko_message("Scoring SSN gene modules...", verbose = verbose)
+    miko_message("Scoring SSN gene programs", verbose = verbose)
     suppressMessages({
       suppressWarnings({
 
@@ -1415,7 +1415,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
       df.con <- NULL
     }
 
-    subtitle_label <- "x = SSN modules; y = Cell Clusters; z = Module Activity (Scaled)"
+    subtitle_label <- "x = SSN programs; y = Cell Clusters; z = Gene Program Activity (Scaled)"
 
   }
 
@@ -1443,7 +1443,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
                              color = colorRampPalette(rev(brewer.pal(n = 7, name =   "RdBu")))(100),
                              scale  = "column") +
       labs(
-        title = "Module Activities",
+        title = "Gene Program Activities",
         subtitle = subtitle_label
       )
 
@@ -1472,7 +1472,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 
     cluster.activity <- df.mod.wide
     plt.expr <- miko_heatmap(cluster.activity, scale ="column") +
-      labs(title = "Module Activities",
+      labs(title = "Gene Program Activities",
            subtitle = subtitle_label)
 
   }
@@ -1494,7 +1494,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 
   module.merge.genes <- module.genes
 
-  miko_message("Running pathway enrichments...", verbose = verbose)
+  miko_message("Performing functional annotation...", verbose = verbose)
 
 
   miko_message("\tGO Biological Processes...", verbose = verbose, time = F)
@@ -1581,7 +1581,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
     } else if (module.type == "ssn"){
       df.umap.cell <- df.umap.cell2
       df.umap.cell$cell.loading <- cell.emb[, mod.name]
-      color.label <- "Module Activity"
+      color.label <- "Gene Program Activity"
       cell.label <- " cell activity"
 
     }

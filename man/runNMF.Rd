@@ -28,7 +28,7 @@ runNMF(
 
 \item{assay}{assay. Default is DefaultAssay(object).}
 
-\item{k}{Number of NMF modules. Default is 6.}
+\item{k}{Number of NMF gene programs Default is 6.}
 
 \item{raster}{rasterize output plot. Default is F.}
 
@@ -42,7 +42,7 @@ runNMF(
 
 \item{gene.cutoff}{Feature loading cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.}
 
-\item{gene.n}{number of genes to return per module.}
+\item{gene.n}{number of genes to return per gene program}
 
 \item{sample.name}{sample name. Default is NULL.}
 
@@ -57,7 +57,7 @@ runNMF(
 \item{...}{additional arguments passed to NNLM::nnmf(...)}
 }
 \value{
-Seurat object with NMF results in reduction slot. Module genes are stored in "misc" slot of NMF reduction slot.
+Seurat object with NMF results in reduction slot. Program genes are stored in "misc" slot of NMF reduction slot.
 }
 \description{
 Run non-negative matrix factorization(NMF or NNMF) using sequential coordinate-wise descent or multiplicative updates on Seurat object.

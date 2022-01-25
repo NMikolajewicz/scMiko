@@ -18,8 +18,8 @@ New features offered in scMiko include:
     - unbiased scoring of variably-sized gene sets
     - hypothesis-testing frame work that accepts or rejects of candidate annotations
     - [Vignette](articles/Cell_Annotation.html)
-- Gene module detection using **scale-free shared-nearest neighbor network (SSN) analysis**
-    - module detection algorithm to identify and functionally annotate gene modules in an unsupervised manner
+- Gene program discovery using **scale-free shared-nearest neighbor network (SSN) analysis**
+    - gene program discovery algorithm to identify and functionally annotate gene modules in an unsupervised manner
     - outperforms ICA and NMF methods in terms of GO term recovery and STRING PPI enrichment
     - [Vignette](articles/Module_Detection.html)
     
@@ -38,7 +38,7 @@ Current the following analysis modules are available:
 - Cluster optimization
 - Cell-type annotation
 - Gene expression and association analyses
-- Gene module detection 
+- Gene program discovery 
 
 [**scMiko**](https://github.com/NMikolajewicz/scMiko) and [**scPipeline**](https://github.com/NMikolajewicz/scPipeline) are developed and maintained by the Moffat lab. 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/network_functions.R
 \name{runSSN}
 \alias{runSSN}
-\title{Run SNN}
+\title{Perform gene program discovery using SNN analysis}
 \usage{
 runSSN(
   object,
@@ -71,10 +71,10 @@ runSSN(
 \item{verbose}{Print progress. Default is T.}
 }
 \value{
-Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene modules.
+Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene programs
 }
 \description{
-Runs scale-free shared nearest neighbor network (SNN) on subset of features specified in Seurat object.
+Runs scale-free shared nearest neighbor network (SNN) analysis on subset of features specified in Seurat object.
 }
 \examples{
 

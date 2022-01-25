@@ -12,6 +12,7 @@ SSNConnectivity(
   edge.alpha = 0.015,
   edge.color = "black",
   node.color = "grey",
+  node.alpha = 1,
   node.weights = F,
   node.size.min = 1,
   node.size.max = 5,
@@ -23,7 +24,7 @@ SSNConnectivity(
 \arguments{
 \item{gene.object}{Seurat object (cell x gene) obtained from SSN analysis.}
 
-\item{gene.list}{named list of module features. If omitted, feature-annotated connectivity plot is not generated.}
+\item{gene.list}{named list of gene program features/genes. If omitted, feature-annotated connectivity plot is not generated.}
 
 \item{quantile_threshold}{Quantile threshold for visualized SSN graph edges. Default is 0.9.}
 
@@ -35,15 +36,17 @@ SSNConnectivity(
 
 \item{node.color}{color of node edges. Default is 'grey'.}
 
+\item{node.alpha}{alpha [0,1] parameter for nodes. Default is 1 (obaque).}
+
 \item{node.weights}{scale node size by connectivity weights. Default is F.}
 
 \item{node.size.min}{minimal node size. Ignored if node.weights = F. Default is 1.}
 
 \item{node.size.max}{maximal node size. Ignored if node.weights = F. Default is 5.}
 
-\item{do.label}{Show module number on network graph. Default is T.}
+\item{do.label}{Show gene program IDs  on network graph. Default is T.}
 
-\item{label.size}{Size of module numbers on network graph. Default is 5.}
+\item{label.size}{Size of gene program IDs on network graph. Default is 5.}
 
 \item{verbose}{Print progress. Default is T.}
 }
@@ -57,7 +60,7 @@ generates SSN connectivity plot used to visualize transcriptomic gene network.
 
 }
 \seealso{
-\code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for module features (gene.list)
+\code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list)
 }
 \author{
 Nicholas Mikolajewicz

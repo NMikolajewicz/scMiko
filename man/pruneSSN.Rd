@@ -2,7 +2,7 @@
 % Please edit documentation in R/network_functions.R
 \name{pruneSSN}
 \alias{pruneSSN}
-\title{Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)}
+\title{Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)}
 \usage{
 pruneSSN(object, graph = "RNA_snn_power", prune.threshold = 0.1, return.df = F)
 }
@@ -16,10 +16,10 @@ pruneSSN(object, graph = "RNA_snn_power", prune.threshold = 0.1, return.df = F)
 \item{return.df}{whether to return data.frame instead of named list.}
 }
 \value{
-Returns named list of SSN module features.
+Returns named list of SSN gene program features.
 }
 \description{
-Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)
+Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)
 }
 \examples{
 

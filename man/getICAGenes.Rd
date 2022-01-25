@@ -24,7 +24,7 @@ getICAGenes(
 \item{only.pos}{Whether significant genes are positively loaded only. Default is T.}
 }
 \value{
-named list of ICA gene modules
+named list of ICA gene programs
 }
 \description{
 Given feature loadings obtained from independent component analysis (ICA), significant genes for each component are identified.

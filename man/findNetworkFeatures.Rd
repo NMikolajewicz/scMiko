@@ -2,7 +2,7 @@
 % Please edit documentation in R/network_functions.R
 \name{findNetworkFeatures}
 \alias{findNetworkFeatures}
-\title{Identify gene module features.}
+\title{Identify features for gene program discovery.}
 \usage{
 findNetworkFeatures(
   object,
@@ -38,7 +38,7 @@ findNetworkFeatures(
 vector of features
 }
 \description{
-Identify features for gene module analysis.
+Identify features for gene program discovery.
 }
 \examples{
 
