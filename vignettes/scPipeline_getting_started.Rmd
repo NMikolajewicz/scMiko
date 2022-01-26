@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
 
 [R](https://www.r-project.org/) version 4.0 or greater is required. We also recommend installing [R Studio](https://www.rstudio.com/).
 
-scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on [scPipeline GitHut repository](https://github.com/NMikolajewicz/scPipeline). To setup and run scPipeline, download the repository locally:
+scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on [scPipeline github repository](https://github.com/NMikolajewicz/scPipeline). To setup and run scPipeline, download the repository locally:
 
 ### Option 1: Clone git repository with Bash
 
@@ -54,7 +54,9 @@ Press `Create Project` and you're good to go!
 
 ## Required Packages
 
-Foremost, scPipeline is dependent on [flexdashboards](https://rstudio.github.io/flexdashboard/index.html) to generate interactive dashboards using R Markdown. The [flexdashboard](https://rstudio.github.io/flexdashboard/index.html) package can be installed from CRAN as follows:
+scPipeline is dependent on our [scMiko](https://github.com/NMikolajewicz/scMiko) package. Please find installation instructions [**here**](articles/install.html) prior to proceeding with scPipeline. 
+
+scPipeline is also dependent on [flexdashboards](https://rstudio.github.io/flexdashboard/index.html) to generate interactive dashboards using R Markdown. The [flexdashboard](https://rstudio.github.io/flexdashboard/index.html) package can be installed from CRAN as follows:
 
 ```{r, eval = FALSE}
 install.packages("flexdashboard")
@@ -75,7 +77,7 @@ Running scPipeline modules is like running any other Rmarkdown script:
 
 1. **Open** a scPipeline module script (.Rmd) in RStudio.
 2. **Specify** analysis parameters
-    * See [Module Overviews](...) for instructions. 
+    * See [**Module Overviews**](articles/scPipeline_module_overview.html) for instructions. 
 3. **Run** scPipeline Module. Each scPipeline module can be run in one of two ways:
     1. `knit` document (*recommended*)
         * Renders an .HTML report
