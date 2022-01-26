@@ -103,7 +103,7 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -115,20 +115,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
-    </li>
-    <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
   </ul>
 </li>
@@ -171,6 +163,12 @@
   quantile_threshold <span class='op'>=</span> <span class='fl'>0.9</span>,
   raster_dpi <span class='op'>=</span> <span class='fl'>200</span>,
   edge.alpha <span class='op'>=</span> <span class='fl'>0.015</span>,
+  edge.color <span class='op'>=</span> <span class='st'>"black"</span>,
+  node.color <span class='op'>=</span> <span class='st'>"grey"</span>,
+  node.alpha <span class='op'>=</span> <span class='fl'>1</span>,
+  node.weights <span class='op'>=</span> <span class='cn'>F</span>,
+  node.size.min <span class='op'>=</span> <span class='fl'>1</span>,
+  node.size.max <span class='op'>=</span> <span class='fl'>5</span>,
   do.label <span class='op'>=</span> <span class='cn'>T</span>,
   label.size <span class='op'>=</span> <span class='fl'>5</span>,
   verbose <span class='op'>=</span> <span class='cn'>T</span>
@@ -185,7 +183,7 @@
     </tr>
     <tr>
       <th>gene.list</th>
-      <td><p>named list of module features. If omitted, feature-annotated connectivity plot is not generated.</p></td>
+      <td><p>named list of gene program features/genes. If omitted, feature-annotated connectivity plot is not generated.</p></td>
     </tr>
     <tr>
       <th>quantile_threshold</th>
@@ -200,12 +198,36 @@
       <td><p>alpha [0,1] parameter (i.e., transparency) for network edges. Default is 0.015. Use larger values for less dense networks.</p></td>
     </tr>
     <tr>
+      <th>edge.color</th>
+      <td><p>color of network edges. Default is 'black'.</p></td>
+    </tr>
+    <tr>
+      <th>node.color</th>
+      <td><p>color of node edges. Default is 'grey'.</p></td>
+    </tr>
+    <tr>
+      <th>node.alpha</th>
+      <td><p>alpha [0,1] parameter for nodes. Default is 1 (obaque).</p></td>
+    </tr>
+    <tr>
+      <th>node.weights</th>
+      <td><p>scale node size by connectivity weights. Default is F.</p></td>
+    </tr>
+    <tr>
+      <th>node.size.min</th>
+      <td><p>minimal node size. Ignored if node.weights = F. Default is 1.</p></td>
+    </tr>
+    <tr>
+      <th>node.size.max</th>
+      <td><p>maximal node size. Ignored if node.weights = F. Default is 5.</p></td>
+    </tr>
+    <tr>
       <th>do.label</th>
-      <td><p>Show module number on network graph. Default is T.</p></td>
+      <td><p>Show gene program IDs  on network graph. Default is T.</p></td>
     </tr>
     <tr>
       <th>label.size</th>
-      <td><p>Size of module numbers on network graph. Default is 5.</p></td>
+      <td><p>Size of gene program IDs on network graph. Default is 5.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -216,9 +238,12 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p><a href='https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html'>https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html</a></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code> for SSN analysis (gene.object), <code><a href='pruneSSN.html'>pruneSSN</a></code> for module features (gene.list)</p></div>
+    <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code> for SSN analysis (gene.object), <code><a href='pruneSSN.html'>pruneSSN</a></code> for gene program features (gene.list)</p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Nicholas Mikolajewicz</p>

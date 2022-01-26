@@ -23,7 +23,7 @@ navbar:
     - text: "Vignettes"
       menu:
         - text: scMiko Vignettes
-        - text: "Diffenetial-expression using CDI"
+        - text: "Differential-expression using CDI"
           href: articles/DEG.html
         - text: "Selecting cluster resolution using specificity criterion"
           href: articles/Cluster_Optimization.html
@@ -31,14 +31,12 @@ navbar:
           href: articles/Marker_Catalog.html
         - text: "Marker-based cell-type annotation using Miko Scoring"
           href: articles/Cell_Annotation.html
-        - text: "Gene Module Detection using SSN analysis"
+        - text: "Gene program discovery using SSN analysis"
           href: articles/Module_Detection.html
         - text: -------
         - text: scPipeline Dashboard Reports
         - text: "Overview of modules"
           href: articles/scPipeline_module_overview.html
-        - text: "Analysis workflows"
-          href: articles/scPipeline_analysis_workflows.html
     - text: "Reference"
       href: reference/index.html
   right:

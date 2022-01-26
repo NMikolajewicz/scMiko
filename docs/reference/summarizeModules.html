@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Summarize SSN, ICA or NMF gene module analyses — summarizeModules • scMiko</title>
+<title>Summarize SSN, ICA or NMF gene program/module analyses — summarizeModules • scMiko</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Summarize SSN, ICA or NMF gene module analyses — summarizeModules" />
-<meta property="og:description" content="Summarize SSN, ICA or NMF gene module analyses. Expression heatmaps and gene module enrichments are generated to facilitate analysis and interpretation of gene modules." />
+<meta property="og:title" content="Summarize SSN, ICA or NMF gene program/module analyses — summarizeModules" />
+<meta property="og:description" content="Summarize SSN, ICA or NMF gene program/module analyses. Expression heatmaps and gene program enrichments are generated to facilitate analysis and interpretation of gene programs" />
 
 
 
@@ -103,7 +103,7 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -115,20 +115,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
-    </li>
-    <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
   </ul>
 </li>
@@ -156,13 +148,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Summarize SSN, ICA or NMF gene module analyses</h1>
+    <h1>Summarize SSN, ICA or NMF gene program/module analyses</h1>
     
     <div class="hidden name"><code>summarizeModules.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Summarize SSN, ICA or NMF gene module analyses. Expression heatmaps and gene module enrichments are generated to facilitate analysis and interpretation of gene modules.</p>
+    <p>Summarize SSN, ICA or NMF gene program/module analyses. Expression heatmaps and gene program enrichments are generated to facilitate analysis and interpretation of gene programs</p>
     </div>
 
     <pre class="usage"><span class='fu'>summarizeModules</span><span class='op'>(</span>
@@ -193,7 +185,7 @@
     </tr>
     <tr>
       <th>module.type</th>
-      <td><p>Which gene modules to summarize</p><ul>
+      <td><p>Which gene program results to summarize</p><ul>
 <li><p>"ssn" - scale-free shared nearest neighbor network</p></li>
 <li><p>"ica" - independent component analysis</p></li>
 <li><p>"nmf" - non-negative matrix factorization</p></li>
@@ -239,10 +231,13 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>List of summarize gene module results, including expression heatmaps and pathway enrichments</p>
+    <p>List of summarize gene program results, including expression heatmaps and pathway enrichments</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p><a href='https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html'>https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html</a></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code> for SSN analysis (gene.object), <code><a href='pruneSSN.html'>pruneSSN</a></code> for module features (gene.list), <code><a href='SSNConnectivity.html'>SSNConnectivity</a></code> for connectivity plot.</p></div>
+    <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code> for SSN analysis (gene.object), <code><a href='pruneSSN.html'>pruneSSN</a></code> for gene program features (gene.list), <code><a href='SSNConnectivity.html'>SSNConnectivity</a></code> for connectivity plot.</p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Nicholas Mikolajewicz</p>

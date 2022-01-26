@@ -34,7 +34,11 @@ knitr::opts_chunk$set(
 
 In this article we overview each scPipeline module, and provide details on how to specify parameters for analysis. For each module, we provide a description, example reports and documentation for implementation (i.e., parameter specification). 
 
-In general, our convention is to store all analysis parameters in a list named `parameter.list` at the start of the script.
+Prior to running any scPipeline module, please visit our [getting started with scPipeline](scPipeline_getting_started.html) article to setup up scPipeline. 
+
+### scPipeline Parameter specification 
+
+In general, our convention is to store all analysis parameters in a list named `parameter.list` at the start of the script. 
 
 ```{r eval = FALSE}
 # example
@@ -45,6 +49,8 @@ parameter.list <- list(
   save.flag = T
 )
 ```
+
+In all scPipeline modules, `parameter.list` is already specified, so users need only to configure the analysis parameters (e.g., specify input data, set cluster resolution, etc.) prior to running the module. In general, the default settings will yield reasonable results, however a little time spent optimizing parameters will often yield better outcomes. 
 
 ---
 

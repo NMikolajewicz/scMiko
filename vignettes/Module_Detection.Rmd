@@ -200,20 +200,32 @@ plt.ssn.gene.hm.expr
 
 ```
 
-```{r, fig.width=25, fig.height=5}
+```{r, fig.width=15, fig.height=10}
 
 
 # get list of module-level summary plots 
 plt.ssn.gene <- ssn.summary$plt.summary
 
-# visualize
-plt.ssn.gene$m7
+# assemble figure panels and visualize
+x <- plt.ssn.gene$m10
+
+cowplot::plot_grid(
+  cowplot::plot_grid(
+    NULL,
+    x$cell.umap +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.subtitle = element_text(hjust = 0.5)), 
+    x$gene.umap +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme(plot.subtitle = element_text(hjust = 0.5)), NULL, nrow = 1, labels = c("", "A", "B", ""), rel_widths = c(1,4,4,1)),
+  cowplot::plot_grid(x$bp.enrich, x$mf.enrich, x$cc.enrich, nrow = 1, labels = c("C", "D", "E")),
+  ncol = 1
+)
 
 ```
 ## Module Detection with ICA and NMF
 
 ```{r}
-
 # TODO
 ```
 

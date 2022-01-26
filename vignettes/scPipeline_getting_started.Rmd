@@ -54,7 +54,7 @@ Press `Create Project` and you're good to go!
 
 ## Required Packages
 
-scPipeline is dependent on our [scMiko](https://github.com/NMikolajewicz/scMiko) package. Please find installation instructions [**here**](articles/install.html) prior to proceeding with scPipeline. 
+scPipeline is dependent on our [scMiko](https://github.com/NMikolajewicz/scMiko) package. Please find installation instructions [**here**](install.html) prior to proceeding with scPipeline. 
 
 scPipeline is also dependent on [flexdashboards](https://rstudio.github.io/flexdashboard/index.html) to generate interactive dashboards using R Markdown. The [flexdashboard](https://rstudio.github.io/flexdashboard/index.html) package can be installed from CRAN as follows:
 

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN) — pruneSSN • scMiko</title>
+<title>Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN) — pruneSSN • scMiko</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN) — pruneSSN" />
-<meta property="og:description" content="Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)" />
+<meta property="og:title" content="Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN) — pruneSSN" />
+<meta property="og:description" content="Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)" />
 
 
 
@@ -103,7 +103,7 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -115,20 +115,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
-    </li>
-    <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
   </ul>
 </li>
@@ -156,13 +148,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)</h1>
+    <h1>Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)</h1>
     
     <div class="hidden name"><code>pruneSSN.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Identify and (optionally) prune module features in scale-free shared nearest neighbor network (SSN)</p>
+    <p>Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)</p>
     </div>
 
     <pre class="usage"><span class='fu'>pruneSSN</span><span class='op'>(</span><span class='va'>object</span>, graph <span class='op'>=</span> <span class='st'>"RNA_snn_power"</span>, prune.threshold <span class='op'>=</span> <span class='fl'>0.1</span>, return.df <span class='op'>=</span> <span class='cn'>F</span><span class='op'>)</span></pre>
@@ -190,7 +182,10 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns named list of SSN module features.</p>
+    <p>Returns named list of SSN gene program features.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p><a href='https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html'>https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html</a></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code> for SSN analysis</p></div>

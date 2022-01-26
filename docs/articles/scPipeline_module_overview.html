@@ -62,7 +62,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -74,15 +74,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
       <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
-    </li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html">Analysis workflows</a>
     </li>
   </ul>
 </li>
@@ -112,7 +109,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>scPipeline analysis workflows</h1>
             
-            <h4 class="date">Compiled: 2022-01-24</h4>
+            <h4 class="date">Compiled: 2022-01-25</h4>
       
       
       <div class="hidden name"><code>scPipeline_module_overview.Rmd</code></div>
@@ -122,12 +119,18 @@
     
     
 <hr>
-<p>In this article we overview each scPipeline, and provide details on how to specify parameters for analysis. For each module, we provide a description, example reports and documentation for implementation (i.e., parameter specification).</p>
+<p>In this article we overview each scPipeline module, and provide details on how to specify parameters for analysis. For each module, we provide a description, example reports and documentation for implementation (i.e., parameter specification).</p>
+<p>Prior to running any scPipeline module, please visit our <a href="scPipeline_getting_started.html">getting started with scPipeline</a> article to setup up scPipeline.</p>
+<div id="scpipeline-parameter-specification" class="section level3">
+<h3 class="hasAnchor">
+<a href="#scpipeline-parameter-specification" class="anchor"></a>scPipeline Parameter specification</h3>
 <p>In general, our convention is to store all analysis parameters in a list named <code>parameter.list</code> at the start of the script.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># example</span>
 <span class="va">parameter.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>input.file <span class="op">=</span> <span class="st">"../data.rds"</span>, <span class="va">...</span>, print.inline <span class="op">=</span> <span class="cn">F</span>, save.flag <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
+<p>In all scPipeline modules, <code>parameter.list</code> is already specified, so users need only to configure the analysis parameters (e.g., specify input data, set cluster resolution, etc.) prior to running the module. In general, the default settings will yield reasonable results, however a little time spent optimizing parameters will often yield better outcomes.</p>
 <hr>
+</div>
 <div id="module-01-quality-control-qc-preprocessing" class="section level2">
 <h2 class="hasAnchor">
 <a href="#module-01-quality-control-qc-preprocessing" class="anchor"></a>Module 01: Quality Control (QC) &amp; Preprocessing</h2>
@@ -345,23 +348,28 @@
 <hr>
 </div>
 </div>
-<div id="module-05-cell-type-annotation" class="section level2">
+<div id="module-03-cluster-optimization" class="section level2">
 <h2 class="hasAnchor">
-<a href="#module-05-cell-type-annotation" class="anchor"></a>Module 05: Cell-Type Annotation</h2>
+<a href="#module-03-cluster-optimization" class="anchor"></a>Module 03: Cluster Optimization</h2>
 <div id="description-2" class="section level3">
 <h3 class="hasAnchor">
 <a href="#description-2" class="anchor"></a>Description</h3>
-<p>Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline.</p>
-<p>Prior to running this module, we recommend running the cluster optimization module to identify the appropriate resolution for clustering.</p>
+<p>Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:</p>
+<ul>
+<li>Marker specificity analysis (CDI-based)</li>
+<li>Silhouette analysis.</li>
+<li>Nearest-neighbor purity analysis</li>
+<li>Differential gene expression (Wilcoxon, CDI)</li>
+</ul>
 </div>
 <div id="example-reports-1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#example-reports-1" class="anchor"></a>Example Reports</h3>
 <ul>
-<li><a href="Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M18_ClusterOptimization_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M18_ClusterOptimization_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
 </ul>
 </div>
 <div id="inputs-and-outputs-1" class="section level3">
@@ -382,6 +390,130 @@
 <div id="analysis-parameters-1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#analysis-parameters-1" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
+<table class="table">
+<colgroup>
+<col width="11%">
+<col width="55%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Argument</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>input.file</strong></td>
+<td>path to seurat object</td>
+<td>character</td>
+</tr>
+<tr class="even">
+<td><strong>cluster.resolution</strong></td>
+<td>range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3)</td>
+<td>vector of numeric(s)</td>
+</tr>
+<tr class="odd">
+<td><strong>lfc.threshold</strong></td>
+<td>log-fold change threshold used in differential-expression analysis. 0.5 is recommended.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>fdr.threshold</strong></td>
+<td>fdr-value significance threshold. Value between [0,1]. Default is 0.05.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>group.singletons</strong></td>
+<td>Group singletons into nearest cluster. If FALSE, assign all singletons to a “singleton” group. For certain difficult-to-cluster data sets, <code>group.singletons</code> = FALSE may yield faster results. Default is FALSE</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>print.inline</strong></td>
+<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>subsample_factor</strong></td>
+<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>subsample_n</strong></td>
+<td>value specifying how many cells to sub sample. Set to NA if none.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>n.workers</strong></td>
+<td>number of workers used for parallel implementation. <code><a href="https://rdrr.io/r/parallel/detectCores.html">parallel::detectCores()</a></code> is recommended.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>only.pos</strong></td>
+<td>only included genes with logFC &gt; 0. Default is TRUE.</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>save.pdf</strong></td>
+<td>save figures and tables</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>update.log</strong></td>
+<td>update analysis log. Ignored if developer = F.</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>rprofile.dir</strong></td>
+<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>developer</strong></td>
+<td>Developer mode. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+</tbody>
+</table></details><hr>
+</div>
+</div>
+<div id="module-04-cell-type-annotation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#module-04-cell-type-annotation" class="anchor"></a>Module 04: Cell-Type Annotation</h2>
+<div id="description-3" class="section level3">
+<h3 class="hasAnchor">
+<a href="#description-3" class="anchor"></a>Description</h3>
+<p>Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline.</p>
+<p>Prior to running this module, we recommend running the cluster optimization module to identify the appropriate resolution for clustering.</p>
+</div>
+<div id="example-reports-2" class="section level3">
+<h3 class="hasAnchor">
+<a href="#example-reports-2" class="anchor"></a>Example Reports</h3>
+<ul>
+<li><a href="Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
+</ul>
+</div>
+<div id="inputs-and-outputs-2" class="section level3">
+<h3 class="hasAnchor">
+<a href="#inputs-and-outputs-2" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
+<ul>
+<li>
+<strong>Seurat object</strong> (.Rds or .RData file)</li>
+</ul>
+<p><u>Outputs</u></p>
+<ul>
+<li>
+<strong>Analysis report</strong> (.HTML file)</li>
+</ul></details>
+</div>
+<div id="analysis-parameters-2" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-2" class="anchor"></a>Analysis Parameters</h3>
 <details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
@@ -524,24 +656,33 @@
 </table></details><hr>
 </div>
 </div>
-<div id="module-09-gene-expression-and-associations" class="section level2">
+<div id="module-05-gene-program-discovery" class="section level2">
 <h2 class="hasAnchor">
-<a href="#module-09-gene-expression-and-associations" class="anchor"></a>Module 09: Gene Expression and Associations</h2>
-<div id="description-3" class="section level3">
+<a href="#module-05-gene-program-discovery" class="anchor"></a>Module 05: Gene Program Discovery</h2>
+<div id="description-4" class="section level3">
 <h3 class="hasAnchor">
-<a href="#description-3" class="anchor"></a>Description</h3>
-<p>Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes.</p>
-</div>
-<div id="example-reports-2" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-2" class="anchor"></a>Example Reports</h3>
+<a href="#description-4" class="anchor"></a>Description</h3>
+<p>Gene program/module identification. Three independent methods are implemented to identify gene programs based on gene co-expression profiles:</p>
 <ul>
-<li>placeholder</li>
+<li>Scale-free shared nearest neighbor network analysis (SSN)</li>
+<li>Independent component analysis (ICA)</li>
+<li>Non-negative matrix factorization (NMF)</li>
+</ul>
+<p>Gene set enrichment is performed on each gene program to facilitate functional annotation.</p>
+</div>
+<div id="example-reports-3" class="section level3">
+<h3 class="hasAnchor">
+<a href="#example-reports-3" class="anchor"></a>Example Reports</h3>
+<ul>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_cao2019_10000cells_250122.html">Cao 2019: Murine organogenesis</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_manno_10000cells_250122.html">La Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_ps_10000cells_250122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_zeisel_10000cells_250122.html">Zeisel 2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs-2" class="section level3">
+<div id="inputs-and-outputs-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#inputs-and-outputs-2" class="anchor"></a>Inputs and Outputs</h3>
+<a href="#inputs-and-outputs-3" class="anchor"></a>Inputs and Outputs</h3>
 <details><p><summary><strong>show contents</strong></summary></p>
 <p><u>Inputs</u></p>
 <ul>
@@ -554,9 +695,195 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters-2" class="section level3">
+<div id="analysis-parameters-3" class="section level3">
 <h3 class="hasAnchor">
-<a href="#analysis-parameters-2" class="anchor"></a>Analysis Parameters</h3>
+<a href="#analysis-parameters-3" class="anchor"></a>Analysis Parameters</h3>
+<details><p><summary><strong>show table</strong></summary></p>
+<table class="table">
+<colgroup>
+<col width="11%">
+<col width="55%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Argument</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>input.file</strong></td>
+<td>path to seurat object</td>
+<td>character</td>
+</tr>
+<tr class="even">
+<td><strong>cluster.resolution</strong></td>
+<td>Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>subsample_factor</strong></td>
+<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>subsample_n</strong></td>
+<td>value specifying how many cells to sub sample. Set to NA if none.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>subset.data</strong></td>
+<td>Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as “no.subset” for not subsetting.</td>
+<td>data frame specifying which field (<code>df$field</code>) to subset on, and which field entries to retain (<code>df$subgroups</code>)</td>
+</tr>
+<tr class="even">
+<td><strong>batch.feature</strong></td>
+<td>meta data field to use for batch correction (set to NA if unspecified)</td>
+<td>character</td>
+</tr>
+<tr class="odd">
+<td><strong>feature.selection.method</strong></td>
+<td>method used to select features for module detection analysis.</td>
+<td>- expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion</td>
+</tr>
+<tr class="even">
+<td><strong>max.features</strong></td>
+<td>max number of features to include in module detection analysis (NA if unspecified)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>min.pct</strong></td>
+<td>minimal feature expression (applicable only if <code>select.method</code> = “expr”). Value between [0,1], use 0.1 for large network and 0.5 for small network.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>data.type</strong></td>
+<td>Data representation used for module detection</td>
+<td>- pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model</td>
+</tr>
+<tr class="odd">
+<td><strong>purity.optimization.step.size</strong></td>
+<td>value of step size used for optimizing module purity. 0.5 recommended.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>filter.parameters</strong></td>
+<td>specify which clusters to include or omit</td>
+<td>named list with 2 sets of entries; ‘include’ entries specify which clusters to retain; ‘omit’ entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))</td>
+</tr>
+<tr class="odd">
+<td><strong>general.weight.by.var</strong></td>
+<td>Weight feature embeddings by the variance of each PC. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>general.pca.cum.sum</strong></td>
+<td>cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>general.umap.knn</strong></td>
+<td>number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50.</td>
+<td>numeric</td>
+</tr>
+<tr class="even">
+<td><strong>general.cluster.purity</strong></td>
+<td>target purity of network modules. Value between [0,1], 0.8 is recommended.</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>general.scale.free.topology</strong></td>
+<td>apply scale-free transform to shared nearest neighbor graph. Default is TRUE.</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>general.ica</strong></td>
+<td>perform independent component analysis (ICA).</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>general.nmf</strong></td>
+<td>perform non-negative matrix factorization (NMF).</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>general.nmf.k</strong></td>
+<td>number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15))</td>
+<td>vector of numeric(s)</td>
+</tr>
+<tr class="odd">
+<td><strong>general.robust.pca</strong></td>
+<td>use robust PCA for dimensional reduction (<em>warning</em>: computationally intensive)</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>n.workers</strong></td>
+<td>number of workers used for parallel implementations.</td>
+<td>numeric</td>
+</tr>
+<tr class="odd">
+<td><strong>print.inline</strong></td>
+<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>save.pdf</strong></td>
+<td>save figures and tables</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>update.log</strong></td>
+<td>update analysis log. Ignored if developer = F.</td>
+<td>logical</td>
+</tr>
+<tr class="even">
+<td><strong>rprofile.dir</strong></td>
+<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+<tr class="odd">
+<td><strong>developer</strong></td>
+<td>Developer mode. Default is FALSE.</td>
+<td>logical</td>
+</tr>
+</tbody>
+</table></details><p><br></p>
+<hr>
+</div>
+</div>
+<div id="module-06-gene-expression-and-associations" class="section level2">
+<h2 class="hasAnchor">
+<a href="#module-06-gene-expression-and-associations" class="anchor"></a>Module 06: Gene Expression and Associations</h2>
+<div id="description-5" class="section level3">
+<h3 class="hasAnchor">
+<a href="#description-5" class="anchor"></a>Description</h3>
+<p>Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes.</p>
+</div>
+<div id="example-reports-4" class="section level3">
+<h3 class="hasAnchor">
+<a href="#example-reports-4" class="anchor"></a>Example Reports</h3>
+<ul>
+<li><em>placeholder</em></li>
+</ul>
+</div>
+<div id="inputs-and-outputs-4" class="section level3">
+<h3 class="hasAnchor">
+<a href="#inputs-and-outputs-4" class="anchor"></a>Inputs and Outputs</h3>
+<details><p><summary><strong>show contents</strong></summary></p>
+<p><u>Inputs</u></p>
+<ul>
+<li>
+<strong>Seurat object</strong> (.Rds or .RData file)</li>
+</ul>
+<p><u>Outputs</u></p>
+<ul>
+<li>
+<strong>Analysis report</strong> (.HTML file)</li>
+</ul></details>
+</div>
+<div id="analysis-parameters-4" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-parameters-4" class="anchor"></a>Analysis Parameters</h3>
 <details><p><summary><strong>show table</strong></summary></p>
 <table class="table">
 <colgroup>
@@ -697,333 +1024,6 @@
 </tr>
 </tbody>
 </table></details><hr>
-</div>
-</div>
-<div id="module-18-cluster-optimization" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-18-cluster-optimization" class="anchor"></a>Module 18: Cluster Optimization</h2>
-<div id="description-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-4" class="anchor"></a>Description</h3>
-<p>Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:</p>
-<ul>
-<li>Marker specificity analysis (CDI-based)</li>
-<li>Silhouette analysis.</li>
-<li>Nearest-neighbor purity analysis</li>
-<li>Differential gene expression (Wilcoxon, CDI)</li>
-</ul>
-</div>
-<div id="example-reports-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-3" class="anchor"></a>Example Reports</h3>
-<ul>
-<li><a href="Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M18_ClusterOptimization_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M18_ClusterOptimization_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
-</ul>
-</div>
-<div id="inputs-and-outputs-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-3" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
-<ul>
-<li>
-<strong>Seurat object</strong> (.Rds or .RData file)</li>
-</ul>
-<p><u>Outputs</u></p>
-<ul>
-<li>
-<strong>Analysis report</strong> (.HTML file)</li>
-</ul></details>
-</div>
-<div id="analysis-parameters-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-3" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
-<colgroup>
-<col width="11%">
-<col width="55%">
-<col width="33%">
-</colgroup>
-<thead><tr class="header">
-<th>Parameter</th>
-<th>Description</th>
-<th>Argument</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><strong>input.file</strong></td>
-<td>path to seurat object</td>
-<td>character</td>
-</tr>
-<tr class="even">
-<td><strong>cluster.resolution</strong></td>
-<td>range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3)</td>
-<td>vector of numeric(s)</td>
-</tr>
-<tr class="odd">
-<td><strong>lfc.threshold</strong></td>
-<td>log-fold change threshold used in differential-expression analysis. 0.5 is recommended.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>fdr.threshold</strong></td>
-<td>fdr-value significance threshold. Value between [0,1]. Default is 0.05.</td>
-<td>numeric</td>
-</tr>
-<tr class="odd">
-<td><strong>group.singletons</strong></td>
-<td>Group singletons into nearest cluster. If FALSE, assign all singletons to a “singleton” group. For certain difficult-to-cluster data sets, <code>group.singletons</code> = FALSE may yield faster results. Default is FALSE</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>subsample_factor</strong></td>
-<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>subsample_n</strong></td>
-<td>value specifying how many cells to sub sample. Set to NA if none.</td>
-<td>numeric</td>
-</tr>
-<tr class="odd">
-<td><strong>n.workers</strong></td>
-<td>number of workers used for parallel implementation. <code><a href="https://rdrr.io/r/parallel/detectCores.html">parallel::detectCores()</a></code> is recommended.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>only.pos</strong></td>
-<td>only included genes with logFC &gt; 0. Default is TRUE.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>save.pdf</strong></td>
-<td>save figures and tables</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>update.log</strong></td>
-<td>update analysis log. Ignored if developer = F.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>developer</strong></td>
-<td>Developer mode. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-</tbody>
-</table></details><hr>
-</div>
-</div>
-<div id="module-37-gene-module-detection" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-37-gene-module-detection" class="anchor"></a>Module 37: Gene Module Detection</h2>
-<div id="description-5" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-5" class="anchor"></a>Description</h3>
-<p>Gene module or meta-gene identification. Three independent methods are used in an ensemble approach to perform gene network analysis and identify gene module of interest:</p>
-<ul>
-<li>Scale-free shared nearest neighbor network analysis (SSN)</li>
-<li>Independent component analysis (ICA)</li>
-<li>Non-negative matrix factorization (NMF)</li>
-</ul>
-<p>Gene set enrichement is performed on each module to facilitate functional annotation.</p>
-</div>
-<div id="example-reports-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-4" class="anchor"></a>Example Reports</h3>
-<ul>
-<li>placeholder</li>
-</ul>
-</div>
-<div id="inputs-and-outputs-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-4" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
-<ul>
-<li>
-<strong>Seurat object</strong> (.Rds or .RData file)</li>
-</ul>
-<p><u>Outputs</u></p>
-<ul>
-<li>
-<strong>Analysis report</strong> (.HTML file)</li>
-</ul></details>
-</div>
-<div id="analysis-parameters-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-4" class="anchor"></a>Analysis Parameters</h3>
-<p><!-- expr, hvg, deviance (Default is expr) --></p>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
-<colgroup>
-<col width="11%">
-<col width="55%">
-<col width="33%">
-</colgroup>
-<thead><tr class="header">
-<th>Parameter</th>
-<th>Description</th>
-<th>Argument</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><strong>input.file</strong></td>
-<td>path to seurat object</td>
-<td>character</td>
-</tr>
-<tr class="even">
-<td><strong>cluster.resolution</strong></td>
-<td>Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities.</td>
-<td>numeric</td>
-</tr>
-<tr class="odd">
-<td><strong>subsample_factor</strong></td>
-<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>subsample_n</strong></td>
-<td>value specifying how many cells to sub sample. Set to NA if none.</td>
-<td>numeric</td>
-</tr>
-<tr class="odd">
-<td><strong>subset.data</strong></td>
-<td>Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as “no.subset” for not subsetting.</td>
-<td>data frame specifying which field (<code>df$field</code>) to subset on, and which field entries to retain (<code>df$subgroups</code>)</td>
-</tr>
-<tr class="even">
-<td><strong>batch.feature</strong></td>
-<td>meta data field to use for batch correction (set to NA if unspecified)</td>
-<td>character</td>
-</tr>
-<tr class="odd">
-<td><strong>feature.selection.method</strong></td>
-<td>method used to select features for module detection analysis.</td>
-<td>- expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion</td>
-</tr>
-<tr class="even">
-<td><strong>max.features</strong></td>
-<td>max number of features to include in module detection analysis (NA if unspecified)</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><strong>min.pct</strong></td>
-<td>minimal feature expression (applicable only if <code>select.method</code> = “expr”). Value between [0,1], use 0.1 for large network and 0.5 for small network.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>data.type</strong></td>
-<td>Data representation used for module detection</td>
-<td>- pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model</td>
-</tr>
-<tr class="odd">
-<td><strong>purity.optimization.step.size</strong></td>
-<td>value of step size used for optimizing module purity. 0.5 recommended.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>pathway.db</strong></td>
-<td>database used for functional annotation of gene sets</td>
-<td>- GO <br>- Bader</td>
-</tr>
-<tr class="odd">
-<td><strong>filter.parameters</strong></td>
-<td>specify which clusters to include or omit</td>
-<td>named list with 2 sets of entries; ‘include’ entries specify which clusters to retain; ‘omit’ entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))</td>
-</tr>
-<tr class="even">
-<td><strong>general.weight.by.var</strong></td>
-<td>Weight feature embeddings by the variance of each PC. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>general.pca.cum.sum</strong></td>
-<td>cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>general.umap.knn</strong></td>
-<td>number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50.</td>
-<td>numeric</td>
-</tr>
-<tr class="odd">
-<td><strong>general.cluster.purity</strong></td>
-<td>target purity of network modules. Value between [0,1], 0.8 is recommended.</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>general.scale.free.topology</strong></td>
-<td>apply scale-free transform to shared nearest neighbor graph. Default is TRUE.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>general.ica</strong></td>
-<td>perform independent component analysis (ICA).</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>general.nmf</strong></td>
-<td>perform non-negative matrix factorization (NMF).</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>general.nmf.k</strong></td>
-<td>number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15))</td>
-<td>vector of numeric(s)</td>
-</tr>
-<tr class="even">
-<td><strong>general.robust.pca</strong></td>
-<td>use robust PCA for dimensional reduction (<em>warning</em>: computationally intensive)</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>n.workers</strong></td>
-<td>number of workers used for parallel implementations.</td>
-<td>numeric</td>
-</tr>
-<tr class="even">
-<td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>save.pdf</strong></td>
-<td>save figures and tables</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>update.log</strong></td>
-<td>update analysis log. Ignored if developer = F.</td>
-<td>logical</td>
-</tr>
-<tr class="odd">
-<td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-<tr class="even">
-<td><strong>developer</strong></td>
-<td>Developer mode. Default is FALSE.</td>
-<td>logical</td>
-</tr>
-</tbody>
-</table></details><p><br></p>
-<hr>
 <details><p><summary><strong>Session Info</strong></summary></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>

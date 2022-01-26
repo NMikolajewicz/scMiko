@@ -79,7 +79,7 @@ cluster.UMAP(so.query) + theme_void() + theme(legend.position = "none")
 
 ### Option 2: Preprocess data using scPipeline QC & Preprocessing Module.
 
-Another way to preprocess single-cell data is to use our QC & Preprocessing Module implemented in [scPipeline](...). Given a gene x cell count matrix, or cell ranger output, the QC & Preprocessing module applies quality-control filters and preprocesses the data. The output from the module is a Seurat object, compatible with all downstream analysis work flows, and an intuitive dashboard report summarizing the data set and results. 
+Another way to preprocess single-cell data is to use our QC & Preprocessing Module implemented in [scPipeline](scPipeline_module_overview.html). Given a gene x cell count matrix, or cell ranger output, the QC & Preprocessing module applies quality-control filters and preprocesses the data. The output from the module is a Seurat object, compatible with all downstream analysis work flows, and an intuitive dashboard report summarizing the data set and results. 
 
 ## Sample stratification
 

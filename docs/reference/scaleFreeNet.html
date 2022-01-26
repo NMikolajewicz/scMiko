@@ -103,7 +103,7 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -115,20 +115,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider"></li>
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
-    <li class="dropdown-header">Overview of modules</li>
     <li>
-      <a href="../articles/scPipeline_module_overview.html"></a>
-    </li>
-    <li class="dropdown-header">Analysis workflows</li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html"></a>
-    </li>
-    <li>
-      <a href="../articles/R643_M01_Ochoka2021_QC_NM2_21_Sep_3_39_09_PM_2021.html">QC and Preprocessing Module</a>
+      <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
   </ul>
 </li>
@@ -168,7 +160,7 @@
     <pre class="usage"><span class='fu'>scaleFreeNet</span><span class='op'>(</span>
   <span class='va'>object</span>,
   graph_name <span class='op'>=</span> <span class='st'>"RNA_snn"</span>,
-  sf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>0.5</span>, <span class='fl'>5</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>6</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
+  sf <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>5</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>6</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
   sf_threshold <span class='op'>=</span> <span class='fl'>0.9</span>,
   umap_knn <span class='op'>=</span> <span class='fl'>10</span>,
   n_dim <span class='op'>=</span> <span class='fl'>30</span>,
@@ -186,7 +178,7 @@
     </tr>
     <tr>
       <th>sf</th>
-      <td><p>soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(0.5, 5, by = 0.5), seq(6, 10)).</p></td>
+      <td><p>soft thresholds (sf) that are evaluated in search for optimal soft threshold (used to transform SNN to scale-free topology). Default is sf = c(seq(1, 5, by = 0.5), seq(6, 10)).</p></td>
     </tr>
     <tr>
       <th>sf_threshold</th>
@@ -225,6 +217,9 @@
 <li><p>"st.res" - soft threshold optimization results.</p></li>
 </ul>
 
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p><a href='https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html'>https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html</a></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='runSSN.html'>runSSN</a></code></p></div>

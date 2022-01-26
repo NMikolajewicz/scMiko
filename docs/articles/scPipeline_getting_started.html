@@ -62,7 +62,7 @@
   <ul class="dropdown-menu" role="menu">
 <li class="dropdown-header">scMiko Vignettes</li>
     <li>
-      <a href="../articles/DEG.html">Diffenetial-expression using CDI</a>
+      <a href="../articles/DEG.html">Differential-expression using CDI</a>
     </li>
     <li>
       <a href="../articles/Cluster_Optimization.html">Selecting cluster resolution using specificity criterion</a>
@@ -74,15 +74,12 @@
       <a href="../articles/Cell_Annotation.html">Marker-based cell-type annotation using Miko Scoring</a>
     </li>
     <li>
-      <a href="../articles/Module_Detection.html">Gene Module Detection using SSN analysis</a>
+      <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider">
     <li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
       <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
-    </li>
-    <li>
-      <a href="../articles/scPipeline_analysis_workflows.html">Analysis workflows</a>
     </li>
   </ul>
 </li>
@@ -112,7 +109,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Getting Started with scPipeline</h1>
             
-            <h4 class="date">Compiled: 2022-01-24</h4>
+            <h4 class="date">Compiled: 2022-01-25</h4>
       
       
       <div class="hidden name"><code>scPipeline_getting_started.Rmd</code></div>
@@ -125,7 +122,7 @@
 <h2 class="hasAnchor">
 <a href="#setup" class="anchor"></a>Setup</h2>
 <p><a href="https://www.r-project.org/">R</a> version 4.0 or greater is required. We also recommend installing <a href="https://www.rstudio.com/">R Studio</a>.</p>
-<p>scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on <a href="https://github.com/NMikolajewicz/scPipeline">scPipeline GitHut repository</a>. To setup and run scPipeline, download the repository locally:</p>
+<p>scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on <a href="https://github.com/NMikolajewicz/scPipeline">scPipeline github repository</a>. To setup and run scPipeline, download the repository locally:</p>
 <div id="option-1-clone-git-repository-with-bash" class="section level3">
 <h3 class="hasAnchor">
 <a href="#option-1-clone-git-repository-with-bash" class="anchor"></a>Option 1: Clone git repository with Bash</h3>
@@ -144,7 +141,8 @@ Project Directory Name: scPipeline</code></pre>
 <div id="required-packages" class="section level2">
 <h2 class="hasAnchor">
 <a href="#required-packages" class="anchor"></a>Required Packages</h2>
-<p>Foremost, scPipeline is dependent on <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboards</a> to generate interactive dashboards using R Markdown. The <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboard</a> package can be installed from CRAN as follows:</p>
+<p>scPipeline is dependent on our <a href="https://github.com/NMikolajewicz/scMiko">scMiko</a> package. Please find installation instructions <a href="articles/install.html"><strong>here</strong></a> prior to proceeding with scPipeline.</p>
+<p>scPipeline is also dependent on <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboards</a> to generate interactive dashboards using R Markdown. The <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboard</a> package can be installed from CRAN as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"flexdashboard"</span><span class="op">)</span></code></pre></div>
 <p>Additionally, each scPipeline module depends on a variety of R packages to run, and a complete list of required packages can be found at the beginning of each module script.</p>
@@ -165,7 +163,7 @@ Project Directory Name: scPipeline</code></pre>
 <li>
 <strong>Specify</strong> analysis parameters
 <ul>
-<li>See <a href="...">Module Overviews</a> for instructions.</li>
+<li>See <a href="articles/scPipeline_module_overview.html"><strong>Module Overviews</strong></a> for instructions.</li>
 </ul>
 </li>
 <li>
