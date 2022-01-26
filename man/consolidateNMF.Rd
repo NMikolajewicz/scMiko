@@ -20,6 +20,9 @@ Consolidate several NMF reduction objects into single NMF reduction object withi
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{runNMF}}
 }

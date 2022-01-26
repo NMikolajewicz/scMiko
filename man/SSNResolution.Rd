@@ -41,6 +41,9 @@ Identify optimal cluster resolution of scale-free shared nearest neighbor networ
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{neighborPurity}}
 }

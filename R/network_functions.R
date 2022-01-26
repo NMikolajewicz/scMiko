@@ -16,6 +16,7 @@
 #' @param verbose Show progress. Default is T.
 #' @name findNetworkFeatures
 #' @seealso \code{\link{runSSN}}
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @author Nicholas Mikolajewicz
 #' @return vector of features
 #' @examples
@@ -111,6 +112,7 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
 #' @name scaleFreeNet
 #' @seealso \code{\link{runSSN}}
 #' @author Nicholas Mikolajewicz
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @return list containing
 #' \itemize{
 #' \item "object" - scale-free SNN and binarized graph are stored in `object` graph slot, and umap embedding is stored in `object` reduction slot.
@@ -198,6 +200,7 @@ scaleFreeNet <- function(object, graph_name = "RNA_snn", sf = c(seq(1, 5, by = 0
 #' @param max.iter Maximum number of iterations. If `max.iter` is reached, non-optimal resolution may be returned.
 #' @param verbose Show progress. Default is T.
 #' @name SSNResolution
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{neighborPurity}}
 #' @author Nicholas Mikolajewicz
 #' @return optimal cluster resolution
@@ -298,6 +301,7 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 #' @param n_workers Number of workers for parallel implementation. Default is 1.
 #' @param verbose Print progress. Default is T.
 #' @name runSSN
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @import foreach parallel
 #' @seealso \code{\link{findNetworkFeatures}} for finding features, \code{\link{SCTransform}} for gene count normalization and scaling, \code{\link{nullResiduals}} for deviance calculations, \code{\link{scaleFreeNet}} for scale-free topology transform.
 #' @author Nicholas Mikolajewicz
@@ -577,6 +581,7 @@ runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type =
 #' @param assert.positive.skew Whether to ensure that max(|feature.loading|) is positive. Default is T.
 #' @param only.pos Whether significant genes are positively loaded only. Default is T.
 #' @name getICAGenes
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{runICA}} for independent component analysis.
 #' @author Nicholas Mikolajewicz
 #' @return named list of ICA gene programs
@@ -644,6 +649,7 @@ getICAGenes <- function(feature.loading, fdr.cutoff = 0.0001, local.fdr = T, ass
 #' @param verbose Print progress. Default is T.
 #' @param ... Additional parameters passed to Seurat::RunICA(...)
 #' @name runICA
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{RunICA}} for Seurat's independent component analysis, \code{\link{getICAGenes}} for significant ICA gene identification.
 #' @author Nicholas Mikolajewicz
 #' @return seurat object with significant genes stored in "misc" slot of ICA reduction slot.
@@ -723,6 +729,7 @@ runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_ce
 #' @param verbose Print progress. Default is TRUE.
 #' @param ... additional arguments passed to NNLM::nnmf(...)
 #' @name runNMF
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{nnmf}}
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object with NMF results in reduction slot. Program genes are stored in "misc" slot of NMF reduction slot.
@@ -901,6 +908,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 #' @param object Seurat object containing several NMF reductions (e.g., each NMF with different k parameter)
 #' @param reduction_key Reduction key used to identify reduction objects for consolidation. Default is "nmf".
 #' @name consolidateNMF
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{runNMF}}
 #' @author Nicholas Mikolajewicz
 #' @return Seurat object with with several NMF reductions consolidated into "nmf_all" reduction object.
@@ -1014,6 +1022,7 @@ group2list <- function(object, group = "seurat_clusters", is.num = F, prefix = "
 #' @param return.df whether to return data.frame instead of named list.
 #' @name pruneSSN
 #' @author Nicholas Mikolajewicz
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @return Returns named list of SSN gene program features.
 #' @seealso \code{\link{runSSN}} for SSN analysis
 #' @examples
@@ -1074,6 +1083,7 @@ pruneSSN <- function(object, graph = "RNA_snn_power", prune.threshold = 0.1, ret
 #' @param label.size Size of gene program IDs on network graph. Default is 5.
 #' @param verbose Print progress. Default is T.
 #' @name SSNConnectivity
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @author Nicholas Mikolajewicz
 #' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list)
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
@@ -1234,6 +1244,7 @@ SSNConnectivity <- function(gene.object, gene.list = NULL, quantile_threshold = 
 #' @param connecitivity.plot "plot_edge" generated by SSNConnectivity function. If not specified, not edges are plotted in SSN graph plot.
 #' @name SSNExpression
 #' @author Nicholas Mikolajewicz
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
 #' @return Returns 2 variants of SSN connectivity plot along with data.frame used to generate plots.
 #' @examples
@@ -1350,6 +1361,7 @@ SSNExpression <- function(cell.object, gene.object, group_by = "seurat_clusters"
 #' @param verbose Print progress. Default is T.
 #' @name summarizeModules
 #' @author Nicholas Mikolajewicz
+#' @references \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 #' @seealso \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
 #' @return List of summarize gene program results, including expression heatmaps and pathway enrichments
 #' @examples

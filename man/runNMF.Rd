@@ -65,6 +65,9 @@ Run non-negative matrix factorization(NMF or NNMF) using sequential coordinate-w
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{nnmf}}
 }

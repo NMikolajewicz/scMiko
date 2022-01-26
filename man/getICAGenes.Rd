@@ -32,6 +32,9 @@ Given feature loadings obtained from independent component analysis (ICA), signi
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{runICA}} for independent component analysis.
 }

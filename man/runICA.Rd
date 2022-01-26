@@ -35,6 +35,9 @@ Run fastica algorithm from the ica package for ICA dimensionality reduction. Wra
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{RunICA}} for Seurat's independent component analysis, \code{\link{getICAGenes}} for significant ICA gene identification.
 }

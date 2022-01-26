@@ -134,7 +134,66 @@ The primary aim of data integration is to identify common cell populations betwe
 
 ---
 
-## Module 05: Cell-Type Annotation
+
+## Module 03: Cluster Optimization
+
+### Description
+
+Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:
+
+- Marker specificity analysis (CDI-based)
+- Silhouette analysis.
+- Nearest-neighbor purity analysis
+- Differential gene expression (Wilcoxon, CDI)
+
+### Example Reports
+
+- [Cao 2019: Murine organogenesis](Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html)
+- [La Manno 2021: Developing murine brain](Reports/M18_ClusterOptimization_manno_10000cells_240122.html)
+- [Pijuan-Sala 2019: Murine gastrulation](Reports/M18_ClusterOptimization_ps_10000cells_240122.html) 
+- [Zeisel 2018: Adolescent murine brain](Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html)
+
+### Inputs and Outputs
+
+<details><summary>**show contents**</summary>
+
+<u>Inputs</u>
+
+- **Seurat object** (.Rds or .RData file)
+
+<u>Outputs</u>
+
+- **Analysis report** (.HTML file)
+
+</details>
+
+### Analysis Parameters
+
+ <details>
+  <summary>**show table**</summary>
+
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**cluster.resolution** | range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5,  0.75,  1, 1.25, 1.5, 1.75, 2, 3) | vector of numeric(s)
+**lfc.threshold** | log-fold change threshold used in differential-expression analysis. 0.5 is recommended. | numeric 
+**fdr.threshold** | fdr-value significance threshold. Value between [0,1]. Default is 0.05.  | numeric
+**group.singletons** | Group singletons into nearest cluster. If FALSE, assign all singletons to a "singleton" group. For certain difficult-to-cluster data sets, `group.singletons` = FALSE may yield faster results. Default is FALSE | logical
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
+**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
+**n.workers** | number of workers used for parallel implementation. `parallel::detectCores()` is recommended. | numeric
+**only.pos** | only included genes with logFC > 0. Default is TRUE. | logical
+**save.pdf** | save figures and tables | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** |Developer mode. Default is FALSE. | logical
+
+</details>
+
+---
+
+## Module 04: Cell-Type Annotation
 
 ### Description
 Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline. 
@@ -199,14 +258,89 @@ Parameter |Description |Argument
 
 ---
 
-## Module 09: Gene Expression and Associations
+
+## Module 05: Gene Program Discovery
+
+### Description
+
+Gene program/module identification. Three independent methods are implemented to identify gene programs based on gene co-expression profiles:
+
+- Scale-free shared nearest neighbor network analysis (SSN)
+- Independent component analysis (ICA)
+- Non-negative matrix factorization (NMF)
+
+Gene set enrichment is performed on each gene program to facilitate functional annotation. 
+
+### Example Reports
+
+- [Cao 2019: Murine organogenesis](Reports/M05_GeneProgramDiscovery_demo_cao2019_10000cells_250122.html)
+- [La Manno 2021: Developing murine brain](Reports/M05_GeneProgramDiscovery_demo_manno_10000cells_250122.html)
+- [Pijuan-Sala 2019: Murine gastrulation](Reports/M05_GeneProgramDiscovery_demo_ps_10000cells_250122.html) 
+- [Zeisel 2018: Adolescent murine brain](Reports/M05_GeneProgramDiscovery_demo_zeisel_10000cells_250122.html)
+
+### Inputs and Outputs
+
+<details><summary>**show contents**</summary>
+
+<u>Inputs</u>
+
+- **Seurat object** (.Rds or .RData file)
+
+<u>Outputs</u>
+
+- **Analysis report** (.HTML file)
+
+</details>
+
+### Analysis Parameters
+ 
+ <details>
+  <summary>**show table**</summary>
+  
+Parameter |Description |Argument
+--| ---------- | ------
+**input.file** | path to seurat object | character
+**cluster.resolution** | Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities. | numeric
+**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
+**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
+**subset.data** | Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as "no.subset" for not subsetting. | data frame specifying which field (`df$field`) to subset on, and which field entries to retain (`df$subgroups`)
+**batch.feature** | meta data field to use for batch correction (set to NA if unspecified) | character
+**feature.selection.method** | method used to select features for module detection analysis. | - expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion
+**max.features** | max number of features to include in module detection analysis (NA if unspecified)
+**min.pct** | minimal feature expression (applicable only if `select.method` = "expr"). Value between [0,1], use 0.1 for large network and 0.5 for small network. | numeric
+**data.type** | Data representation used for module detection | - pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model
+**purity.optimization.step.size** | value of step size used for optimizing module purity. 0.5 recommended. | numeric
+**filter.parameters** | specify which clusters to include or omit | named list with 2 sets of entries; 'include' entries specify which clusters to retain; 'omit' entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))
+**general.weight.by.var** | Weight feature embeddings by the variance of each PC. Default is FALSE. | logical
+**general.pca.cum.sum** | cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended. | numeric
+**general.umap.knn** | number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50. | numeric
+**general.cluster.purity** | target purity of network modules. Value between [0,1], 0.8 is recommended. | logical
+**general.scale.free.topology** | apply scale-free transform to shared nearest neighbor graph. Default is TRUE. | logical
+**general.ica** | perform independent component analysis (ICA). | logical
+**general.nmf** | perform non-negative matrix factorization (NMF). | logical
+**general.nmf.k** | number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15)) | vector of numeric(s)
+**general.robust.pca** | use robust PCA for dimensional reduction (*warning*: computationally intensive) | logical
+**n.workers** | number of workers used for parallel implementations. | numeric
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**save.pdf** | save figures and tables | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** |Developer mode. Default is FALSE. | logical
+
+</details>
+\
+
+---
+
+
+## Module 06: Gene Expression and Associations
 
 ### Description
 Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes. 
 
 ### Example Reports
 
-- placeholder
+- *placeholder*
 
 ### Inputs and Outputs
 
@@ -259,136 +393,6 @@ Parameter |Description |Argument
 
 ---
 
-## Module 18: Cluster Optimization
-
-### Description
-
-Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:
-
-- Marker specificity analysis (CDI-based)
-- Silhouette analysis.
-- Nearest-neighbor purity analysis
-- Differential gene expression (Wilcoxon, CDI)
-
-### Example Reports
-
-- [Cao 2019: Murine organogenesis](Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html)
-- [La Manno 2021: Developing murine brain](Reports/M18_ClusterOptimization_manno_10000cells_240122.html)
-- [Pijuan-Sala 2019: Murine gastrulation](Reports/M18_ClusterOptimization_ps_10000cells_240122.html) 
-- [Zeisel 2018: Adolescent murine brain](Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html)
-
-### Inputs and Outputs
-
-<details><summary>**show contents**</summary>
-
-<u>Inputs</u>
-
-- **Seurat object** (.Rds or .RData file)
-
-<u>Outputs</u>
-
-- **Analysis report** (.HTML file)
-
-</details>
-
-### Analysis Parameters
-
- <details>
-  <summary>**show table**</summary>
-
-Parameter |Description |Argument
---| ---------- | ------
-**input.file** | path to seurat object | character
-**cluster.resolution** | range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5,  0.75,  1, 1.25, 1.5, 1.75, 2, 3) | vector of numeric(s)
-**lfc.threshold** | log-fold change threshold used in differential-expression analysis. 0.5 is recommended. | numeric 
-**fdr.threshold** | fdr-value significance threshold. Value between [0,1]. Default is 0.05.  | numeric
-**group.singletons** | Group singletons into nearest cluster. If FALSE, assign all singletons to a "singleton" group. For certain difficult-to-cluster data sets, `group.singletons` = FALSE may yield faster results. Default is FALSE | logical
-**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
-**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
-**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
-**n.workers** | number of workers used for parallel implementation. `parallel::detectCores()` is recommended. | numeric
-**only.pos** | only included genes with logFC > 0. Default is TRUE. | logical
-**save.pdf** | save figures and tables | logical
-**update.log** | update analysis log. Ignored if developer = F. | logical
-**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
-**developer** |Developer mode. Default is FALSE. | logical
-
-</details>
-
----
-
-## Module 37: Gene Module Detection
-
-### Description
-
-Gene module or meta-gene identification. Three independent methods are used in an ensemble approach to perform gene network analysis and identify gene module of interest:
-
-- Scale-free shared nearest neighbor network analysis (SSN)
-- Independent component analysis (ICA)
-- Non-negative matrix factorization (NMF)
-
-Gene set enrichement is performed on each module to facilitate functional annotation. 
-
-### Example Reports
-
-- placeholder
-
-### Inputs and Outputs
-
-<details><summary>**show contents**</summary>
-
-<u>Inputs</u>
-
-- **Seurat object** (.Rds or .RData file)
-
-<u>Outputs</u>
-
-- **Analysis report** (.HTML file)
-
-</details>
-
-### Analysis Parameters
-
- <!-- expr, hvg, deviance (Default is expr) -->
- 
- <details>
-  <summary>**show table**</summary>
-  
-Parameter |Description |Argument
---| ---------- | ------
-**input.file** | path to seurat object | character
-**cluster.resolution** | Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities. | numeric
-**subsample_factor** | Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.  | numeric
-**subsample_n** | value specifying how many cells to sub sample. Set to NA if none. | numeric
-**subset.data** | Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as "no.subset" for not subsetting. | data frame specifying which field (`df$field`) to subset on, and which field entries to retain (`df$subgroups`)
-**batch.feature** | meta data field to use for batch correction (set to NA if unspecified) | character
-**feature.selection.method** | method used to select features for module detection analysis. | - expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion
-**max.features** | max number of features to include in module detection analysis (NA if unspecified)
-**min.pct** | minimal feature expression (applicable only if `select.method` = "expr"). Value between [0,1], use 0.1 for large network and 0.5 for small network. | numeric
-**data.type** | Data representation used for module detection | - pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model
-**purity.optimization.step.size** | value of step size used for optimizing module purity. 0.5 recommended. | numeric
-**pathway.db** | database used for functional annotation of gene sets |- GO <br>- Bader
-**filter.parameters** | specify which clusters to include or omit | named list with 2 sets of entries; 'include' entries specify which clusters to retain; 'omit' entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))
-**general.weight.by.var** | Weight feature embeddings by the variance of each PC. Default is FALSE. | logical
-**general.pca.cum.sum** | cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended. | numeric
-**general.umap.knn** | number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50. | numeric
-**general.cluster.purity** | target purity of network modules. Value between [0,1], 0.8 is recommended. | logical
-**general.scale.free.topology** | apply scale-free transform to shared nearest neighbor graph. Default is TRUE. | logical
-**general.ica** | perform independent component analysis (ICA). | logical
-**general.nmf** | perform non-negative matrix factorization (NMF). | logical
-**general.nmf.k** | number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15)) | vector of numeric(s)
-**general.robust.pca** | use robust PCA for dimensional reduction (*warning*: computationally intensive) | logical
-**n.workers** | number of workers used for parallel implementations. | numeric
-**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
-**save.pdf** | save figures and tables | logical
-**update.log** | update analysis log. Ignored if developer = F. | logical
-**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
-**developer** |Developer mode. Default is FALSE. | logical
-
-</details>
-\
-
----
 
 <details>
   <summary>**Session Info**</summary>

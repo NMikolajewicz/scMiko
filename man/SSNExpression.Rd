@@ -35,6 +35,9 @@ generates SSN connectivity plot used to visualize transcriptomic gene network.
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{runSSN}} for SSN analysis (gene.object), \code{\link{pruneSSN}} for gene program features (gene.list), \code{\link{SSNConnectivity}} for connectivity plot.
 }

@@ -24,6 +24,9 @@ Identify and (optionally) prune gene program features in scale-free shared neare
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{runSSN}} for SSN analysis
 }

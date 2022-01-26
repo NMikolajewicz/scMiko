@@ -79,6 +79,9 @@ Runs scale-free shared nearest neighbor network (SNN) analysis on subset of feat
 \examples{
 
 }
+\references{
+\url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
+}
 \seealso{
 \code{\link{findNetworkFeatures}} for finding features, \code{\link{SCTransform}} for gene count normalization and scaling, \code{\link{nullResiduals}} for deviance calculations, \code{\link{scaleFreeNet}} for scale-free topology transform.
 }

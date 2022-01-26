@@ -121,7 +121,7 @@ cowplot::plot_grid(so.gene@misc$scale_free$optimization.plot,
 Using the UMAP layout and scale-free-transformed shared-nearest-neighbor graph, we can visualize the network connectivity using `SSNConnectivity`.
 
 ```{r}
-plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.9, raster_dpi = 200)
+plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
 
 plt_connectivity$plot_edge + labs(title = "Network Connectivity")
 ```
@@ -166,11 +166,15 @@ An updated version of the connectivity plot can not be generated using the refin
 
 ```{r}
 
-message("Preparing connectivity objects...")
 plt_connectivity_with_features <- SSNConnectivity(so.gene, gene.list = mod.list, 
-                                          quantile_threshold = 0.9, raster_dpi = 200)
+                                                  quantile_threshold = 0.85, raster_dpi = 500,
+                                                  node.size.max = 6, node.size.min = 2,
+                                                  node.alpha = 0.6,
+                                                  node.weights = T, node.color = "grey80")
 
-plt_connectivity_with_features$plot_network
+# generate interactive network plot using plotly
+plotly::ggplotly(plt_connectivity_with_features$plot_network)
+
 
 ```
 
@@ -203,12 +207,13 @@ plt.ssn.gene.hm.expr
 plt.ssn.gene <- ssn.summary$plt.summary
 
 # visualize
-plt.ssn.gene$m14
+plt.ssn.gene$m7
 
 ```
 ## Module Detection with ICA and NMF
 
 ```{r}
 
+# TODO
 ```
 
