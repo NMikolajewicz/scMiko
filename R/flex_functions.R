@@ -78,7 +78,7 @@ flex.multiTabLogs <- function(module.logs) {
 
     module.n <- as.numeric(gsub("[^\\d]+", "", module.logs[i], perl=TRUE))
 
-    a1 <- knitr::knit_expand(text = sprintf("\nLog (Module %s)", paste(module.n)))
+    a1 <- knitr::knit_expand(text = sprintf("\nLog (M%s)", paste(module.n)))
     a2 <- knitr::knit_expand(text = "\n=====================================")
     a3 <- knitr::knit_expand(text = sprintf("\n```{r %s}", paste("mod_", i, sep = ""))) # start r chunk
     a4<- knitr::knit_expand(text = sprintf("\nknitr::kable(%s)",module.logs[i]))

@@ -346,7 +346,10 @@ Given a query gene or gene set, scRNAseq expression is evaluated and gene simila
 
 ### Example Reports
 
-- *placeholder*
+- [Cao 2019: Murine organogenesis](Reports/M06_GeneQuery_demo_cao2019_10000cells_260122.html)
+- [La Manno 2021: Developing murine brain](Reports/M06_GeneQuery_demo_manno_10000cells_260122.html)
+- [Pijuan-Sala 2019: Murine gastrulation](Reports/M06_GeneQuery_demo_ps_10000cells_260122.html) 
+- [Zeisel 2018: Adolescent murine brain](Reports/M06_GeneQuery_demo_zeisel_10000cells_260122.html)
 
 ### Inputs and Outputs
 

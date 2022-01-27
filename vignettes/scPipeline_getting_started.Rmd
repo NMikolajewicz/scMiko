@@ -77,7 +77,7 @@ Running scPipeline modules is like running any other Rmarkdown script:
 
 1. **Open** a scPipeline module script (.Rmd) in RStudio.
 2. **Specify** analysis parameters
-    * See [**Module Overviews**](articles/scPipeline_module_overview.html) for instructions. 
+    * See [**Module Overviews**](scPipeline_module_overview.html) for instructions. 
 3. **Run** scPipeline Module. Each scPipeline module can be run in one of two ways:
     1. `knit` document (*recommended*)
         * Renders an .HTML report
@@ -89,3 +89,5 @@ Running scPipeline modules is like running any other Rmarkdown script:
 ## scPipeline .HTML reports
 
 Every scPipeline Module generates an HTML report summarizing the analysis results. These can be viewed using any browser. Given their portability (i.e., self-contained), these can be shared easily shared among users. HTML reports are generated using [flexdashboard](https://rstudio.github.io/flexdashboard/index.html).
+
+Refer to our [Module Overviews](scPipeline_module_overview.html) article to find examples of scPipeline-generated reports. 
