@@ -33,12 +33,12 @@ Refer to our [getting started with scPipeline](articles/scPipeline_getting_start
 
 Currently the following analysis modules are available:
 
-- QC & preprocessing
-- Integration
-- Cluster optimization
-- Cell annotation
-- Gene expression and association
-- Gene program discovery 
+- [Module 1](articles/scPipeline_module_overview.html#module-1-quality-control-qc-preprocessing-1): QC & preprocessing
+- [Module 2](articles/scPipeline_module_overview.html#module-2-data-integration-1): Integration
+- [Module 3](articles/scPipeline_module_overview.html#module-3-cluster-optimization-1): Cluster optimization
+- [Module 4](articles/scPipeline_module_overview.html#module-4-cell-type-annotation-1): Cell annotation
+- [Module 5](articles/scPipeline_module_overview.html#module-5-gene-program-discovery-1): Gene expression and association
+- [Module 6](articles/scPipeline_module_overview.html#module-6-gene-expression-and-associations-1): Gene program discovery 
 
 [**scMiko**](https://github.com/NMikolajewicz/scMiko) and [**scPipeline**](https://github.com/NMikolajewicz/scPipeline) are developed and maintained by the Moffat lab. 
 

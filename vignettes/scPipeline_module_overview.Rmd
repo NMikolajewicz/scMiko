@@ -54,7 +54,7 @@ In all scPipeline modules, `parameter.list` is already specified, so users need 
 
 ---
 
-## Module 01: Quality Control (QC) & Preprocessing
+## Module 1: Quality Control (QC) & Preprocessing
 
 ### Description
 Initial appraisal of scRNA-seq count matrix data and overview of quality control metrics, data filtering, and normalization.  Generates initial UMAP clusters, and PCA analyses. M01 output saves seurat object. 
@@ -124,7 +124,7 @@ Parameter |Description |Argument
 
 ---
 
-## Module 02: Data Integration
+## Module 2: Data Integration
 
 ### Description
 Batch correction and integration of independent experiments. Generates a new Seurat `integrated` assay using one of two approaches:
@@ -141,7 +141,7 @@ The primary aim of data integration is to identify common cell populations betwe
 ---
 
 
-## Module 03: Cluster Optimization
+## Module 3: Cluster Optimization
 
 ### Description
 
@@ -199,7 +199,7 @@ Parameter |Description |Argument
 
 ---
 
-## Module 04: Cell-Type Annotation
+## Module 4: Cell-Type Annotation
 
 ### Description
 Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline. 
@@ -265,7 +265,7 @@ Parameter |Description |Argument
 ---
 
 
-## Module 05: Gene Program Discovery
+## Module 5: Gene Program Discovery
 
 ### Description
 
@@ -339,7 +339,7 @@ Parameter |Description |Argument
 ---
 
 
-## Module 06: Gene Expression and Associations
+## Module 6: Gene Expression and Associations
 
 ### Description
 Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes. 
