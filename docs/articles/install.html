@@ -109,7 +109,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Getting Started with scMiko</h1>
             
-            <h4 class="date">Compiled: 2022-01-26</h4>
+            <h4 class="date">Compiled: 2022-01-27</h4>
       
       
       <div class="hidden name"><code>install.Rmd</code></div>
@@ -147,7 +147,7 @@
 <span class="va">meta_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">readRDS</a></span><span class="op">(</span><span class="st">"../data/ps_meta_data.rds"</span><span class="op">)</span>
 
 <span class="co"># create and preprocess seurat object</span>
-<span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/CreateSeuratObject.html">CreateSeuratObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">count_matrix</span>, meta.data <span class="op">=</span> <span class="va">meta_data</span><span class="op">)</span>
+<span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html">CreateSeuratObject</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">count_matrix</span>, meta.data <span class="op">=</span> <span class="va">meta_data</span><span class="op">)</span>
 <span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/PercentageFeatureSet.html">PercentageFeatureSet</a></span><span class="op">(</span><span class="va">so.query</span>, pattern <span class="op">=</span> <span class="st">"^mt-"</span>, col.name <span class="op">=</span> <span class="st">"percent.mt"</span><span class="op">)</span>
 <span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/SCTransform.html">SCTransform</a></span><span class="op">(</span><span class="va">so.query</span>, method <span class="op">=</span> <span class="st">"glmGamPoi"</span>, vars.to.regress <span class="op">=</span> <span class="st">"percent.mt"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/RunPCA.html">RunPCA</a></span><span class="op">(</span><span class="va">so.query</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
@@ -193,7 +193,7 @@
 ## 
 ## other attached packages:
 ## [1] scMiko_0.1.0        flexdashboard_0.5.2 tidyr_1.1.3        
-## [4] SeuratObject_4.0.2  Seurat_4.0.4        dplyr_1.0.7        
+## [4] SeuratObject_4.0.4  Seurat_4.1.0        dplyr_1.0.7        
 ## [7] ggplot2_3.3.5      
 ## 
 ## loaded via a namespace (and not attached):
@@ -256,7 +256,7 @@
 ## [113] IRanges_2.22.2            parallelly_1.28.1        
 ## [115] codetools_0.2-16          MASS_7.3-53              
 ## [117] assertthat_0.2.1          rprojroot_2.0.2          
-## [119] withr_2.4.2               sctransform_0.3.2        
+## [119] withr_2.4.2               sctransform_0.3.3        
 ## [121] S4Vectors_0.26.1          mgcv_1.8-33              
 ## [123] parallel_4.0.3            grid_4.0.3               
 ## [125] rpart_4.1-15              rmarkdown_2.11           
