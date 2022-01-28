@@ -8,7 +8,7 @@ template:
     bootswatch: flatly
 
 development:
-  mode: unreleased
+  mode: BETA
 
 navbar:
   title: "scMiko"
