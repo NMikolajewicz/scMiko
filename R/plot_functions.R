@@ -78,13 +78,13 @@ scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = 
 #' @param gNames Named gene list; entries are Symbols, names are Ensemble.
 #' @param set_name Character specfiying name of dataset. Optional.
 #' @param top.n.genes Numeric. Top n genes to label on plot.
+#' @param pt.colors colors to specify non-variable/variable status.
 #' @param ... additional arguments passed to Seurat::VariableFeaturePlot(...)
 #' @name variableGenes.Plot
 #' @return ggplot handle
 #'
-variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ...){
+variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, pt.colors = c("black", "tomato"), ...){
 
-  # top 10 most and least variable genes
   top10 <- head(VariableFeatures(so), assay = "gene_name", top.n.genes)
 
   # Plot variable features
@@ -99,7 +99,7 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
 
   var_labs <- c()
   try({
-    gene.rep <- checkGeneRep(reference.genes = gNames.list, query.genes = top10 )
+    gene.rep <- checkGeneRep(reference.genes = gNames, query.genes = top10 )
     if (gene.rep == "ensembl"){
       var_labs <- as.vector(gNames[top10])
     } else if (gene.rep == "symbol"){
@@ -107,12 +107,35 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
     }
   }, silent = T)
 
-  # label genes
-  plt.handle <- LabelPoints(plot = plt.handle,
-                            points = top10,
-                            labels = var_labs,
-                            repel = TRUE) +
-    ggtitle(label = plt.title)
+  df.dat <- plt.handle[["data"]]
+  gene.rep <- checkGeneRep(reference.genes = gNames, query.genes = rownames(df.dat) )
+  if (gene.rep == "ensembl"){
+    df.dat$gene <- as.vector(gNames[rownames(df.dat)])
+  } else if (gene.rep == "symbol"){
+    df.dat$gene  <- as.vector(top10)
+  }
+  df.dat.top <- df.dat %>% dplyr::filter(gene %in% top10)
+
+  gene.rep <- checkGeneRep(reference.genes = gNames, query.genes =  VariableFeatures(so))
+  if (gene.rep == "ensembl"){
+    var.gene <- as.vector(gNames[VariableFeatures(so)])
+  } else if (gene.rep == "symbol"){
+    var.gene  <- VariableFeatures(so)
+  }
+
+  df.dat <- df.dat[complete.cases(df.dat), ]
+  df.dat$is.var <- paste0("Non-Variable: ", nrow(df.dat) - length(var.gene))
+  df.dat$is.var[df.dat$gene %in% var.gene] <- paste0("Variable: ", length(var.gene))
+
+  plt.handle <- df.dat %>%
+    ggplot(aes(x = gmean, y = residual_variance, color = is.var)) +
+    geom_point(size = 1) +
+    ggrepel::geom_text_repel(data= df.dat.top, aes(x = gmean, y = residual_variance, label = gene), inherit.aes = F, max.overlaps = Inf) +
+    theme_miko(legend = T) +
+    scale_color_manual(values = pt.colors) +
+    scale_x_log10() +
+    labs(x = "Geometric Mean of Expression", y = "Residual Variance", color = NULL)
+
 
   return(plt.handle)
 }
