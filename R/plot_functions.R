@@ -91,7 +91,7 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
   plt.handle <- VariableFeaturePlot(so, ...)
 
   # plot title
-  if (is.null(set_name)){
+  if (is.null(set_name) || set_name == ""){
     plt.title <- "Variable Genes"
   } else {
     plt.title <- paste(set_name, ": Variable Genes")
@@ -99,7 +99,7 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
 
   var_labs <- c()
   try({
-    gene.rep <- checkGeneRep(reference.genes = top10, query.genes = gNames.list)
+    gene.rep <- checkGeneRep(reference.genes = gNames.list, query.genes = top10 )
     if (gene.rep == "ensembl"){
       var_labs <- as.vector(gNames[top10])
     } else if (gene.rep == "symbol"){
@@ -116,6 +116,7 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, ..
 
   return(plt.handle)
 }
+
 
 
 #' QC violin plots
