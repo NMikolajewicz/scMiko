@@ -594,28 +594,33 @@ scNormScale <- function(object,  method = "SCT", vars2regress = NULL, enable.par
 
     # apply sctransform (regularized negative binomial regression)
     # also removes confounding source of variation (i.e., mitochonrdial mapping percentage)
-    if (is.null(vars2regress)){
+
+    object <- tryCatch({
+      SCTransform(object = object,
+                  vars.to.regress = vars2regress,
+                  verbose = verbose,
+                  return.only.var.genes = return.only.var.genes,
+                  variable.features.n = variable.features.n,
+                  variable.features.rv.th = variable.features.rv.th,
+                  assay = assay,
+                  vst.flavor = "v2",
+                  method = "glmGamPoi",
+                  conserve.memory = conserve.memory,
+                  ...)
+    }, error = function(e){
       object <- SCTransform(object = object,
-                        verbose = verbose,
-                        return.only.var.genes = return.only.var.genes,
-                        variable.features.n = variable.features.n,
-                        variable.features.rv.th = variable.features.rv.th,
-                        assay = assay,
-                        method = "glmGamPoi",
-                        conserve.memory = conserve.memory,
-                        ...)
-    } else {
-      object <- SCTransform(object = object,
-                        vars.to.regress = vars2regress,
-                        verbose = verbose,
-                        return.only.var.genes = return.only.var.genes,
-                        variable.features.n = variable.features.n,
-                        variable.features.rv.th = variable.features.rv.th,
-                        assay = assay,
-                        method = "glmGamPoi",
-                        conserve.memory = conserve.memory,
-                        ...)
-    }
+                            vars.to.regress = vars2regress,
+                            verbose = verbose,
+                            return.only.var.genes = return.only.var.genes,
+                            variable.features.n = variable.features.n,
+                            variable.features.rv.th = variable.features.rv.th,
+                            assay = assay,
+                            method = "glmGamPoi",
+                            conserve.memory = conserve.memory,
+                            ...)
+      return(object)
+    }, silent = T)
+
 
 
   }
