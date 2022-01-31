@@ -12,7 +12,9 @@ theme_miko(
   center.title = F,
   x.axis.rotation = 0,
   fill.palette = NA,
-  color.palette = NA
+  color.palette = NA,
+  color.luminescence = NA,
+  fill.luminescence = NA
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ theme_miko(
 \item{fill.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
 
 \item{color.palette}{palette from ggthemes (e.g., "ptol"). Default is NA.}
+
+\item{color.luminescence}{color luminescence, passed to `scale_color_hue()`.}
+
+\item{fill.luminescence}{fill luminescence, passed to `scale_fill_hue()`.}
 }
 \value{
 ggplot2 theme object

@@ -605,12 +605,14 @@ upset.Plot <- function(gene.sets, row.title = "", column.title = ""){
 #' @param x.axis.rotation rotation angle (e.g., 45)
 #' @param fill.palette palette from ggthemes (e.g., "ptol"). Default is NA.
 #' @param color.palette palette from ggthemes (e.g., "ptol"). Default is NA.
+#' @param color.luminescence color luminescence, passed to `scale_color_hue()`.
+#' @param fill.luminescence fill luminescence, passed to `scale_fill_hue()`.
 #' @name theme_miko
 #' @return ggplot2 theme object
 #' @examples
 #'
 #'
-theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA){
+theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, center.title = F, x.axis.rotation = 0, fill.palette = NA, color.palette = NA, color.luminescence = NA, fill.luminescence = NA){
 
   if (style == "bw"){
     tm <- theme_bw()
@@ -633,6 +635,7 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
   if (x.axis.rotation != 0){
     try({tm <- tm + theme(axis.text.x = element_text(angle = x.axis.rotation, hjust = 1))}, silent = T)
   }
+
 
 
   # if (!is.na(legend.color.size)){
@@ -701,6 +704,21 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
     tm.list[[list.ind]] <- do.call(paste0("scale_colour_", color.palette), args = list())
     list.ind <- list.ind + 1
     }
+  }
+
+
+  if (!is.na(color.luminescence)){
+    tm.list[[list.ind]] <- do.call("scale_color_hue", args = list(l=color.luminescence))
+    list.ind <- list.ind + 1
+
+    # tm <- tm + scale_color_hue(l=color.luminescence)
+  }
+
+  if (!is.na(fill.luminescence)){
+    tm.list[[list.ind]] <- do.call("scale_fill_hue", args = list(l=fill.luminescence))
+    list.ind <- list.ind + 1
+
+    # tm <- tm + scale_fill_hue(l=fill.luminescence)
   }
 
   tm.list[[list.ind]] <- tm
