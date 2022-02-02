@@ -6017,6 +6017,10 @@ findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.featur
   }
 
 
+  if (which.method == 1){
+    common.features <- unique(unlist(lintersect(lapply(object.list, rownames)) ))
+    features <- features[features %in% common.features]
+  }
 
   if (which.method == 1){
     u.bc <- names(object.list)
@@ -6027,7 +6031,7 @@ findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.featur
       e.mat <- object@assays[[assay]]@counts
       if (is.null(dim(e.mat))) stop("Count matrix not found. Cannot perform artefact detection.")
       e.mat <- e.mat[rownames(e.mat) %in% features, ]
-      cumi.mat[,i] <-  apply(e.mat, 1, function(x) sum(x>umi.count.threshold))
+      cumi.mat[,i] <-  Matrix::rowSums(e.mat > umi.count.threshold)
     }
 
     rownames(cumi.mat) <- rownames(e.mat);
@@ -6043,7 +6047,7 @@ findArtifactGenes <- function(object, assay = NULL, features = NULL, meta.featur
 
     # get expression matrix
     e.mat <- object@assays[[assay]]@counts
-    if (is.null(dim(e.mat))) stop("Count matrix not found. Cannot perform artefact detection.")
+    if (is.null(dim(e.mat))) stop("Count matrix not found. Cannot perform artifact detection.")
     e.mat <- e.mat[rownames(e.mat) %in% features, ]
 
     miko_message(paste0("Identifying how many cells have over ", umi.count.threshold, " UMI for each gene...."), verbose = verbose)
