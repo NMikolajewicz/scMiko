@@ -505,11 +505,12 @@ clearGlobalEnv <- function(pattern, exact.match = T){
 #' @param barcode.recode Named list where names are new labels, entries are old labels (can be vector of characters). E.g., barcode.recode <- list(in.vitro = c("invitro"), in.vivo = NA)
 #' @param old.field.name name of field in which meta dat for recoding is stored. Default is "Barcode".
 #' @param new.field.name name of new field in meta data where recoded data will be stored. Default is "Barcode".
+#' @param exact.match specify whether entries for old labels in `barcode.recode` are matched exactly. For example, with exact matching, '5' would retrieve '5' but not '15', but without exact matching, '5' would retrieve '5' and '15'. Default is F.
 #' @name recodeBarcode
 #' @author Nicholas Mikolajewicz
 #' @return Seurat Object with relabeled metadata
 #'
-recodeBarcode <- function(object, barcode.recode, old.field.name = "Barcode", new.field.name = "Barcode"){
+recodeBarcode <- function(object, barcode.recode, old.field.name = "Barcode", new.field.name = "Barcode", exact.match = F){
 
   # input options ##############################################################
   # named list where names are new barcodes, entries are old barcodes (can be vector of characters)
@@ -531,8 +532,14 @@ recodeBarcode <- function(object, barcode.recode, old.field.name = "Barcode", ne
     for (i in 1:length(barcode.recode)){
 
       if (all(!is.na(barcode.recode[[i]]))){
-        barcode.pattern <- paste(barcode.recode[[i]], collapse = "|")
-        which.match <- grep(barcode.pattern, barcodes.old)
+
+        if (exact.match){
+          which.match <- which(barcodes.old %in% barcode.recode[[i]])
+        } else {
+          barcode.pattern <- paste(barcode.recode[[i]], collapse = "|")
+          which.match <- grep(barcode.pattern, barcodes.old)
+        }
+
         recode.log <- c(recode.log, which.match)
         barcodes.new[which.match] <- names(barcode.recode)[i]
       } else {
