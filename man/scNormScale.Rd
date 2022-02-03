@@ -28,7 +28,7 @@ scNormScale(
 \item{method}{Character specifying data normalization and scaling method. One of:
 \itemize{
 \item "NFS" - Seurat's NormalizeData, FindVariableFeatures, ScaleData workflow. Parameters are set to use LogNormalization method with a scale.factor of 1000. Variable features are selceted using 'mvp' method, and var2regress is regressed out during data scaling.
-\item "SCT" - Default. SCTransform workflow; Uses regularized negative binomial regression to normalize UMI count data. All genes are returned (not only variable), and residual variace cutoff is set to 1.3; var2regress is included in model.
+\item "SCT" - Default. SCTransform workflow; Uses regularized negative binomial regression to normalize UMI count data.
 }}
 
 \item{vars2regress}{Character vector specifying which variables to regress out during data scaling.}
@@ -37,7 +37,7 @@ scNormScale(
 
 \item{max.memory}{Max memory to use during parallel processing. Default is 20480 * 1024^2}
 
-\item{variable.features.n}{If method = SCT, integer that specifies number of variable features to retrieve. If specified, overides variable feature threshold specified by variable.features.rv.th.}
+\item{variable.features.n}{If method = SCT, integer that specifies number of variable features to retrieve. If specified, overrides variable feature threshold specified by `variable.features.rv.th`.}
 
 \item{variable.features.rv.th}{If method = SCT, numerical that specifies residual variance theshold for variable features. Default is 1.3.}
 
