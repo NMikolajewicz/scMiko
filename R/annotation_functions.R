@@ -457,6 +457,8 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
 #' @param object Seurat Object
 #' @param geneset A list of vectors of features for expression programs; each entry should be a vector of feature names
 #' @param nullscore `nullScore` output for provided `object`. Must run `nullScore` prior to running `mikoScore`.
+#' @param do.center center scores using null model predictions. Default is FALSE.
+#' @param do.scale scale scores by null model variance predictions. Default is TRUE.
 #' @param assay Name of assay to use.
 #' @param nworkers Number of workers for parallel implementation. Default is 1.
 #' @param nbin Number of bins of aggregate expression levels for all analyzed features. See `AddModuleScore` for details.
@@ -491,7 +493,7 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
 #' # Get significant  miko scores for scored genesets
 #' score.result <- sigScore(object = object,  geneset = gene.list, reduction = "umap")
 #'
-mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), nworkers = 1, nbin = 24 ,  verbose = T){
+mikoScore <- function(object, geneset, nullscore, do.center = F, do.scale = T, assay = DefaultAssay(object), nworkers = 1, nbin = 24 ,  verbose = T){
 
   # ncores <- nworkers
   nbin <- optimalBinSize(object = object, nbin = nbin)
@@ -553,11 +555,16 @@ mikoScore <- function(object, geneset, nullscore, assay = DefaultAssay(object), 
   if (nullscore$mean.model$model == "spline"){
     var.pred <- predict.glm(object = nullscore$variance.model, newdata = df.gs.size, type="response")
     mean.pred <- predict.glm(object = nullscore$mean.model$fit, newdata = df.gs.size, type="response")
-    gs.score.correct <- (gs.scores - mean.pred)/sqrt(var.pred)
+    gs.score.correct <- gs.scores
+    if (do.center) gs.score.correct <- (gs.score.correct - mean.pred)
+    if (do.scale) gs.score.correct <- gs.score.correct/sqrt(var.pred)
   } else if (nullscore$mean.model$model == "gaussian"){
     var.pred <- predict.glm(object = nullscore$variance.model, newdata = df.gs.size, type="response")
     mean.pred <- (10^(predict.glm(object = nullscore$mean.model$fit, newdata = df.gs.size, type="response"))) - nullscore$mean.model$model.offset
-    gs.score.correct <- (gs.scores - mean.pred)/sqrt(var.pred)
+    # gs.score.correct <- (gs.scores - mean.pred)/sqrt(var.pred)
+    gs.score.correct <- gs.scores
+    if (do.center) gs.score.correct <- (gs.score.correct - mean.pred)
+    if (do.scale) gs.score.correct <- gs.score.correct/sqrt(var.pred)
   }
   gs.score.correct <- as.data.frame(gs.score.correct)
 
