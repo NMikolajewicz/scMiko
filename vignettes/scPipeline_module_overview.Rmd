@@ -57,16 +57,23 @@ In all scPipeline modules, `parameter.list` is already specified, so users need 
 ## Module 1: Quality Control (QC) & Preprocessing
 
 ### Description
-Initial appraisal of scRNA-seq count matrix data and overview of quality control metrics, data filtering, and normalization.  Generates initial UMAP clusters, and PCA analyses. M01 output saves seurat object. 
+Initial appraisal of scRNA-seq count matrix data and overview of quality control metrics, data filtering, and normalization.  Generates initial UMAP clusters, and PCA analyses. **A preprocessed seurat object is saved as output**. 
+
+**Quality control**: Cells are filtered based on genes/cell recovered and fraction of counts belonging to mitochondrial genes. Injured/broken cells are characterized by low gene recovery and high mitochondrial content whereas doublets are characterized by extremely high gene recovery. Based on these behaviors, high quality non-injured single cells can be retained for downstream analysis using the `gene.upperlimit`, `gene.lowerlimit`, and  `mt.upperlimit` analysis parameters.  
+
+**Count Normalization**: Count matrices are normalized using [SCTransform](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). In brief, the count data are modeled using regularized negative binomial regression to remove the influence of technical covariates, including sequencing depth and mitochondrial content. The resulting model residuals are treated as normalized count data for downstream analysis. 
+
+**Dimensional Reduction**: Following normalization, select features (i.e., genes) are used to reduce the dimensionality of the data set. This effectively eases downstream computational burden, increases the signal-to-noise and allows for data visualization. We perform principal component analysis and use the top N principal components that explain 90% (user-defined; `pca.var.threshold`) variance for Louvain clustering and UMAP embedding. The [UMAP](https://arxiv.org/abs/1802.03426) algorithm embeds reduced data (e.g., principal components) into a lower dimensional representation while preserving the global structure of the transcriptomic data to facilitate visualization. 
+
 
 ### Example Reports
+
+For all the example reports shown here, datasets were subsampled to 10,000 cells and minimal cell filtering was performed due to original count matrices having been cleaned by authors.
 
 - [Cao 2019: Murine organogenesis](Reports/M01_QC_demo_cao2019_10000cells_240122.html)
 - [La Manno 2021: Developing murine brain](Reports/M01_QC_demo_manno_10000cells_240122.html)
 - [Pijuan-Sala 2019: Murine gastrulation](Reports/M01_QC_demo_ps_10000cells_240122.html) 
 - [Zeisel 2018: Adolescent murine brain](Reports/M01_QC_demo_zeisel_10000cells_240122.html)
-    
-All datasets were subsampled to 10,000 cells and minimal cell filtering was performed due to original count matrices having been cleaned by authors. 
 
 ### Inputs and Outputs
 
@@ -74,7 +81,7 @@ All datasets were subsampled to 10,000 cells and minimal cell filtering was perf
 
 <u>Inputs</u>
 
-Any of the following data formats is expected as an input:
+One of the following data formats must be provided as input:
 
 - **Seurat object**: must contain RNA assay with gene x cell count matrix
 - **Cell Ranger output**: folder must contain `barcodes.tsv`, `genes.tsv`, `matrix.mtx`
@@ -112,7 +119,7 @@ Parameter |Description |Argument
 **pca.method** | principal component analysis method. | - pca (default) <br>- glmpca
 **pca.component.select.method** | method for selecting number of principal components for clustering and UMAP embedding. | - cum_var (default) <br>- elbow
 **pca.var.threshold** | value between [0, 1] specifying cumulative variance explained by pca. Ignored if `pca.component.select.method` is not 'cum_var'. | numeric 
-**conserve.memory** | If TRUE, the residual matrix for all genes computed using SCTransform is never created in full; useful for large data sets, but will take longer to run. Default is FALSE | logical 
+**conserve.memory** | If TRUE, the residual matrix for all genes computed using SCTransform is never created in full; **recommended for large data sets**, but will take longer to run. Default is FALSE | logical 
 **species.filter.flag** | Logical specifying whether to filter species. Default is FALSE. | logical 
 **species.include** | Specify which species to retain in analysis. Ignored if `species.filter.flag` is FALSE | - Hs: human <br>- Mm: murine
 **nworkers** | Number of workers used for parallel implementation of SCTransform. Default is 1. | numeric
@@ -136,7 +143,7 @@ Batch correction and integration of independent experiments. Generates a new Seu
 
 See [Stuart et al. (2019). Cell](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) for detailed description. 
 
-The primary aim of data integration is to identify common cell populations between datasets. However, because each method involves non-linear warping, many statistical assumptions are broken in the process, and thus expression matrix from the `integrated` assay is not appropriate for downstream differential gene expression. Specifically, the `integrated` assay should only be used for clustering and visualization. If downstream differential expression (DEG) analysis is performed, it is recommended that the existing `RNA` assay is normalized and scaled. 
+The primary aim of data integration is to identify common cell populations between datasets. However, because integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the `integrated` assay is not appropriate for downstream differential gene expression. Specifically, the `integrated` assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the `data` slot in the  `SCT` assay; M2 runs `PrepSCTFindMarkers()` thereby ensuring that counts have been corrected for varying sequencing-depth across data sets. 
 
 ---
 
@@ -147,10 +154,24 @@ The primary aim of data integration is to identify common cell populations betwe
 
 Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:
 
-- Marker specificity analysis (CDI-based)
-- Silhouette analysis.
-- Nearest-neighbor purity analysis
-- Differential gene expression (Wilcoxon, CDI)
+- **Marker specificity criterion (CDI-based)**
+    - Measure of how well differentially-expressed genes can discriminate clusters at a given  resolution. 
+    - Values range from 0 (no specific markers exist for any cluster) to 1 (specific markers exist for each cluster)
+- **Nearest-neighbor purity criterion**
+    - Seeks to optimize the cluster consistency, or purity, within each cell cluster by maximizing the similarity of cells within clusters compared to other clusters (analogous to silhouette width)
+    - For each cluster resolution, cell-level purity is defined as the proportion of cells within cell *i*'s K-nearest neighborhood that belong to the most represented cluster within that neighborhood. Then, cell-level purity scores are aggregated as means to yield the global purity score. 
+    - Values range from 0 (*impure*) to 1 (*pure*). 
+    - Neighborhoods in which cells belong to many different clusters are considered *impure* (low purity score) whereas neighborhoods in which cells belong to a single cluster are *pure* (high purity score). Clustering configurations with purity scores exceeding 0.8-0.9 are recommended.
+- **Silhouette width criterion**
+    - Measure of how similar cells are within their cluster compared to other clusters.
+    - The silhouette width is quantified in UMAP space, so clusters that are well-separated on a UMAP will yield higher silhouette widths than those that are poorly separated. 
+    - Values range from 0 (*inconsistent*) to 1 (*consistent*). 
+- **Differential expression (DE) analyses (Wilcoxon, CDI)**
+    - Differentially-expressed genes (DEGs) are computed for each cluster at each resolution using the Wilcoxon and Co-dependency Index (CDI) methods. 
+    - **Wilcoxon**: [Presto](https://www.biorxiv.org/content/10.1101/653253v1.abstract), an ultrafast DE algorithm, is used to compute auROC and Wilcoxon p-value based on Gaussian approximation. Identifies graded and binary DEGs. 
+    - **Co-dependency Index (CDI)**: Cluster-Gene co-dependency profiles are computed using the co-dependence index. Specifically identifies binary DEGs. 
+
+Clustering is performed using the Seurat implementation of `FindNeighbors()` and `FindClusters()`. In brief, a cell X cell shared nearest neighbor (SNN) graph is first constructed by determining the neighborhood overlap (Jaccard Index) between every cell and its k^th^ nearest neighbor. Then, the SNN graph is clustered using the Louvain algorithm. The main parameter affecting the number of clusters generated is the `resolution`. Higher resolutions yield more clusters, whereas lower resolution yield fewer clusters. 
 
 ### Example Reports
 
@@ -166,6 +187,7 @@ Clustering is performed at several candidate resolutions, and the optimal resolu
 <u>Inputs</u>
 
 - **Seurat object** (.Rds or .RData file)
+    - If an .RData file is provided, the seurat object must be named `so`. 
 
 <u>Outputs</u>
 
@@ -220,6 +242,7 @@ Prior to running this module, we recommend running the cluster optimization modu
 <u>Inputs</u>
 
 - **Seurat object** (.Rds or .RData file)
+    - If an .RData file is provided, the seurat object must be named `so`. 
 
 <u>Outputs</u>
 
@@ -291,6 +314,7 @@ Gene set enrichment is performed on each gene program to facilitate functional a
 <u>Inputs</u>
 
 - **Seurat object** (.Rds or .RData file)
+    - If an .RData file is provided, the seurat object must be named `so`. 
 
 <u>Outputs</u>
 
@@ -358,6 +382,7 @@ Given a query gene or gene set, scRNAseq expression is evaluated and gene simila
 <u>Inputs</u>
 
 - **Seurat object** (.Rds or .RData file)
+    - If an .RData file is provided, the seurat object must be named `so`. 
 
 <u>Outputs</u>
 
