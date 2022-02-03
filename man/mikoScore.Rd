@@ -8,6 +8,8 @@ mikoScore(
   object,
   geneset,
   nullscore,
+  do.center = F,
+  do.scale = T,
   assay = DefaultAssay(object),
   nworkers = 1,
   nbin = 24,
@@ -20,6 +22,10 @@ mikoScore(
 \item{geneset}{A list of vectors of features for expression programs; each entry should be a vector of feature names}
 
 \item{nullscore}{`nullScore` output for provided `object`. Must run `nullScore` prior to running `mikoScore`.}
+
+\item{do.center}{center scores using null model predictions. Default is FALSE.}
+
+\item{do.scale}{scale scores by null model variance predictions. Default is TRUE.}
 
 \item{assay}{Name of assay to use.}
 
