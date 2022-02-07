@@ -38,7 +38,9 @@
 #' \item{Zhong_Nature_2018}{Neural cell gene panels}
 #' \item{Verhaak_CancerCell_2010}{Verhaak GBM-subtype genesets}
 #' \item{Cell_Catalog}{Cell-type markers derived from public scRNAseq atlases.(\href{https://nmikolajewicz.github.io/scMiko/articles/Marker_Catalog.html}{link})}
-#' \item{CancerSCEM}{Cell-type specific marker genes used by CancerSCEM}.(\href{https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL}{link})}
+#' \item{CancerSCEM}{Cell-type specific marker genes used by CancerSCEM.(\href{https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL}{link})}
+#' \item{Stem_Catalog}{Stemness markers, literature curated. Sources include \href{http://193.136.227.155/stemchecker/stemsethome.jsf}{StemChecker}, \href{https://www.sciencedirect.com/science/article/pii/S0092867418303581#mmc1}{Malta}, \href{https://bmccancer.biomedcentral.com/articles/10.1186/s12885-021-08351-0}{Hong}, \href{https://www.nature.com/articles/nature07056}{Mikkelsen}, \href{https://link.springer.com/article/10.1186/gb-2012-13-8-r71#ref-CR32}{Palmer}, \href{https://ashpublications.org/blood/article/103/8/2956/18022/Gene-expression-in-human-embryonic-stem-cell-lines}{Bhattacharya}, \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6313194/}{Dong}, \href{https://www.thelancet.com/journals/ebiom/article/PIIS2352-3964(19)30114-8/fulltext#supplementaryMaterial}{Pece}, \href{https://translational-medicine.biomedcentral.com/articles/10.1186/s12967-020-02527-1}{Feng}, \href{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215452#pone.0215452.s002}{Schulten}}
+
 #' }
 #'
 #' @keywords genesets, cell annotation, module scoring
