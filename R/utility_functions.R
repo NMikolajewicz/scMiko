@@ -1065,7 +1065,7 @@ searchAnnotations <- function(query, db = NULL, species = NULL, ontology = NULL)
 #' Retrieves Reactome/GO geneset using specified annotation ID
 #'
 #' @param id Reactome/GO identifier. Reactome has "R-" prefix; GO has "GO" prefix.
-#' @param my.species Specify species; ensures that correct gene symbols are retrieved.
+#' @param my.species Specify species (one of "Hs" or "Mm"); ensures that correct gene symbols are retrieved.
 #' @name id2geneset
 #' @author Nicholas Mikolajewicz
 #' @return Character vector of gene symbols belonging to Reactome/GO geneset.
@@ -1117,12 +1117,12 @@ id2geneset <- function(id, my.species){
 #'
 #' Entrez ID is converted to gene symbol using org.Hs.eg.db or org.Mm.eg.db annotation databases.
 #'
-#' @param my.symbols Character. Vector of Entrez IDs.
-#' @param my.species Character. Species.
+#' @param my.entrez Character. Vector of Entrez IDs.
+#' @param my.species Character. Species, one of "Hs" or "Mm".
 #' @name entrez2sym
 #' @return data.frame mapping Entrez IDs to gene Symbols.
 #'
-entrez2sym <- function(my.entrez, my.species){
+entrez2sym <- function(my.entrez, my.species = c("Hs", "Mm")){
 
   my.entrez <- as.vector(my.entrez)
   if (my.species == "Hs"){
@@ -1130,7 +1130,6 @@ entrez2sym <- function(my.entrez, my.species){
   } else if (my.species == "Mm"){
     db <- org.Mm.eg.db::org.Mm.eg.db
   }
-
   my.symbol <- AnnotationDbi::select(db,
                                      keys = my.entrez,
                                      columns = c("ENTREZID", "SYMBOL"),
@@ -1258,13 +1257,14 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 #' @return List of data.frames saved as Rdata file.
 #' @examples
 #' \dontrun{
-#' updateGeneSets("geneSets_MASTER_260420update.xlsx", "geneSets.rda", dev.directory.flag = T)
+#' updateGeneSets("geneSets_MASTER_070222update.xlsx", "geneSets.rda", dev.directory.flag = T)
 #' }
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
 
   # geneSets_MASTER_190122update
   # geneSets_MASTER_240122update.xlsx
+  # geneSets_MASTER_070222update.xlsx
   geneSets <- list()
 
   if (dev.directory.flag){
@@ -4951,7 +4951,7 @@ col2rowname <- function(df, col){
 #' @param object Seurat Object.
 #' @param umap.key Character UMAP key slot in seurat object. Default is "umap"
 #' @param node.type "point" or "text"
-#' @param meta.features character vector specifying which meta features to retrieve. Default is seurat_clusters
+#' @param meta.features character vector specifying which meta features to retrieve. Default is  `colnames(object@meta.data)`
 #' @param ... additional parameters to geom_point or geom_text
 #' @name getUMAP
 #' @author Nicholas Mikolajewicz
@@ -4963,7 +4963,7 @@ col2rowname <- function(df, col){
 #' df.wnn.umap <- wnnUMAP.list$df.umap
 #' plt.wnn.umap <- wnnUMAP.list$plt.umap
 #'
-getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = "seurat_clusters", size = autoPointSize(ncol(object)), ...){
+getUMAP <- function(object, umap.key = "umap", node.type = "point", meta.features = colnames(object@meta.data), size = autoPointSize(ncol(object)), ...){
 
   # node.type "text" or "point"
 
@@ -5621,6 +5621,7 @@ lintersect <- function(x){
 #' @param scale.lim Apply ceiling and floor to all values in matrix. Default is NA.
 #' @param color vector of colors used in heatmap
 #' @param ... additional parameters passed to pheatmap::pheatmap(...)
+#' @seealso \code{\link{pheatmap}}
 #' @name miko_heatmap
 #' @author Nicholas Mikolajewicz
 miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = NA, color = colorRampPalette(rev(brewer.pal(n = 7, name =  "RdBu")))(100), ...){

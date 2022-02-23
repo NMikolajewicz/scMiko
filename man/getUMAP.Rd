@@ -8,7 +8,7 @@ getUMAP(
   object,
   umap.key = "umap",
   node.type = "point",
-  meta.features = "seurat_clusters",
+  meta.features = colnames(object@meta.data),
   size = autoPointSize(ncol(object)),
   ...
 )
@@ -20,7 +20,7 @@ getUMAP(
 
 \item{node.type}{"point" or "text"}
 
-\item{meta.features}{character vector specifying which meta features to retrieve. Default is seurat_clusters}
+\item{meta.features}{character vector specifying which meta features to retrieve. Default is  `colnames(object@meta.data)`}
 
 \item{...}{additional parameters to geom_point or geom_text}
 }

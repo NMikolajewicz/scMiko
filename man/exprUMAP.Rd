@@ -14,6 +14,7 @@ exprUMAP(
   assay = DefaultAssay(object),
   reduction = "umap",
   size = autoPointSize(ncol(object)),
+  scale.color = "tomato",
   ...
 )
 }
@@ -35,6 +36,8 @@ exprUMAP(
 \item{reduction}{reduction name. Default is "umap".}
 
 \item{size}{point size for plots.}
+
+\item{scale.color}{color of scale. Default is "tomato".}
 
 \item{...}{additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)}
 }

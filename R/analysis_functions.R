@@ -313,7 +313,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #'
 runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, ...){
 
-  require(scales);
+  require(scales, quietly  = T);
 
   opt.bsize <- optimalBinSize(object, verbose = verbose)
 
@@ -330,6 +330,10 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     }
   }
 
+  if (ncore > length(genelist)){
+    ncore <- length(genelist)
+  }
+
 
   miko_message("Scoring gene modules...", verbose = verbose)
   if (ncore > 1){
@@ -339,7 +343,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
       pool = NULL,
       nbin = opt.bsize,
       ctrl = 100,
-      ncore = ncore,
+      nworkers = ncore,
       k = FALSE,
       assay = assay,
       name = score.key,
@@ -463,7 +467,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
       labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
       theme_miko(center.title = T, legend = T) +
       scale_color_manual(values = colpal) +
-      guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
+      guides(fill = "none", color = guide_legend(override.aes = list(size = 4)))
   } else {
     plt.max.umap <- NULL
   }

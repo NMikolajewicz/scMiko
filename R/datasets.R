@@ -11,7 +11,7 @@
 #' \describe{
 #' \item{CancerSEA_Hs (\href{http://biocc.hrbmu.edu.cn/CancerSEA/home.jsp}{link})}{Cancer single-cell state atlas}
 #' \item{CellMarker_Hs_Zhang2019 (\href{http://biocc.hrbmu.edu.cn/CellMarker/}{link})}{Cell marker atlas: Manually-curated celltype-specific gene sets from over 100,000 published papers. (Zhang et al. (2019) Nucleic Acids Res.)}
-#' \item{coreCTL}{Core cytotoxic T lymphocyte kill genes. (Lawson et al. (2020) in revision.)}
+#' \item{coreCTL}{Core cytotoxic T lymphocyte kill genes. (\href{https://www.nature.com/articles/s41586-020-2746-2}{Lawson et al. (2020)}}
 #' \item{cyclingGenes_Hs_Seurat (\href{https://science.sciencemag.org/content/352/6282/189}{link})}{Cell-cycle markers (Tirosh et al. (2016) Science)}
 #' \item{GBM_Hs_Neftel2019 (\href{https://www.ncbi.nlm.nih.gov/pubmed/31327527}{link})}{Glioblastoma-subtype specific markers (Neftel et al. (2019) Cell)}
 #' \item{Immune_Hs_Nirmal2018 (\href{https://www.ncbi.nlm.nih.gov/pubmed/30266715}{link})}{Immune cell signatures for 7 immune cell types identified in tumors using scRNAseq (Nirmal et el. (2018) Cancer Immunol Res.)}
@@ -40,7 +40,8 @@
 #' \item{Cell_Catalog}{Cell-type markers derived from public scRNAseq atlases.(\href{https://nmikolajewicz.github.io/scMiko/articles/Marker_Catalog.html}{link})}
 #' \item{CancerSCEM}{Cell-type specific marker genes used by CancerSCEM.(\href{https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL}{link})}
 #' \item{Stem_Catalog}{Stemness markers, literature curated. Sources include \href{http://193.136.227.155/stemchecker/stemsethome.jsf}{StemChecker}, \href{https://www.sciencedirect.com/science/article/pii/S0092867418303581#mmc1}{Malta}, \href{https://bmccancer.biomedcentral.com/articles/10.1186/s12885-021-08351-0}{Hong}, \href{https://www.nature.com/articles/nature07056}{Mikkelsen}, \href{https://link.springer.com/article/10.1186/gb-2012-13-8-r71#ref-CR32}{Palmer}, \href{https://ashpublications.org/blood/article/103/8/2956/18022/Gene-expression-in-human-embryonic-stem-cell-lines}{Bhattacharya}, \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6313194/}{Dong}, \href{https://www.thelancet.com/journals/ebiom/article/PIIS2352-3964(19)30114-8/fulltext#supplementaryMaterial}{Pece}, \href{https://translational-medicine.biomedcentral.com/articles/10.1186/s12967-020-02527-1}{Feng}, \href{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215452#pone.0215452.s002}{Schulten}}
-
+#' \item{HALLMARK (\href{https://www.cell.com/cell-systems/fulltext/S2405-4712(15)00218-5?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS2405471215002185%3Fshowall%3Dtrue}{link})}{50 “hallmark” gene sets from the Molecular Signature Database (MSigDB)}
+#'
 #' }
 #'
 #' @keywords genesets, cell annotation, module scoring

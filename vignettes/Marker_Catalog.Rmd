@@ -22,6 +22,7 @@ knitr::knit_hooks$set(time_it = local({
     }
   }
 }))
+
 knitr::opts_chunk$set(
   tidy = TRUE,
   tidy.opts = list(width.cutoff = 95),

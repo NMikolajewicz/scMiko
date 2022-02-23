@@ -29,6 +29,9 @@ miko_heatmap(
 \description{
 Wrapper for pheatmap::pheatmap() and ggplotify::as.ggplot.
 }
+\seealso{
+\code{\link{pheatmap}}
+}
 \author{
 Nicholas Mikolajewicz
 }

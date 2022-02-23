@@ -866,6 +866,7 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #' @param assay assay to retrieve data from.
 #' @param reduction reduction name. Default is "umap".
 #' @param size point size for plots.
+#' @param scale.color color of scale. Default is "tomato".
 #' @param ... additional parameters passed to scExpression.UMAP (do.neb = F) or plot_density (do.neb = T)
 #' @name exprUMAP
 #' @return ggplot handle
@@ -873,7 +874,7 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
 #'
 #'  gg.plot <-  exprUMAP(object = so, feature = "Prrx1")
 #'
-exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.size = 10, slot = "data", assay = DefaultAssay(object), reduction = "umap", size = autoPointSize(ncol(object)), ...){
+exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.size = 10, slot = "data", assay = DefaultAssay(object), reduction = "umap", size = autoPointSize(ncol(object)),scale.color = "tomato",  ...){
 
   require(RColorBrewer)
 
@@ -881,7 +882,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
   if (!do.neb){
     scExpression.UMAP(object,feature, adjust.pt.size =size, slot = slot, reduction = reduction,...) +
       theme_void() + theme(legend.position = "none") +
-      scale_color_gradient(low = "grey95", high = "tomato") +
+      scale_color_gradient(low = "grey95", high = scale.color) +
       theme(plot.title = element_text(hjust = 0.5)) +
       theme(plot.subtitle = element_text(hjust = 0.5)) +
       labs(subtitle = plot.subtitle) +
@@ -890,7 +891,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
   } else {
     Nebulosa::plot_density(object,feature, size = size, slot = slot,reduction = reduction, ... ) +
       theme_void() + theme(legend.position = "none") +
-      scale_color_gradient(low = "grey95", high = "tomato") +
+      scale_color_gradient(low = "grey95", high = scale.color) +
       theme(plot.title = element_text(hjust = 0.5)) +
       theme(plot.subtitle = element_text(hjust = 0.5)) +
       labs(subtitle = plot.subtitle) +

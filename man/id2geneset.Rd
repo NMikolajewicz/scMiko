@@ -9,7 +9,7 @@ id2geneset(id, my.species)
 \arguments{
 \item{id}{Reactome/GO identifier. Reactome has "R-" prefix; GO has "GO" prefix.}
 
-\item{my.species}{Specify species; ensures that correct gene symbols are retrieved.}
+\item{my.species}{Specify species (one of "Hs" or "Mm"); ensures that correct gene symbols are retrieved.}
 }
 \value{
 Character vector of gene symbols belonging to Reactome/GO geneset.

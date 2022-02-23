@@ -4,12 +4,12 @@
 \alias{entrez2sym}
 \title{Convert entrez id to gene symbol}
 \usage{
-entrez2sym(my.entrez, my.species)
+entrez2sym(my.entrez, my.species = c("Hs", "Mm"))
 }
 \arguments{
-\item{my.species}{Character. Species.}
+\item{my.entrez}{Character. Vector of Entrez IDs.}
 
-\item{my.symbols}{Character. Vector of Entrez IDs.}
+\item{my.species}{Character. Species, one of "Hs" or "Mm".}
 }
 \value{
 data.frame mapping Entrez IDs to gene Symbols.

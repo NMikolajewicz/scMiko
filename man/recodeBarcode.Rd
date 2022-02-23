@@ -21,7 +21,7 @@ recodeBarcode(
 
 \item{new.field.name}{name of new field in meta data where recoded data will be stored. Default is "Barcode".}
 
-\item{exact.match}{specify whether entries for old labels in `barcode.recode` are matched exactly. For example, with exact matching, '5' would retrieve '5' but not '15', but exact matching, '5' would retrieve '5' and '15'. Default is F.}
+\item{exact.match}{specify whether entries for old labels in `barcode.recode` are matched exactly. For example, with exact matching, '5' would retrieve '5' but not '15', but without exact matching, '5' would retrieve '5' and '15'. Default is F.}
 }
 \value{
 Seurat Object with relabeled metadata
