@@ -6234,3 +6234,80 @@ longDF2namedList <- function(df.long, group_by, values){
   return(n.list)
 }
 
+
+#' Run batch balanced KNN
+#'
+#' This is a wrapper for bbknn (https://github.com/Teichlab/bbknn). BBKNN is a fast and intuitive batch effect removal tool. It generates a BBKNN cell x cell similarity graph that can be used for clustering and UMAP embedding.
+#'
+#' @param object Seurat object
+#' @param batch name of meta data field specifying batch groupings.
+#' @param reduction reduction used for batch correction. Default is "pca".
+#' @param assay assay name. Default is DefaultAssay(object).
+#' @param verbose print progress. Default is T.
+#' @name runBBKNN
+#' @return Seurat object with bbKNN-corrected UMAP stored in "b" reduction slot.
+#' @author Nicholas Mikolajewicz
+#' @examples
+#'  object <- runBBKNN(object, batch = "sample")
+#'
+runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(object), verbose = T){
+  require(reticulate)
+
+
+  miko_message("Checking inputs...", verbose = verbose)
+  stopifnot("Seurat" %in% class(object))
+  stopifnot(reduction %in% names(so.query@reductions))
+  stopifnot(batch %in% colnames(object@meta.data))
+
+  if (ulength(object@meta.data[ ,batch ]) > 1){
+    # integrate data ########################################
+    miko_message("Running BBKNN...", verbose = verbose)
+    anndata = import("anndata",convert=FALSE)
+    bbknn = import("bbknn", convert=FALSE)
+    sc = import("scanpy",convert=FALSE)
+
+    adata = anndata$AnnData(X=object@reductions[[reduction]]@cell.embeddings, obs=object@meta.data[ ,batch ])
+    sc$tl$pca(adata)
+    adata$obsm$X_pca = object@reductions[[reduction]]@cell.embeddings
+    bbknn$bbknn(adata,batch_key=0)
+
+    miko_message("Getting BBKNN Graph...", verbose = verbose)
+    snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
+    rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
+    snn.matrix <- as(snn.matrix, "dgCMatrix")
+    snn.matrix <- as.Graph(x = snn.matrix)
+    slot(object = snn.matrix, name = "assay.used") <- assay
+    object[["bbknn"]] <- snn.matrix
+
+    miko_message("Embedding UMAP...", verbose = verbose)
+    sc$tl$umap(adata)
+    umap = py_to_r(adata$obsm[["X_umap"]])
+
+    #########################################################
+
+    object@meta.data$b1 <- umap[ ,1]
+    object@meta.data$b2 <- umap[ ,2]
+
+    colnames(umap) <- c("b_1", "b_2")
+    rownames(umap) <- colnames(object)
+
+    miko_message("Storing results...", verbose = verbose)
+    suppressMessages({
+      suppressWarnings({
+        object[["b"]]  <- CreateDimReducObject(embeddings = as.matrix(umap),
+                                               key = "B",
+                                               global  = T,
+                                               loading = new(Class = "matrix"),
+                                               assay = assay)
+      })
+    })
+    miko_message("Done.", verbose = verbose)
+  } else {
+    miko_message("Only one batch experiment provided. BBKNN was not run.")
+  }
+
+
+
+  return(object)
+
+}
