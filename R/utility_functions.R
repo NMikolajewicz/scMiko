@@ -6311,3 +6311,21 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
   return(object)
 
 }
+
+#' Get optimal number of principal components
+#'
+#' Get number of PCs that explain a pre-specified amount of variance.
+#'
+#' @param object Seurat object
+#' @param variance_explained proportion of variance explained. Default is 0.9.
+#' @param reduction_name name of slot with PCA reduction. default is "pca".
+#' @name varExpPCA
+#' @return number of PCs explaining specified amount of variance
+#' @author Nicholas Mikolajewicz
+#'
+varExpPCA <- function(object, variance_explained = 0.9, reduction_name = "pca"){
+  stopifnot("Seurat" %in% class(object))
+  stopifnot(reduction_name %in% names(so.query@reductions))
+  df.var <- propVarPCA(object, reduction.name = reduction_name)
+  return(max(df.var$pc.id[df.var$pc.cum_sum<variance_explained])+1)
+}
