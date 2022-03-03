@@ -541,12 +541,13 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 
     # renormalize
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", verbose = verbose., assay = assay, conserve.memory = conserve.memory,
+
+    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", vst.flavor = "v2", verbose = verbose., assay = assay, conserve.memory = conserve.memory,
                                      vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
 
   } else {
     if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-    object <- SCTransform(object, method = "glmGamPoi", verbose = verbose., assay = assay,
+    object <- SCTransform(object, method = "glmGamPoi", verbose = verbose., assay = assay, vst.flavor = "v2",
                           vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n, conserve.memory = conserve.memory)
     if (verbose.)  miko_message("Spliting object...", verbose = verbose.)
     object.list <- SplitObject(object, split.by = split.by)
