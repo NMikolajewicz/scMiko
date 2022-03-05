@@ -595,6 +595,13 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
   object2 <- FindNeighbors(object2, dims = 1:object.n.dim, verbose = verbose.)
   object2 <- FindClusters(object2, verbose = verbose.)
 
+  # correct SCT counts
+  miko_message("Adjusting counts to fixed sequencing depth...")
+  try({
+    so <- PrepSCTFindMarkers(so)
+  }, silent = T)
+
+
   if (verbose.) miko_message("Complete!")
 
   return(object2)
@@ -1439,3 +1446,89 @@ multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, 
   )
 
 }
+
+
+#' Infer activation state using Gaussian decomposition
+#'
+#' Infer activation state using Gaussian decomposition
+#'
+#' @param score activity vector  from which activation state will be inferred. Must be continuous data.
+#' @param group grouping vector. Defaultis NULL.
+#' @param diffvar specify whether data is heteroscedastic. Default is T.
+#' @param k Number of components to evaluate.
+#' @param verbose Print progress. Default is TRUE.
+#' @name inferState
+#' @seealso \code{\link{Mclust}}
+#' @return list of results
+#' @examples
+inferState <- function(score, group = NULL, diffvar = TRUE, k = 5, verbose = T) {
+
+  require(mclust, quietly = T)
+
+  # ccat.v <- potest.v
+  miko_message("Fitting Gaussian Mixture Model to scores...", verbose = verbose)
+  # zccat.v <- log2((1 + ccat.v)/(1 - ccat.v))
+  if (diffvar == TRUE) {
+    mcl.o <- Mclust(score, G = seq_len(k), verbose = verbose)
+  } else {
+    mcl.o <- Mclust(score, G = seq_len(k), modelNames = c("E"), verbose = verbose)
+  }
+  mu.v <- mcl.o$param$mean
+  sd.v <- sqrt(mcl.o$param$variance$sigmasq)
+  avPS.v <- (2^mu.v - 1)/(2^mu.v + 1)
+
+  potS.v <- mcl.o$class
+  nPS <- length(levels(as.factor(potS.v)))
+  print(paste("Identified ", nPS, " states", sep = ""))
+  for (i in seq_len(nPS)) {
+    names(potS.v[which(potS.v == i)]) <- rep(paste("S",
+                                                   i, sep = ""), times = length(which(potS.v == i)))
+  }
+  savPS.s <- sort(avPS.v, decreasing = TRUE, index.return = TRUE)
+  spsSid.v <- savPS.s$ix
+  ordpotS.v <- match(potS.v, spsSid.v)
+
+  df.dist <- data.frame(
+    x = mcl.o[["data"]],
+    class = as.character(ordpotS.v), #mcl.o[["classification"]]),
+    uncertainty = mcl.o[["uncertainty"]]
+  )
+
+  plt_dist <-   df.dist %>%
+    ggplot(aes(x = x, fill = class)) +
+    geom_density(alpha = 0.6, color = NA) +
+    theme_miko(legend = T, fill.luminescence = 40) +
+    labs(x =  "Score",
+         y = "Density",
+         fill = "Cluster",
+         title = "Model-based clustering",
+         subtitle = "Gaussian mixture model, EM algorithm")
+
+  if (!is.null(group)) {
+    nPH <- length(levels(as.factor(group)))
+    distPSph.m <- table(group, ordpotS.v)
+    miko_message("Computing Shannon (Heterogeneity) Index for each group...", verbose = verbose )
+    probPSph.m <- distPSph.m/apply(distPSph.m, 1, sum)
+    hetPS.v <- vector()
+    for (ph in seq_len(nPH)) {
+      prob.v <- probPSph.m[ph, ]
+      sel.idx <- which(prob.v > 0)
+      hetPS.v[ph] <- -sum(prob.v[sel.idx] * log(prob.v[sel.idx]))/log(nPS)
+    }
+    names(hetPS.v) <- rownames(probPSph.m)
+    miko_message("Done.", verbose = verbose )
+  }
+  else {
+    distPSph.m = NULL
+    probPSph.m = NULL
+    hetPS.v = NULL
+  }
+  return(list(class = ordpotS.v,
+              distr = distPSph.m,
+              prob = probPSph.m,
+              het = hetPS.v,
+              df_dist = df.dist,
+              plt_dist = plt_dist))
+}
+
+
