@@ -598,7 +598,7 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
   # correct SCT counts
   miko_message("Adjusting counts to fixed sequencing depth...")
   try({
-    so <- PrepSCTFindMarkers(so)
+    object2 <- PrepSCTFindMarkers(object2)
   }, silent = T)
 
 
@@ -1381,8 +1381,14 @@ multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, 
         sil.plot.success <- F
         try({
 
+          clust.mem <- as.numeric(as.character(object@meta.data[,set.name] ))
+          if (sum(is.na(clust.mem)) > 0){
+            input.val <- max(clust.mem, na.rm = T) + 1
+            clust.mem[is.na(clust.mem)] <- input.val
+          }
+
           sil <- cluster::silhouette(
-            x = as.numeric(as.character(object@meta.data[,set.name] )),
+            x = clust.mem,
             dist = umap.dist)
 
           sil.plot[[ set.name]] <- factoextra::fviz_silhouette(sil, print.summary = F)
@@ -1452,8 +1458,8 @@ multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, 
 #'
 #' Infer activation state using Gaussian decomposition
 #'
-#' @param score activity vector  from which activation state will be inferred. Must be continuous data.
-#' @param group grouping vector. Defaultis NULL.
+#' @param score activity vector from which activation state will be inferred. Must be continuous data.
+#' @param group grouping vector. Default is NULL.
 #' @param diffvar specify whether data is heteroscedastic. Default is T.
 #' @param k Number of components to evaluate.
 #' @param verbose Print progress. Default is TRUE.
