@@ -6251,7 +6251,8 @@ longDF2namedList <- function(df.long, group_by, values){
 #'  object <- runBBKNN(object, batch = "sample")
 #'
 runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(object), verbose = T){
-  require(reticulate)
+  require(reticulate, quietly = T)
+  require(Matrix, quietly = T)
 
 
   miko_message("Checking inputs...", verbose = verbose)
@@ -6274,7 +6275,8 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
     miko_message("Getting BBKNN Graph...", verbose = verbose)
     snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
     rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
-    snn.matrix <- as(snn.matrix, "dgCMatrix")
+    # snn.matrix <- as(snn.matrix, "dgCMatrix")
+    snn.matrix <- as(snn.matrix, "CsparseMatrix")
     snn.matrix <- as.Graph(x = snn.matrix)
     slot(object = snn.matrix, name = "assay.used") <- assay
     object[["bbknn"]] <- snn.matrix
