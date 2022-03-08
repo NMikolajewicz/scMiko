@@ -1383,13 +1383,19 @@ multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, 
 
           clust.mem <- as.numeric(as.character(object@meta.data[,set.name] ))
           if (sum(is.na(clust.mem)) > 0){
-            input.val <- max(clust.mem, na.rm = T) + 1
-            clust.mem[is.na(clust.mem)] <- input.val
+            which.av <- which(!is.na(clust.mem))
+            clust.mem <- clust.mem[which.av]
+            umap.dist.av <- dist(x = (df.umap[which.av,c("x", "y")]), method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
+
+            sil <- cluster::silhouette(
+              x = clust.mem,
+              dist = umap.dist.av)
+          } else {
+            sil <- cluster::silhouette(
+              x = clust.mem,
+              dist = umap.dist)
           }
 
-          sil <- cluster::silhouette(
-            x = clust.mem,
-            dist = umap.dist)
 
           sil.plot[[ set.name]] <- factoextra::fviz_silhouette(sil, print.summary = F)
 
@@ -1537,4 +1543,67 @@ inferState <- function(score, group = NULL, diffvar = TRUE, k = 5, verbose = T) 
               plt_dist = plt_dist))
 }
 
+
+#' Compute eigengene
+#'
+#' Computes basis vector with highest eigenvalue (i.e., first principal component, or axis of variation that explains the highest proportion of variance)
+#'
+#' @param mat cell x gene expression matrix
+#' @param cells.are.rows Specify whether cells are in row of matrix. Default is T.
+#' @param do.scale scale data. Default is T.
+#' @param align Align basis vector with direction of expression.
+#' @param return.vector.only Logical specifying whether to return vector only. Default is True.
+#' @param verbose Print progress. Default is TRUE.
+#' @name eigengene
+#' @seealso \code{\link{svd}}
+#' @return eigengene vector
+#' @examples
+#'
+eigengene <- function(mat, cells.are.rows = T, do.scale = T, align = T, return.vector.only = T, verbose = T){
+
+  # check dimensionality
+  mat.dim <- dim(mat)
+  stopifnot(!is.null(mat.dim))
+  stopifnot(mat.dim[1] > 1)
+  stopifnot(mat.dim[2] > 1)
+
+
+  if (!cells.are.rows) {
+    miko_message("Transposing matrix...", verbose = verbose)
+    mat <- t(mat)
+  }
+
+  which.na <- apply(mat, 2, function(x){all(is.na(x))})
+  mat <- mat[ ,!which.na]
+
+  if (do.scale){
+    miko_message("Scaling matrix...", verbose = verbose)
+    mat <- apply(mat, 2, scale)
+  }
+
+  miko_message("Running SVD...", verbose = verbose)
+  svd.res <- svd(mat)
+  eg <- svd.res[["u"]][ ,1]
+
+  if (align){
+    miko_message("Aligning eigengene...", verbose = verbose)
+    avg_score <- Matrix::rowMeans(mat)
+    score_cor <- cor(avg_score, eg)
+    if (score_cor < 0) eg <- -1*eg
+  }
+
+  miko_message("Done.", verbose = verbose)
+  if (return.vector.only){
+    return(eg)
+  } else {
+    df.var.exp <- data.frame(var_exp = prop.table(svd.res$d^2))
+    var.exp <- signif(max(df.var.exp$var_exp), 3)
+    return(list(
+      eigengene = eg,
+      variance_explained = var.exp
+    ))
+  }
+
+
+}
 

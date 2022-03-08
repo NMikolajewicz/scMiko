@@ -7,9 +7,9 @@
 inferState(score, group = NULL, diffvar = TRUE, k = 5, verbose = T)
 }
 \arguments{
-\item{score}{activity vector  from which activation state will be inferred. Must be continuous data.}
+\item{score}{activity vector from which activation state will be inferred. Must be continuous data.}
 
-\item{group}{grouping vector. Defaultis NULL.}
+\item{group}{grouping vector. Default is NULL.}
 
 \item{diffvar}{specify whether data is heteroscedastic. Default is T.}
 
