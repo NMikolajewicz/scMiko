@@ -15,7 +15,7 @@ getDEG(
   pct.dif.thresh = NA,
   pct.in.thresh = NA,
   pct.out.thresh = NA,
-  return.list = T,
+  return.list = F,
   return.all = F,
   sig.figs = NA,
   verbose = T
@@ -51,13 +51,26 @@ getDEG(
 \item{verbose}{Print progress. Default is TRUE.}
 }
 \value{
-data.frame or list
+data.frame or list. Statistics in data.frame output include:
+\itemize{
+\item avgExpr: Average expression for group
+\item logFC": Log fold change
+\item statistics: Test statistics
+\item auc: Area under curve
+\item pval: p-value
+\item padj: adjusted p-value
+\item pct_in: percentage of expressing cells within group
+\item pct_out: percentage of expression cells outside of group
+\item pct.dif: difference between pct_in and pct_out
+\item sensitivity: pct_in/100
+\item specificity: (100-pct_out)/100
+\item PPV: positive predictive value
+\item NPV: negative predictive value
+\item ss: sensitivity X specificity
+}
 }
 \description{
 Differential expression analysis wrapper for presto::wilcoxauc(). Option to return differentially-expressed gene list (return.list = T) or statistics only (return.list = F)
-}
-\examples{
-
 }
 \seealso{
 \code{\link{wilcoxauc}}
