@@ -630,11 +630,26 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
 #' @name getDEG
 #' @seealso \code{\link{wilcoxauc}}
 #' @author Nicholas Mikolajewicz
-#' @return data.frame or list
-#' @examples
+#' @return data.frame or list. Statistics in data.frame output include:
+#' \itemize{
+#' \item avgExpr: Average expression for group
+#' \item logFC": Log fold change
+#' \item statistics: Test statistics
+#' \item auc: Area under curve
+#' \item pval: p-value
+#' \item padj: adjusted p-value
+#' \item pct_in: percentage of expressing cells within group
+#' \item pct_out: percentage of expression cells outside of group
+#' \item pct.dif: difference between pct_in and pct_out
+#' \item sensitivity: pct_in/100
+#' \item specificity: (100-pct_out)/100
+#' \item PPV: positive predictive value
+#' \item NPV: negative predictive value
+#' \item ss: sensitivity X specificity
+#' }
 #'
 getDEG <- function(object, assay = DefaultAssay(object), data = "data",
-                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = T, return.all = F, sig.figs = NA, verbose = T){
+                   group_by = "seurat_clusters", auc.thresh = 0.6, fdr.thresh = 0.01, logFC.thresh = NA, pct.dif.thresh = NA, pct.in.thresh = NA, pct.out.thresh= NA, return.list = F, return.all = F, sig.figs = NA, verbose = T){
 
   require(presto)
   stopifnot("Seurat" %in% class(object) )
@@ -647,55 +662,32 @@ getDEG <- function(object, assay = DefaultAssay(object), data = "data",
   deg.dat$specificity <- (100-deg.dat$pct_out)/((100-deg.dat$pct_out) + (deg.dat$pct_out))
   deg.dat$PPV <-  deg.dat$pct_in/( deg.dat$pct_in + (deg.dat$pct_out))
   deg.dat$NPV <- (100-deg.dat$pct_out)/((100-deg.dat$pct_out) + (100-deg.dat$pct_in))
-
+  deg.dat$ss <-  deg.dat$sensitivity * deg.dat$specificity
 
   if (!return.all){
     miko_message("Applying thresholds...", verbose = verbose)
-
-
-    if (!is.na(auc.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(auc > auc.thresh)
-    }
-    if (!is.na(fdr.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(padj < fdr.thresh)
-    }
-
-    if (!is.na(logFC.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(logFC > logFC.thresh)
-    }
-
-    if (!is.na(pct.dif.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(pct.dif > pct.dif.thresh)
-    }
-
-    if (!is.na(pct.in.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(pct_in > pct.in.thresh)
-    }
-
-    if (!is.na(pct.out.thresh)){
-      deg.dat <- deg.dat %>% dplyr::filter(pct_out < pct.out.thresh)
-    }
-
-
+    if (!is.na(auc.thresh)) deg.dat <- deg.dat %>% dplyr::filter(auc > auc.thresh)
+    if (!is.na(fdr.thresh)) deg.dat <- deg.dat %>% dplyr::filter(padj < fdr.thresh)
+    if (!is.na(logFC.thresh)) deg.dat <- deg.dat %>% dplyr::filter(logFC > logFC.thresh)
+    if (!is.na(pct.dif.thresh)) deg.dat <- deg.dat %>% dplyr::filter(pct.dif > pct.dif.thresh)
+    if (!is.na(pct.in.thresh)) deg.dat <- deg.dat %>% dplyr::filter(pct_in > pct.in.thresh)
+    if (!is.na(pct.out.thresh)) deg.dat <- deg.dat %>% dplyr::filter(pct_out < pct.out.thresh)
   }
 
   if (return.list){
-    # miko_message("Preparing list output...", verbose = verbose)
     u.group <- unique(deg.dat$group)
 
     deg.list <- list()
     for (i in 1:length(u.group)){
       deg.list[[u.group[i]]] <- deg.dat$feature[deg.dat$group %in% u.group[i]]
     }
-    # miko_message("Complete!", verbose = verbose)
     return(deg.list)
   } else {
-    # miko_message("Complete!", verbose = verbose)
 
     if (!is.na(sig.figs)){
       try({
 
-        deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV")] <- signif(deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV")], sig.figs)
+        deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV", "ss")] <- signif(deg.dat[ ,c("avgExpr", "logFC", "statistic", "auc", "pval", "padj", "pct_in", "pct_out", "pct.dif", "sensitivity", "specificity", "PPV", "NPV")], sig.figs)
       }, silent = T)
     }
     return(deg.dat)
@@ -1581,6 +1573,10 @@ eigengene <- function(mat, cells.are.rows = T, do.scale = T, align = T, return.v
     mat <- apply(mat, 2, scale)
   }
 
+  # clean matrix
+  na.vec <- apply(mat, 2, function(x) all(is.na(x)))
+  mat <- mat[ ,!na.vec]
+
   miko_message("Running SVD...", verbose = verbose)
   svd.res <- svd(mat)
   eg <- svd.res[["u"]][ ,1]
@@ -1607,3 +1603,22 @@ eigengene <- function(mat, cells.are.rows = T, do.scale = T, align = T, return.v
 
 }
 
+
+#' Convert Z score to p value
+#'
+#' Convert Z score to p value
+#'
+#' @param z Z score
+#' @param two.sided Specify where two-sided distribution is used for p value calculation. Default is T.
+#' @name eigengene
+#' @seealso \code{\link{pnorm}}
+#' @return p value
+#'
+z2p <- function(z, two.sided = T){
+  if (two.sided){
+    p <- 2*pnorm(q=abs(z), lower.tail=FALSE)
+  } else {
+    p <- pnorm(q=abs(z), lower.tail=FALSE)
+  }
+  return(p)
+}

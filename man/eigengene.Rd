@@ -2,6 +2,7 @@
 % Please edit documentation in R/analysis_functions.R
 \name{eigengene}
 \alias{eigengene}
+\alias{z2p}
 \title{Compute eigengene}
 \usage{
 eigengene(
@@ -12,6 +13,8 @@ eigengene(
   return.vector.only = T,
   verbose = T
 )
+
+z2p(z, two.sided = T)
 }
 \arguments{
 \item{mat}{cell x gene expression matrix}
@@ -25,16 +28,26 @@ eigengene(
 \item{return.vector.only}{Logical specifying whether to return vector only. Default is True.}
 
 \item{verbose}{Print progress. Default is TRUE.}
+
+\item{z}{Z score}
+
+\item{two.sided}{Specify where two-sided distribution is used for p value calculation. Default is T.}
 }
 \value{
 eigengene vector
+
+p value
 }
 \description{
 Computes basis vector with highest eigenvalue (i.e., first principal component, or axis of variation that explains the highest proportion of variance)
+
+Convert Z score to p value
 }
 \examples{
 
 }
 \seealso{
 \code{\link{svd}}
+
+\code{\link{pnorm}}
 }
