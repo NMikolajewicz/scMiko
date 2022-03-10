@@ -911,6 +911,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
 #' @param df.deg Differential expression data. Dataframe output from presto::wilcoxauc() or scMiko::getDEG(..., return.list = F).
 #' @param group group to visaulize data for. Must be entry in 'group' column of df.deg.
 #' @param show.n Top n features to label. Default is 10.
+#' @param rank.by statistic to rank features by when selecting top feature to label. Default is "auc".
 #' @param features Specific features to label. If specified, show.n is ignored.
 #' @param fdr.threshold FDR threshold at which reference line is drawn. Default = 0.05.
 #' @param label.size Label size.
@@ -921,7 +922,7 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
 #'  df.dat <- getDEG(so.query, return.list = F)
 #'  plt.volcano <-  miko_volcano(df.deg = df.dat)
 #'
-miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr.threshold = 0.05, label.size = NA, correct.p.value = T){
+miko_volcano <- function(df.deg, group = NULL, show.n = 10, rank.by = "auc", features = NULL, fdr.threshold = 0.05, label.size = NA, correct.p.value = T){
 
   # assertions
   stopifnot(all(c("group", "auc", "logFC", "pval",  "padj", "feature") %in% colnames(df.deg)))
@@ -937,17 +938,23 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, features = NULL, fdr
   }
 
   # get genes to show
+  if (rank.by %in% colnames(df.deg)){
+    df.deg$z <- df.deg[ ,rank.by]
+  } else {
+    df.deg$z <- df.deg[ ,"auc"]
+  }
+
   deg.top <- NULL
   if (is.null(features)){
-    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(show.n/2), auc),
-                         df.deg %>% dplyr::top_n(round(show.n/2), -auc))
+    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(show.n/2), z),
+                         df.deg %>% dplyr::top_n(round(show.n/2), -z))
   } else {
     deg.top <- df.deg %>% dplyr::filter(feature  %in% features)
   }
 
   if (is.null(nrow(deg.top)) | nrow(deg.top) == 0){
-    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(10/2), auc),
-                         df.deg %>% dplyr::top_n(round(10/2), -auc))
+    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(10/2), z),
+                         df.deg %>% dplyr::top_n(round(10/2), -z))
   }
 
 

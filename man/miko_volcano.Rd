@@ -8,6 +8,7 @@ miko_volcano(
   df.deg,
   group = NULL,
   show.n = 10,
+  rank.by = "auc",
   features = NULL,
   fdr.threshold = 0.05,
   label.size = NA,
@@ -20,6 +21,8 @@ miko_volcano(
 \item{group}{group to visaulize data for. Must be entry in 'group' column of df.deg.}
 
 \item{show.n}{Top n features to label. Default is 10.}
+
+\item{rank.by}{statistic to rank features by when selecting top feature to label. Default is "auc".}
 
 \item{features}{Specific features to label. If specified, show.n is ignored.}
 
