@@ -280,6 +280,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param winsorize.quantiles Rescale values to lie between lower and upper bound quanitle. Default  = c(0,1).
 #' @param return.plots Logical to compute and return plots in results list. Default is TRUE.
 #' @param search Search for symbol synonyms for features in features that don't match features in object? Searches the HGNC's gene names database; see UpdateSymbolList for more details. Default is FALSE.
+#' @param reduction reduction slot used for visualized data. Default is "umap".
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runMS
 #' @seealso \code{\link{AddModuleScore}}
@@ -311,7 +312,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, reduction = "umap",  ...){
 
   require(scales, quietly  = T);
 
@@ -382,8 +383,8 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
   if (return.plots){
   df.auc.umap <- data.frame(
     cells = colnames(object),
-    x = object@reductions[["umap"]]@cell.embeddings[ ,1],
-    y = object@reductions[["umap"]]@cell.embeddings[ ,2]
+    x = object@reductions[[reduction]]@cell.embeddings[ ,1],
+    y = object@reductions[[reduction]]@cell.embeddings[ ,2]
   )
 
   df.auc.umap <- bind_cols(df.auc.umap, df.ms)
@@ -443,7 +444,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
     plt.umap.list[[which.set]] <- df.auc.umap2 %>%
       ggplot(aes(x = x, y = y, color = auc)) +
       geom_point_fun(size = size, ...) +
-      labs(x = "UMAP 1", y = "UMAP 2", color = "Score",  title = which.set, subtitle = "Modular scores") +
+      labs(x = paste0(toupper(reduction), " 1"), y =paste0(toupper(reduction), " 2"), color = "Score",  title = which.set, subtitle = "Modular scores") +
       theme_miko(center.title = T, legend = T) +
       scale_color_gradient2(low = muted("blue"),
                             mid = "white",
@@ -464,7 +465,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
       ggplot(aes(x = x, y = y, color = class.ms)) +
       # geom_point() +
       geom_point_fun(size = size, ...) +
-      labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max modular score", color = "Class") +
+      labs(x = paste0(toupper(reduction), " 1"), y =paste0(toupper(reduction), " 2"), caption = "Classification based on max modular score", color = "Class") +
       theme_miko(center.title = T, legend = T) +
       scale_color_manual(values = colpal) +
       guides(fill = "none", color = guide_legend(override.aes = list(size = 4)))

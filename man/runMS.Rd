@@ -17,6 +17,7 @@ runMS(
   winsorize.quantiles = c(0, 1),
   return.plots = T,
   search = F,
+  reduction = "umap",
   ...
 )
 }
@@ -44,6 +45,8 @@ runMS(
 \item{return.plots}{Logical to compute and return plots in results list. Default is TRUE.}
 
 \item{search}{Search for symbol synonyms for features in features that don't match features in object? Searches the HGNC's gene names database; see UpdateSymbolList for more details. Default is FALSE.}
+
+\item{reduction}{reduction slot used for visualized data. Default is "umap".}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }
