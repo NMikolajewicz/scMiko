@@ -911,10 +911,17 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
 #' @param df.deg Differential expression data. Dataframe output from presto::wilcoxauc() or scMiko::getDEG(..., return.list = F).
 #' @param group group to visaulize data for. Must be entry in 'group' column of df.deg.
 #' @param show.n Top n features to label. Default is 10.
-#' @param rank.by statistic to rank features by when selecting top feature to label. Default is "auc".
+#' @param show.sig.only Show significant genes only. Default is T.
+#' @param rank.by statistic to rank features by when selecting top feature to label. Default is "auc" (options include "auc", "logFC", "pval").
 #' @param features Specific features to label. If specified, show.n is ignored.
-#' @param fdr.threshold FDR threshold at which reference line is drawn. Default = 0.05.
+#' @param sig.threshold significance (p-value) threshold. Default is 0.05.
+#' @param lfc.threshold log fold change (lfc) threhsold. Default is 0.
 #' @param label.size Label size.
+#' @param pt.size.range vector with two values, the first representing the smallest point size, and the second representing the largest point size. Default is c(1,4).
+#' @param correct.p.value use adjusted p-value (FDR) for thresholding significant hits. Default is T.
+#' @param plot.title title of volcano plot. Default is "Volcano Plot".
+#' @param cols named listed with 3 entries labeled "low", "mid", "high" specifying colors to create a color gradient. Default is list(low = scales::muted("blue"), mid = "white", high = scales::muted("red")).
+#' @seealso getDEG
 #' @name miko_volcano
 #' @return ggplot handle
 #' @examples
@@ -922,10 +929,18 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
 #'  df.dat <- getDEG(so.query, return.list = F)
 #'  plt.volcano <-  miko_volcano(df.deg = df.dat)
 #'
-miko_volcano <- function(df.deg, group = NULL, show.n = 10, rank.by = "auc", features = NULL, fdr.threshold = 0.05, label.size = NA, correct.p.value = T){
+miko_volcano <- function(df.deg, group = NULL, show.n = 10, show.sig.only = T, rank.by = c("auc", "logFC", "pval"),
+                         features = NULL, sig.threshold = 0.05, lfc.threshold = 0, label.size = NA, pt.size.range = c(1,4),
+                         correct.p.value = T, plot.title = "Volcano Plot", cols = list(low = scales::muted("blue"), mid = "white", high = scales::muted("red"))){
 
   # assertions
-  stopifnot(all(c("group", "auc", "logFC", "pval",  "padj", "feature") %in% colnames(df.deg)))
+  if (!("avgExpr" %in% colnames(df.deg))) {
+    df.deg$avgExpr <- 1
+    size.label <- NULL
+  } else {
+    size.label <- "avgExpr"
+  }
+  stopifnot(all(c("group", "avgExpr", "logFC", "pval",  "feature") %in% colnames(df.deg)))
 
   if (ulength(df.deg$group) > 1){
 
@@ -938,49 +953,114 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, rank.by = "auc", fea
   }
 
   # get genes to show
-  if (rank.by %in% colnames(df.deg)){
-    df.deg$z <- df.deg[ ,rank.by]
-  } else {
+  if (!(rank.by %in% colnames(df.deg))){
+    rank.by <- c("auc", "pval", "logFC", "avgExpr")[which(c("auc", "pval", "logFC", "avgExpr") %in% colnames(df.deg))[1]]
+  }
+  if (rank.by %in% "pval"){
+    df.deg$z <- (-log10(unlist(df.deg[ ,rank.by]))) * sign(df.deg$logFC)
+  } else if (rank.by %in% "logFC"){
+    df.deg$z <- df.deg[ ,"logFC"]
+  } else if (rank.by %in% "auc"){
     df.deg$z <- df.deg[ ,"auc"]
+  } else if (rank.by %in% "avgExpr"){
+    df.deg$z <- unlist(df.deg[ ,"avgExpr"])  * sign(df.deg$logFC)
+  } else if (rank.by %in% "pct_in"){
+    df.deg$z <- unlist(df.deg[ ,"pct_in"])  * sign(df.deg$logFC)
   }
 
+  df.deg$padj <- p.adjust(df.deg$pval, method = "BH")
+
   deg.top <- NULL
-  if (is.null(features)){
-    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(show.n/2), z),
-                         df.deg %>% dplyr::top_n(round(show.n/2), -z))
+  if (show.sig.only){
+    if (correct.p.value){
+      df.deg.sig <- df.deg %>% dplyr::filter(padj < sig.threshold, abs(logFC) > lfc.threshold)
+    } else {
+      df.deg.sig <- df.deg %>% dplyr::filter(pval < sig.threshold, abs(logFC) > lfc.threshold)
+    }
   } else {
-    deg.top <- df.deg %>% dplyr::filter(feature  %in% features)
+    df.deg.sig <- df.deg
+    lfc.threshold <- 0
+  }
+  if (is.null(features)){
+    deg.top <- bind_rows(df.deg.sig %>% dplyr::top_n(round(show.n/2), z),
+                         df.deg.sig %>% dplyr::top_n(round(show.n/2), -z))
+  } else {
+    deg.top <- df.deg.sig %>% dplyr::filter(feature  %in% features)
   }
 
   if (is.null(nrow(deg.top)) | nrow(deg.top) == 0){
-    deg.top <- bind_rows(df.deg %>% dplyr::top_n(round(10/2), z),
-                         df.deg %>% dplyr::top_n(round(10/2), -z))
+    deg.top <- bind_rows(df.deg.sig %>% dplyr::top_n(round(10/2), logFC),
+                         df.deg.sig %>% dplyr::top_n(round(10/2), logFC))
   }
 
 
   if (correct.p.value){
     y.axis.label <- "-log10(FDR)"
+    plabel <- "FDR"
+
   } else {
     y.axis.label <- "-log10(p)"
     deg.top$padj <- deg.top$pval
     df.deg$padj <- df.deg$pval
+    plabel <- "p"
+  }
+
+
+  # color by...
+  color.by <- "auc"
+  if (!(color.by %in% colnames(df.deg))){
+    color.by <- c("auc", "pval", "logFC")[which(c("auc", "pval", "logFC") %in% colnames(df.deg))[1]]
+  }
+  if (color.by %in% "pval"){
+    df.deg$w <- (-log10(unlist(df.deg[ ,color.by]))) * sign(df.deg$logFC)
+    color.label <- "signed\n-log(p)"
+  } else if (color.by %in% "logFC"){
+    df.deg$w <- df.deg[ ,"logFC"]
+    color.label <- "logFC"
+  } else if (color.by %in% "auc"){
+    df.deg$w <- abs(df.deg[ ,"auc"] - 0.5)
+    color.label <- "|AUC-0.5|"
   }
 
   # generate plot
-  deg.top$feature <- paste0("italic('", deg.top$feature, "')")
-  df.deg %>%
-    ggplot(aes(x = logFC, y = -log10(padj))) +
-    geom_point(aes(color = (auc-0.5), size = abs(logFC))) +
-    scale_size(range = c(0, 3)) +
+  if (nrow(deg.top)> 0)  deg.top$feature <- paste0("italic('", deg.top$feature, "')")
+
+  nup <- sum(df.deg$padj <= sig.threshold & df.deg$logFC > lfc.threshold)
+  ndown <- sum(df.deg$padj <= sig.threshold & df.deg$logFC < -lfc.threshold)
+
+  if (lfc.threshold > 0){
+    sig.label  <- paste0(nup, " upregulated, ", ndown , " downregulated (", plabel, "<", sig.threshold, ", |logFC|>", lfc.threshold, ")")
+  } else {
+    sig.label  <- paste0(nup, " upregulated, ", ndown , " downregulated (", plabel, "<", sig.threshold, ")")
+  }
+
+
+  plt.vol <-  ggplot() +
+    geom_point(data = df.deg %>% dplyr::filter(padj <= sig.threshold, abs(logFC) >= lfc.threshold),
+               aes(x = logFC, y = -log10(padj), color = w, size = abs(avgExpr))) +
+    geom_point(data = df.deg %>% dplyr::filter(padj > sig.threshold | abs(logFC) < lfc.threshold),
+               aes(x = logFC, y = -log10(padj), size = abs(avgExpr)), color = "grey") +
+    scale_size(range = pt.size.range) +
     ggrepel::geom_text_repel(data = deg.top, aes(x = logFC, y = -log10(padj), label = feature),
                              parse = T, size = label.size, min.segment.length = 0, max.overlaps = Inf) +
-    geom_hline(yintercept = -log10(fdr.threshold), linetype = "dashed") +
-    geom_vline(xintercept = 0, linetype = "dashed") +
-    scale_color_gradient2(low = scales::muted("blue"), mid = "white", high = scales::muted("red")) +
+    geom_hline(yintercept = -log10(sig.threshold), linetype = "dashed") +
+    geom_vline(xintercept = 0) +
+    scale_color_gradient2(low = cols$low, mid = cols$mid, high = cols$high) +
     theme_miko(legend = T) +
-    labs(title = "Volcano Plot", color = "|AUC-0.5|", size = "|logFC|", y = y.axis.label)
+    labs(title = plot.title,
+         subtitle = sig.label,
+         color = color.label, size = size.label, y = y.axis.label)
+
+
+  if (lfc.threshold > 0){
+    plt.vol <- plt.vol + geom_vline(xintercept = c(-lfc.threshold, lfc.threshold), linetype = "dashed")
+  }
+
+
+  plt.vol
 
 }
+
 
 #' Gradient color scale
 #'

@@ -8,11 +8,16 @@ miko_volcano(
   df.deg,
   group = NULL,
   show.n = 10,
-  rank.by = "auc",
+  show.sig.only = T,
+  rank.by = c("auc", "logFC", "pval"),
   features = NULL,
-  fdr.threshold = 0.05,
+  sig.threshold = 0.05,
+  lfc.threshold = 0,
   label.size = NA,
-  correct.p.value = T
+  pt.size.range = c(1, 4),
+  correct.p.value = T,
+  plot.title = "Volcano Plot",
+  cols = list(low = scales::muted("blue"), mid = "white", high = scales::muted("red"))
 )
 }
 \arguments{
@@ -22,13 +27,25 @@ miko_volcano(
 
 \item{show.n}{Top n features to label. Default is 10.}
 
-\item{rank.by}{statistic to rank features by when selecting top feature to label. Default is "auc".}
+\item{show.sig.only}{Show significant genes only. Default is T.}
+
+\item{rank.by}{statistic to rank features by when selecting top feature to label. Default is "auc" (options include "auc", "logFC", "pval").}
 
 \item{features}{Specific features to label. If specified, show.n is ignored.}
 
-\item{fdr.threshold}{FDR threshold at which reference line is drawn. Default = 0.05.}
+\item{sig.threshold}{significance (p-value) threshold. Default is 0.05.}
+
+\item{lfc.threshold}{log fold change (lfc) threhsold. Default is 0.}
 
 \item{label.size}{Label size.}
+
+\item{pt.size.range}{vector with two values, the first representing the smallest point size, and the second representing the largest point size. Default is c(1,4).}
+
+\item{correct.p.value}{use adjusted p-value (FDR) for thresholding significant hits. Default is T.}
+
+\item{plot.title}{title of volcano plot. Default is "Volcano Plot".}
+
+\item{cols}{named listed with 3 entries labeled "low", "mid", "high" specifying colors to create a color gradient. Default is list(low = scales::muted("blue"), mid = "white", high = scales::muted("red")).}
 }
 \value{
 ggplot handle
@@ -41,4 +58,7 @@ Draw volcano plot to visualize differential expression. Uses data.frame output f
  df.dat <- getDEG(so.query, return.list = F)
  plt.volcano <-  miko_volcano(df.deg = df.dat)
 
+}
+\seealso{
+getDEG
 }
