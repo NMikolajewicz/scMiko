@@ -18,4 +18,4 @@ scPipeline source code can be accessed at [https://github.com/NMikolajewicz/scPi
 
 ## Citation
 
-if using scPipeline and scMiko, please consider citing our work: [Mikolajewicz, et al., BioRxiv](https://www.biorxiv.org/content/10.1101/2022.03.13.484162v1)
+if using scPipeline or scMiko, please consider citing our work: [Mikolajewicz, et al., BioRxiv](https://www.biorxiv.org/content/10.1101/2022.03.13.484162v1)
