@@ -157,7 +157,14 @@
     <p>Using Seurat's VariableFeaturePlot, variable genes are identified and plotted. Top N variable genes are labeled.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>variableGenes.Plot</span><span class='op'>(</span><span class='va'>so</span>, <span class='va'>gNames</span>, set_name <span class='op'>=</span> <span class='cn'>NULL</span>, top.n.genes <span class='op'>=</span> <span class='fl'>10</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>variableGenes.Plot</span><span class='op'>(</span>
+  <span class='va'>so</span>,
+  <span class='va'>gNames</span>,
+  set_name <span class='op'>=</span> <span class='cn'>NULL</span>,
+  top.n.genes <span class='op'>=</span> <span class='fl'>10</span>,
+  pt.colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"black"</span>, <span class='st'>"tomato"</span><span class='op'>)</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -177,6 +184,10 @@
     <tr>
       <th>top.n.genes</th>
       <td><p>Numeric. Top n genes to label on plot.</p></td>
+    </tr>
+    <tr>
+      <th>pt.colors</th>
+      <td><p>colors to specify non-variable/variable status.</p></td>
     </tr>
     <tr>
       <th>...</th>

@@ -168,7 +168,7 @@
   pct.dif.thresh <span class='op'>=</span> <span class='cn'>NA</span>,
   pct.in.thresh <span class='op'>=</span> <span class='cn'>NA</span>,
   pct.out.thresh <span class='op'>=</span> <span class='cn'>NA</span>,
-  return.list <span class='op'>=</span> <span class='cn'>T</span>,
+  return.list <span class='op'>=</span> <span class='cn'>F</span>,
   return.all <span class='op'>=</span> <span class='cn'>F</span>,
   sig.figs <span class='op'>=</span> <span class='cn'>NA</span>,
   verbose <span class='op'>=</span> <span class='cn'>T</span>
@@ -237,7 +237,23 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>data.frame or list</p>
+    <p>data.frame or list. Statistics in data.frame output include:</p><ul>
+<li><p>avgExpr: Average expression for group</p></li>
+<li><p>logFC: Log fold change</p></li>
+<li><p>statistics: Test statistics</p></li>
+<li><p>auc: Area under curve</p></li>
+<li><p>pval: p-value</p></li>
+<li><p>padj: adjusted p-value</p></li>
+<li><p>pct_in: percentage of expressing cells within group</p></li>
+<li><p>pct_out: percentage of expression cells outside of group</p></li>
+<li><p>pct.dif: difference between pct_in and pct_out</p></li>
+<li><p>sensitivity: pct_in/100</p></li>
+<li><p>specificity: (100-pct_out)/100</p></li>
+<li><p>PPV: positive predictive value</p></li>
+<li><p>NPV: negative predictive value</p></li>
+<li><p>ss: sensitivity x specificity</p></li>
+</ul>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code>wilcoxauc</code></p></div>
@@ -245,9 +261,6 @@
 
     <p>Nicholas Mikolajewicz</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

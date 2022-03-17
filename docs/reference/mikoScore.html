@@ -161,6 +161,8 @@
   <span class='va'>object</span>,
   <span class='va'>geneset</span>,
   <span class='va'>nullscore</span>,
+  do.center <span class='op'>=</span> <span class='cn'>F</span>,
+  do.scale <span class='op'>=</span> <span class='cn'>T</span>,
   assay <span class='op'>=</span> <span class='fu'>DefaultAssay</span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>,
   nworkers <span class='op'>=</span> <span class='fl'>1</span>,
   nbin <span class='op'>=</span> <span class='fl'>24</span>,
@@ -181,6 +183,14 @@
     <tr>
       <th>nullscore</th>
       <td><p>`nullScore` output for provided `object`. Must run `nullScore` prior to running `mikoScore`.</p></td>
+    </tr>
+    <tr>
+      <th>do.center</th>
+      <td><p>center scores using null model predictions. Default is FALSE.</p></td>
+    </tr>
+    <tr>
+      <th>do.scale</th>
+      <td><p>scale scores by null model variance predictions. Default is TRUE.</p></td>
     </tr>
     <tr>
       <th>assay</th>

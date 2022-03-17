@@ -161,7 +161,8 @@
   <span class='va'>object</span>,
   <span class='va'>barcode.recode</span>,
   old.field.name <span class='op'>=</span> <span class='st'>"Barcode"</span>,
-  new.field.name <span class='op'>=</span> <span class='st'>"Barcode"</span>
+  new.field.name <span class='op'>=</span> <span class='st'>"Barcode"</span>,
+  exact.match <span class='op'>=</span> <span class='cn'>F</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -182,6 +183,10 @@
     <tr>
       <th>new.field.name</th>
       <td><p>name of new field in meta data where recoded data will be stored. Default is "Barcode".</p></td>
+    </tr>
+    <tr>
+      <th>exact.match</th>
+      <td><p>specify whether entries for old labels in `barcode.recode` are matched exactly. For example, with exact matching, '5' would retrieve '5' but not '15', but without exact matching, '5' would retrieve '5' and '15'. Default is F.</p></td>
     </tr>
     </table>
 

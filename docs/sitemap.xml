@@ -88,6 +88,9 @@
     <loc>https://github.com/NMikolajewicz//reference/downsampleSeurat.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/eigengene.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/ens2sym.so.html</loc>
   </url>
   <url>
@@ -226,6 +229,9 @@
     <loc>https://github.com/NMikolajewicz//reference/inferSpecies.html</loc>
   </url>
   <url>
+    <loc>https://github.com/NMikolajewicz//reference/inferState.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/NMikolajewicz//reference/initiateLog.html</loc>
   </url>
   <url>
@@ -350,6 +356,12 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/runAUC.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/runAUGUR.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/runBBKNN.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/runGSEA.html</loc>
@@ -485,6 +497,9 @@
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/value2col.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz//reference/varExpPCA.html</loc>
   </url>
   <url>
     <loc>https://github.com/NMikolajewicz//reference/variableGenes.Plot.html</loc>

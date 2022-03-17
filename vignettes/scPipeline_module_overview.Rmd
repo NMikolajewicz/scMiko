@@ -145,6 +145,102 @@ See [Stuart et al. (2019). Cell](https://www.cell.com/cell/fulltext/S0092-8674(1
 
 The primary aim of data integration is to identify common cell populations between datasets. However, because integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the `integrated` assay is not appropriate for downstream differential gene expression. Specifically, the `integrated` assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the `data` slot in the  `SCT` assay; M2 runs `PrepSCTFindMarkers()` thereby ensuring that counts have been corrected for varying sequencing-depth across data sets. 
 
+### Analysis Parameters
+
+In addition to specifying the `parameter.list` (analysis parameters), the Integration Module additionally requires a separate list, named `input.data`, to specify the data sets used for integration. See below for details and examples. 
+
+ <details><summary>**show parameter.list**</summary>
+ 
+Parameter |Description |Argument
+--| ---------- | ------
+**save.file** | name of output file | character
+**integration.feature.select.method** | method used to select integration features | - hvg (default): highly-variable genes <br>- deviance
+**integration.k.filter** | number of neighbors (k) to use when filtering anchors. Default is 200. Passed to `Seurat::FindIntegrationAnchors(...)`. | numeric
+**integration.k.anchor** | number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to `Seurat::FindIntegrationAnchors(...)`. | numeric
+**integration.k.weight** | number of neighbors to consider when weighting anchors. Passed to `Seurat::IntegrateData(...)`. Default is 100 | numeric
+**integration.n.genes** | number of genes used for integration. 1000-3000 recommended. | numeric
+**integration.method** | integration method. | - rPCA (default): reciprocal PCA method (recommended for larger datasets) <br>- CCA: canonical correlation method
+**integration.limit.memory** | Specify whether to limit max memory allocated during integration. Default is T. | logical
+**integration.max.memory** | max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. | numeric
+**integration.cluster.resolution** | value of the resolution parameter passed to `Seurat::FindClusters(...)`, which is run after data integration. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1. | numeric
+**integration.compute.diveristy** | Compute change in population diversity before and after integration. Default is T | logical
+**pca.var.threshold** | proportion of variance used for clustering and UMAP embedding. 0.9 is recommended. | numeric [0,1]
+**correct.artifact** | omit artefact g. Default is 10. | numeric
+**unmatched.rate.filter.flag** | Logical specifying whether to filtered cells using unmatched rates. Default is TRUE. 
+**vars2regress** | Variables to regress out during scaling step. Default is 'percent.mt'. | vector of character(s)
+**correct.artifact** | identify artifact genes (i.e., genes detected in only one sample) and omit from integration step. Recommended only if integrated datasets have similar cellular compositions. Default is F | logical 
+**n.workers** | number of workers to use for parallel implementation. Provided as list, with each named entry corresponding to different task (e.g., n.workers = list(import = 4, integration = 1)) | list
+**print.inline** | print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE. | logical
+**save.pdf** | Logical specifying whether to save figures and tables in separate directory. | logical
+**update.log** | update analysis log. Ignored if developer = F. | logical
+**rprofile.dir** | look for input file in path specified in .Rprofile. Default is FALSE. | logical
+**developer** |Developer mode. Default is FALSE. | logical
+
+</details>
+
+
+ <details><summary>**show input.data**</summary>
+ 
+ The `input.data` list is a named list, with each entry corresponding to a separate input dataset. For a basic use, given 2 or more seurat objects for integration, we can specify the path to the input data using the `file` argument as follows:
+ 
+```{r basic input, eval = FALSE}
+
+# basic input specification
+input.data <- list(
+  dataset1 = list(file = "dataset1.Rdata"),    # path to .Rdata file containing seurat object named 'so'
+  dataset2 = list(file = "dataset2.Rdata"),
+  dataset3 = list(file = "dataset3.Rdata")
+)
+
+
+```
+
+Alternatively, if a given data set contains multiple batches of data, we can partition the seurat object into subsets which will then be handled as independent datasets in the downstream integration step. This can be accomplished using the `integrate.by` argument, which specifies which feature to use to split the seurat object. The feature specified by `integrate.by` must be present in the metadata of the corresponding seurat object. In the example below, we split *dataset 1* using the `Barcode` feature prior to integration:
+
+```{r split input, eval = FALSE}
+
+# spliting seurat object into subset prior to integration
+input.data <- list(
+  dataset1 = list(
+    file = "dataset1.Rdata",        # path to .Rdata file containing seurat object named 'so'
+    integrate.by = "Barcode"        # meta data features specifying sample labels
+  ),       
+  dataset2 = list(
+    file = "dataset2.Rdata"
+  ),
+  dataset3 = list(
+    file = "dataset3.Rdata"
+  )
+)
+
+```
+
+Users can also filter their inputs prior to integration using the `meta.feature.name` and `meta.feature.filter` arguments. For example, if *dataset 1* consists of multiple cell types, and we are interested in only integrating the immune compartment, we can set `meta.feature.filter` to "lymphoid|myeloid" and `meta.feature.name` to "cell.type", with the latter corresponding to the meta data column present in the seurat object:
+
+```{r filter input, eval = FALSE}
+
+# filtering seurat object prior to integration
+input.data <- list(
+  dataset1 = list(
+    file = "dataset1.Rdata",                   # path to .Rdata file containing seurat object named 'so'
+    meta.feature.name = "cell.type",           # meta data column used to filter data
+    meta.feature.filter = "lymphoid|myeloid"   # features to include for downstream integration
+  ),       
+  dataset2 = list(
+    file = "dataset2.Rdata"
+  ),
+  dataset3 = list(
+    file = "dataset3.Rdata"
+  )
+)
+
+```
+
+Note that the filter uses non-exact matching, so please be aware that substrings may unintentionally filter out data of interest if incorrectly specified. For example, "cell_type_1" will filter "cell_type_1", "cell_type_10", "cell_type_11", etc. 
+
+</details>
+
+
 ---
 
 

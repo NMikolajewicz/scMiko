@@ -161,7 +161,7 @@
   <span class='va'>object</span>,
   umap.key <span class='op'>=</span> <span class='st'>"umap"</span>,
   node.type <span class='op'>=</span> <span class='st'>"point"</span>,
-  meta.features <span class='op'>=</span> <span class='st'>"seurat_clusters"</span>,
+  meta.features <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>@</span><span class='va'>meta.data</span><span class='op'>)</span>,
   size <span class='op'>=</span> <span class='fu'><a href='autoPointSize.html'>autoPointSize</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
@@ -183,7 +183,7 @@
     </tr>
     <tr>
       <th>meta.features</th>
-      <td><p>character vector specifying which meta features to retrieve. Default is seurat_clusters</p></td>
+      <td><p>character vector specifying which meta features to retrieve. Default is  `colnames(object@meta.data)`</p></td>
     </tr>
     <tr>
       <th>...</th>

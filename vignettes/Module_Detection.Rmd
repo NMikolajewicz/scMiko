@@ -31,6 +31,11 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+Here we demonstrate gene program discovery using scale-free shared nearest neighbor network (SSN) analysis. The SSN method for gene program discovery was inspired by the established shared-nearest neighbor (SNN) framework used in single-cell analyses to reliably identify cell-to-cell distances in a sparse dataset, as well as the scale-free topology transformation used under the assumption that the frequency distribution of gene association in a transcriptomic network follows the power law. 
+
+In brief, the gene expression matrix is dimensionally reduced using principal component analysis (PCA). Each gene’s K-nearest neighbors (KNN) is then determined by Euclidean distance in PCA space. The resulting KNN graph is used to derive a shared nearest neighbor (SNN) graph by calculating the neighborhood overlap between each gene using the Jaccard similarity index. Adopting the framework from weighted gene correlation network analysis (WGCNA), an adjacency matrix that conforms to a scale-free topology is then constructed by raising the SNN graph to an optimized soft-thresholding power, which effectively accentuates the modularity of the network. The resulting adjacency matrix is used to construct the network UMAP embedding and to cluster genes into programs (or modules) by Louvain community detection. To reduce noise, genes with low connectivity (i.e., low network degree) are pruned so that only hub-like genes are retained for downstream annotation and analysis. 
+
 ## Load Seurat object
 
 For this tutorial we will perform unsupervised module detection and annotation to characterize the biological processes that comprise the Human Gastrulation (Tyser 2021). 
@@ -113,7 +118,7 @@ We can visualize the scale-free optimization and transformation that was perform
 ```{r, fig.width=8, fig.height=4}
 
 cowplot::plot_grid(so.gene@misc$scale_free$optimization.plot,
-                   so.gene@misc$scale_free$distribution.plot$`0.5`,
+                   so.gene@misc$scale_free$distribution.plot$`2`,
                    labels = "AUTO")
 
 ```

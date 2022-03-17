@@ -149,16 +149,16 @@ reference:
   - getNMFGenes
   - runNMF
 
-- title: "WGCNA"
-  desc: "WGCNA Module detection"
-- contents:
-  - getModulePreservation
-  - getSoftThreshold
-  - getSoftThreshold2
-  - optimalDS
-  - runWGCNA
-  - scaleTOM
-  - wgcna2graphDF
+# - title: "WGCNA"
+#   desc: "WGCNA Module detection"
+# - contents:
+#   - getModulePreservation
+#   - getSoftThreshold
+#   - getSoftThreshold2
+#   - optimalDS
+#   - runWGCNA
+#   - scaleTOM
+#   - wgcna2graphDF
 
 
 - title: "Differential Abundance Analysis"
