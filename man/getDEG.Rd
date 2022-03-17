@@ -54,7 +54,7 @@ getDEG(
 data.frame or list. Statistics in data.frame output include:
 \itemize{
 \item avgExpr: Average expression for group
-\item logFC": Log fold change
+\item logFC: Log fold change
 \item statistics: Test statistics
 \item auc: Area under curve
 \item pval: p-value
@@ -66,7 +66,7 @@ data.frame or list. Statistics in data.frame output include:
 \item specificity: (100-pct_out)/100
 \item PPV: positive predictive value
 \item NPV: negative predictive value
-\item ss: sensitivity X specificity
+\item ss: sensitivity x specificity
 }
 }
 \description{
