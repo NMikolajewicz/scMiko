@@ -15,3 +15,7 @@ The scPipeline analysis pipeline is a modular **collection of R markdown scripts
 Documentation and tutorials for scPipeline workflows can also be found at [https://nmikolajewicz.github.io/scMiko/](https://nmikolajewicz.github.io/scMiko/). To get started, see our [getting started with scPipeline](https://nmikolajewicz.github.io/scMiko/articles/scPipeline_getting_started.html) article. 
 
 scPipeline source code can be accessed at [https://github.com/NMikolajewicz/scPipeline](https://github.com/NMikolajewicz/scPipeline).
+
+## Citation
+
+if using scPipeline and scMiko, please consider citing our work: [Mikolajewicz, et al., BioRxiv](https://www.biorxiv.org/content/10.1101/2022.03.13.484162v1)
