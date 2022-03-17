@@ -23,7 +23,7 @@ New features offered in scMiko include:
     - outperforms ICA and NMF methods in terms of GO term recovery and STRING PPI enrichment
     - [Vignette](articles/Module_Detection.html)
     
-Details can be found in our recent work: [Mikolajewicz, et al., BioRxiv](...)
+Details can be found in our recent work: [Mikolajewicz, et al., BioRxiv](https://www.biorxiv.org/content/10.1101/2022.03.13.484162v1)
     
 ## About scPipeline
 
