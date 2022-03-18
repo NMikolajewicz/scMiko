@@ -37,19 +37,24 @@
 #' \item{Liddelow_Nature_2017}{Astrocyte gene panels, specifically A1 and A2 reactive astrocyte markers}
 #' \item{Zhong_Nature_2018}{Neural cell gene panels}
 #' \item{Verhaak_CancerCell_2010}{Verhaak GBM-subtype genesets}
-#' \item{Cell_Catalog}{Cell-type markers derived from public scRNAseq atlases.(\href{https://nmikolajewicz.github.io/scMiko/articles/Marker_Catalog.html}{link})}
-#' \item{CancerSCEM}{Cell-type specific marker genes used by CancerSCEM.(\href{https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL}{link})}
-#' \item{Stem_Catalog}{Stemness markers, literature curated. Sources include (\href{http://193.136.227.155/stemchecker/stemsethome.jsf}{StemChecker}, \href{https://www.sciencedirect.com/science/article/pii/S0092867418303581#mmc1}{Malta}, \href{https://bmccancer.biomedcentral.com/articles/10.1186/s12885-021-08351-0}{Hong}, \href{https://www.nature.com/articles/nature07056}{Mikkelsen}, \href{https://link.springer.com/article/10.1186/gb-2012-13-8-r71#ref-CR32}{Palmer}, \href{https://ashpublications.org/blood/article/103/8/2956/18022/Gene-expression-in-human-embryonic-stem-cell-lines}{Bhattacharya}, \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6313194/}{Dong}, \href{https://www.thelancet.com/journals/ebiom/article/PIIS2352-3964(19)30114-8/fulltext#supplementaryMaterial}{Pece}, \href{https://translational-medicine.biomedcentral.com/articles/10.1186/s12967-020-02527-1}{Feng}, \href{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215452#pone.0215452.s002}{Schulten})}
-#' \item{HALLMARK (\href{https://www.cell.com/cell-systems/fulltext/S2405-4712(15)00218-5?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS2405471215002185%3Fshowall%3Dtrue}{link})}{50 “hallmark” gene sets from the Molecular Signature Database (MSigDB)}
 #' \item{Combes2022_Immune_TableS4 (\href{https://pubmed.ncbi.nlm.nih.gov/34963056/}{link})}{Immune-related gene markers reported in Table S4 of Combes 2022}
 #' \item{Combes2022_Immune_TableS5 (\href{https://pubmed.ncbi.nlm.nih.gov/34963056/}{link})}{Immune-related gene markers reported in Table S5 of Combes 2022}
+#' \item{Cell_Catalog (\href{https://nmikolajewicz.github.io/scMiko/articles/Marker_Catalog.html}{link})}{Cell-type markers derived from public scRNAseq atlases.}
+#' \item{CancerSCEM (\href{https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL}{link})}{Cell-type specific marker genes used by CancerSCEM.}
+#' \item{Stem_Catalog}{Stemness markers, literature curated. Sources include (\href{http://193.136.227.155/stemchecker/stemsethome.jsf}{StemChecker}, \href{https://www.sciencedirect.com/science/article/pii/S0092867418303581#mmc1}{Malta}, \href{https://bmccancer.biomedcentral.com/articles/10.1186/s12885-021-08351-0}{Hong}, \href{https://www.nature.com/articles/nature07056}{Mikkelsen}, \href{https://link.springer.com/article/10.1186/gb-2012-13-8-r71#ref-CR32}{Palmer}, \href{https://ashpublications.org/blood/article/103/8/2956/18022/Gene-expression-in-human-embryonic-stem-cell-lines}{Bhattacharya}, \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6313194/}{Dong}, \href{https://www.thelancet.com/journals/ebiom/article/PIIS2352-3964(19)30114-8/fulltext#supplementaryMaterial}{Pece}, \href{https://translational-medicine.biomedcentral.com/articles/10.1186/s12967-020-02527-1}{Feng}, \href{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215452#pone.0215452.s002}{Schulten})}
+#' \item{HALLMARK (\href{https://www.cell.com/fulltext/S2405-4712(15)00218-5}{link})}{50 “hallmark” gene sets from the Molecular Signature Database (MSigDB)}
 #' }
 #'
 #' @keywords genesets, cell annotation, module scoring
 #'
 #' @examples
 #' data(geneSets)
+#'
+#' # retrieve geneset
 #' cell_catalog <- geneSets[["Cell_Catalog"]]
+#'
+#' # convert wide dataframe format to named list format
+#' call_catalog.list <- wideDF2namedList(cell_catalog)
 #'
 "geneSets"
 
