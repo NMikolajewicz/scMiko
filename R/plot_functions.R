@@ -112,7 +112,7 @@ variableGenes.Plot <- function(so, gNames, set_name = NULL, top.n.genes = 10, pt
   if (gene.rep == "ensembl"){
     df.dat$gene <- as.vector(gNames[rownames(df.dat)])
   } else if (gene.rep == "symbol"){
-    df.dat$gene  <- as.vector(top10)
+    df.dat$gene  <-  rownames(df.dat)
   }
   df.dat.top <- df.dat %>% dplyr::filter(gene %in% top10)
 
