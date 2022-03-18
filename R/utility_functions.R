@@ -3950,11 +3950,12 @@ parCor <- function(mat, method = "spearman", do.par = T, n.workers = 4){
 #' @param do.plot Logical to return dotplot visualizing top GSEA ranked pathways. Default is T.
 #' @param plot.top.n Numeric specifying how many top pathways to visualize. Default is 10.
 #' @param path.name.wrap.width Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)
+#' @param e2s entrez to symbol mapping (computationally demanding). Default False.
 #' @return list of enrichment results
 #' @author Nicholas Mikolajewicz
 #'
 runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathway = NULL, min.size = 3,
-                    max.size = 300, do.plot = T, plot.top.n = 10, path.name.wrap.width = 40){
+                    max.size = 300, do.plot = T, plot.top.n = 10, path.name.wrap.width = 40, e2s = F){
 
 
   suppressMessages({
@@ -3995,9 +3996,17 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
 
       # make human readable
       gse.pathway <- gse.pathway
-      gse.pathway$set <- lapply(gse.pathway$leadingEdge,
-                                mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
-      gse.pathway$set <- lapply(gse.pathway$set, paste,collapse = ", ")
+
+      if (e2s){
+        gse.pathway$set <- lapply(gse.pathway$leadingEdge,
+                                  mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
+        gse.pathway$set <- lapply(gse.pathway$set, paste,collapse = ", ")
+      } else {
+        try({
+          gse.pathway$set <- lapply(gse.pathway$leadingEdge, paste,collapse = ", ")
+        }, silent = T)
+      }
+
       gse.pathway <- gse.pathway %>% dplyr::select(-c("leadingEdge"))
 
       if (do.plot){

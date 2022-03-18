@@ -15,7 +15,8 @@ runGSEA(
   max.size = 300,
   do.plot = T,
   plot.top.n = 10,
-  path.name.wrap.width = 40
+  path.name.wrap.width = 40,
+  e2s = F
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ runGSEA(
 \item{plot.top.n}{Numeric specifying how many top pathways to visualize. Default is 10.}
 
 \item{path.name.wrap.width}{Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)}
+
+\item{e2s}{entrez to symbol mapping (computationally demanding). Default False.}
 }
 \value{
 list of enrichment results
