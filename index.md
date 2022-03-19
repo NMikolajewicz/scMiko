@@ -37,8 +37,8 @@ Currently the following analysis modules are available:
 - [Module 2](articles/scPipeline_module_overview.html#module-2-data-integration-1): Integration
 - [Module 3](articles/scPipeline_module_overview.html#module-3-cluster-optimization-1): Cluster optimization
 - [Module 4](articles/scPipeline_module_overview.html#module-4-cell-type-annotation-1): Cell annotation
-- [Module 5](articles/scPipeline_module_overview.html#module-5-gene-program-discovery-1): Gene expression and association
-- [Module 6](articles/scPipeline_module_overview.html#module-6-gene-expression-and-associations-1): Gene program discovery 
+- [Module 5](articles/scPipeline_module_overview.html#module-5-gene-program-discovery-1): Gene program discovery
+- [Module 6](articles/scPipeline_module_overview.html#module-6-gene-expression-and-associations-1): Gene expression and association 
 
 [**scMiko**](https://github.com/NMikolajewicz/scMiko) and [**scPipeline**](https://github.com/NMikolajewicz/scPipeline) are developed and maintained by the Moffat lab. 
 

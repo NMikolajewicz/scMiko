@@ -168,7 +168,8 @@
   max.size <span class='op'>=</span> <span class='fl'>300</span>,
   do.plot <span class='op'>=</span> <span class='cn'>T</span>,
   plot.top.n <span class='op'>=</span> <span class='fl'>10</span>,
-  path.name.wrap.width <span class='op'>=</span> <span class='fl'>40</span>
+  path.name.wrap.width <span class='op'>=</span> <span class='fl'>40</span>,
+  e2s <span class='op'>=</span> <span class='cn'>F</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -213,6 +214,10 @@
     <tr>
       <th>path.name.wrap.width</th>
       <td><p>Numeric specifying width of pathway names to wrap around. Argument passed to stringr::str_wrap(..., width = path.name.wrap.width)</p></td>
+    </tr>
+    <tr>
+      <th>e2s</th>
+      <td><p>entrez to symbol mapping (computationally demanding). Default False.</p></td>
     </tr>
     </table>
 

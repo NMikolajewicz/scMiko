@@ -162,13 +162,54 @@
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    
+    <p>A list of data.frames containing the following genesets:</p><dl>
+<dt>CancerSEA_Hs (<a href='http://biocc.hrbmu.edu.cn/CancerSEA/home.jsp'>link</a>)</dt><dd><p>Cancer single-cell state atlas</p></dd>
+<dt>CellMarker_Hs_Zhang2019 (<a href='http://biocc.hrbmu.edu.cn/CellMarker/'>link</a>)</dt><dd><p>Cell marker atlas: Manually-curated celltype-specific gene sets from over 100,000 published papers. (Zhang et al. (2019) Nucleic Acids Res.)</p></dd>
+<dt>coreCTL</dt><dd><p>Core cytotoxic T lymphocyte kill genes. (<a href='https://www.nature.com/articles/s41586-020-2746-2'>Lawson et al. (2020)</a></p></dd>
+<dt>cyclingGenes_Hs_Seurat (<a href='https://science.sciencemag.org/content/352/6282/189'>link</a>)</dt><dd><p>Cell-cycle markers (Tirosh et al. (2016) Science)</p></dd>
+<dt>GBM_Hs_Neftel2019 (<a href='https://www.ncbi.nlm.nih.gov/pubmed/31327527'>link</a>)</dt><dd><p>Glioblastoma-subtype specific markers (Neftel et al. (2019) Cell)</p></dd>
+<dt>Immune_Hs_Nirmal2018 (<a href='https://www.ncbi.nlm.nih.gov/pubmed/30266715'>link</a>)</dt><dd><p>Immune cell signatures for 7 immune cell types identified in tumors using scRNAseq (Nirmal et el. (2018) Cancer Immunol Res.)</p></dd>
+<dt>MCA_Mm_top50 (<a href='https://www.ncbi.nlm.nih.gov/pubmed/30787437/'>link</a>)</dt><dd><p>Top 50 differentially-markers for each cell in Mouse organogenesis cell atlas characterized using scRNAseq. (Cao et al. (2019) Nature)</p></dd>
+<dt>MCA_Mm_top100 (<a href='https://www.ncbi.nlm.nih.gov/pubmed/30787437/'>link</a>)</dt><dd><p>Top 100 differentially-markers for each cell in Mouse organogenesis cell atlas characterized using scRNAseq. (Cao et al. (2019) Nature)</p></dd>
+<dt>neuralDif_Mm_HH </dt><dd><p>Neural differential markers provided by Hong Han.</p></dd>
+<dt>Panglao_Mm (<a href='https://panglaodb.se/'>link</a>)</dt><dd><p>Murine cell-type specific markers consolidated from multiple studies through unified framework. (Franzen et al. (2019) Database (Oxford))</p></dd>
+<dt>Panglao_Hs (<a href='https://panglaodb.se/'>link</a>)</dt><dd><p>Human cell-type specific markers consolidated from multiple studies through unified framework. (Franzen et al. (2019) Database (Oxford))</p></dd>
+<dt>Renal_Mm_PMID29622724 (<a href='https://www.ncbi.nlm.nih.gov/pubmed/29622724'>link</a>)</dt><dd><p>Murine kidney cell-specific markers (Park et al. (2018) Science)</p></dd>
+<dt>TRRUSTv2_Mm (<a href='https://www.grnpedia.org/trrust/'>link</a>)</dt><dd><p>Murine-specific trancription factor genesets; TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)</p></dd>
+<dt>TRRUSTv2_Hs (<a href='https://www.grnpedia.org/trrust/'>link</a>)</dt><dd><p>Human-specific trancription factor genesets; TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)</p></dd>
+<dt>TRRUSTv2_regulation_Mm (<a href='https://www.grnpedia.org/trrust/'>link</a>)</dt><dd><p>Murine-specific trancription factor genesets, with regulatory annotation (i.e., activating vs repressing); TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)</p></dd>
+<dt>TRRUSTv2_regulation_Hs (<a href='https://www.grnpedia.org/trrust/'>link</a>)</dt><dd><p>Human-specific trancription factor genesets, with regulatory annotation (i.e., activating vs repressing); TRRUSTv2 database. (Han et al. (2018) Nucleic Acid Res.)</p></dd>
+<dt>VastDB_Mm (<a href='http://vastdb.crg.eu/wiki/Main_Page'>link</a>)</dt><dd><p>Bulk RNAseq-derived cell-specific markers (Tapial et al. (2017) Genome Res.)</p></dd>
+<dt>Thorsson_immuneSubtypes (<a href='https://gdc.cancer.gov/about-data/publications/panimmune'>link</a>)</dt><dd><p>Tumor immunesubtype markers (Thorsson et al. (2018) Immunity)</p></dd>
+<dt>immune_literaturePanel</dt><dd><p>Immune marker panels obtained from literature review</p></dd>
+<dt>universal_literaturePanel</dt><dd><p>universal marker panels obtained from literature review</p></dd>
+<dt>cancer_literaturePanel</dt><dd><p>cancer marker panels obtained from literature review</p></dd>
+<dt>AnimalTFDB (<a href='http://bioinfo.life.hust.edu.cn/AnimalTFDB/#!/'>link</a>)</dt><dd><p>Animal transcription factor database. List of human and murine transcription factors</p></dd>
+<dt>Richards_NatureCancer_2021_sc (<a href='https://www.nature.com/articles/s43018-020-00154-9#Sec47/'>link</a>)</dt><dd><p>Glioblastoma stem cell injury response and developmental genesets. Single cell derived.</p></dd>
+<dt>Richards_NatureCancer_2021_bulk (<a href='https://www.nature.com/articles/s43018-020-00154-9#Sec47/'>link</a>)</dt><dd><p>Glioblastoma stem cell injury response and developmental genesets. Bulk RNA derived.</p></dd>
+<dt>Cahoy_JNeurosci</dt><dd><p>Neural cell gene panels</p></dd>
+<dt>Liddelow_Nature_2017</dt><dd><p>Astrocyte gene panels, specifically A1 and A2 reactive astrocyte markers</p></dd>
+<dt>Zhong_Nature_2018</dt><dd><p>Neural cell gene panels</p></dd>
+<dt>Verhaak_CancerCell_2010</dt><dd><p>Verhaak GBM-subtype genesets</p></dd>
+<dt>Combes2022_Immune_TableS4 (<a href='https://pubmed.ncbi.nlm.nih.gov/34963056/'>link</a>)</dt><dd><p>Immune-related gene markers reported in Table S4 of Combes 2022</p></dd>
+<dt>Combes2022_Immune_TableS5 (<a href='https://pubmed.ncbi.nlm.nih.gov/34963056/'>link</a>)</dt><dd><p>Immune-related gene markers reported in Table S5 of Combes 2022</p></dd>
+<dt>Cell_Catalog (<a href='https://nmikolajewicz.github.io/scMiko/articles/Marker_Catalog.html'>link</a>)</dt><dd><p>Cell-type markers derived from public scRNAseq atlases.</p></dd>
+<dt>CancerSCEM (<a href='https://ngdc.cncb.ac.cn/cancerscem/documents/#cellTypeDisL'>link</a>)</dt><dd><p>Cell-type specific marker genes used by CancerSCEM.</p></dd>
+<dt>Stem_Catalog</dt><dd><p>Stemness markers, literature curated. Sources include (<a href='http://193.136.227.155/stemchecker/stemsethome.jsf'>StemChecker</a>, <a href='https://www.sciencedirect.com/science/article/pii/S0092867418303581#mmc1'>Malta</a>, <a href='https://bmccancer.biomedcentral.com/articles/10.1186/s12885-021-08351-0'>Hong</a>, <a href='https://www.nature.com/articles/nature07056'>Mikkelsen</a>, <a href='https://link.springer.com/article/10.1186/gb-2012-13-8-r71#ref-CR32'>Palmer</a>, <a href='https://ashpublications.org/blood/article/103/8/2956/18022/Gene-expression-in-human-embryonic-stem-cell-lines'>Bhattacharya</a>, <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6313194/'>Dong</a>, <a href='https://www.thelancet.com/journals/ebiom/article/PIIS2352-3964(19)30114-8/fulltext#supplementaryMaterial'>Pece</a>, <a href='https://translational-medicine.biomedcentral.com/articles/10.1186/s12967-020-02527-1'>Feng</a>, <a href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0215452#pone.0215452.s002'>Schulten</a>)</p></dd>
+<dt>HALLMARK (<a href='https://www.cell.com/fulltext/S2405-4712(15)00218-5'>link</a>)</dt><dd><p>50 “hallmark” gene sets from the Molecular Signature Database (MSigDB)</p></dd>
+<dt>Gavish2022_Tumor_Hallmarks (<a href='https://www.biorxiv.org/content/10.1101/2021.12.19.473368v1'>link</a>)</dt><dd><p>Transcriptional hallmarks of intra-tumor heterogeneity</p></dd>
 
+</dl>
 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>geneSets</span><span class='op'>)</span>
+
+<span class='co'># retrieve geneset</span>
 <span class='va'>cell_catalog</span> <span class='op'>&lt;-</span> <span class='va'>geneSets</span><span class='op'>[[</span><span class='st'>"Cell_Catalog"</span><span class='op'>]</span><span class='op'>]</span>
+
+<span class='co'># convert wide dataframe format to named list format</span>
+<span class='va'>call_catalog.list</span> <span class='op'>&lt;-</span> <span class='fu'><a href='wideDF2namedList.html'>wideDF2namedList</a></span><span class='op'>(</span><span class='va'>cell_catalog</span><span class='op'>)</span>
 
 </div></pre>
   </div>
