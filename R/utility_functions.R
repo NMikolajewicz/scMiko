@@ -6252,14 +6252,15 @@ longDF2namedList <- function(df.long, group_by, values){
 #' @param batch name of meta data field specifying batch groupings.
 #' @param reduction reduction used for batch correction. Default is "pca".
 #' @param assay assay name. Default is DefaultAssay(object).
+#' @param do.umap compute UMAP. Default is T.
 #' @param verbose print progress. Default is T.
 #' @name runBBKNN
-#' @return Seurat object with bbKNN-corrected UMAP stored in "b" reduction slot.
+#' @return Seurat object with bbKNN-corrected UMAP stored in "b" reduction slot (if do.umap = T).
 #' @author Nicholas Mikolajewicz
 #' @examples
 #'  object <- runBBKNN(object, batch = "sample")
 #'
-runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(object), verbose = T){
+runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(object), do.umap = T, verbose = T){
   require(reticulate, quietly = T)
   require(Matrix, quietly = T)
 
@@ -6290,28 +6291,32 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
     slot(object = snn.matrix, name = "assay.used") <- assay
     object[["bbknn"]] <- snn.matrix
 
-    miko_message("Embedding UMAP...", verbose = verbose)
-    sc$tl$umap(adata)
-    umap = py_to_r(adata$obsm[["X_umap"]])
+    if (do.umap){
 
-    #########################################################
+      miko_message("Embedding UMAP...", verbose = verbose)
+      sc$tl$umap(adata)
+      umap = py_to_r(adata$obsm[["X_umap"]])
 
-    object@meta.data$b1 <- umap[ ,1]
-    object@meta.data$b2 <- umap[ ,2]
+      #########################################################
 
-    colnames(umap) <- c("b_1", "b_2")
-    rownames(umap) <- colnames(object)
+      object@meta.data$b1 <- umap[ ,1]
+      object@meta.data$b2 <- umap[ ,2]
 
-    miko_message("Storing results...", verbose = verbose)
-    suppressMessages({
-      suppressWarnings({
-        object[["b"]]  <- CreateDimReducObject(embeddings = as.matrix(umap),
-                                               key = "B",
-                                               global  = T,
-                                               loading = new(Class = "matrix"),
-                                               assay = assay)
+      colnames(umap) <- c("b_1", "b_2")
+      rownames(umap) <- colnames(object)
+
+      miko_message("Storing results...", verbose = verbose)
+      suppressMessages({
+        suppressWarnings({
+          object[["b"]]  <- CreateDimReducObject(embeddings = as.matrix(umap),
+                                                 key = "B",
+                                                 global  = T,
+                                                 loading = new(Class = "matrix"),
+                                                 assay = assay)
+        })
       })
-    })
+
+    }
     miko_message("Done.", verbose = verbose)
   } else {
     miko_message("Only one batch experiment provided. BBKNN was not run.")

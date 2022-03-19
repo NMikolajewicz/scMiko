@@ -9,6 +9,7 @@ runBBKNN(
   batch,
   reduction = "pca",
   assay = DefaultAssay(object),
+  do.umap = T,
   verbose = T
 )
 }
@@ -20,6 +21,8 @@ runBBKNN(
 \item{reduction}{reduction used for batch correction. Default is "pca".}
 
 \item{assay}{assay name. Default is DefaultAssay(object).}
+
+\item{do.umap}{compute UMAP. Default is T.}
 
 \item{verbose}{print progress. Default is T.}
 }
