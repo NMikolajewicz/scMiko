@@ -6267,7 +6267,7 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
 
   miko_message("Checking inputs...", verbose = verbose)
   stopifnot("Seurat" %in% class(object))
-  stopifnot(reduction %in% names(so.query@reductions))
+  stopifnot(reduction %in% names(object@reductions))
   stopifnot(batch %in% colnames(object@meta.data))
 
   if (ulength(object@meta.data[ ,batch ]) > 1){
@@ -6285,7 +6285,6 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
     miko_message("Getting BBKNN Graph...", verbose = verbose)
     snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
     rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
-    # snn.matrix <- as(snn.matrix, "dgCMatrix")
     snn.matrix <- as(snn.matrix, "CsparseMatrix")
     snn.matrix <- as.Graph(x = snn.matrix)
     slot(object = snn.matrix, name = "assay.used") <- assay
