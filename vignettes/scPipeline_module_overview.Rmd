@@ -134,15 +134,18 @@ Parameter |Description |Argument
 ## Module 2: Data Integration
 
 ### Description
-Batch correction and integration of independent experiments. Generates a new Seurat `integrated` assay using one of three approaches:
+Batch correction and integration of independent experiments. Generates a new Seurat `integrated` assay using one of four approaches:
 
-1. **rPCA**: reciprocal PCA integration 
-2. **CCA**: canonical correlation analysis
-3. **BBKNN**: batch-balanced KNN integration
+1. [**rPCA**](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8): reciprocal principal component analysis (Seurat)
+2. [**CCA**](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8): canonical correlation analysis + mutual nearest neighbors-based integration (Seurat)
+3. [**BBKNN**](https://academic.oup.com/bioinformatics/article/36/3/964/5545955): batch-balanced K-nearest neighbors-based integration
+4. [**Scanorama**](https://www.nature.com/articles/s41587-019-0113-3): SVD + Mutual nearest neighbors-based integration
 
-See [Stuart et al. (2019). *Cell*](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) for a description of rPCA and CCA, and [Polański et al. (2020). *Bioinformatics*](https://academic.oup.com/bioinformatics/article/36/3/964/5545955)  for BBKNN. 
+See [Stuart et al. (2019). *Cell*](https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8) for a description of rPCA and CCA, [Polański et al. (2020). *Bioinformatics*](https://academic.oup.com/bioinformatics/article/36/3/964/5545955)  for BBKNN, and [Hie et al. (2019). *Nature Biotechnology*](https://www.nature.com/articles/s41587-019-0113-3) for Scanorama. 
 
-The primary aim of data integration is to identify common cell populations between datasets. However, because integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the `integrated` assay is not appropriate for downstream differential gene expression. Specifically, the `integrated` assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the `data` slot in the  `SCT` assay; M2 runs `PrepSCTFindMarkers()` thereby ensuring that counts have been corrected for varying sequencing-depth across data sets. 
+Our selection of integration methods is based on the benchmarking efforts published by [Luecken et al. (2021). *Nature Methods*](https://www.nature.com/articles/s41592-021-01336-8)
+
+The primary aim of data integration is to identify common cell populations between datasets. However, because many integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the `integrated` assay is not appropriate for downstream differential gene expression. If downstream differential expression (DEG) analyses are intended, use counts from the `data` slot in the  `SCT` assay; Data are processed using `PrepSCTFindMarkers()` thereby ensuring that counts have been corrected for varying sequencing-depth across data sets. 
 
 ### Analysis Parameters
 
@@ -154,13 +157,13 @@ Parameter |Description |Argument
 --| ---------- | ------
 **save.file** | name of output file | character
 **integration.feature.select.method** | method used to select integration features | - hvg (default): highly-variable genes <br>- deviance
-**integration.k.filter** | number of neighbors (k) to use when filtering anchors. Default is 200. Passed to `Seurat::FindIntegrationAnchors(...)`. Ignored if integration.method = "BBKNN". | numeric
-**integration.k.anchor** | number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to `Seurat::FindIntegrationAnchors(...)`. Ignored if integration.method = "BBKNN". | numeric
-**integration.k.weight** | number of neighbors to consider when weighting anchors. Passed to `Seurat::IntegrateData(...)`. Default is 100. Ignored if integration.method = "BBKNN". | numeric
+**integration.k.filter** | number of neighbors (k) to use when filtering anchors. Default is 200. Passed to `Seurat::FindIntegrationAnchors(...)`. Ignored if integration.method = "BBKNN" or "Scanorama". | numeric
+**integration.k.anchor** | number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to `Seurat::FindIntegrationAnchors(...)`. Ignored if integration.method = "BBKNN" or "Scanorama". | numeric
+**integration.k.weight** | number of neighbors to consider when weighting anchors. Passed to `Seurat::IntegrateData(...)`. Default is 100. Ignored if integration.method = "BBKNN" or "Scanorama". | numeric
 **integration.n.genes** | number of genes used for integration. 1000-3000 recommended. | numeric
-**integration.method** | integration method. | - rPCA: reciprocal PCA method <br>- CCA: canonical correlation method <br>- BBKNN: batch-balanced KNN method (recommended for large datasets)
-**integration.limit.memory** | Specify whether to limit max memory allocated during integration. Default is T. Ignored if integration.method = "BBKNN". | logical
-**integration.max.memory** | max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. Ignored if integration.method = "BBKNN". | numeric
+**integration.method** | integration method. | - rPCA <br>- CCA <br>- BBKNN <br>- Scanorama
+**integration.limit.memory** | Specify whether to limit max memory allocated during integration. Default is T. Ignored if integration.method = "BBKNN" or "Scanorama". | logical
+**integration.max.memory** | max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. Ignored if integration.method = "BBKNN" or "Scanorama". | numeric
 **integration.cluster.resolution** | value of the resolution parameter passed to `Seurat::FindClusters(...)`, which is run after data integration. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1. | numeric
 **integration.compute.diversity** | Compute change in population diversity before and after integration. Default is T | logical
 **pca.var.threshold** | proportion of variance used for clustering and UMAP embedding. 0.9 is recommended. | numeric [0,1]

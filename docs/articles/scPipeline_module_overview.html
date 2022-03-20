@@ -109,7 +109,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>scPipeline analysis workflows</h1>
             
-            <h4 class="date">Compiled: 2022-03-19</h4>
+            <h4 class="date">Compiled: 2022-03-20</h4>
       
       
       <div class="hidden name"><code>scPipeline_module_overview.Rmd</code></div>
@@ -331,17 +331,20 @@
 <div id="description-1" class="section level3">
 <h3 class="hasAnchor">
 <a href="#description-1" class="anchor"></a>Description</h3>
-<p>Batch correction and integration of independent experiments. Generates a new Seurat <code>integrated</code> assay using one of three approaches:</p>
+<p>Batch correction and integration of independent experiments. Generates a new Seurat <code>integrated</code> assay using one of four approaches:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>rPCA</strong>: reciprocal PCA integration</li>
+<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8"><strong>rPCA</strong></a>: reciprocal principal component analysis (Seurat)</li>
 <li>
-<strong>CCA</strong>: canonical correlation analysis</li>
+<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8"><strong>CCA</strong></a>: canonical correlation analysis + mutual nearest neighbors-based integration (Seurat)</li>
 <li>
-<strong>BBKNN</strong>: batch-balanced KNN integration</li>
+<a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955"><strong>BBKNN</strong></a>: batch-balanced K-nearest neighbors-based integration</li>
+<li>
+<a href="https://www.nature.com/articles/s41587-019-0113-3"><strong>Scanorama</strong></a>: SVD + Mutual nearest neighbors-based integration</li>
 </ol>
-<p>See <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8">Stuart et al. (2019). <em>Cell</em></a> for a description of rPCA and CCA, and <a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955">Polański et al. (2020). <em>Bioinformatics</em></a> for BBKNN.</p>
-<p>The primary aim of data integration is to identify common cell populations between datasets. However, because integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the <code>integrated</code> assay is not appropriate for downstream differential gene expression. Specifically, the <code>integrated</code> assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the <code>data</code> slot in the <code>SCT</code> assay; M2 runs <code>PrepSCTFindMarkers()</code> thereby ensuring that counts have been corrected for varying sequencing-depth across data sets.</p>
+<p>See <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8">Stuart et al. (2019). <em>Cell</em></a> for a description of rPCA and CCA, <a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955">Polański et al. (2020). <em>Bioinformatics</em></a> for BBKNN, and <a href="https://www.nature.com/articles/s41587-019-0113-3">Hie et al. (2019). <em>Nature Biotechnology</em></a> for Scanorama.</p>
+<p>Our selection of integration methods is based on the benchmarking efforts published by <a href="https://www.nature.com/articles/s41592-021-01336-8">Luecken et al. (2021). <em>Nature Methods</em></a></p>
+<p>The primary aim of data integration is to identify common cell populations between datasets. However, because many integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the <code>integrated</code> assay is not appropriate for downstream differential gene expression. Specifically, the <code>integrated</code> assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the <code>data</code> slot in the <code>SCT</code> assay; Data are processed using <code>PrepSCTFindMarkers()</code> thereby ensuring that counts have been corrected for varying sequencing-depth across data sets.</p>
 </div>
 <div id="analysis-parameters-1" class="section level3">
 <h3 class="hasAnchor">
@@ -372,17 +375,17 @@
 </tr>
 <tr class="odd">
 <td><strong>integration.k.filter</strong></td>
-<td>number of neighbors (k) to use when filtering anchors. Default is 200. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN”.</td>
+<td>number of neighbors (k) to use when filtering anchors. Default is 200. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>integration.k.anchor</strong></td>
-<td>number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN”.</td>
+<td>number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>integration.k.weight</strong></td>
-<td>number of neighbors to consider when weighting anchors. Passed to <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">Seurat::IntegrateData(...)</a></code>. Default is 100. Ignored if integration.method = “BBKNN”.</td>
+<td>number of neighbors to consider when weighting anchors. Passed to <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">Seurat::IntegrateData(...)</a></code>. Default is 100. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -393,16 +396,16 @@
 <tr class="odd">
 <td><strong>integration.method</strong></td>
 <td>integration method.</td>
-<td>- rPCA: reciprocal PCA method <br>- CCA: canonical correlation method <br>- BBKNN: batch-balanced KNN method (recommended for large datasets)</td>
+<td>- rPCA <br>- CCA <br>- BBKNN <br>- Scanorama</td>
 </tr>
 <tr class="even">
 <td><strong>integration.limit.memory</strong></td>
-<td>Specify whether to limit max memory allocated during integration. Default is T. Ignored if integration.method = “BBKNN”.</td>
+<td>Specify whether to limit max memory allocated during integration. Default is T. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>integration.max.memory</strong></td>
-<td>max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. Ignored if integration.method = “BBKNN”.</td>
+<td>max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
