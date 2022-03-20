@@ -6280,13 +6280,13 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
   if (!py_module_available("scanpy")){
     sp.success <- F
     try({py_install("scanpy"); sp.success <- T}, silent = T)
-    if (!(ad.success))  try({py_install("scanpy", pip = T)}, silent = T)
+    if (!(sp.success))  try({py_install("scanpy", pip = T)}, silent = T)
   }
 
   if (!py_module_available("bbknn")){
     bk.success <- F
     try({py_install("bbknn"); bk.success <- T}, silent = T)
-    if (!(ad.success))  try({py_install("bbknn", pip = T)}, silent = T)
+    if (!(bk.success))  try({py_install("bbknn", pip = T)}, silent = T)
   }
 
   if (!py_module_available("anndata")) stop("Python module 'anndata' is not available.")
