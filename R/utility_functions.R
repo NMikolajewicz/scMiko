@@ -6270,6 +6270,30 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
   stopifnot(reduction %in% names(object@reductions))
   stopifnot(batch %in% colnames(object@meta.data))
 
+  # check that python modules are available
+  if (!py_module_available("anndata")){
+    ad.success <- F
+    try({py_install("anndata"); ad.success <- T}, silent = T)
+    if (!(ad.success))  try({py_install("anndata", pip = T)}, silent = T)
+  }
+
+  if (!py_module_available("scanpy")){
+    sp.success <- F
+    try({py_install("scanpy"); sp.success <- T}, silent = T)
+    if (!(ad.success))  try({py_install("scanpy", pip = T)}, silent = T)
+  }
+
+  if (!py_module_available("bbknn")){
+    bk.success <- F
+    try({py_install("bbknn"); bk.success <- T}, silent = T)
+    if (!(ad.success))  try({py_install("bbknn", pip = T)}, silent = T)
+  }
+
+  if (!py_module_available("anndata")) stop("Python module 'anndata' is not available.")
+  if (!py_module_available("scanpy")) stop("Python module 'scanpy' is not available.")
+  if (!py_module_available("bbknn")) stop("Python module 'bbknn' is not available.")
+
+
   if (ulength(object@meta.data[ ,batch ]) > 1){
     # integrate data ########################################
     miko_message("Running BBKNN...", verbose = verbose)
