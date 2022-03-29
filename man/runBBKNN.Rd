@@ -27,7 +27,7 @@ runBBKNN(
 \item{verbose}{print progress. Default is T.}
 }
 \value{
-Seurat object with bbKNN-corrected UMAP stored in "b" reduction slot.
+Seurat object with bbKNN-corrected UMAP stored in "b" reduction slot (if do.umap = T).
 }
 \description{
 This is a wrapper for bbknn (https://github.com/Teichlab/bbknn). BBKNN is a fast and intuitive batch effect removal tool. It generates a BBKNN cell x cell similarity graph that can be used for clustering and UMAP embedding.
