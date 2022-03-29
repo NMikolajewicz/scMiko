@@ -21,6 +21,7 @@ getAnnotationPathways(
 \item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
 \item "Reactome"
 \item "GO" - Requires additional specification of ontology.
+\item "KEGG"
 \item "msigdb" - Requires additional specification of msigdb.collection, and optionally msigdb.subcollection.
 }}
 
