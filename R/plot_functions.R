@@ -58,8 +58,8 @@ cluster.UMAP <- function(so, group.by = "seurat_clusters", x.label = "UMAP 1", y
 scExpression.UMAP <- function(object, query.gene, x.label = "UMAP 1", y.label = "", adjust.pt.size = autoPointSize(ncol(object)), order.cells = T, plot.name = NULL, reduction = "umap",  ...){
 
   if (is.null(plot.name)) plot.name <- query.gene
-
-  plt.handle <- FeaturePlot(object = object, features = query.gene, cols =rev(brewer.pal(11,"RdYlBu")),
+  # cols =rev(brewer.pal(11,"RdYlBu")),
+  plt.handle <- FeaturePlot(object = object, features = query.gene,
                             reduction = reduction,pt.size = adjust.pt.size, sort.cell = order.cells, ...) +
     xlab(x.label) +
     ylab(y.label) +
