@@ -717,6 +717,7 @@ subsetSeurat <- function (object, subset.df){
 #' \item "Bader" - Default. List of pathway annotations curated by Bader lab (http://baderlab.org/GeneSets)
 #' \item "Reactome"
 #' \item "GO" - Requires additional specification of ontology.
+#' \item "KEGG"
 #' \item "msigdb" - Requires additional specification of msigdb.collection, and optionally msigdb.subcollection.
 #' }
 #' @param ontology GO ontologies to retrieve if GO db is selected. One of:
@@ -832,6 +833,31 @@ getAnnotationPathways <- function(query.genes, db = c("Bader"), ontology = c("BP
     for (i in 1:length(u.paths)){
       pathways[[u.paths[i]]] <- df.msd.subset$entrez_gene[df.msd.subset$gs_name %in% u.paths[i]]
     }
+  } else if (db == "KEGG"){
+    if (is.null(msigdb.collection)) stop("'msigdb.collection' must be specified if using msigdb pathways\n")
+    if (!(require(msigdbr))) {
+      BiocManager::install("msigdbr");
+      library(msigdbr, quietly = T)
+    }
+
+    if (species == "Hs"){
+      msd.species <- "Homo sapiens"
+    } else if (species == "Mm"){
+      msd.species <- "Mus musculus"
+    }
+
+    df.msd <- msigdbr(species = msd.species, category = "C2")
+    df.msd <- df.msd %>% dplyr::filter(gs_subcat %in% "CP:KEGG")
+
+    df.msd.subset <- df.msd[df.msd$entrez_gene %in% query.genes, ]
+
+    u.paths <- unique(df.msd$gs_name)
+
+    pathways <- list()
+    for (i in 1:length(u.paths)){
+      pathways[[u.paths[i]]] <- df.msd.subset$entrez_gene[df.msd.subset$gs_name %in% u.paths[i]]
+    }
+
   }
 
   return(pathways)
@@ -3232,6 +3258,11 @@ propVarPCA <- function(so, reduction.name = "pca"){
     }
   }
 
+
+  if (length(pc.std) == 0){
+    pc.var <- apply(so@reductions[["pca"]]@cell.embeddings, 2, var)
+    pc.std <- sqrt(pc.var)
+  }
 
   # variance explained
   pc.var <- pc.std^2
@@ -6364,7 +6395,7 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
 #'
 varExpPCA <- function(object, variance_explained = 0.9, reduction_name = "pca"){
   stopifnot("Seurat" %in% class(object))
-  stopifnot(reduction_name %in% names(so.query@reductions))
+  stopifnot(reduction_name %in% names(object@reductions))
   df.var <- propVarPCA(object, reduction.name = reduction_name)
   return(max(df.var$pc.id[df.var$pc.cum_sum<variance_explained])+1)
 }
