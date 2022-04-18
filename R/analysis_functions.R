@@ -496,119 +496,6 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
 
 
 
-#' scRNAseq integration wrapper
-#'
-#' scRNAseq normalization and integration wrapper. Given seurat object input, data are split, normalized and integrated.
-#'
-#' @param object Seurat object
-#' @param split.by Meta data feature to split and integrate data.
-#' @param min.cell Minimum number of cells permitted per object prior to integration.
-#' @param k.anchor 	How many neighbors (k) to use when picking anchors.
-#' @param k.weight Number of neighbors to consider when weighting anchors.
-#' @param nfeatures Number of features to return (passed to SelectIntegrationFeatures)
-#' @param split.prenorm Split data before (TRUE) or after (FALSE) normalization.
-#' @param assay Assay to use for normalization.
-#' @param variable.features.n Use this many features as variable features after ranking by residual variance; default is 3000.
-#' @param verbose Print progress. Default is TRUE.
-#' @param use.existing.sct If TRUE, existing SCT model is used. Default is FALSE (new SCT model is fit)
-#' @param conserve.memory If set to TRUE the residual matrix for all genes is never created in full when running SCTransform; useful for large data sets, but will take longer to run; this will also set return.only.var.genes to TRUE; default is FALSE
-#' @param vars.to.regress meta features to regress out. Default is "percent.mt". Set to NULL if unspecified.
-#' @name miko_integrate
-#' @seealso \code{\link{IntegrateData}}
-#' @author Nicholas Mikolajewicz
-#' @return Integrated seurat object
-#' @examples
-#'
-miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F, vars.to.regress = "percent.mt"){
-
-  verbose. <- verbose
-
-  if(!("Seurat" %in% class(object))) stop("'object' must belong to Seurat class")
-
-  # split data
-  DefaultAssay(object) <- assay
-
-  if (!is.null(vars.to.regress)){
-    vars.to.regress <- vars.to.regress[vars.to.regress %in% colnames(object@meta.data)]
-    if (length(vars.to.regress) == 0) vars.to.regress <- NULL
-  }
-  # if ("integrated" %in% names(object@assays)) object@assays$integrated <- NULL
-
-  if (!use.existing.sct){
-
-  if (split.prenorm){
-   if (verbose.) miko_message("Spliting object...")
-    object.list <- SplitObject(object, split.by = split.by)
-
-    # renormalize
-    if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-
-    object.list <- pbapply::pblapply(X = object.list, FUN = SCTransform, method = "glmGamPoi", vst.flavor = "v2", verbose = verbose., assay = assay, conserve.memory = conserve.memory,
-                                     vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n)
-
-  } else {
-    if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)
-    object <- SCTransform(object, method = "glmGamPoi", verbose = verbose., assay = assay, vst.flavor = "v2",
-                          vars.to.regress = vars.to.regress, variable.features.rv.th = 1.3, variable.features.n = variable.features.n, conserve.memory = conserve.memory)
-    if (verbose.)  miko_message("Spliting object...", verbose = verbose.)
-    object.list <- SplitObject(object, split.by = split.by)
-  }
-
-  } else {
-    object.list <- SplitObject(object, split.by = split.by)
-  }
-
-  # select features
-  if (verbose.) miko_message("Selecting features for integration...", verbose = verbose.)
-  cell.counts <- (unlist(lapply(object.list, ncol)))
-  object.list <- object.list[cell.counts>=min.cell]
-  object.features <- SelectIntegrationFeatures(object.list = object.list, nfeatures = nfeatures)
-  object.list <- PrepSCTIntegration(object.list = object.list, anchor.features = object.features)
-
-  # run PCA
-
-  if (verbose.) miko_message("Running PCA...", verbose = verbose.)
-  min.dim <- min(unlist(lapply(object.list, ncol)))
-  if (min.dim > 50){pca.dim <- 50} else {pca.dim <- min.dim-1}
-  object.list <- pbapply::pblapply(X = object.list, FUN = RunPCA, features = object.features, verbose = verbose., npcs = pca.dim)
-
-  # find integration anchors
-  if (verbose.) miko_message("Finding integration anchors...", verbose = verbose.)
-  object.anchors <- FindIntegrationAnchors(object.list = object.list, normalization.method = "SCT", k.filter = 70,
-                                           anchor.features = object.features, dims = 1:30, reduction = "rpca", k.anchor = k.anchor)
-
-  # integrate data
-  if (k.weight > min.dim) k.weight <- min.dim
-  if (verbose.) miko_message("Integrating data...", verbose = verbose.)
-  object2 <- IntegrateData(anchorset = object.anchors, normalization.method = "SCT", dims = 1:30, k.weight = k.weight)
-
-  # dimensional reduction
-  if (verbose.) miko_message("Running PCA on integrated object...", verbose = verbose.)
-  var.threshold <- 0.9
-  object2 <- RunPCA(object2, verbose = verbose.)
-  df.object.var <- propVarPCA(object2)
-  object.n.dim <- df.object.var$pc.id [min(which(df.object.var$pc.cum_sum > var.threshold))]
-  miko_message("Embedding UMAP...", verbose = verbose)
-  object2 <- RunUMAP(object2, reduction = "pca", dims = 1:object.n.dim, return.model = TRUE)
-
-  # cluster data
-  if (verbose.) miko_message("Running clustering algorithms...", verbose = verbose.)
-  object2 <- FindNeighbors(object2, dims = 1:object.n.dim, verbose = verbose.)
-  object2 <- FindClusters(object2, verbose = verbose.)
-
-  # correct SCT counts
-  miko_message("Adjusting counts to fixed sequencing depth...")
-  try({
-    object2 <- PrepSCTFindMarkers(object2)
-  }, silent = T)
-
-
-  if (verbose.) miko_message("Complete!")
-
-  return(object2)
-
-}
-
 
 #' Get differentially expressed genes
 #'
@@ -1611,7 +1498,7 @@ eigengene <- function(mat, cells.are.rows = T, do.scale = T, align = T, return.v
 #'
 #' @param z Z score
 #' @param two.sided Specify where two-sided distribution is used for p value calculation. Default is T.
-#' @name eigengene
+#' @name z2p
 #' @seealso \code{\link{pnorm}}
 #' @return p value
 #'
@@ -1622,6 +1509,31 @@ z2p <- function(z, two.sided = T){
     p <- pnorm(q=abs(z), lower.tail=FALSE)
   }
   return(p)
+}
+
+
+#' Convert p value to z score
+#'
+#' Convert p value to z score
+#'
+#' @param p p value
+#' @name p2z
+#' @seealso \code{\link{qnorm}}
+#' @return z score (absolute value)
+#'
+p2z <- function(p){
+  pval <- p
+  if (pval == 0){
+    z <- Inf
+  } else {
+    if (pval > 0.5){
+      z <-qnorm(0.5-((1-pval)/2), lower.tail = F)
+    } else {
+      z <-qnorm(pval/2, lower.tail = F)
+    }
+    if (is.infinite(z)) z <- 0
+  }
+  return(z)
 }
 
 
