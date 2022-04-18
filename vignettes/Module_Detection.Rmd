@@ -93,7 +93,7 @@ ggVennDiagram::ggVennDiagram(feature.list) + scale_color_manual(values = rep("wh
 We can now perform module detection using our scale-free shared-nearest neighbor network (SSN) analysis pipeline, implemented in the `runSSN` function. 
 
 
-```{r, include = FALSE}
+```{r, include = T}
 
 so.gene <- runSSN(object = so.query , 
                   features = unique(c(features_hvg, features_dev)),
