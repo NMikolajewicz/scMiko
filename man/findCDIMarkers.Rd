@@ -9,6 +9,7 @@ findCDIMarkers(
   features.x = NULL,
   features.y = rownames(object),
   ncell.subset = 5000,
+  geosketch.subset = F,
   assay = DefaultAssay(object),
   slot = "data",
   n.workers = 1,
@@ -23,6 +24,8 @@ findCDIMarkers(
 \item{features.y}{feature or meta feature. CDI between features.x and features.y are computed.}
 
 \item{ncell.subset}{max number of cells to run analysis on. Default is 5000. Computationally intensive for larger datasets.}
+
+\item{geosketch.subset}{Use GeoSketch method to subsample scRNA-seq data while preserving rare cell states (https://doi.org/10.1016/j.cels.2019.05.003). Logical, T or F (Default F). Recommended if cell type representation is imbalanced.}
 
 \item{assay}{Assay to run CDI scoring on. Default is DefaultAssay(object).}
 

@@ -132,6 +132,7 @@ findGiniMarkers <- function(object, features = NULL, group.by = "seurat_clusters
 #' @param features.x feature or meta feature. CDI between features.x and features.y are computed.
 #' @param features.y feature or meta feature. CDI between features.x and features.y are computed.
 #' @param ncell.subset max number of cells to run analysis on. Default is 5000. Computationally intensive for larger datasets.
+#' @param geosketch.subset Use GeoSketch method to subsample scRNA-seq data while preserving rare cell states (https://doi.org/10.1016/j.cels.2019.05.003). Logical, T or F (Default F). Recommended if cell type representation is imbalanced.
 #' @param assay Assay to run CDI scoring on. Default is DefaultAssay(object).
 #' @param slot slot to run CDI scoring on. Default is data.
 #' @param n.workers number of workers for parallel implementation. Default is 1 (no parallel).
@@ -143,7 +144,8 @@ findGiniMarkers <- function(object, features = NULL, group.by = "seurat_clusters
 #' @examples
 #'
 findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(object),
-                           ncell.subset = 5000, assay =  DefaultAssay(object), slot = "data", n.workers = 1, verbose = T){
+                           ncell.subset = 5000, geosketch.subset = F, assay =  DefaultAssay(object), slot = "data", n.workers = 1, verbose = T){
+
 
   miko_message("Running CDI specificity analysis...", verbose = verbose)
   if (verbose){
@@ -214,7 +216,29 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
   # subsample
   if (ncell.subset < ncol(object)){
     set.seed(1023)
-    emat <- emat[ ,sample(seq(1, ncol(emat)), ncell.subset)]
+
+    if (geosketch.subset){
+      library(reticulate, quietly = T)
+
+      if (!py_module_available("geosketch")){
+        ad.success <- F
+        try({py_install("geosketch"); ad.success <- T}, silent = T)
+        if (!(ad.success))  try({py_install("geosketch", pip = T)}, silent = T)
+      }
+
+      geosketch = import("geosketch",convert=FALSE)
+      X_dimred <- object@reductions[["pca"]]@cell.embeddings
+
+      miko_message(paste0("Subsampling ", ncell.subset, " cells using geometric sketching..."), verbose = verbose)
+      sketch_index = geosketch$gs(X_dimred, N = as.integer(ncell.subset), replace= F, one_indexed = T)
+
+      sub_ind <- unlist(py_to_r(sketch_index))
+      emat <- emat[ ,sub_ind]
+
+    } else {
+      miko_message(paste0("Subsampling ", ncell.subset, " cells using uniform sampling..."), verbose = verbose)
+      emat <- emat[ ,sample(seq(1, ncol(emat)), ncell.subset)]
+    }
   }
 
   all.av <- unique(c(x_av, y_av))
