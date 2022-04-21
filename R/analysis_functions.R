@@ -1004,6 +1004,7 @@ multiCluster <- function(object, resolutions, assay = NULL, nworkers = 1, pca_va
 #' @param cluster_names Vector specifying names of all cluster configurations found in meta data.
 #' @param features If specified, marker specificity analysis is limited to specified features. Otherwise all features are used (more computationally intensive).
 #' @param deg_prefilter If TRUE, wilcoxon analysis is performed first to subset DEG features for downstream analysis. Results in faster performance. Default is TRUE.
+#' @param geosketch.subset Use GeoSketch method to subsample scRNA-seq data while preserving rare cell states (https://doi.org/10.1016/j.cels.2019.05.003). Logical, T or F (Default F). Recommended if cell type representation is imbalanced.
 #' @param cdi_bins Vector specifying binning for CDI-based specificity curve. Must range [0,1]. Default is seq(0, 1, by = 0.01).
 #' @param min.pct Minimal expression of features that are considered in specificity analysis. Represents fraction of expression cells and must range [0,1]. Higher values result in faster performance. Default is 0.1.
 #' @param n.workers Number of workers used for parallel implementation. Default is 1.
@@ -1023,7 +1024,7 @@ multiCluster <- function(object, resolutions, assay = NULL, nworkers = 1, pca_va
 #' plt.clust.spec <- ms.list$auc_plot
 #' plt.auc.spec <- ms.list$resolution_plot
 #' plt.auc.dot <- ms.list$dot_plot
-multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilter = T,
+multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilter = T, geosketch.subset = F,
                              cdi_bins = seq(0, 1, by = 0.01), min.pct = 0.1, n.workers = 1, return_dotplot = T, verbose = T){
 
   require(parallel);
@@ -1082,6 +1083,7 @@ multiSpecificity <- function(object, cluster_names, features = NULL, deg_prefilt
 
   # use presto to nominate top AUC and run CDI on subset. faster performance?
   cdi_cluster <- findCDIMarkers(object = object,
+                                geosketch.subset = geosketch.subset,
                                 features.x = available_clusters,
                                 n.workers = n.workers,
                                 features.y = features)
@@ -1522,18 +1524,25 @@ z2p <- function(z, two.sided = T){
 #' @return z score (absolute value)
 #'
 p2z <- function(p){
-  pval <- p
-  if (pval == 0){
-    z <- Inf
-  } else {
-    if (pval > 0.5){
-      z <-qnorm(0.5-((1-pval)/2), lower.tail = F)
+
+  z.all <- c()
+  for (i in 1:length(p)){
+    pval <- p[i]
+    if (pval == 0){
+      z <- Inf
     } else {
-      z <-qnorm(pval/2, lower.tail = F)
+      if (pval > 0.5){
+        z <-qnorm(0.5-((1-pval)/2), lower.tail = F)
+      } else {
+        z <-qnorm(pval/2, lower.tail = F)
+      }
+      if (is.infinite(z)) z <- 0
     }
-    if (is.infinite(z)) z <- 0
+
+    z.all <- c(z.all, z)
+
   }
-  return(z)
+  return(z.all)
 }
 
 

@@ -9,6 +9,7 @@ multiSpecificity(
   cluster_names,
   features = NULL,
   deg_prefilter = T,
+  geosketch.subset = F,
   cdi_bins = seq(0, 1, by = 0.01),
   min.pct = 0.1,
   n.workers = 1,
@@ -24,6 +25,8 @@ multiSpecificity(
 \item{features}{If specified, marker specificity analysis is limited to specified features. Otherwise all features are used (more computationally intensive).}
 
 \item{deg_prefilter}{If TRUE, wilcoxon analysis is performed first to subset DEG features for downstream analysis. Results in faster performance. Default is TRUE.}
+
+\item{geosketch.subset}{Use GeoSketch method to subsample scRNA-seq data while preserving rare cell states (https://doi.org/10.1016/j.cels.2019.05.003). Logical, T or F (Default F). Recommended if cell type representation is imbalanced.}
 
 \item{cdi_bins}{Vector specifying binning for CDI-based specificity curve. Must range [0,1]. Default is seq(0, 1, by = 0.01).}
 
