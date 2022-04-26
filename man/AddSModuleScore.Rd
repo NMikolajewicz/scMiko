@@ -11,6 +11,7 @@ AddSModuleScore(
   nbin = NULL,
   ctrl = 100,
   nworkers = 1,
+  scale = T,
   k = FALSE,
   assay = NULL,
   name = "Cluster",
@@ -31,6 +32,8 @@ AddSModuleScore(
 \item{ctrl}{Number of control features selected from the same bin per analyzed feature}
 
 \item{nworkers}{Number of workers for parallel implementation. Default is 1.}
+
+\item{scale}{scale score by pooled variance. Default is T.}
 
 \item{k}{Use feature clusters returned from DoKMeans}
 

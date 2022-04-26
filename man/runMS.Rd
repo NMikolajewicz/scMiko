@@ -8,6 +8,7 @@ runMS(
   object,
   genelist,
   assay = DefaultAssay(object),
+  scale = T,
   score.key = "MS",
   size = autoPointSize(ncol(object)),
   ncore = 10,
@@ -27,6 +28,8 @@ runMS(
 \item{genelist}{Named list of genesets.}
 
 \item{assay}{Assay used for expression matrix.}
+
+\item{scale}{scale module scores. Default is T.}
 
 \item{score.key}{Expression program prefix. default is "MS".}
 

@@ -4029,9 +4029,19 @@ runGSEA <- function(gene, value, species, db = "GO", my.entrez = NULL, my.pathwa
       gse.pathway <- gse.pathway
 
       if (e2s){
-        gse.pathway$set <- lapply(gse.pathway$leadingEdge,
-                                  mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
-        gse.pathway$set <- lapply(gse.pathway$set, paste,collapse = ", ")
+        # gse.pathway$set <- lapply(gse.pathway$leadingEdge,
+        #                           mapvalues,from = my.entrez$ENTREZID, to = my.entrez$SYMBOL)
+        # gse.pathway$set <- lapply(gse.pathway$set, paste,collapse = ", ")
+
+        gse.pathway$set <- lapply(gse.pathway$leadingEdge, paste,collapse = ", ")
+        s2e <- scMiko::sym2entrez(my.symbols = gene, my.species = species);
+        s2e <-  s2e[complete.cases(s2e), ]
+        e2s <- s2e$SYMBOL; names(e2s) <- as.character(s2e$ENTREZID)
+        gse.pathway$set <- apply(gse.pathway, 1, function(x){
+          ex <- unlist(x$set)
+          paste(e2s[gsub(" ", "", unlist(strsplit(ex, ",")))], collapse = ", ")
+        })
+
       } else {
         try({
           gse.pathway$set <- lapply(gse.pathway$leadingEdge, paste,collapse = ", ")

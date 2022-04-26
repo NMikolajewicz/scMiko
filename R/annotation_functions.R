@@ -265,6 +265,7 @@ nullScore <- function(object, assay = DefaultAssay(object), n.replicate = 25,
 #' @param nbin Number of bins of aggregate expression levels for all analyzed features
 #' @param ctrl Number of control features selected from the same bin per analyzed feature
 #' @param nworkers Number of workers for parallel implementation. Default is 1.
+#' @param scale scale score by pooled variance. Default is T.
 #' @param k Use feature clusters returned from DoKMeans
 #' @param assay Name of assay to use
 #' @param name Name for the expression programs; will append a number to the end for each entry in features (eg. if `features` has three programs, the results will be stored as name1, name2, name3, respectively)
@@ -276,7 +277,7 @@ nullScore <- function(object, assay = DefaultAssay(object), n.replicate = 25,
 #' @author Nicholas Mikolajewicz
 #' @return Returns seurat object with standardized module scores added to object meta data; each module is stored as name# for each module program present in `features`
 #' @seealso \code{\link{AddModuleScore}} for original module scoring function implemented in `Seurat`.
-AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 100, nworkers = 1,
+AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 100, nworkers = 1, scale = T,
                              k = FALSE, assay = NULL, name = "Cluster", seed = 1, search = FALSE, ...){
 
   require(parallel)
@@ -394,16 +395,19 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
   # iterate through each gene signature list
   score.results <- foreach(i = 1:cluster.length, .packages = c("Matrix"))  %dopar% {
 
+    czscore <- fzscore <- NULL
+
     features.use <- ctrl.use[[i]]
 
     ad <- assay.data[features.use, ]
     cscore <- Matrix::colMeans(x = ad)
-    czscore <- sparseMatrixStats::colVars(x = ad)
+
+    if (scale) czscore <- sparseMatrixStats::colVars(x = ad)
 
     features.use <- features[[i]]
     data.use <- assay.data[features.use, , drop = FALSE]
     fscore <- Matrix::colMeans(x = data.use)
-    fzscore <- sparseMatrixStats::colVars(x = data.use)
+    if (scale) fzscore <- sparseMatrixStats::colVars(x = data.use)
 
     return(
       list(
@@ -422,11 +426,15 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
 
   ctrl.scores <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["cscore"]]} ))))
   features.scores <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["fscore"]]} ))))
-  ctrl.var <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["czscore"]]} ))))
-  features.var <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["fzscore"]]} ))))
-  # features.scores.use <- (features.scores - ctrl.scores)
-  features.var[features.var == 0] <- median(ctrl.var[ctrl.var != 0])
-  ctrl.var[ctrl.var == 0] <- median(ctrl.var[ctrl.var != 0])
+
+  if (scale){
+    ctrl.var <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["czscore"]]} ))))
+    features.var <- ((do.call(rbind, pbapply::pblapply(score.results, function(x){ x[["fzscore"]]} ))))
+    # features.scores.use <- (features.scores - ctrl.scores)
+    features.var[features.var == 0] <- median(ctrl.var[ctrl.var != 0])
+    ctrl.var[ctrl.var == 0] <- median(ctrl.var[ctrl.var != 0])
+
+  }
 
   # raw score
   raw.score <- features.scores - ctrl.scores
@@ -437,7 +445,11 @@ AddSModuleScore <- function (object, features, pool = NULL, nbin = NULL, ctrl = 
   object@misc[["raw_score"]] <- raw.score
 
   # standardized score
+  if (scale){
   features.scores.use <- (features.scores - ctrl.scores)/sqrt(ctrl.var + features.var) #+ features.var
+  } else {
+    features.scores.use <- (features.scores - ctrl.scores)
+  }
   # rownames(x = features.scores.use) <- paste0(name, 1:cluster.length)
   rownames(x = features.scores.use) <- paste0(name, names(features))
   features.scores.use <- as.data.frame(x = t(x = features.scores.use))

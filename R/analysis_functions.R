@@ -271,6 +271,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' @param object Seurat object
 #' @param genelist Named list of genesets.
 #' @param assay Assay used for expression matrix.
+#' @param scale scale module scores. Default is T.
 #' @param score.key Expression program prefix. default is "MS".
 #' @param size UMAP point size.
 #' @param ncore Number of workers for parallelized implementation. Default is 10.
@@ -312,7 +313,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
 #' n.auc <- runMS(object = so.query, genelist = neftel.list)
 #' n.auc$plot.max.score
 #'
-runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, reduction = "umap",  ...){
+runMS <- function(object, genelist, assay = DefaultAssay(object), scale = T, score.key = "MS", size = autoPointSize(ncol(object)), ncore = 10, raster = F, rescale = F, verbose = T, winsorize.quantiles = c(0,1), return.plots = T, search = F, reduction = "umap",  ...){
 
   require(scales, quietly  = T);
 
@@ -342,6 +343,7 @@ runMS <- function(object, genelist, assay = DefaultAssay(object), score.key = "M
       object = object,
       features = genelist,
       pool = NULL,
+      scale = scale,
       nbin = opt.bsize,
       ctrl = 100,
       nworkers = ncore,
