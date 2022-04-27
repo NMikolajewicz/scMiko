@@ -817,7 +817,8 @@ featureGradient <- function(object, feature,  umap.key = "umap", min.quantile.cu
     stop(feature, " was not found")
   }
 
-  df.umap <- df.umap[complete.cases(df.umap), ]
+  # df.umap <- df.umap[complete.cases(df.umap), ]
+  df.umap <- df.umap[complete.cases(df.umap[ ,c("x", "y", "z")]), ]
 
   lm.fit <- lm(z ~ x + y, data = df.umap)
   df.umap$z.fit <- lm.fit[["fitted.values"]]
