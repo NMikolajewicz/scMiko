@@ -78,7 +78,7 @@ loadCellRanger <- function(import_set, input_organisms, dir = "") {
   # Specify barcodes
   so$Barcode <- "unspecified";
 
-  output <- list(so, gNames)
+  output <- list(object = so, genes = gNames)
 
   return(output)
 }
@@ -235,7 +235,7 @@ loadMoffat <-function(import_set, subsample_factor, input_organisms, organism_in
   try({so@misc[["plate.summary"]] <- rtPWS.summary}, silent = T)
 
   # return output
-  output <- list(so, gNames)
+  output <- list(object =  so, genes = gNames)
 
   return(output)
 }
