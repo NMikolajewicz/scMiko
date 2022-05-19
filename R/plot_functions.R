@@ -1068,15 +1068,17 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, show.sig.only = T, r
 #' Wrapper for scale_color_gradient2, with preferred default parameters
 #'
 #' @param low color for low end of gradient
+#' @param mid color for middle point of gradient
 #' @param high  color for high end of gradient
+#' @param ... additional arguments passed to scale_color_gradient2(...)
 #' @name scale_color_miko
 #' @examples
 #'
 #'  df.dat <- getDEG(so.query, return.list = F)
 #'  plt.volcano <-  miko_volcano(df.deg = df.dat) + scale_color_miko()
 #'
-scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("red")){
-  scale_color_gradient2(low = low, high = high)
+scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("red"), mid = "white", ...){
+  scale_color_gradient2(low = low, high = high, mid=  mid)
 }
 
 #' Gradient fill scale
@@ -1084,11 +1086,13 @@ scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("
 #' Wrapper for scale_fill_gradient2, with preferred default parameters
 #'
 #' @param low color for low end of gradient
+#' @param mid color for middle point of gradient
 #' @param high  color for high end of gradient
+#' @param ... additional arguments passed to scale_color_gradient2(...)
 #' @name scale_fill_miko
 #'
-scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("red")){
-  scale_fill_gradient2(low = low, high = high)
+scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("red"), mid = "white", ...){
+  scale_fill_gradient2(low = low, high = high, mid=  mid)
 }
 
 #' Highlight cells on UMAP plot

@@ -4,12 +4,21 @@
 \alias{scale_color_miko}
 \title{Gradient color scale}
 \usage{
-scale_color_miko(low = scales::muted("blue"), high = scales::muted("red"))
+scale_color_miko(
+  low = scales::muted("blue"),
+  high = scales::muted("red"),
+  mid = "white",
+  ...
+)
 }
 \arguments{
 \item{low}{color for low end of gradient}
 
 \item{high}{color for high end of gradient}
+
+\item{mid}{color for middle point of gradient}
+
+\item{...}{additional arguments passed to scale_color_gradient2(...)}
 }
 \description{
 Wrapper for scale_color_gradient2, with preferred default parameters
