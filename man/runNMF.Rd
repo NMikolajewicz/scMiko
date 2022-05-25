@@ -15,6 +15,7 @@ runNMF(
   max.iter = 50,
   gene.cutoff = 0.5,
   gene.n = 50,
+  reduction = "umap",
   sample.name = NULL,
   show.top.n = 10,
   pathway.db = "Bader",
@@ -43,6 +44,8 @@ runNMF(
 \item{gene.cutoff}{Feature loading cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.}
 
 \item{gene.n}{number of genes to return per gene program}
+
+\item{reduction}{reduction used for visualizing gene program expression. Default is "umap".}
 
 \item{sample.name}{sample name. Default is NULL.}
 

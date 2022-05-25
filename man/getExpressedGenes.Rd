@@ -4,12 +4,20 @@
 \alias{getExpressedGenes}
 \title{Identify expressed genes}
 \usage{
-getExpressedGenes(object, min.pct = 0.1, group = NA, group.boolean = "OR")
+getExpressedGenes(
+  object,
+  min.pct = 0.1,
+  min.cell = NULL,
+  group = NA,
+  group.boolean = "OR"
+)
 }
 \arguments{
 \item{object}{Seurat Object}
 
-\item{min.pct}{minimum expressing fraction. Default: 0.1}
+\item{min.pct}{minimum expressing fraction. Default: 0.1. Ignored if min.cell is specified.}
+
+\item{min.cell}{minimum number of expressing cells. If specified, min.pct is ignored.}
 
 \item{group}{Character specifying metadata field to group cells by. If not specified, global expression fraction is evaluated. If specified, group-level gene lists are combined used group.boolean.}
 

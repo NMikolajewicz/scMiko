@@ -5,6 +5,7 @@
 #'
 #' @param hg.res RunHG output list
 #' @param fdr.filter FDR filter threshold. Default 1 (i.e., include all)
+#' @param fdr.threshold FDR threshold line to draw on enrichment plots. Default is 0.05.
 #' @param do.plot Logical to generate enrichment plots for each geneset.
 #' @param show.n Number of top enrichments to visualize in plots. Ignored if do.plot == F.
 #' @param genesets Geneset list used for HG enrichment (i.e., RunHG input). Optional.
@@ -15,7 +16,7 @@
 #' @concept enrichment
 #' @author Nicholas Mikolajewicz
 #' @return list of summarized results
-summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, genesets = NULL,
+summarizeHG <- function(hg.res, fdr.filter = 1, fdr.threshold = 0.05, do.plot = T, show.n = 5, genesets = NULL,
                         str.wrap.width = 25, col.pal = NULL, plt.title = "", pathway.name.size = 7){
 
   for (i in 1:length(hg.res)){
@@ -59,7 +60,7 @@ summarizeHG <- function(hg.res, fdr.filter = 1, do.plot = T, show.n = 5, geneset
           z = res.df.cur$padj,
           set = "log10(FDR)",
           ov = res.df.cur$overlap / res.df.cur$size,
-          threshold = log10(0.05)
+          threshold = log10(fdr.threshold)
         )
       )
 

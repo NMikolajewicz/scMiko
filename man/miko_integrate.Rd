@@ -12,7 +12,7 @@ miko_integrate(
   k.weight = 35,
   nfeatures = 3000,
   split.prenorm = F,
-  assay = "SCT",
+  assay = "RNA",
   variable.features.n = 3000,
   verbose = T,
   use.existing.sct = F,

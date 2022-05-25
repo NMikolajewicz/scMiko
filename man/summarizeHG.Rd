@@ -7,6 +7,7 @@
 summarizeHG(
   hg.res,
   fdr.filter = 1,
+  fdr.threshold = 0.05,
   do.plot = T,
   show.n = 5,
   genesets = NULL,
@@ -20,6 +21,8 @@ summarizeHG(
 \item{hg.res}{RunHG output list}
 
 \item{fdr.filter}{FDR filter threshold. Default 1 (i.e., include all)}
+
+\item{fdr.threshold}{FDR threshold line to draw on enrichment plots. Default is 0.05.}
 
 \item{do.plot}{Logical to generate enrichment plots for each geneset.}
 

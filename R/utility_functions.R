@@ -5106,7 +5106,8 @@ categoricalColPal <- function(labels = NULL, n = NULL, palette = "Spectral"){
 #' Identify expressed genes in Seurat object.
 #'
 #' @param object Seurat Object
-#' @param min.pct minimum expressing fraction. Default: 0.1
+#' @param min.pct minimum expressing fraction. Default: 0.1. Ignored if min.cell is specified.
+#' @param min.cell minimum number of expressing cells. If specified, min.pct is ignored.
 #' @param group Character specifying metadata field to group cells by. If not specified, global expression fraction is evaluated. If specified, group-level gene lists are combined used group.boolean.
 #' @param group.boolean Boolean used to combine group genelists. One of "OR" or "AND". Default: "OR". Argument is ignored if 'group' is not specified.
 #' @name getExpressedGenes
@@ -5117,7 +5118,7 @@ categoricalColPal <- function(labels = NULL, n = NULL, palette = "Spectral"){
 #' split.var <- "seurat_clusters"
 #' which.genes <- getExpressedGenes(object = so.query, min.pct = 0.1, group = split.var, group.boolean = "OR")
 #'
-getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean = "OR"){
+getExpressedGenes <- function(object, min.pct = 0.1, min.cell = NULL, group = NA, group.boolean = "OR"){
 
   # min.groups: specify min.pct fraction grouping
   # NA: min.pct satisfied global
@@ -5129,10 +5130,17 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
 
   emat <- getExpressionMatrix(object, which.data = "data")
 
+  if (!is.null(min.cell)){
+    cfunc <- Matrix::rowSums
+    min.pct <- min.cell
+  } else {
+    cfunc <- Matrix::rowMeans
+  }
+
   if (is.na(group)){
 
     # pct.rep <- apply(emat, 1, function(x) mean(x>0))
-    pct.rep <-Matrix::rowMeans(emat>0) # faster implementation
+    pct.rep <- cfunc(emat>0) # faster implementation
 
     expressed.genes <- names(pct.rep)[pct.rep > min.pct]
   } else if (group %in% colnames(object@meta.data)){
@@ -5142,7 +5150,7 @@ getExpressedGenes <- function(object, min.pct = 0.1, group = NA, group.boolean =
     for (i in 1:length(u.gv)){
       pct.rep <- NULL
       if (!is.null(dim(emat[ ,group.var %in% u.gv[i]]))){
-        pct.rep <- Matrix::rowMeans(emat[ ,group.var %in% u.gv[i]]>0)
+        pct.rep <- cfunc(emat[ ,group.var %in% u.gv[i]]>0)
         expressed.genes.all <- c(expressed.genes.all, names(pct.rep)[pct.rep > min.pct])
       }
     }
@@ -5717,9 +5725,10 @@ miko_heatmap <- function(mat, scale = "none", symmetric_scale = T, scale.lim = N
 #' @param species Species, either "Mm" or "Hs".
 #' @param verbose Print progress. Default is TRUE.
 #' @param do.snip truncate scores at 1st and 99th percentiles (protects against outliers). Default is T.
+#' @param reduction reduction slot to project scores onto. Default is "umap"
 #' @name scoreGBM
 #' @author Nicholas Mikolajewicz
-scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.snip = T){
+scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.snip = T, reduction  = "umap"){
 
   # get GBM genes
   miko_message("Getting GBM genesets...", verbose = verbose)
@@ -5882,8 +5891,8 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.sn
   df.ms <- as.data.frame(module.scores)
   df.ms$cell <- rownames(df.ms)
 
-  df.ms$x <- object@reductions[["umap"]]@cell.embeddings[ ,1]
-  df.ms$y <- object@reductions[["umap"]]@cell.embeddings[ ,2]
+  df.ms$x <- object@reductions[[reduction]]@cell.embeddings[ ,1]
+  df.ms$y <- object@reductions[[reduction]]@cell.embeddings[ ,2]
 
   df.ms$state <- df.state$GBMstate
 
@@ -5902,7 +5911,7 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.sn
       # theme_miko(center.title = T) +
       geom_point(size = autoPointSize(n.points = nrow(df.ms.cur))) +
       theme_miko(center.title = T) +
-      xlab("UMAP 1") + ylab("UMAP 2") +
+      xlab(paste0(toupper(reduction), " 1")) + ylab(paste0(toupper(reduction), " 2")) +
       # scale_color_gradient(low = "grey95", high = "tomato") +
       viridis::scale_color_viridis() +
       scale_color_gradient2(high = scales::muted("red"), low = scales::muted("blue")) +
@@ -5916,15 +5925,15 @@ scoreGBM <- function(object, species = detectSpecies(object), verbose = T, do.sn
     ggplot(aes(x = x, y = y, color = state)) +
     geom_point(size = 1) +
     theme_miko(legend = T, center.title = T, color.palette = "ptol") +
-    xlab("UMAP 1") + ylab("UMAP 2") +
+    xlab(paste0(toupper(reduction), " 1")) + ylab(paste0(toupper(reduction), " 2")) +
     labs(title = "GBM State")
 
   miko_message("Complete!", verbose = verbose)
 
   return(list(
     plt.metascores = plt.metascores,
-    plt.umap.scores = plt.state.umap.list,
-    plt.umap.state = plt.umap.gbm.state,
+    plt.reduction.scores = plt.state.umap.list,
+    plt.reduction.state = plt.umap.gbm.state,
     df.scores = df.ms,
     df.states = df.state
   ))

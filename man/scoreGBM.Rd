@@ -4,7 +4,13 @@
 \alias{scoreGBM}
 \title{Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.}
 \usage{
-scoreGBM(object, species = detectSpecies(object), verbose = T, do.snip = T)
+scoreGBM(
+  object,
+  species = detectSpecies(object),
+  verbose = T,
+  do.snip = T,
+  reduction = "umap"
+)
 }
 \arguments{
 \item{object}{seurat object}
@@ -14,6 +20,8 @@ scoreGBM(object, species = detectSpecies(object), verbose = T, do.snip = T)
 \item{verbose}{Print progress. Default is TRUE.}
 
 \item{do.snip}{truncate scores at 1st and 99th percentiles (protects against outliers). Default is T.}
+
+\item{reduction}{reduction slot to project scores onto. Default is "umap"}
 }
 \description{
 Annotate glioblastoma (GBM) subtype  based on Neftel 2019 scoring pipeline.

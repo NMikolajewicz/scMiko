@@ -271,7 +271,7 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
 #' @return Integrated seurat object
 #' @examples
 #'
-miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "SCT", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F, vars.to.regress = "percent.mt"){
+miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor = 20, k.weight = 35, nfeatures = 3000, split.prenorm = F, assay = "RNA", variable.features.n = 3000, verbose = T, use.existing.sct = F, conserve.memory = F, vars.to.regress = "percent.mt"){
 
   verbose. <- verbose
 
@@ -291,6 +291,8 @@ miko_integrate <- function(object, split.by = "Barcode", min.cell = 50, k.anchor
     if (split.prenorm){
       if (verbose.) miko_message("Spliting object...")
       object.list <- SplitObject(object, split.by = split.by)
+      cell.counts <- (unlist(lapply(object.list, ncol)))
+      object.list <- object.list[cell.counts>=min.cell]
 
       # renormalize
       if (verbose.) miko_message("Running SCTransform...", verbose = verbose.)

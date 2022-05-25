@@ -722,6 +722,7 @@ runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_ce
 #' @param max.iter Maximum iteration of alternating NNLS solutions to H and W
 #' @param gene.cutoff Feature loading cutoff threshold [0,1]. Default = 0.5. Ignored if gene.n is specified.
 #' @param gene.n number of genes to return per gene program
+#' @param reduction reduction used for visualizing gene program expression. Default is "umap".
 #' @param sample.name sample name. Default is NULL.
 #' @param show.top.n number of enrichment terms to show in summary plots. Ignoried if do.enrichment = F.
 #' @param pathway.db pathway database to use for enrichment analysis. Options are "GO" or "Bader". Default is "Bader". Ignored if do.enrichment = F.
@@ -735,7 +736,7 @@ runICA <- function(object, assay = DefaultAssay(object), features = NULL, max_ce
 #' @return Seurat object with NMF results in reduction slot. Program genes are stored in "misc" slot of NMF reduction slot.
 #' @examples
 #'
-runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, features = NULL, feature.min.pct = 0, max.iter = 50, gene.cutoff = 0.5, gene.n = 50,sample.name = NULL, show.top.n = 10,  pathway.db = "Bader", do.enrichment = T, verbose = T, ...){
+runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.threads = 2, features = NULL, feature.min.pct = 0, max.iter = 50, gene.cutoff = 0.5, gene.n = 50,reduction = "umap", sample.name = NULL, show.top.n = 10,  pathway.db = "Bader", do.enrichment = T, verbose = T, ...){
 
   stopifnot("Seurat" %in% class(object))
   require("NNLM")
@@ -834,7 +835,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
 
   umap_success <- F
   try({
-    df.cell.umap <- getUMAP(object = object)[["df.umap"]]
+    df.cell.umap <- getUMAP(object = object, umap.key = reduction)[["df.umap"]]
     df.cell.umap <- merge(df.cell.umap, df.cell.load, by = "var")
     umap_success <- T
   }, silent = T)
@@ -861,7 +862,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
         # geom_point(size = autoPointSize(n.points = nrow(df.cell.umap))) +
         viridis::scale_color_viridis() +
           labs(title = paste0(names(nmf.gene)[i], " (", length(nmf.gene[[i]]), " genes)"),
-               subtitle = sample.name, x = "UMAP 1", y = "UMAP 2", color = "Activity") +
+               subtitle = sample.name, x = paste0(toupper(reduction), " 1"), y = paste0(toupper(reduction), " 2"), color = "Activity") +
           theme_miko(legend = T)
       } else {
         plt.nmf.load <- df.cell.umap %>%
@@ -869,7 +870,7 @@ runNMF <- function(object, assay = DefaultAssay(object), k = 6, raster = F, n.th
           geom_point(size = autoPointSize(n.points = nrow(df.cell.umap))) +
           viridis::scale_color_viridis() +
           labs(title = paste0(names(nmf.gene)[i], " (", length(nmf.gene[[i]]), " genes)"),
-               subtitle = sample.name, x = "UMAP 1", y = "UMAP 2", color = "Activity") +
+               subtitle = sample.name, x = paste0(toupper(reduction), " 1"), y = paste0(toupper(reduction), " 2"), color = "Activity") +
           theme_miko(legend = T)
       }
 
