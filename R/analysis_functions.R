@@ -12,6 +12,7 @@
 #' @param posterior.p Posterior distribution membership threshold. Default is 0.9 (e.g., p > 0.9 is member).
 #' @param mixture.analysis logical to perform mixture analysis. Default = T (computationally intensive).
 #' @param size UMAP point size.
+#' @param reduction reduction used for visualization. Default is "umap".
 #' @param ... additional parameters passed to geom_point(...)
 #' @name runAUC
 #' @seealso \code{\link{AUCell_calcAUC }}
@@ -49,7 +50,7 @@
 #' n.auc$plot.nm
 #' n.auc$plot.max.score
 #'
-runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, mixture.analysis = T, size = autoPointSize(ncol(object)), ...){
+runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1, n.repeats = 5, n.iterations = 1000, posterior.p = 0.9, mixture.analysis = T, size = autoPointSize(ncol(object)), reduction = "umap",  ...){
 
   suppressMessages({
     suppressWarnings({
@@ -147,8 +148,8 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       cells_assignment <- AUCell_exploreThresholds(cells_AUC, plotHist=F, nCores=n.auc.cores, assign=TRUE,  verbose = TRUE)
       df.auc.umap <- data.frame(
         cells = colnames(object),
-        x = object@reductions[["umap"]]@cell.embeddings[ ,1],
-        y = object@reductions[["umap"]]@cell.embeddings[ ,2]
+        x = object@reductions[[reduction]]@cell.embeddings[ ,1],
+        y = object@reductions[[reduction]]@cell.embeddings[ ,2]
       )
 
       # a.list <- list()
@@ -211,7 +212,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         plt.umap.list[[which.set]] <- df.auc.umap2 %>%
           ggplot(aes(x = x, y = y, color = auc)) +
           geom_point(size = size, ...) +
-          labs(x = "UMAP 1", y = "UMAP 2", caption = "AUCell-based scoring", title = which.set, subtitle = "AUC scores") +
+          labs(x = paste0(toupper(reduction), " 1"), y = paste0(toupper(reduction), " 2"), caption = "AUCell-based scoring", title = which.set, subtitle = "AUC scores") +
           theme_miko(center.title = T, legend = T) +
           scale_color_gradient2(high = "red")
       }
@@ -220,7 +221,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         dplyr::arrange(-as.numeric(class.auc)) %>%
         ggplot(aes(x = x, y = y, color = class.auc)) +
         geom_point(size = size, ...) +
-        labs(x = "UMAP 1", y = "UMAP 2", caption = "Original AUCell-based classification", color = "Class") +
+        labs(x = paste0(toupper(reduction), " 1"), y = paste0(toupper(reduction), " 2"), caption = "Original AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
         guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
@@ -229,7 +230,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
         dplyr::arrange(-as.numeric(class.nm)) %>%
         ggplot(aes(x = x, y = y, color = class.nm)) +
         geom_point(size = size, ...) +
-        labs(x = "UMAP 1", y = "UMAP 2", caption = "NM-modified AUCell-based classification", color = "Class") +
+        labs(x = paste0(toupper(reduction), " 1"), y = paste0(toupper(reduction), " 2"), caption = "NM-modified AUCell-based classification", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
         guides(fill = F, color = guide_legend(override.aes = list(size = 4)))
@@ -238,7 +239,7 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       plt.max.umap <- df.auc.umap %>%
         ggplot(aes(x = x, y = y, color = class.max.score)) +
         geom_point(size = size, ...) +
-        labs(x = "UMAP 1", y = "UMAP 2", caption = "Classification based on max AUCell score", color = "Class") +
+        labs(x = paste0(toupper(reduction), " 1"), y =paste0(toupper(reduction), " 2"), caption = "Classification based on max AUCell score", color = "Class") +
         theme_miko(center.title = T, legend = T) +
         scale_color_manual(values = colpal) +
         guides(fill = F, color = guide_legend(override.aes = list(size = 4)))

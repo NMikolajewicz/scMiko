@@ -14,6 +14,7 @@ runAUC(
   posterior.p = 0.9,
   mixture.analysis = T,
   size = autoPointSize(ncol(object)),
+  reduction = "umap",
   ...
 )
 }
@@ -35,6 +36,8 @@ runAUC(
 \item{mixture.analysis}{logical to perform mixture analysis. Default = T (computationally intensive).}
 
 \item{size}{UMAP point size.}
+
+\item{reduction}{reduction used for visualization. Default is "umap".}
 
 \item{...}{additional parameters passed to geom_point(...)}
 }
