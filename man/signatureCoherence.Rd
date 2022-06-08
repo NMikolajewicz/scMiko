@@ -44,9 +44,6 @@ list of results
 \description{
 Evaluates signature coherence by computing signature score (using runMS) and then calculating correlations between signature components (i.e., gene expression) and signature score. Genes for which correlations do not exceed coherence threshold are dropped and remaining genes are used to calculate new coherent signature.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{runMS}}
 }

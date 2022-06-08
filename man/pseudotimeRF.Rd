@@ -50,9 +50,6 @@ List of results
 \description{
 Identify pseudotime-dependent genes using Random Forest (RF) Model. Given Seurat object and highly variable genes (hvg), expression data are split into training and test set, and random forest model is trained to identify genes that vary with pseudotime. Model performance is evaluated on test set. Random forest model is fit using R 'parsnip' package.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{rand_forest}}
 }

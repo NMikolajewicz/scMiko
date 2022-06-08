@@ -45,9 +45,6 @@ list containing
 \description{
 Apply scale-free topology transform to shared-nearest neighbor graph
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

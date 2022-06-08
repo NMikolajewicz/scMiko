@@ -44,7 +44,3 @@ ggplot2 theme object
 \description{
 Custom themes applied to ggplot2-based plots.
 }
-\examples{
-
-
-}

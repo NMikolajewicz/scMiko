@@ -32,9 +32,6 @@ Returns 2 variants of SSN connectivity plot along with data.frame used to genera
 \description{
 generates SSN connectivity plot used to visualize transcriptomic gene network.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

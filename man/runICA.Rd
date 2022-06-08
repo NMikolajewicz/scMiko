@@ -32,9 +32,6 @@ seurat object with significant genes stored in "misc" slot of ICA reduction slot
 \description{
 Run fastica algorithm from the ica package for ICA dimensionality reduction. Wrapper for Seurat's RunICA function, with additional significant gene identification step.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

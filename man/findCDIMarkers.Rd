@@ -41,9 +41,6 @@ data.frame with CDI scores.
 \description{
 Calculate feature dependency index (CDI).
 }
-\examples{
-
-}
 \seealso{
 \code{\link{binom.test}}
 }

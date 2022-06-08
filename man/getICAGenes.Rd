@@ -29,9 +29,6 @@ named list of ICA gene programs
 \description{
 Given feature loadings obtained from independent component analysis (ICA), significant genes for each component are identified.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

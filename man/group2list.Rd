@@ -21,9 +21,6 @@ Returns named list of cells grouped by meta feature from Seurat object.
 \description{
 Returns named list of cells grouped by meta feature from Seurat object.
 }
-\examples{
-
-}
 \author{
 Nicholas Mikolajewicz
 }

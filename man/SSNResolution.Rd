@@ -38,9 +38,6 @@ optimal cluster resolution
 \description{
 Identify optimal cluster resolution of scale-free shared nearest neighbor network (SNN)
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

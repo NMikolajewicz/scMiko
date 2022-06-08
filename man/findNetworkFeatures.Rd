@@ -40,9 +40,6 @@ vector of features
 \description{
 Identify features for gene program discovery.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

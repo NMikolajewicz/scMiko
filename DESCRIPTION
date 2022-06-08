@@ -1,6 +1,6 @@
 Package: scMiko
 Type: Package
-Title: scRNAseq analysis functions. Developed by Moffat Lab using Seurat framework.
+Title: scRNAseq analysis functions. Developed using Seurat framework.
 Version: 0.1.0
 Author: Nicholas Mikolajewicz
 Maintainer: Nicholas Mikolajewicz <n.mikolajewicz@utoronto.ca>
@@ -8,7 +8,7 @@ Description: Set of utility functions used to conduct scRNAseq analysis. Build o
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Depends:
     R (>= 3.5.0),
     ggplot2,
@@ -45,3 +45,13 @@ Suggests:
   tidymodels,
   s2a,
   glue
+RemoteType: github
+RemoteHost: api.github.com
+RemoteRepo: scMiko
+RemoteUsername: NMikolajewicz
+RemoteRef: HEAD
+RemoteSha: 027355d0467f94eb302b783453fbdedecabe9d17
+GithubRepo: scMiko
+GithubUsername: NMikolajewicz
+GithubRef: HEAD
+GithubSHA1: 027355d0467f94eb302b783453fbdedecabe9d17

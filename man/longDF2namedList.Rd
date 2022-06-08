@@ -19,9 +19,6 @@ named list
 \description{
 Convert long data frame to named list. Input long data frame consists of two columns, the first corresponding to the names within the list (group_by), and the second to the corresponding list entries (values).
 }
-\examples{
-
-}
 \author{
 Nicholas Mikolajewicz
 }

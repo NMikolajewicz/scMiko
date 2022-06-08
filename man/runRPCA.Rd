@@ -53,9 +53,6 @@ Seurat object
 \description{
 Run a robust PCA (rPCA) dimensionality reduction on single-cell seurat object.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{PcaHubert}}
 }

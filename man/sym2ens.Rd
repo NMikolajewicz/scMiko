@@ -28,6 +28,4 @@ Gene ensemble id is converted to symbol using org.Hs.eg.db or org.Mm.eg.db annot
 }
 \author{
 Nicholas Mikolajewicz
-
-Nicholas Mikolajewicz
 }

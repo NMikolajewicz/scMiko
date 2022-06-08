@@ -55,9 +55,6 @@ List of summarize gene program results, including expression heatmaps and pathwa
 \description{
 Summarize SSN, ICA or NMF gene program/module analyses. Expression heatmaps and gene program enrichments are generated to facilitate analysis and interpretation of gene programs
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

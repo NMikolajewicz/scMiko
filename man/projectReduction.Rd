@@ -42,10 +42,6 @@ list of ggplot handles
 \description{
 Project dimensionally-reduced features (e.g., PC, IC) onto UMAP
 }
-\examples{
-
-
-}
 \author{
 Nicholas Mikolajewicz
 }

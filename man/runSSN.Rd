@@ -76,9 +76,6 @@ Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene 
 \description{
 Runs scale-free shared nearest neighbor network (SNN) analysis on subset of features specified in Seurat object.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

@@ -879,7 +879,17 @@ exprUMAP <- function(object, feature, plot.subtitle = NULL, do.neb = F, title.si
 
   require(RColorBrewer)
 
+  # exprUMAP
+
   DefaultAssay(object) <- assay
+  params <- list(...)
+  if("slot" %in% names(params)) {
+    if (params[["slot"]] == "scale.data"){
+      try({object <- GetResidual(object =  object, features = feature)}, silent = T)
+    }
+
+  }
+
   if (!do.neb){
     scExpression.UMAP(object,feature, adjust.pt.size =size, slot = slot, reduction = reduction,...) +
       theme_void() + theme(legend.position = "none") +

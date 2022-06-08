@@ -32,9 +32,6 @@ data.frame with feature-specific gini scores.
 \description{
 Calculate Gini marker specificity.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{fdrtool}} for p values calculations, \code{\link{ineq}} for gini index calculations.
 }

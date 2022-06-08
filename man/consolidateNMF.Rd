@@ -17,9 +17,6 @@ Seurat object with with several NMF reductions consolidated into "nmf_all" reduc
 \description{
 Consolidate several NMF reduction objects into single NMF reduction object within Seurat object.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

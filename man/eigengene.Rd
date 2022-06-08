@@ -32,9 +32,6 @@ eigengene vector
 \description{
 Computes basis vector with highest eigenvalue (i.e., first principal component, or axis of variation that explains the highest proportion of variance)
 }
-\examples{
-
-}
 \seealso{
 \code{\link{svd}}
 }

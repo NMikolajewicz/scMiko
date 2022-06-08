@@ -21,9 +21,6 @@ Returns named list of SSN gene program features.
 \description{
 Identify and (optionally) prune gene program features in scale-free shared nearest neighbor network (SSN)
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

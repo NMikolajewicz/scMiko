@@ -53,9 +53,6 @@ Integrated seurat object
 \description{
 scRNAseq normalization and integration wrapper. Given seurat object input, data are split, normalized and integrated.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{IntegrateData}}
 }

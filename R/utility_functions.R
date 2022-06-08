@@ -1283,7 +1283,7 @@ getExpressingCells <- function(so, query, expression.threshold = 0, which.data =
 #' @return List of data.frames saved as Rdata file.
 #' @examples
 #' \dontrun{
-#' updateGeneSets("geneSets_MASTER_170322update.xlsx", "geneSets.rda", dev.directory.flag = T)
+#' updateGeneSets("geneSets_MASTER_080622update.xlsx", "geneSets.rda", dev.directory.flag = T)
 #' }
 #'
 updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag = F){
@@ -1291,6 +1291,7 @@ updateGeneSets <- function(input.file, output.file, dir = "", dev.directory.flag
   # geneSets_MASTER_190122update
   # geneSets_MASTER_240122update.xlsx
   # geneSets_MASTER_070222update.xlsx
+  # geneSets_MASTER_080622update.xlsx
   geneSets <- list()
 
   if (dev.directory.flag){

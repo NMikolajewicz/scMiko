@@ -65,9 +65,6 @@ Seurat object with NMF results in reduction slot. Program genes are stored in "m
 \description{
 Run non-negative matrix factorization(NMF or NNMF) using sequential coordinate-wise descent or multiplicative updates on Seurat object.
 }
-\examples{
-
-}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }
