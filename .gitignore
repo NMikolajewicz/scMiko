@@ -4,4 +4,4 @@
 .Ruserdata
 Meta
 =
-../data/zeisel_count_matrix.rds
+data/zeisel_count_matrix.rds
