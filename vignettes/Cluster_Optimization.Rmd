@@ -45,7 +45,7 @@ We start by reading in the data and visualizing the annotated population.
 library(scMiko)
 
 # load human gastrulation data
-so.query <- readRDS("../data/so_tyser2021_220621.rds")
+so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
 
 # visualize clusters
 cluster.UMAP(so = so.query, group.by = "sub_cluster") + 

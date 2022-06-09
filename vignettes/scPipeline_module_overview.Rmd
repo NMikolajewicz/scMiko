@@ -43,7 +43,7 @@ In general, our convention is to store all analysis parameters in a list named `
 ```{r eval = FALSE}
 # example
 parameter.list <- list(
-  input.file = "../data.rds",
+  input.file = "../data/demo.rds",
   ...,
   print.inline = F,
   save.flag = T

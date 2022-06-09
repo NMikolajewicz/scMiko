@@ -41,7 +41,7 @@ Using the Miko scoring pipeline, we will annotate the Human Gastrulation dataset
 library(scMiko)
 
 # load human gastrulation data
-so.query <- readRDS("../data/so_tyser2021_220621.rds")
+so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
 
 # visualize annotated populations. 
 cluster.UMAP(so = so.query, group.by = "sub_cluster") + 

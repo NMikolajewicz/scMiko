@@ -60,8 +60,8 @@ To preprocess data, users can either refer to the excellent [vignette](https://s
 library(Seurat)
 
 # load data
-count_matrix <- readRDS("../data/ps_count_matrix.rds")
-meta_data <-  readRDS("../data/ps_meta_data.rds")
+count_matrix <- readRDS("../data/demo/ps_count_matrix.rds")
+meta_data <-  readRDS("../data/demo/ps_meta_data.rds")
 
 # create and preprocess seurat object
 so.query <- CreateSeuratObject(counts = count_matrix, meta.data = meta_data)
