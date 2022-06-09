@@ -61,7 +61,13 @@ runAUC <- function(object, genelist, assay = DefaultAssay(object), n.workers = 1
       so.e.mat <- object@assays[[assay]]@data
 
       n.auc.cores <- n.workers
-      cells_rankings <- AUCell_buildRankings(so.e.mat, plotStats = F, nCores = n.auc.cores, verbose = F)
+
+      cells_rankings <-  tryCatch({
+        AUCell_buildRankings(so.e.mat, plotStats = F, nCores = n.auc.cores, verbose = F)
+      }, error = function(e){
+        z <- AUCell_buildRankings(so.e.mat, plotStats = F, nCores = n.auc.cores, verbose = F, splitByBlocks  = T)
+        return(z)
+      })
       cells_AUC <- AUCell_calcAUC(geneSets = genelist, rankings = cells_rankings,
                                   aucMaxRank=nrow(cells_rankings)*0.05,verbose = F, nCores = n.auc.cores)
 
@@ -2100,3 +2106,77 @@ runAUGUR <- function (input, meta = NULL, label_col = "label", cell_type_col = "
   return(obj)
 }
 
+
+
+#' Calculate stem index
+#'
+#' Calculate stem index at single-cell resolution using CCAT, StemSC or CytoTrace algorithms.
+#'
+#' @param object Seurat object
+#' @param method method used to calculate stem index. One of "CCAT", "StemSC", or "CytoTrace"
+#' @param min.pct minimum expressing fraction. Only used for CytoTRACE algorithm, values of 0.005-0.001 recommended if data set is large.
+#' @param assay assay used for computing stem index. DefaultAssay(object) is taken if not specified.
+#' @param batch meta data feature containing batch memberships. Only used for CytoTrace algorithm.
+#' @param verbose print progress. Default is T.
+#' @name scoreStem
+#' @seealso \code{\link{CompCCAT}} for computing CCAT scores, \code{\link{StemSC}} for StemSC scores, and \code{\link{CytoTRACE}} for CytoTrace scores.
+#' @author Nicholas Mikolajewicz
+#' @return numeric vector
+#' @examples
+#'
+#' ccat.score <- scoreSTEM(object = seurat.object, method = "CCAT")
+#'
+scoreStem <- function(object, method = c("CCAT", "StemSC", "CytoTRACE"), min.pct = 0, assay = DefaultAssay(object), batch = NULL, verbose = T){
+
+  stopifnot("Seurat" %in% class(object))
+  stopifnot(method %in% c("CCAT", "StemSC", "CytoTRACE"))
+
+  if (toupper(method) == "CCAT"){
+    if (verbose) miko_message("Running CCAT...")
+    require(SCENT)
+    miko_message("Preparing PPI Network...", time = F)
+    ppi_net <- net17Jan16.m
+    my.entrez <- unique(c(colnames(ppi_net), rownames(ppi_net)))
+    my.symbol <- entrez2sym(my.entrez = my.entrez, my.species = detectSpecies(object))
+    e2s <- my.symbol$SYMBOL
+    names(e2s) <- as.character(my.symbol$ENTREZID)
+    colnames(ppi_net) <- (e2s[colnames(ppi_net)])
+    rownames(ppi_net) <- (e2s[rownames(ppi_net)])
+    miko_message("Computing CCAT score...", time = F)
+    si <- CompCCAT(exp.m = object@assays[[assay]]@data, ppiA.m = ppi_net)
+  } else if (toupper(method) == "STEMSC"){
+    if (verbose) miko_message("Running StemSC...")
+    require(StemSC)
+    emat <- object@assays[[assay]]@data
+    my.entrez <- sym2entrez(rownames(emat), my.species = detectSpecies(object))
+    my.entrez <- my.entrez[complete.cases(my.entrez), ]
+    s2e <- as.character(my.entrez$ENTREZID); names(s2e) <- my.entrez$SYMBOL
+    emat <- emat[rownames(emat) %in% my.entrez$SYMBOL, ]
+    df.emat <- as.matrix(emat)
+    rownames(df.emat) <- s2e[rownames(df.emat)]
+    si <-StemSC(df.emat)
+  } else if (toupper(method) == "CYTOTRACE"){
+    if (verbose) miko_message("Running CytoTRACE...")
+    require(CytoTRACE)
+    emat <- object@assays[[assay]]@data
+    if (min.pct > 0){
+      expr.genes <- getExpressedGenes(object, min.pct = min.pct)
+      emat <- emat[rownames(emat) %in% expr.genes, ]
+    }
+    if (is.null(batch)){
+      bv <- NULL
+    } else {
+      bv <- as.character(object@meta.data[[batch]])
+    }
+    emat <- as.matrix(emat)
+    ct.score <- CytoTRACE(
+      mat =  emat,
+      batch = bv,
+      enableFast = TRUE,
+      ncores = 1,
+      subsamplesize = 1000
+    )
+    si <- ct.score[["CytoTRACE"]]
+  }
+  return(si)
+}
