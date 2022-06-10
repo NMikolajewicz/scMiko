@@ -22,7 +22,7 @@ scoreStem(
 
 \item{assay}{assay used for computing stem index. DefaultAssay(object) is taken if not specified.}
 
-\item{batch}{meat data feature}
+\item{batch}{meta data feature containing batch memberships. Only used for CytoTrace algorithm.}
 
 \item{verbose}{print progress. Default is T.}
 }
