@@ -115,6 +115,7 @@ prepSeurat2 <- function (object, e2s = NULL, species = NULL, resolution= NULL, s
   if (is.null(species)){
     species <- detectSpecies(object)
   }
+  object@meta.data$Organism <- species
 
   # general object handling ####################################################
 

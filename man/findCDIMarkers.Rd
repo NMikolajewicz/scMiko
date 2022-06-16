@@ -2,7 +2,7 @@
 % Please edit documentation in R/marker_functions.R
 \name{findCDIMarkers}
 \alias{findCDIMarkers}
-\title{Calculate feature dependency index}
+\title{Calculate feature co-dependency index}
 \usage{
 findCDIMarkers(
   object,
@@ -39,7 +39,7 @@ findCDIMarkers(
 data.frame with CDI scores.
 }
 \description{
-Calculate feature dependency index (CDI).
+Calculate feature co-dependency index (CDI).
 }
 \seealso{
 \code{\link{binom.test}}
