@@ -18,7 +18,7 @@ scoreStem(
 
 \item{method}{method used to calculate stem index. One of "CCAT", "StemSC", or "CytoTrace"}
 
-\item{min.pct}{minimum expressing fraction. Only used for CytoTRACE algorithm, values of 0.005-0.001 recommended if data set is large.}
+\item{min.pct}{minimum expressing fraction. Values of 0.005-0.01 recommended if data set is large.}
 
 \item{assay}{assay used for computing stem index. DefaultAssay(object) is taken if not specified.}
 

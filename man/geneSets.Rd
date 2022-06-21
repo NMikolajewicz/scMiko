@@ -44,6 +44,7 @@ A list of data.frames containing the following genesets:
 \item{Gavish2022_Tumor_Hallmarks (\href{https://www.biorxiv.org/content/10.1101/2021.12.19.473368v1}{link})}{Transcriptional hallmarks of intra-tumor heterogeneity}
 \item{GSC_Catalog}{Glioma stem cell (GSC)-associated gene markers}
 \item{CSPA_Surfaceome (\href{http://wlab.ethz.ch/cspa/#abstract}{link})}{Mass Spectrometric-Derived Cell Surface Protein Atlas}
+\item{Puchalski2018_IVY_GBM (\href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6414061/}{link})}{An anatomic transcriptional atlas of human glioblastoma (IVY GBM)}
 }
 }
 \usage{

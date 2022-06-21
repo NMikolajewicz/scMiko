@@ -2114,7 +2114,7 @@ runAUGUR <- function (input, meta = NULL, label_col = "label", cell_type_col = "
 #'
 #' @param object Seurat object
 #' @param method method used to calculate stem index. One of "CCAT", "StemSC", or "CytoTrace"
-#' @param min.pct minimum expressing fraction. Only used for CytoTRACE algorithm, values of 0.005-0.001 recommended if data set is large.
+#' @param min.pct minimum expressing fraction. Values of 0.005-0.01 recommended if data set is large.
 #' @param assay assay used for computing stem index. DefaultAssay(object) is taken if not specified.
 #' @param batch meta data feature containing batch memberships. Only used for CytoTrace algorithm.
 #' @param verbose print progress. Default is T.
@@ -2137,18 +2137,37 @@ scoreStem <- function(object, method = c("CCAT", "StemSC", "CytoTRACE"), min.pct
     miko_message("Preparing PPI Network...", time = F)
     ppi_net <- net17Jan16.m
     my.entrez <- unique(c(colnames(ppi_net), rownames(ppi_net)))
-    my.symbol <- entrez2sym(my.entrez = my.entrez, my.species = detectSpecies(object))
+    my.symbol <- entrez2sym(my.entrez = my.entrez, my.species ="Hs")
     e2s <- my.symbol$SYMBOL
     names(e2s) <- as.character(my.symbol$ENTREZID)
     colnames(ppi_net) <- (e2s[colnames(ppi_net)])
     rownames(ppi_net) <- (e2s[rownames(ppi_net)])
+
+    if ( detectSpecies(object) == "Mm"){
+      colnames(ppi_net) <-  firstup( colnames(ppi_net))
+      rownames(ppi_net) <-  firstup( colnames(ppi_net))
+    }
     miko_message("Computing CCAT score...", time = F)
-    si <- CompCCAT(exp.m = object@assays[[assay]]@data, ppiA.m = ppi_net)
+
+    emat <-  object@assays[[assay]]@data
+    if (min.pct != 0){
+      emat <- emat[rownames(emat) %in% getExpressedGenes(object = object, min.pct = min.pct), ]
+    }
+
+    si <- CompCCAT(exp.m = emat, ppiA.m = ppi_net)
   } else if (toupper(method) == "STEMSC"){
     if (verbose) miko_message("Running StemSC...")
     require(StemSC)
     emat <- object@assays[[assay]]@data
-    my.entrez <- sym2entrez(rownames(emat), my.species = detectSpecies(object))
+
+    if (min.pct != 0){
+      emat <- emat[rownames(emat) %in% getExpressedGenes(object = object, min.pct = min.pct), ]
+    }
+
+    if ( detectSpecies(object) == "Mm"){
+      rownames(emat) <- toupper(rownames(emat))
+    }
+    my.entrez <- sym2entrez(rownames(emat), my.species = "Hs")
     my.entrez <- my.entrez[complete.cases(my.entrez), ]
     s2e <- as.character(my.entrez$ENTREZID); names(s2e) <- my.entrez$SYMBOL
     emat <- emat[rownames(emat) %in% my.entrez$SYMBOL, ]

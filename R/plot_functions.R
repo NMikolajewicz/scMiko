@@ -1088,7 +1088,7 @@ miko_volcano <- function(df.deg, group = NULL, show.n = 10, show.sig.only = T, r
 #'  plt.volcano <-  miko_volcano(df.deg = df.dat) + scale_color_miko()
 #'
 scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("red"), mid = "white", ...){
-  scale_color_gradient2(low = low, high = high, mid=  mid)
+  scale_color_gradient2(low = low, high = high, mid=  mid, ...)
 }
 
 #' Gradient fill scale
@@ -1102,7 +1102,7 @@ scale_color_miko <- function(low = scales::muted("blue"), high = scales::muted("
 #' @name scale_fill_miko
 #'
 scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("red"), mid = "white", ...){
-  scale_fill_gradient2(low = low, high = high, mid=  mid)
+  scale_fill_gradient2(low = low, high = high, mid=  mid, ...)
 }
 
 #' Highlight cells on UMAP plot
