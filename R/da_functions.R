@@ -17,6 +17,8 @@
 da_Run <- function(object, condition.group, sample.group = NA, design.groups = c(condition.group, sample.group),
                    balance.samples = T, balance.size = NA, assay = DefaultAssay(object), reference.group = NULL, fdr.correction = F){
 
+
+  require(SingleCellExperiment)
   require(igraph)
   require(miloR)
   require(Matrix)
