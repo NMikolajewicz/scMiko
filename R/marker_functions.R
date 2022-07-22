@@ -446,17 +446,11 @@ findCorMarkers <- function(object, features.x = NULL, features.y = rownames(obje
   if (length(x_missing) > 0){
     x_meta <- x_missing[x_missing %in% colnames(object@meta.data)]
     for (i in 1:length(x_meta)){
-      meta.list <- group2list(object = object, group = x_meta[i])
-      names(meta.list) <- paste0(x_meta[i], "_", names(meta.list))
-      meta.list <- meta.list[order(names(meta.list))]
-      meta.mat <- matrix(nrow = length(meta.list), ncol = ncol(object), data = 0)
-      rownames(meta.mat) <- names(meta.list)
+      meta.mat <- matrix(nrow = 1, data = unlist(object@meta.data[ ,x_meta[i]]))
+      rownames(meta.mat) <- x_meta[i]
       colnames(meta.mat) <- colnames(object)
-      for (j in 1:length(meta.list)){
-        meta.mat[names(meta.list)[j],colnames(meta.mat) %in% meta.list[[j]]] <- 1
-      }
-      x_av <- c(x_av, names(meta.list))
-      x_meta_names <- c(x_meta_names, names(meta.list))
+      x_av <- c(x_av, x_meta[i])
+      x_meta_names <- c(x_meta_names,x_meta[i])
       emat <- rbind(emat, meta.mat)
     }
   }
@@ -465,17 +459,11 @@ findCorMarkers <- function(object, features.x = NULL, features.y = rownames(obje
   if (length(y_missing) > 0){
     y_meta <- y_missing[y_missing %in% colnames(object@meta.data)]
     for (i in 1:length(y_meta)){
-      meta.list <- group2list(object = object, group = y_meta[i])
-      names(meta.list) <- paste0(y_meta[i], "_", names(meta.list))
-      meta.list <- meta.list[order(names(meta.list))]
-      meta.mat <- matrix(nrow = length(meta.list), ncol = ncol(object), data = 0)
-      rownames(meta.mat) <- names(meta.list)
+      meta.mat <- matrix(nrow = 1, data = unlist(object@meta.data[ ,y_meta[i]]))
+      rownames(meta.mat) <- y_meta[i]
       colnames(meta.mat) <- colnames(object)
-      for (j in 1:length(meta.list)){
-        meta.mat[names(meta.list)[j],colnames(meta.mat) %in% meta.list[[j]]] <- 1
-      }
-      y_av <- c(y_av, names(meta.list))
-      y_meta_names <- c(x_meta_names, names(meta.list))
+      y_av <- c(y_av, y_meta[i])
+      y_meta_names <- c(x_meta_names, y_meta[i])
       emat <- rbind(emat, meta.mat)
     }
   }
@@ -510,7 +498,7 @@ findCorMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 
   all.av <- unique(c(x_av, y_av))
   emat <- emat[rownames(emat) %in% all.av, ]
-  emat <- (emat > 0)
+  # emat <- (emat > 0)
 
 
 
@@ -564,12 +552,7 @@ findCorMarkers <- function(object, features.x = NULL, features.y = rownames(obje
   }
 
   miko_message("Calculating sparse spearman correlation...", verbose = verbose)
-  # if (length(features.x) == 1){
-  #   corXY.sparse2 <- SparseSpearmanCor2(Matrix::t(emat[rownames(emat) %in% c(features.x, features.x)]), Matrix::t(emat))
-  # } else {
   cmat <- SparseSpearmanCor2(Matrix::t(emat), Matrix::t(emat))
-  # }
-
   colnames(cmat) <- rownames(cmat) <- rownames(emat)
 
   f0 <- features.x
