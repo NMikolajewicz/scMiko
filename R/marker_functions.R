@@ -402,7 +402,7 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 #' @param n.workers number of workers for parallel implementation. Default is 1 (no parallel).
 #' @param verbose print progress. Default is T.
 #' @param ... additional arguments passed to findCDIMarkers(...)
-#' @name FindConservedCDIMarkers
+#' @name findConservedCDIMarkers
 #' @seealso \code{\link{findCDIMarkers}}
 #' @author Nicholas Mikolajewicz
 #' @return data.frame with pooled CDI scores.
@@ -410,7 +410,7 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 #'
 #' cdi.conserved <- FindConservedCDIMarkers(object = so.ps, features.x = "celltype", group.by = "sample", n.workers = 15)
 #'
-FindConservedCDIMarkers <- function(object, features.x, features.y = rownames(object), group.by, n.workers = 1, verbose = T, ...){
+findConservedCDIMarkers <- function(object, features.x, features.y = rownames(object), group.by, n.workers = 1, verbose = T, ...){
 
   if (!("Seurat" %in% class(object))) stop("'object' is not Seurat object")
 
