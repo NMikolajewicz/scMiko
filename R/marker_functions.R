@@ -391,6 +391,90 @@ findCDIMarkers <- function(object, features.x = NULL, features.y = rownames(obje
 
 
 
+#' Find CDI-derived markers that are conserved across samples
+#'
+#' Find CDI-derived markers that are conserved across samples. For each sample (i.e., specified using group.by argument), FindCDIMarkers() is run, and the outputs from each sample are pooled. CDI scores are aggregated as means, whereas p values are pooled using the Fisher Method.
+#'
+#' @param object Seurat object
+#' @param features.x feature or meta feature. CDI between features.x and features.y are computed.
+#' @param features.y feature or meta feature. CDI between features.x and features.y are computed.
+#' @param group.by meta feature used to group data into independent samples.
+#' @param n.workers number of workers for parallel implementation. Default is 1 (no parallel).
+#' @param verbose print progress. Default is T.
+#' @param ... additional arguments passed to findCDIMarkers(...)
+#' @name FindConservedCDIMarkers
+#' @seealso \code{\link{findCDIMarkers}}
+#' @author Nicholas Mikolajewicz
+#' @return data.frame with pooled CDI scores.
+#' @examples
+#'
+#' cdi.conserved <- FindConservedCDIMarkers(object = so.ps, features.x = "celltype", group.by = "sample", n.workers = 15)
+#'
+FindConservedCDIMarkers <- function(object, features.x, features.y = rownames(object), group.by, n.workers = 1, verbose = T, ...){
+
+  if (!("Seurat" %in% class(object))) stop("'object' is not Seurat object")
+
+  if (verbose){
+    myloopfunc <- pbapply::pblapply
+  } else {
+    myloopfunc <- lapply
+  }
+
+  miko_message(paste0("Splitting object by ", group.by, "..."), verbose = verbose)
+  object.list <- SplitObject(object = object, split.by = group.by)
+
+  miko_message(paste0("Running sample-wise CDI analysis..."), verbose = verbose)
+
+  if (n.workers > 1){
+    require(future)
+    require(foreach)
+    if (n.workers > parallel::detectCores()) n.workers <- parallel::detectCores()
+    cl <- parallel::makeCluster(n.workers)
+    doParallel::registerDoParallel(cl)
+
+    cdi.list <- foreach(i = 1:length(object.list), .packages = c("scMiko", "dplyr"))  %dopar% {
+      group.name <- as.character(names(object.list)[i])
+      return(findCDIMarkers(object = object.list[[group.name]] ,  features.x = features.x, features.y = features.y, n.workers = 1, verbose = F, ...))
+    }
+    names(cdi.list) <-  as.character(names(object.list))
+
+    parallel::stopCluster(cl)
+  } else {
+    # cdi.list <- myloopfunc(X = object.list, FUN = findCDIMarkers, features.x = group.by, verbose = F)
+    cdi.list <- myloopfunc(X = object.list, function(x){
+      findCDIMarkers(object = x, features.x = group.by, features.y = features.y, verbose = F, ...)
+    })
+  }
+
+
+  for (i in 1:length(cdi.list)){
+    group.name <- as.character(names(cdi.list)[i])
+    cdi.list[[group.name]]$group <- group.name
+  }
+
+  miko_message("Merging results...", verbose = verbose)
+  df.cdi.all <- bind_rows(cdi.list)
+
+  df.cdi.wide <- pivot_wider(df.cdi.all %>% dplyr::select(-c("denominator", "fdr")), names_from = "group", values_from = c("cdi", "ncdi", "p"))
+
+  miko_message("Pooling statistics using Fisher's method...", verbose = verbose)
+  df.cdi.sum <- data.frame(
+    feature.x = df.cdi.wide$feature.x,
+    feature.y = df.cdi.wide$feature.y,
+    cdi_mean = Matrix::rowMeans( df.cdi.wide[ ,grepl("cdi_", colnames(df.cdi.wide)) & !grepl("ncdi_", colnames(df.cdi.wide))],na.rm = T),
+    ncdi_mean = Matrix::rowMeans( df.cdi.wide[ ,grepl("ncdi_", colnames(df.cdi.wide))],na.rm = T),
+    n = apply( df.cdi.wide[ ,grepl("ncdi_", colnames(df.cdi.wide))],1, function(x){sum(!is.na(x))}),
+    T_stat = apply( df.cdi.wide[ ,grepl("p_", colnames(df.cdi.wide))],1, function(x){-2*sum(log2(x[!is.na(x)]))})
+  )
+
+  df.cdi.sum$p <- pchisq(df.cdi.sum$T_stat, df= 2*df.cdi.sum$n, lower.tail=FALSE)
+  df.cdi.sum$fdr <- p.adjust(df.cdi.sum$p, method = "BH")
+  miko_message("Done!", verbose = verbose)
+  return(df.cdi.sum)
+}
+
+
+
 
 
 #' Calculate spearman correlations between features.
