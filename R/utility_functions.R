@@ -2996,36 +2996,97 @@ getJaccard <- function(x1, x2, assert.unique = T){
 #'
 jaccardSimilarityMatrix <- function(gene.sets, y = NULL, assert.unique = T){
 
-  if (is.null(y)){
 
-    n.sets <- length(gene.sets)
-    j.mat <- matrix(nrow = n.sets, ncol = n.sets)
-    for (i in 1:n.sets){
-      for (j in 1:n.sets){
-        i.name <- names(gene.sets)[i]
-        j.name <- names(gene.sets)[j]
-        j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
+  do.obsolete <- !is.null(y)
+
+  if (do.obsolete){
+
+
+    if (is.null(y)){
+
+      n.sets <- length(gene.sets)
+      j.mat <- matrix(nrow = n.sets, ncol = n.sets)
+      for (i in 1:n.sets){
+        for (j in 1:n.sets){
+          i.name <- names(gene.sets)[i]
+          j.name <- names(gene.sets)[j]
+          j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], gene.sets[[j.name]], assert.unique = assert.unique)
+        }
       }
-    }
 
-    rownames(j.mat) <- names(gene.sets)
-    colnames(j.mat) <- names(gene.sets)
+      rownames(j.mat) <- names(gene.sets)
+      colnames(j.mat) <- names(gene.sets)
+
+
+    } else {
+      n.sets.x <- length(gene.sets)
+      n.sets.y <- length(y)
+      j.mat <- matrix(nrow = n.sets.x, ncol = n.sets.y)
+      for (i in 1:n.sets.x){
+        for (j in 1:n.sets.y){
+          i.name <- names(gene.sets)[i]
+          j.name <- names(y)[j]
+          j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], y[[j.name]], assert.unique = assert.unique)
+        }
+      }
+
+      rownames(j.mat) <- names(gene.sets)
+      colnames(j.mat) <- names(y)
+    }
 
 
   } else {
-    n.sets.x <- length(gene.sets)
-    n.sets.y <- length(y)
-    j.mat <- matrix(nrow = n.sets.x, ncol = n.sets.y)
-    for (i in 1:n.sets.x){
-      for (j in 1:n.sets.y){
-        i.name <- names(gene.sets)[i]
-        j.name <- names(y)[j]
-        j.mat[i, j] <- scMiko::getJaccard(gene.sets[[i.name]], y[[j.name]], assert.unique = assert.unique)
+
+
+    list2im <- function(x,
+                        keepCounts=FALSE,
+                        ...){
+      ## Purpose is to convert a list of vectors into an incident matrix
+      ## using the arules package
+      if (!suppressPackageStartupMessages(require(arules))) {
+        stop("list2im() requires the arules package.");
       }
+      if (keepCounts) {
+        xCt <- jamba::rmNULL(lapply(x, jamba::tcount, minCount=2));
+        if (length(xCt) == 0) {
+          keepCounts <- FALSE;
+        }
+      }
+
+      ## Convert to transactions
+      xT <- as(x, "transactions");
+
+      ## Extract the matrix
+      xM <- t(as(xT, "matrix")*1);
+      if (1 == 2) {
+        xM <- as.matrix(xT@data*1);
+        if (ncol(xT@itemsetInfo) > 0) {
+          colnames(xM) <- xT@itemsetInfo[,1];
+        }
+        if (ncol(xT@itemInfo) > 0) {
+          rownames(xM) <- xT@itemInfo[,1];
+        }
+      }
+      if (keepCounts) {
+        for (i in names(xCt)) {
+          #xM[names(xCt),,drop=FALSE]
+          xM[names(xCt[[i]]),i] <- xCt[[i]];
+        }
+      }
+      return(xM);
     }
 
-    rownames(j.mat) <- names(gene.sets)
-    colnames(j.mat) <- names(y)
+
+    require(locStra)
+    require(arules)
+
+    imat <- list2im(gene.sets)
+    j.mat <- locStra::jaccardMatrix(imat)
+    try({
+      rownames(j.mat) <- colnames(j.mat) <- names(gene.sets)
+    }, silent = T)
+
+
   }
 
   return(j.mat)
