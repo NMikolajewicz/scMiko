@@ -111,6 +111,8 @@ reference:
 - title: "Expression Functions"
 - contents:
   - findCDIMarkers
+  - findConservedCDIMarkers
+  - findCorMarkers
   - findGiniMarkers
   - getDEG
   - getExpressionMatrix
@@ -224,12 +226,17 @@ reference:
   - value2col
   - wideDF2namedList
 
+- title: "Integration Functions"
+- contents:
+  - miko_integrate
+  - runScanorama
+  - runBBKNN
+
 - title: "Seurat Functions"
 - contents:
   - balanceSamples
   - downsampleSeurat
   - mergeSeuratList
-  - miko_integrate
   - neighborPurity
   - prepSeurat
   - prepSeurat2

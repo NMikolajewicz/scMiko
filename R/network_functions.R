@@ -21,6 +21,65 @@
 #' @return vector of features
 #' @examples
 #'
+#' # load human gastrulation data
+#' so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
+#'
+#' # Expression-based feature selection
+#' features_expr <- findNetworkFeatures(object = so.query, method = "expr",
+#'                                      min_pct = 0.5)
+#'
+#' # Highly-variable genes
+#' features_hvg <- findNetworkFeatures(object = so.query, method = "hvg",
+#'                                     n_features =  2000)
+#'
+#' # run SSN
+#' so.gene <- runSSN(object = so.query ,
+#'      features = unique(c(features_hvg, features_dev)),
+#'      scale_free = T,
+#'      robust_pca = F,
+#'      data_type = "pearson",
+#'      reprocess_sct = T,
+#'      slot = c("scale"),
+#'      batch_feature = NULL,
+#'      pca_var_explained = 0.9,
+#'      optimize_resolution = T,
+#'      target_purity = 0.8,
+#'      step_size =  0.05,
+#'      n_workers = parallel::detectCores(),
+#'      verbose = F)
+#'
+#' # get network connectivity plot
+#' plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
+#'
+#' # visualize
+#' plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+#'
+#'
+#' # specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+#' prune.threshold <- 0.1
+#'
+#' get feature-specific connectivities (wi)
+#' df.wi   <- pruneSSN(object = so.gene,
+#'                     graph = "RNA_snn_power",
+#'                     prune.threshold = prune.threshold,
+#'                     return.df = T)
+#'
+#' # visualize
+#' plt.prune <- df.wi %>%
+#'   ggplot(aes(x = wi_l2)) +
+#'   geom_histogram(bins = 30) +
+#'   geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+#'   labs(x = "Degree (L2 norm)", y = "Count",
+#'        title = "Network Pruning",
+#'        subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3),
+#'                          "% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +
+#'   theme_miko(grid = T)
+#'
+#' print(plt.prune)
+#'
+#' # get (pruned) gene module list
+#' mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
+#'
 findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n_features = 2000, min_pct = 0.5, split_var = "seurat_clusters", batch_feature = NULL, verbose = T){
 
   miko_message("Selecting features for network analysis...", verbose = verbose)
@@ -120,6 +179,65 @@ findNetworkFeatures <- function(object, method = c("expr", "hvg", "deviance"), n
 #' }
 #' @examples
 #'
+#' # load human gastrulation data
+#' so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
+#'
+#' # Expression-based feature selection
+#' features_expr <- findNetworkFeatures(object = so.query, method = "expr",
+#'                                      min_pct = 0.5)
+#'
+#' # Highly-variable genes
+#' features_hvg <- findNetworkFeatures(object = so.query, method = "hvg",
+#'                                     n_features =  2000)
+#'
+#' # run SSN
+#' so.gene <- runSSN(object = so.query ,
+#'      features = unique(c(features_hvg, features_dev)),
+#'      scale_free = T,
+#'      robust_pca = F,
+#'      data_type = "pearson",
+#'      reprocess_sct = T,
+#'      slot = c("scale"),
+#'      batch_feature = NULL,
+#'      pca_var_explained = 0.9,
+#'      optimize_resolution = T,
+#'      target_purity = 0.8,
+#'      step_size =  0.05,
+#'      n_workers = parallel::detectCores(),
+#'      verbose = F)
+#'
+#' # get network connectivity plot
+#' plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
+#'
+#' # visualize
+#' plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+#'
+#'
+#' # specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+#' prune.threshold <- 0.1
+#'
+#' get feature-specific connectivities (wi)
+#' df.wi   <- pruneSSN(object = so.gene,
+#'                     graph = "RNA_snn_power",
+#'                     prune.threshold = prune.threshold,
+#'                     return.df = T)
+#'
+#' # visualize
+#' plt.prune <- df.wi %>%
+#'   ggplot(aes(x = wi_l2)) +
+#'   geom_histogram(bins = 30) +
+#'   geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+#'   labs(x = "Degree (L2 norm)", y = "Count",
+#'        title = "Network Pruning",
+#'        subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3),
+#'                          "% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +
+#'   theme_miko(grid = T)
+#'
+#' print(plt.prune)
+#'
+#' # get (pruned) gene module list
+#' mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
+#'
 scaleFreeNet <- function(object, graph_name = "RNA_snn", sf = c(seq(1, 5, by = 0.5), seq(6, 10)), sf_threshold = 0.9, umap_knn = 10, n_dim = 30, binary_threshold = 0.9, n_workers = 1, verbose = T){
 
   suppressMessages({
@@ -205,6 +323,65 @@ scaleFreeNet <- function(object, graph_name = "RNA_snn", sf = c(seq(1, 5, by = 0
 #' @author Nicholas Mikolajewicz
 #' @return optimal cluster resolution
 #' @examples
+#'
+#' # load human gastrulation data
+#' so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
+#'
+#' # Expression-based feature selection
+#' features_expr <- findNetworkFeatures(object = so.query, method = "expr",
+#'                                      min_pct = 0.5)
+#'
+#' # Highly-variable genes
+#' features_hvg <- findNetworkFeatures(object = so.query, method = "hvg",
+#'                                     n_features =  2000)
+#'
+#' # run SSN
+#' so.gene <- runSSN(object = so.query ,
+#'      features = unique(c(features_hvg, features_dev)),
+#'      scale_free = T,
+#'      robust_pca = F,
+#'      data_type = "pearson",
+#'      reprocess_sct = T,
+#'      slot = c("scale"),
+#'      batch_feature = NULL,
+#'      pca_var_explained = 0.9,
+#'      optimize_resolution = T,
+#'      target_purity = 0.8,
+#'      step_size =  0.05,
+#'      n_workers = parallel::detectCores(),
+#'      verbose = F)
+#'
+#' # get network connectivity plot
+#' plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
+#'
+#' # visualize
+#' plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+#'
+#'
+#' # specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+#' prune.threshold <- 0.1
+#'
+#' get feature-specific connectivities (wi)
+#' df.wi   <- pruneSSN(object = so.gene,
+#'                     graph = "RNA_snn_power",
+#'                     prune.threshold = prune.threshold,
+#'                     return.df = T)
+#'
+#' # visualize
+#' plt.prune <- df.wi %>%
+#'   ggplot(aes(x = wi_l2)) +
+#'   geom_histogram(bins = 30) +
+#'   geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+#'   labs(x = "Degree (L2 norm)", y = "Count",
+#'        title = "Network Pruning",
+#'        subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3),
+#'                          "% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +
+#'   theme_miko(grid = T)
+#'
+#' print(plt.prune)
+#'
+#' # get (pruned) gene module list
+#' mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
 #'
 SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, step.size = 0.05, target.level = "global", max.iter = 100, verbose = F){
 
@@ -307,6 +484,65 @@ SSNResolution <- function(object, graph, target.purity = 0.7, start.res = 0.5, s
 #' @author Nicholas Mikolajewicz
 #' @return Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene programs
 #' @examples
+#'
+#' # load human gastrulation data
+#' so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
+#'
+#' # Expression-based feature selection
+#' features_expr <- findNetworkFeatures(object = so.query, method = "expr",
+#'                                      min_pct = 0.5)
+#'
+#' # Highly-variable genes
+#' features_hvg <- findNetworkFeatures(object = so.query, method = "hvg",
+#'                                     n_features =  2000)
+#'
+#' # run SSN
+#' so.gene <- runSSN(object = so.query ,
+#'      features = unique(c(features_hvg, features_dev)),
+#'      scale_free = T,
+#'      robust_pca = F,
+#'      data_type = "pearson",
+#'      reprocess_sct = T,
+#'      slot = c("scale"),
+#'      batch_feature = NULL,
+#'      pca_var_explained = 0.9,
+#'      optimize_resolution = T,
+#'      target_purity = 0.8,
+#'      step_size =  0.05,
+#'      n_workers = parallel::detectCores(),
+#'      verbose = F)
+#'
+#' # get network connectivity plot
+#' plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
+#'
+#' # visualize
+#' plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+#'
+#'
+#' # specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+#' prune.threshold <- 0.1
+#'
+#' get feature-specific connectivities (wi)
+#' df.wi   <- pruneSSN(object = so.gene,
+#'                     graph = "RNA_snn_power",
+#'                     prune.threshold = prune.threshold,
+#'                     return.df = T)
+#'
+#' # visualize
+#' plt.prune <- df.wi %>%
+#'   ggplot(aes(x = wi_l2)) +
+#'   geom_histogram(bins = 30) +
+#'   geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+#'   labs(x = "Degree (L2 norm)", y = "Count",
+#'        title = "Network Pruning",
+#'        subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3),
+#'                          "% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +
+#'   theme_miko(grid = T)
+#'
+#' print(plt.prune)
+#'
+#' # get (pruned) gene module list
+#' mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
 #'
 runSSN <- function(object, features, scale_free = T, robust_pca = F, data_type = c("pearson", "deviance"), reprocess_sct = F, slot = c("scale", "data"), batch_feature = NULL, do_scale = F, do_center = F, pca_var_explained = 0.9, weight_by_var = F, umap_knn = 10, optimize_resolution = T,
                    target_purity = 0.8, step_size = 0.05, n_workers = 1, verbose = T){

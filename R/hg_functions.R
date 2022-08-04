@@ -92,6 +92,10 @@ summarizeHG <- function(hg.res, fdr.filter = 1, fdr.threshold = 0.05, do.plot = 
       plots = plt.enrich.list
     ))
 
+  } else {
+    return(list(
+      results = res.df
+    ))
   }
 
 
