@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -38,7 +40,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Getting Started
      
     <span class="caret"></span>
@@ -54,7 +56,7 @@
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -77,7 +79,8 @@
       <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider">
-    <li class="dropdown-header">scPipeline Dashboard Reports</li>
+    </li>
+<li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
       <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
@@ -104,12 +107,12 @@
 
       
 
-      </header><script src="scPipeline_getting_started_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Getting Started with scPipeline</h1>
             
-            <h4 class="date">Compiled: 2022-01-27</h4>
+            <h4 data-toc-skip class="date">Compiled: 2022-08-03</h4>
       
       
       <div class="hidden name"><code>scPipeline_getting_started.Rmd</code></div>
@@ -118,56 +121,74 @@
 
     
     
-<div id="setup" class="section level2">
-<h2 class="hasAnchor">
-<a href="#setup" class="anchor"></a>Setup</h2>
-<p><a href="https://www.r-project.org/">R</a> version 4.0 or greater is required. We also recommend installing <a href="https://www.rstudio.com/">R Studio</a>.</p>
-<p>scPipeline is available as a series of RMarkdown stripts and the latest version of scPipeline source code can be found on <a href="https://github.com/NMikolajewicz/scPipeline">scPipeline github repository</a>. To setup and run scPipeline, download the repository locally:</p>
-<div id="option-1-clone-git-repository-with-bash" class="section level3">
-<h3 class="hasAnchor">
-<a href="#option-1-clone-git-repository-with-bash" class="anchor"></a>Option 1: Clone git repository with Bash</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">git</span> clone https://github.com/NMikolajewicz/scPipeline</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="bu">cd</span> scPipeline</span></code></pre></div>
+<div class="section level2">
+<h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
+</h2>
+<p><a href="https://www.r-project.org/" class="external-link">R</a> version 4.0 or greater is
+required. We also recommend installing <a href="https://www.rstudio.com/" class="external-link">R Studio</a>.</p>
+<p>scPipeline is available as a series of RMarkdown stripts and the
+latest version of scPipeline source code can be found on <a href="https://github.com/NMikolajewicz/scPipeline">scPipeline github
+repository</a>. To setup and run scPipeline, download the repository
+locally:</p>
+<div class="section level3">
+<h3 id="option-1-clone-git-repository-with-bash">Option 1: Clone git repository with Bash<a class="anchor" aria-label="anchor" href="#option-1-clone-git-repository-with-bash"></a>
+</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/NMikolajewicz/scPipeline</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> scPipeline</span></code></pre></div>
 </div>
-<div id="option-2-clone-git-repository-with-rstudio" class="section level3">
-<h3 class="hasAnchor">
-<a href="#option-2-clone-git-repository-with-rstudio" class="anchor"></a>Option 2: Clone git repository with RStudio</h3>
-<p>In RStudio, navigate to <code>file</code> -&gt; <code>New Project...</code> -&gt; <code>Version Control</code> -&gt; <code>Git</code>. You will then be prompted to provide the git repository information:</p>
+<div class="section level3">
+<h3 id="option-2-clone-git-repository-with-rstudio">Option 2: Clone git repository with RStudio<a class="anchor" aria-label="anchor" href="#option-2-clone-git-repository-with-rstudio"></a>
+</h3>
+<p>In RStudio, navigate to <code>file</code> -&gt;
+<code>New Project...</code> -&gt; <code>Version Control</code> -&gt;
+<code>Git</code>. You will then be prompted to provide the git
+repository information:</p>
 <pre><code>Repository URL: https://github.com/NMikolajewicz/scPipeline
 Project Directory Name: scPipeline</code></pre>
 <p>Press <code>Create Project</code> and you’re good to go!</p>
 </div>
 </div>
-<div id="required-packages" class="section level2">
-<h2 class="hasAnchor">
-<a href="#required-packages" class="anchor"></a>Required Packages</h2>
-<p>scPipeline is dependent on our <a href="https://github.com/NMikolajewicz/scMiko">scMiko</a> package. Please find installation instructions <a href="install.html"><strong>here</strong></a> prior to proceeding with scPipeline.</p>
-<p>scPipeline is also dependent on <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboards</a> to generate interactive dashboards using R Markdown. The <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboard</a> package can be installed from CRAN as follows:</p>
+<div class="section level2">
+<h2 id="required-packages">Required Packages<a class="anchor" aria-label="anchor" href="#required-packages"></a>
+</h2>
+<p>scPipeline is dependent on our <a href="https://github.com/NMikolajewicz/scMiko">scMiko</a> package.
+Please find installation instructions <a href="install.html"><strong>here</strong></a> prior to proceeding with
+scPipeline.</p>
+<p>scPipeline is also dependent on <a href="https://rstudio.github.io/flexdashboard/index.html" class="external-link">flexdashboards</a>
+to generate interactive dashboards using R Markdown. The <a href="https://rstudio.github.io/flexdashboard/index.html" class="external-link">flexdashboard</a>
+package can be installed from CRAN as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"flexdashboard"</span><span class="op">)</span></code></pre></div>
-<p>Additionally, each scPipeline module depends on a variety of R packages to run, and a complete list of required packages can be found at the beginning of each module script.</p>
-<p>To install multiple R packages simultaneously, the following command can be used:</p>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"flexdashboard"</span><span class="op">)</span></code></pre></div>
+<p>Additionally, each scPipeline module depends on a variety of R
+packages to run, and a complete list of required packages can be found
+at the beginning of each module script.</p>
+<p>To install multiple R packages simultaneously, the following command
+can be used:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># example</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Seurat"</span>, <span class="st">"presto"</span>, <span class="st">"dplyr"</span>, <span class="st">"tidyr"</span>, <span class="st">"stringr"</span>, <span class="st">"RColorBrewer"</span>, <span class="st">"ggplot2"</span>, <span class="st">"DT"</span>,
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Seurat"</span>, <span class="st">"presto"</span>, <span class="st">"dplyr"</span>, <span class="st">"tidyr"</span>, <span class="st">"stringr"</span>, <span class="st">"RColorBrewer"</span>, <span class="st">"ggplot2"</span>, <span class="st">"DT"</span>,
     <span class="st">"flexdashboard"</span>, <span class="st">"ggrepel"</span>, <span class="st">"future"</span>, <span class="st">"ggwordcloud"</span>, <span class="st">"scales"</span>, <span class="st">"org.Mm.eg.db"</span>, <span class="st">"org.Hs.eg.db"</span>,
     <span class="st">"parallel"</span>, <span class="st">"doParallel"</span>, <span class="st">"foreach"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="running-scpipeline-modules" class="section level2">
-<h2 class="hasAnchor">
-<a href="#running-scpipeline-modules" class="anchor"></a>Running scPipeline Modules</h2>
-<p>Running scPipeline modules is like running any other Rmarkdown script:</p>
+<div class="section level2">
+<h2 id="running-scpipeline-modules">Running scPipeline Modules<a class="anchor" aria-label="anchor" href="#running-scpipeline-modules"></a>
+</h2>
+<p>Running scPipeline modules is like running any other Rmarkdown
+script:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Open</strong> a scPipeline module script (.Rmd) in RStudio.</li>
+<strong>Open</strong> a scPipeline module script (.Rmd) in
+RStudio.</li>
 <li>
 <strong>Specify</strong> analysis parameters
 <ul>
-<li>See <a href="scPipeline_module_overview.html"><strong>Module Overviews</strong></a> for instructions.</li>
+<li>See <a href="scPipeline_module_overview.html"><strong>Module
+Overviews</strong></a> for instructions.</li>
 </ul>
 </li>
 <li>
-<strong>Run</strong> scPipeline Module. Each scPipeline module can be run in one of two ways:
+<strong>Run</strong> scPipeline Module. Each scPipeline module can
+be run in one of two ways:
 <ol style="list-style-type: decimal">
 <li>
 <code>knit</code> document (<em>recommended</em>)
@@ -177,20 +198,30 @@ Project Directory Name: scPipeline</code></pre>
 </li>
 <li>Run chunk-by-chunk
 <ul>
-<li>If <code>print.inline = TRUE</code>, figures are printing within the R markdown file.</li>
+<li>If <code>print.inline = TRUE</code>, figures are printing within the
+R markdown file.</li>
 <li>Does not render an .HTML report.</li>
-<li>This option permit users to customize their analyses beyond what has been provided by us.</li>
+<li>This option permit users to customize their analyses beyond what has
+been provided by us.</li>
 </ul>
 </li>
 </ol>
 </li>
 </ol>
+<p>Please refer to these <a href="Reports/Tutorial%20scPipeline_030822.pptx">tutorial slides for
+additional step-by-step instructions</a> on how to get scPipeline
+running.</p>
 </div>
-<div id="scpipeline--html-reports" class="section level2">
-<h2 class="hasAnchor">
-<a href="#scpipeline--html-reports" class="anchor"></a>scPipeline .HTML reports</h2>
-<p>Every scPipeline Module generates an HTML report summarizing the analysis results. These can be viewed using any browser. Given their portability (i.e., self-contained), these can be shared easily shared among users. HTML reports are generated using <a href="https://rstudio.github.io/flexdashboard/index.html">flexdashboard</a>.</p>
-<p>Refer to our <a href="scPipeline_module_overview.html">Module Overviews</a> article to find examples of scPipeline-generated reports.</p>
+<div class="section level2">
+<h2 id="scpipeline--html-reports">scPipeline .HTML reports<a class="anchor" aria-label="anchor" href="#scpipeline--html-reports"></a>
+</h2>
+<p>Every scPipeline Module generates an HTML report summarizing the
+analysis results. These can be viewed using any browser. Given their
+portability (i.e., self-contained), these can be shared easily shared
+among users. HTML reports are generated using <a href="https://rstudio.github.io/flexdashboard/index.html" class="external-link">flexdashboard</a>.</p>
+<p>Refer to our <a href="scPipeline_module_overview.html">Module
+Overviews</a> article to find examples of scPipeline-generated
+reports.</p>
 </div>
   </div>
 
@@ -205,11 +236,13 @@ Project Directory Name: scPipeline</code></pre>
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=">Nicholas Mikolajewicz</a>.</p>
+  <p></p>
+<p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=" class="external-link">Nicholas Mikolajewicz</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -217,6 +250,8 @@ Project Directory Name: scPipeline</code></pre>
 
   
 
+
+  
 
   </body>
 </html>

@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -38,7 +40,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Getting Started
      
     <span class="caret"></span>
@@ -54,7 +56,7 @@
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -77,7 +79,8 @@
       <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider">
-    <li class="dropdown-header">scPipeline Dashboard Reports</li>
+    </li>
+<li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
       <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
@@ -104,12 +107,12 @@
 
       
 
-      </header><script src="scPipeline_module_overview_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>scPipeline analysis workflows</h1>
             
-            <h4 class="date">Compiled: 2022-03-20</h4>
+            <h4 data-toc-skip class="date">Compiled: 2022-08-02</h4>
       
       
       <div class="hidden name"><code>scPipeline_module_overview.Rmd</code></div>
@@ -119,51 +122,96 @@
     
     
 <hr>
-<p>In this article we overview each scPipeline module, and provide details on how to specify parameters for analysis. For each module, we provide a description, example reports and documentation for implementation (i.e., parameter specification).</p>
-<p>Prior to running any scPipeline module, please visit our <a href="scPipeline_getting_started.html">getting started with scPipeline</a> article to setup up scPipeline.</p>
-<div id="scpipeline-parameter-specification" class="section level3">
-<h3 class="hasAnchor">
-<a href="#scpipeline-parameter-specification" class="anchor"></a>scPipeline Parameter specification</h3>
-<p>In general, our convention is to store all analysis parameters in a list named <code>parameter.list</code> at the start of the script.</p>
+<p>In this article we overview each scPipeline module, and provide
+details on how to specify parameters for analysis. For each module, we
+provide a description, example reports and documentation for
+implementation (i.e., parameter specification).</p>
+<p>Prior to running any scPipeline module, please visit our <a href="scPipeline_getting_started.html">getting started with
+scPipeline</a> article to setup up scPipeline.</p>
+<div class="section level3">
+<h3 id="scpipeline-parameter-specification">scPipeline Parameter specification<a class="anchor" aria-label="anchor" href="#scpipeline-parameter-specification"></a>
+</h3>
+<p>In general, our convention is to store all analysis parameters in a
+list named <code>parameter.list</code> at the start of the script.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># example</span>
-<span class="va">parameter.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>input.file <span class="op">=</span> <span class="st">"../data.rds"</span>, <span class="va">...</span>, print.inline <span class="op">=</span> <span class="cn">F</span>, save.flag <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
-<p>In all scPipeline modules, <code>parameter.list</code> is already specified, so users need only to configure the analysis parameters (e.g., specify input data, set cluster resolution, etc.) prior to running the module. In general, the default settings will yield reasonable results, however a little time spent optimizing parameters will often yield better outcomes.</p>
+<span class="va">parameter.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>input.file <span class="op">=</span> <span class="st">"../data/demo.rds"</span>, <span class="va">...</span>, print.inline <span class="op">=</span> <span class="cn">F</span>, save.flag <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
+<p>In all scPipeline modules, <code>parameter.list</code> is already
+specified, so users need only to configure the analysis parameters
+(e.g., specify input data, set cluster resolution, etc.) prior to
+running the module. In general, the default settings will yield
+reasonable results, however a little time spent optimizing parameters
+will often yield better outcomes.</p>
 <hr>
 </div>
-<div id="module-1-quality-control-qc-preprocessing" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-1-quality-control-qc-preprocessing" class="anchor"></a>Module 1: Quality Control (QC) &amp; Preprocessing</h2>
-<div id="description" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description" class="anchor"></a>Description</h3>
-<p>Initial appraisal of scRNA-seq count matrix data and overview of quality control metrics, data filtering, and normalization. Generates initial UMAP clusters, and PCA analyses. <strong>A preprocessed seurat object is saved as output</strong>.</p>
-<p><strong>Quality control</strong>: Cells are filtered based on genes/cell recovered and fraction of counts belonging to mitochondrial genes. Injured/broken cells are characterized by low gene recovery and high mitochondrial content whereas doublets are characterized by extremely high gene recovery. Based on these behaviors, high quality non-injured single cells can be retained for downstream analysis using the <code>gene.upperlimit</code>, <code>gene.lowerlimit</code>, and <code>mt.upperlimit</code> analysis parameters.</p>
-<p><strong>Count Normalization</strong>: Count matrices are normalized using <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1">SCTransform</a>. In brief, the count data are modeled using regularized negative binomial regression to remove the influence of technical covariates, including sequencing depth and mitochondrial content. The resulting model residuals are treated as normalized count data for downstream analysis.</p>
-<p><strong>Dimensional Reduction</strong>: Following normalization, select features (i.e., genes) are used to reduce the dimensionality of the data set. This effectively eases downstream computational burden, increases the signal-to-noise and allows for data visualization. We perform principal component analysis and use the top N principal components that explain 90% (user-defined; <code>pca.var.threshold</code>) variance for Louvain clustering and UMAP embedding. The <a href="https://arxiv.org/abs/1802.03426">UMAP</a> algorithm embeds reduced data (e.g., principal components) into a lower dimensional representation while preserving the global structure of the transcriptomic data to facilitate visualization.</p>
+<div class="section level2">
+<h2 id="module-1-quality-control-qc-preprocessing">Module 1: Quality Control (QC) &amp; Preprocessing<a class="anchor" aria-label="anchor" href="#module-1-quality-control-qc-preprocessing"></a>
+</h2>
+<div class="section level3">
+<h3 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
+</h3>
+<p>Initial appraisal of scRNA-seq count matrix data and overview of
+quality control metrics, data filtering, and normalization. Generates
+initial UMAP clusters, and PCA analyses. <strong>A preprocessed seurat
+object is saved as output</strong>.</p>
+<p><strong>Quality control</strong>: Cells are filtered based on
+genes/cell recovered and fraction of counts belonging to mitochondrial
+genes. Injured/broken cells are characterized by low gene recovery and
+high mitochondrial content whereas doublets are characterized by
+extremely high gene recovery. Based on these behaviors, high quality
+non-injured single cells can be retained for downstream analysis using
+the <code>gene.upperlimit</code>, <code>gene.lowerlimit</code>, and
+<code>mt.upperlimit</code> analysis parameters.</p>
+<p><strong>Count Normalization</strong>: Count matrices are normalized
+using <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1" class="external-link">SCTransform</a>.
+In brief, the count data are modeled using regularized negative binomial
+regression to remove the influence of technical covariates, including
+sequencing depth and mitochondrial content. The resulting model
+residuals are treated as normalized count data for downstream
+analysis.</p>
+<p><strong>Dimensional Reduction</strong>: Following normalization,
+select features (i.e., genes) are used to reduce the dimensionality of
+the data set. This effectively eases downstream computational burden,
+increases the signal-to-noise and allows for data visualization. We
+perform principal component analysis and use the top N principal
+components that explain 90% (user-defined;
+<code>pca.var.threshold</code>) variance for Louvain clustering and UMAP
+embedding. The <a href="https://arxiv.org/abs/1802.03426" class="external-link">UMAP</a>
+algorithm embeds reduced data (e.g., principal components) into a lower
+dimensional representation while preserving the global structure of the
+transcriptomic data to facilitate visualization.</p>
 </div>
-<div id="example-reports" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports" class="anchor"></a>Example Reports</h3>
-<p>For all the example reports shown here, datasets were subsampled to 10,000 cells and minimal cell filtering was performed due to original count matrices having been cleaned by authors.</p>
+<div class="section level3">
+<h3 id="example-reports">Example Reports<a class="anchor" aria-label="anchor" href="#example-reports"></a>
+</h3>
+<p>For all the example reports shown here, datasets were subsampled to
+10,000 cells and minimal cell filtering was performed due to original
+count matrices having been cleaned by authors.</p>
 <ul>
-<li><a href="Reports/M01_QC_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M01_QC_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M01_QC_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M01_QC_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M01_QC_demo_cao2019_10000cells_240122.html">Cao
+2019: Murine organogenesis</a></li>
+<li><a href="Reports/M01_QC_demo_manno_10000cells_240122.html">La Manno
+2021: Developing murine brain</a></li>
+<li><a href="Reports/M01_QC_demo_ps_10000cells_240122.html">Pijuan-Sala
+2019: Murine gastrulation</a></li>
+<li><a href="Reports/M01_QC_demo_zeisel_10000cells_240122.html">Zeisel
+2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
+<div class="section level3">
+<h3 id="inputs-and-outputs">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs"></a>
+</h3>
+<details><summary><strong>show contents</strong>
+</summary><p><u>Inputs</u></p>
 <p>One of the following data formats must be provided as input:</p>
 <ul>
 <li>
-<strong>Seurat object</strong>: must contain RNA assay with gene x cell count matrix</li>
+<strong>Seurat object</strong>: must contain RNA assay with gene x
+cell count matrix</li>
 <li>
-<strong>Cell Ranger output</strong>: folder must contain <code>barcodes.tsv</code>, <code>genes.tsv</code>, <code>matrix.mtx</code>
+<strong>Cell Ranger output</strong>: folder must contain
+<code>barcodes.tsv</code>, <code>genes.tsv</code>,
+<code>matrix.mtx</code>
 </li>
 <li><strong>gene x cell count matrix</strong></li>
 </ul>
@@ -175,11 +223,11 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters"></a>
+</h3>
+<details><summary><strong>show table</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -218,47 +266,61 @@
 </tr>
 <tr class="even">
 <td><strong>output.object.file</strong></td>
-<td>name of file to which Seurat object is saved. Must have “.Rdata” suffix (e.g., ‘object.Rdata’)</td>
+<td>name of file to which Seurat object is saved. Must have “.Rdata”
+suffix (e.g., ‘object.Rdata’)</td>
 <td>character</td>
 </tr>
 <tr class="odd">
 <td><strong>subsample.n</strong></td>
-<td>value specifying how many cells to sub sample. Set to NA if none.</td>
+<td>value specifying how many cells to sub sample. Set to NA if
+none.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>cluster.resolution</strong></td>
-<td>value of the resolution parameter passed to <code><a href="https://satijalab.org/seurat/reference/FindClusters.html">Seurat::FindClusters(...)</a></code>. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1.</td>
+<td>value of the resolution parameter passed to
+<code>Seurat::FindClusters(...)</code>. Use a value above (below) 1.0 if
+you want to obtain a larger (smaller) number of communities. Default is
+1.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>gene.upperlimit</strong></td>
-<td>Upper limit of genes per cell. Value between [0, Inf], but more than <code>gene.lowerlimit</code>. Any cells exceeding this threshold are filtered out. Default is 9000.</td>
+<td>Upper limit of genes per cell. Value between [0, Inf], but more than
+<code>gene.lowerlimit</code>. Any cells exceeding this threshold are
+filtered out. Default is 9000.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>gene.lowerlimit</strong></td>
-<td>Lower limit of genes per cell. Value between [0, Inf], but less than <code>gene.upperlimit</code>. Any cells below this threshold are filtered out. Default is 200.</td>
+<td>Lower limit of genes per cell. Value between [0, Inf], but less than
+<code>gene.upperlimit</code>. Any cells below this threshold are
+filtered out. Default is 200.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>mt.upperlimit</strong></td>
-<td>Upper limit of mitochondrial content per cell. Value between [0, 100]. Cells exceeding this threshold are filtered out. Default is 10.</td>
+<td>Upper limit of mitochondrial content per cell. Value between [0,
+100]. Cells exceeding this threshold are filtered out. Default is
+10.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>unmatched.rate.filter.flag</strong></td>
-<td>Logical specifying whether to filtered cells using unmatched rates. Default is TRUE.</td>
+<td>Logical specifying whether to filtered cells using unmatched rates.
+Default is TRUE.</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td><strong>vars2regress</strong></td>
-<td>Variables to regress out during scaling step. Default is ‘percent.mt’.</td>
+<td>Variables to regress out during scaling step. Default is
+‘percent.mt’.</td>
 <td>vector of character(s)</td>
 </tr>
 <tr class="even">
 <td><strong>correct.artifact</strong></td>
-<td>identify artifact cells and omit from dimensional reduction. Default is TRUE.</td>
+<td>identify artifact cells and omit from dimensional reduction. Default
+is TRUE.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -278,17 +340,22 @@
 </tr>
 <tr class="even">
 <td><strong>pca.component.select.method</strong></td>
-<td>method for selecting number of principal components for clustering and UMAP embedding.</td>
+<td>method for selecting number of principal components for clustering
+and UMAP embedding.</td>
 <td>- cum_var (default) <br>- elbow</td>
 </tr>
 <tr class="odd">
 <td><strong>pca.var.threshold</strong></td>
-<td>value between [0, 1] specifying cumulative variance explained by pca. Ignored if <code>pca.component.select.method</code> is not ‘cum_var’.</td>
+<td>value between [0, 1] specifying cumulative variance explained by
+pca. Ignored if <code>pca.component.select.method</code> is not
+‘cum_var’.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>conserve.memory</strong></td>
-<td>If TRUE, the residual matrix for all genes computed using SCTransform is never created in full; <strong>recommended for large data sets</strong>, but will take longer to run. Default is FALSE</td>
+<td>If TRUE, the residual matrix for all genes computed using
+SCTransform is never created in full; <strong>recommended for large data
+sets</strong>, but will take longer to run. Default is FALSE</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -298,22 +365,26 @@
 </tr>
 <tr class="even">
 <td><strong>species.include</strong></td>
-<td>Specify which species to retain in analysis. Ignored if <code>species.filter.flag</code> is FALSE</td>
+<td>Specify which species to retain in analysis. Ignored if
+<code>species.filter.flag</code> is FALSE</td>
 <td>- Hs: human <br>- Mm: murine</td>
 </tr>
 <tr class="odd">
 <td><strong>nworkers</strong></td>
-<td>Number of workers used for parallel implementation of SCTransform. Default is 1.</td>
+<td>Number of workers used for parallel implementation of SCTransform.
+Default is 1.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>save.pdf</strong></td>
-<td>Logical specifying whether to save figures and tables in separate directory.</td>
+<td>Logical specifying whether to save figures and tables in separate
+directory.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -325,33 +396,57 @@
 </table></details><hr>
 </div>
 </div>
-<div id="module-2-data-integration" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-2-data-integration" class="anchor"></a>Module 2: Data Integration</h2>
-<div id="description-1" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-1" class="anchor"></a>Description</h3>
-<p>Batch correction and integration of independent experiments. Generates a new Seurat <code>integrated</code> assay using one of four approaches:</p>
+<div class="section level2">
+<h2 id="module-2-data-integration">Module 2: Data Integration<a class="anchor" aria-label="anchor" href="#module-2-data-integration"></a>
+</h2>
+<div class="section level3">
+<h3 id="description-1">Description<a class="anchor" aria-label="anchor" href="#description-1"></a>
+</h3>
+<p>Batch correction and integration of independent experiments.
+Generates a new Seurat <code>integrated</code> assay using one of four
+approaches:</p>
 <ol style="list-style-type: decimal">
 <li>
-<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8"><strong>rPCA</strong></a>: reciprocal principal component analysis (Seurat)</li>
+<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link"><strong>rPCA</strong></a>:
+reciprocal principal component analysis (Seurat)</li>
 <li>
-<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8"><strong>CCA</strong></a>: canonical correlation analysis + mutual nearest neighbors-based integration (Seurat)</li>
+<a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link"><strong>CCA</strong></a>:
+canonical correlation analysis + mutual nearest neighbors-based
+integration (Seurat)</li>
 <li>
-<a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955"><strong>BBKNN</strong></a>: batch-balanced K-nearest neighbors-based integration</li>
+<a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955" class="external-link"><strong>BBKNN</strong></a>:
+batch-balanced K-nearest neighbors-based integration</li>
 <li>
-<a href="https://www.nature.com/articles/s41587-019-0113-3"><strong>Scanorama</strong></a>: SVD + Mutual nearest neighbors-based integration</li>
+<a href="https://www.nature.com/articles/s41587-019-0113-3" class="external-link"><strong>Scanorama</strong></a>:
+SVD + Mutual nearest neighbors-based integration</li>
 </ol>
-<p>See <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8">Stuart et al. (2019). <em>Cell</em></a> for a description of rPCA and CCA, <a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955">Polański et al. (2020). <em>Bioinformatics</em></a> for BBKNN, and <a href="https://www.nature.com/articles/s41587-019-0113-3">Hie et al. (2019). <em>Nature Biotechnology</em></a> for Scanorama.</p>
-<p>Our selection of integration methods is based on the benchmarking efforts published by <a href="https://www.nature.com/articles/s41592-021-01336-8">Luecken et al. (2021). <em>Nature Methods</em></a></p>
-<p>The primary aim of data integration is to identify common cell populations between datasets. However, because many integration methods involve non-linear warping, many statistical assumptions are broken in the process and the count matrix in the <code>integrated</code> assay is not appropriate for downstream differential gene expression. Specifically, the <code>integrated</code> assay should only be used for clustering and visualization. If downstream differential expression (DEG) analyses are intended, use counts from the <code>data</code> slot in the <code>SCT</code> assay; Data are processed using <code>PrepSCTFindMarkers()</code> thereby ensuring that counts have been corrected for varying sequencing-depth across data sets.</p>
+<p>See <a href="https://www.cell.com/cell/fulltext/S0092-8674(19)30559-8" class="external-link">Stuart
+et al. (2019). <em>Cell</em></a> for a description of rPCA and CCA, <a href="https://academic.oup.com/bioinformatics/article/36/3/964/5545955" class="external-link">Polański
+et al. (2020). <em>Bioinformatics</em></a> for BBKNN, and <a href="https://www.nature.com/articles/s41587-019-0113-3" class="external-link">Hie et
+al. (2019). <em>Nature Biotechnology</em></a> for Scanorama.</p>
+<p>Our selection of integration methods is based on the benchmarking
+efforts published by <a href="https://www.nature.com/articles/s41592-021-01336-8" class="external-link">Luecken et
+al. (2021). <em>Nature Methods</em></a></p>
+<p>The primary aim of data integration is to identify common cell
+populations between datasets. However, because many integration methods
+involve non-linear warping, many statistical assumptions are broken in
+the process and the count matrix in the <code>integrated</code> assay is
+not appropriate for downstream differential gene expression. If
+downstream differential expression (DEG) analyses are intended, use
+counts from the <code>data</code> slot in the <code>SCT</code> assay;
+Data are processed using <code><a href="https://satijalab.org/seurat/reference/PrepSCTFindMarkers.html" class="external-link">PrepSCTFindMarkers()</a></code> thereby
+ensuring that counts have been corrected for varying sequencing-depth
+across data sets.</p>
 </div>
-<div id="analysis-parameters-1" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-1" class="anchor"></a>Analysis Parameters</h3>
-<p>In addition to specifying the <code>parameter.list</code> (analysis parameters), the Integration Module additionally requires a separate list, named <code>input.data</code>, to specify the data sets used for integration. See below for details and examples.</p>
-<details><p><summary><strong>show parameter.list</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters-1">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters-1"></a>
+</h3>
+<p>In addition to specifying the <code>parameter.list</code> (analysis
+parameters), the Integration Module additionally requires a separate
+list, named <code>input.data</code>, to specify the data sets used for
+integration. See below for details and examples.</p>
+<details><summary><strong>show parameter.list</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -375,17 +470,24 @@
 </tr>
 <tr class="odd">
 <td><strong>integration.k.filter</strong></td>
-<td>number of neighbors (k) to use when filtering anchors. Default is 200. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
+<td>number of neighbors (k) to use when filtering anchors. Default is
+200. Passed to <code>Seurat::FindIntegrationAnchors(...)</code>. Ignored
+if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>integration.k.anchor</strong></td>
-<td>number of neighbors (k) to use when picking anchors. Dictates strength of alignment. 5 is recommended, 20 suggested for stronger alignments. Passed to <code><a href="https://satijalab.org/seurat/reference/FindIntegrationAnchors.html">Seurat::FindIntegrationAnchors(...)</a></code>. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
+<td>number of neighbors (k) to use when picking anchors. Dictates
+strength of alignment. 5 is recommended, 20 suggested for stronger
+alignments. Passed to <code>Seurat::FindIntegrationAnchors(...)</code>.
+Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>integration.k.weight</strong></td>
-<td>number of neighbors to consider when weighting anchors. Passed to <code><a href="https://satijalab.org/seurat/reference/IntegrateData.html">Seurat::IntegrateData(...)</a></code>. Default is 100. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
+<td>number of neighbors to consider when weighting anchors. Passed to
+<code>Seurat::IntegrateData(...)</code>. Default is 100. Ignored if
+integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -400,27 +502,36 @@
 </tr>
 <tr class="even">
 <td><strong>integration.limit.memory</strong></td>
-<td>Specify whether to limit max memory allocated during integration. Default is T. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
+<td>Specify whether to limit max memory allocated during integration.
+Default is T. Ignored if integration.method = “BBKNN” or
+“Scanorama”.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>integration.max.memory</strong></td>
-<td>max memory allocated during integration, in terms of Gb. Ignored if integration.limit.memory = F. Default is 150. Ignored if integration.method = “BBKNN” or “Scanorama”.</td>
+<td>max memory allocated during integration, in terms of Gb. Ignored if
+integration.limit.memory = F. Default is 150. Ignored if
+integration.method = “BBKNN” or “Scanorama”.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>integration.cluster.resolution</strong></td>
-<td>value of the resolution parameter passed to <code><a href="https://satijalab.org/seurat/reference/FindClusters.html">Seurat::FindClusters(...)</a></code>, which is run after data integration. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1.</td>
+<td>value of the resolution parameter passed to
+<code>Seurat::FindClusters(...)</code>, which is run after data
+integration. Use a value above (below) 1.0 if you want to obtain a
+larger (smaller) number of communities. Default is 1.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>integration.compute.diversity</strong></td>
-<td>Compute change in population diversity before and after integration. Default is T</td>
+<td>Compute change in population diversity before and after integration.
+Default is T</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>pca.var.threshold</strong></td>
-<td>proportion of variance used for clustering and UMAP embedding. 0.9 is recommended.</td>
+<td>proportion of variance used for clustering and UMAP embedding. 0.9
+is recommended.</td>
 <td>numeric [0,1]</td>
 </tr>
 <tr class="odd">
@@ -430,27 +541,34 @@
 </tr>
 <tr class="even">
 <td><strong>vars2regress</strong></td>
-<td>Variables to regress out during scaling step. Default is ‘percent.mt’.</td>
+<td>Variables to regress out during scaling step. Default is
+‘percent.mt’.</td>
 <td>vector of character(s)</td>
 </tr>
 <tr class="odd">
 <td><strong>correct.artifact</strong></td>
-<td>identify artifact genes (i.e., genes detected in only one sample) and omit from integration step. Recommended only if integrated datasets have similar cellular compositions. Default is F</td>
+<td>identify artifact genes (i.e., genes detected in only one sample)
+and omit from integration step. Recommended only if integrated datasets
+have similar cellular compositions. Default is F</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>n.workers</strong></td>
-<td>number of workers to use for parallel implementation. Provided as list, with each named entry corresponding to different task (e.g., n.workers = list(import = 4, integration = 1))</td>
+<td>number of workers to use for parallel implementation. Provided as
+list, with each named entry corresponding to different task (e.g.,
+n.workers = list(import = 4, integration = 1))</td>
 <td>list</td>
 </tr>
 <tr class="odd">
 <td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>save.pdf</strong></td>
-<td>Logical specifying whether to save figures and tables in separate directory.</td>
+<td>Logical specifying whether to save figures and tables in separate
+directory.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -460,7 +578,8 @@
 </tr>
 <tr class="even">
 <td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>look for input file in path specified in .Rprofile. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -469,119 +588,180 @@
 <td>logical</td>
 </tr>
 </tbody>
-</table></details><details><p><summary><strong>show input.data</strong></summary></p>
-<p>The <code>input.data</code> list is a named list, with each entry corresponding to a separate input dataset. For a basic use, given 2 or more seurat objects for integration, we can specify the path to the input data using the <code>file</code> argument as follows:</p>
+</table></details><details><summary><strong>show input.data</strong>
+</summary><p>The <code>input.data</code> list is a named list, with each entry
+corresponding to a separate input dataset. For a basic use, given 2 or
+more seurat objects for integration, we can specify the path to the
+input data using the <code>file</code> argument as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># basic input specification</span>
-<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset1.Rdata"</span><span class="op">)</span>,    <span class="co"># path to .Rdata file containing seurat object named 'so'</span>
-  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset2.Rdata"</span><span class="op">)</span>,
-  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset3.Rdata"</span><span class="op">)</span>
+<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset1.Rdata"</span><span class="op">)</span>,    <span class="co"># path to .Rdata file containing seurat object named 'so'</span>
+  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset2.Rdata"</span><span class="op">)</span>,
+  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>file <span class="op">=</span> <span class="st">"dataset3.Rdata"</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
-<p>Alternatively, if a given data set contains multiple batches of data, we can partition the seurat object into subsets which will then be handled as independent datasets in the downstream integration step. This can be accomplished using the <code>integrate.by</code> argument, which specifies which feature to use to split the seurat object. The feature specified by <code>integrate.by</code> must be present in the metadata of the corresponding seurat object. In the example below, we split <em>dataset 1</em> using the <code>Barcode</code> feature prior to integration:</p>
+<p>Alternatively, if a given data set contains multiple batches of data,
+we can partition the seurat object into subsets which will then be
+handled as independent datasets in the downstream integration step. This
+can be accomplished using the <code>integrate.by</code> argument, which
+specifies which feature to use to split the seurat object. The feature
+specified by <code>integrate.by</code> must be present in the metadata
+of the corresponding seurat object. In the example below, we split
+<em>dataset 1</em> using the <code>Barcode</code> feature prior to
+integration:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># spliting seurat object into subset prior to integration</span>
-<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset1.Rdata"</span>,        <span class="co"># path to .Rdata file containing seurat object named 'so'</span>
     integrate.by <span class="op">=</span> <span class="st">"Barcode"</span>        <span class="co"># meta data features specifying sample labels</span>
   <span class="op">)</span>,       
-  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset2.Rdata"</span>
   <span class="op">)</span>,
-  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset3.Rdata"</span>
   <span class="op">)</span>
 <span class="op">)</span></code></pre></div>
-<p>Users can also filter their inputs prior to integration using the <code>meta.feature.name</code> and <code>meta.feature.filter</code> arguments. For example, if <em>dataset 1</em> consists of multiple cell types, and we are interested in only integrating the immune compartment, we can set <code>meta.feature.filter</code> to “lymphoid|myeloid” and <code>meta.feature.name</code> to “cell.type”, with the latter corresponding to the meta data column present in the seurat object:</p>
+<p>Users can also filter their inputs prior to integration using the
+<code>meta.feature.name</code> and <code>meta.feature.filter</code>
+arguments. For example, if <em>dataset 1</em> consists of multiple cell
+types, and we are interested in only integrating the immune compartment,
+we can set <code>meta.feature.filter</code> to “lymphoid|myeloid” and
+<code>meta.feature.name</code> to “cell.type”, with the latter
+corresponding to the meta data column present in the seurat object:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># filtering seurat object prior to integration</span>
-<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
-  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+<span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
+  dataset1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset1.Rdata"</span>,                   <span class="co"># path to .Rdata file containing seurat object named 'so'</span>
     meta.feature.name <span class="op">=</span> <span class="st">"cell.type"</span>,           <span class="co"># meta data column used to filter data</span>
     meta.feature.filter <span class="op">=</span> <span class="st">"lymphoid|myeloid"</span>   <span class="co"># features to include for downstream integration</span>
   <span class="op">)</span>,       
-  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  dataset2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset2.Rdata"</span>
   <span class="op">)</span>,
-  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  dataset3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     file <span class="op">=</span> <span class="st">"dataset3.Rdata"</span>
   <span class="op">)</span>
 <span class="op">)</span></code></pre></div>
-<p>Note that the filter uses non-exact matching, so please be aware that substrings may unintentionally filter out data of interest if incorrectly specified. For example, “cell_type_1” will filter “cell_type_1”, “cell_type_10”, “cell_type_11”, etc. A few additional examples for filtering:</p>
+<p>Note that the filter uses non-exact matching, so please be aware that
+substrings may unintentionally filter out data of interest if
+incorrectly specified. For example, “cell_type_1” will filter
+“cell_type_1”, “cell_type_10”, “cell_type_11”, etc. A few additional
+examples for filtering:</p>
 <ul>
-<li>meta.feature.filter = c(“Cell_A”, “Cell_B”) will match “Cell_A1”, “Cell_A2” and “Cell_B1”, but not “Cell_C1”.</li>
-<li>meta.feature.filter = c(“Cell_A|Cell_B”) will NOT match “Cell_A1”, “Cell_A2” or “Cell_B1”</li>
-<li>meta.feature.filter = c(“Cell”) will match “Cell_A1”, “Cell_A2”, “Cell_B1”, and “Cell_C1”.</li>
+<li>meta.feature.filter = c(“Cell_A”, “Cell_B”) will match “Cell_A1”,
+“Cell_A2” and “Cell_B1”, but not “Cell_C1”.</li>
+<li>meta.feature.filter = c(“Cell_A|Cell_B”) will NOT match “Cell_A1”,
+“Cell_A2” or “Cell_B1”</li>
+<li>meta.feature.filter = c(“Cell”) will match “Cell_A1”, “Cell_A2”,
+“Cell_B1”, and “Cell_C1”.</li>
 </ul></details><hr>
 </div>
 </div>
-<div id="module-3-cluster-optimization" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-3-cluster-optimization" class="anchor"></a>Module 3: Cluster Optimization</h2>
-<div id="description-2" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-2" class="anchor"></a>Description</h3>
-<p>Clustering is performed at several candidate resolutions, and the optimal resolution is informed using:</p>
+<div class="section level2">
+<h2 id="module-3-cluster-optimization">Module 3: Cluster Optimization<a class="anchor" aria-label="anchor" href="#module-3-cluster-optimization"></a>
+</h2>
+<div class="section level3">
+<h3 id="description-2">Description<a class="anchor" aria-label="anchor" href="#description-2"></a>
+</h3>
+<p>Clustering is performed at several candidate resolutions, and the
+optimal resolution is informed using:</p>
 <ul>
 <li>
 <strong>Marker specificity criterion (CDI-based)</strong>
 <ul>
-<li>Measure of how well differentially-expressed genes can discriminate clusters at a given resolution.</li>
-<li>Values range from 0 (no specific markers exist for any cluster) to 1 (specific markers exist for each cluster)</li>
+<li>Measure of how well differentially-expressed genes can discriminate
+clusters at a given resolution.</li>
+<li>Values range from 0 (no specific markers exist for any cluster) to 1
+(specific markers exist for each cluster)</li>
 </ul>
 </li>
 <li>
 <strong>Nearest-neighbor purity criterion</strong>
 <ul>
-<li>Seeks to optimize the cluster consistency, or purity, within each cell cluster by maximizing the similarity of cells within clusters compared to other clusters (analogous to silhouette width)</li>
-<li>For each cluster resolution, cell-level purity is defined as the proportion of cells within cell <em>i</em>’s K-nearest neighborhood that belong to the most represented cluster within that neighborhood. Then, cell-level purity scores are aggregated as means to yield the global purity score.</li>
+<li>Seeks to optimize the cluster consistency, or purity, within each
+cell cluster by maximizing the similarity of cells within clusters
+compared to other clusters (analogous to silhouette width)</li>
+<li>For each cluster resolution, cell-level purity is defined as the
+proportion of cells within cell <em>i</em>’s K-nearest neighborhood that
+belong to the most represented cluster within that neighborhood. Then,
+cell-level purity scores are aggregated as means to yield the global
+purity score.</li>
 <li>Values range from 0 (<em>impure</em>) to 1 (<em>pure</em>).</li>
-<li>Neighborhoods in which cells belong to many different clusters are considered <em>impure</em> (low purity score) whereas neighborhoods in which cells belong to a single cluster are <em>pure</em> (high purity score). Clustering configurations with purity scores exceeding 0.8-0.9 are recommended.</li>
+<li>Neighborhoods in which cells belong to many different clusters are
+considered <em>impure</em> (low purity score) whereas neighborhoods in
+which cells belong to a single cluster are <em>pure</em> (high purity
+score). Clustering configurations with purity scores exceeding 0.8-0.9
+are recommended.</li>
 </ul>
 </li>
 <li>
 <strong>Silhouette width criterion</strong>
 <ul>
-<li>Measure of how similar cells are within their cluster compared to other clusters.</li>
-<li>The silhouette width is quantified in UMAP space, so clusters that are well-separated on a UMAP will yield higher silhouette widths than those that are poorly separated.</li>
-<li>Values range from 0 (<em>inconsistent</em>) to 1 (<em>consistent</em>).</li>
+<li>Measure of how similar cells are within their cluster compared to
+other clusters.</li>
+<li>The silhouette width is quantified in UMAP space, so clusters that
+are well-separated on a UMAP will yield higher silhouette widths than
+those that are poorly separated.</li>
+<li>Values range from 0 (<em>inconsistent</em>) to 1
+(<em>consistent</em>).</li>
 </ul>
 </li>
 <li>
-<strong>Differential expression (DE) analyses (Wilcoxon, CDI)</strong>
+<strong>Differential expression (DE) analyses (Wilcoxon,
+CDI)</strong>
 <ul>
-<li>Differentially-expressed genes (DEGs) are computed for each cluster at each resolution using the Wilcoxon and Co-dependency Index (CDI) methods.</li>
+<li>Differentially-expressed genes (DEGs) are computed for each cluster
+at each resolution using the Wilcoxon and Co-dependency Index (CDI)
+methods.</li>
 <li>
-<strong>Wilcoxon</strong>: <a href="https://www.biorxiv.org/content/10.1101/653253v1.abstract">Presto</a>, an ultrafast DE algorithm, is used to compute auROC and Wilcoxon p-value based on Gaussian approximation. Identifies graded and binary DEGs.</li>
+<strong>Wilcoxon</strong>: <a href="https://www.biorxiv.org/content/10.1101/653253v1.abstract" class="external-link">Presto</a>,
+an ultrafast DE algorithm, is used to compute auROC and Wilcoxon p-value
+based on Gaussian approximation. Identifies graded and binary DEGs.</li>
 <li>
-<strong>Co-dependency Index (CDI)</strong>: Cluster-Gene co-dependency profiles are computed using the co-dependence index. Specifically identifies binary DEGs.</li>
+<strong>Co-dependency Index (CDI)</strong>: Cluster-Gene
+co-dependency profiles are computed using the co-dependence index.
+Specifically identifies binary DEGs.</li>
 </ul>
 </li>
 </ul>
-<p>Clustering is performed using the Seurat implementation of <code>FindNeighbors()</code> and <code>FindClusters()</code>. In brief, a cell X cell shared nearest neighbor (SNN) graph is first constructed by determining the neighborhood overlap (Jaccard Index) between every cell and its k<sup>th</sup> nearest neighbor. Then, the SNN graph is clustered using the Louvain algorithm. The main parameter affecting the number of clusters generated is the <code>resolution</code>. Higher resolutions yield more clusters, whereas lower resolution yield fewer clusters.</p>
+<p>Clustering is performed using the Seurat implementation of
+<code><a href="https://satijalab.org/seurat/reference/FindNeighbors.html" class="external-link">FindNeighbors()</a></code> and <code><a href="https://satijalab.org/seurat/reference/FindClusters.html" class="external-link">FindClusters()</a></code>. In brief,
+a cell X cell shared nearest neighbor (SNN) graph is first constructed
+by determining the neighborhood overlap (Jaccard Index) between every
+cell and its k<sup>th</sup> nearest neighbor. Then, the SNN graph is
+clustered using the Louvain algorithm. The main parameter affecting the
+number of clusters generated is the <code>resolution</code>. Higher
+resolutions yield more clusters, whereas lower resolution yield fewer
+clusters.</p>
 </div>
-<div id="example-reports-1" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-1" class="anchor"></a>Example Reports</h3>
+<div class="section level3">
+<h3 id="example-reports-1">Example Reports<a class="anchor" aria-label="anchor" href="#example-reports-1"></a>
+</h3>
 <ul>
-<li><a href="Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M18_ClusterOptimization_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M18_ClusterOptimization_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html">Cao
+2019: Murine organogenesis</a></li>
+<li><a href="Reports/M18_ClusterOptimization_manno_10000cells_240122.html">La
+Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M18_ClusterOptimization_ps_10000cells_240122.html">Pijuan-Sala
+2019: Murine gastrulation</a></li>
+<li><a href="Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html">Zeisel
+2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs-1" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-1" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
+<div class="section level3">
+<h3 id="inputs-and-outputs-1">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs-1"></a>
+</h3>
+<details><summary><strong>show contents</strong>
+</summary><p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)
 <ul>
-<li>If an .RData file is provided, the seurat object must be named <code>so</code>.</li>
+<li>If an .RData file is provided, the seurat object must be named
+<code>so</code>.</li>
 </ul>
 </li>
 </ul>
@@ -591,11 +771,11 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters-2" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-2" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters-2">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters-2"></a>
+</h3>
+<details><summary><strong>show table</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -614,42 +794,53 @@
 </tr>
 <tr class="even">
 <td><strong>cluster.resolution</strong></td>
-<td>range of resolution values used for evaluating candidate cluster configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3)</td>
+<td>range of resolution values used for evaluating candidate cluster
+configurations. Recommended = c(0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1,
+1.25, 1.5, 1.75, 2, 3)</td>
 <td>vector of numeric(s)</td>
 </tr>
 <tr class="odd">
 <td><strong>lfc.threshold</strong></td>
-<td>log-fold change threshold used in differential-expression analysis. 0.5 is recommended.</td>
+<td>log-fold change threshold used in differential-expression analysis.
+0.5 is recommended.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>fdr.threshold</strong></td>
-<td>fdr-value significance threshold. Value between [0,1]. Default is 0.05.</td>
+<td>fdr-value significance threshold. Value between [0,1]. Default is
+0.05.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>group.singletons</strong></td>
-<td>Group singletons into nearest cluster. If FALSE, assign all singletons to a “singleton” group. For certain difficult-to-cluster data sets, <code>group.singletons</code> = FALSE may yield faster results. Default is FALSE</td>
+<td>Group singletons into nearest cluster. If FALSE, assign all
+singletons to a “singleton” group. For certain difficult-to-cluster data
+sets, <code>group.singletons</code> = FALSE may yield faster results.
+Default is FALSE</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>subsample_factor</strong></td>
-<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
+<td>Value between [0,1] specifying fraction of cells to subsample. Use 1
+for no subsampling.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>subsample_n</strong></td>
-<td>value specifying how many cells to sub sample. Set to NA if none.</td>
+<td>value specifying how many cells to sub sample. Set to NA if
+none.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>n.workers</strong></td>
-<td>number of workers used for parallel implementation. <code><a href="https://rdrr.io/r/parallel/detectCores.html">parallel::detectCores()</a></code> is recommended.</td>
+<td>number of workers used for parallel implementation.
+<code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code> is recommended.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -669,7 +860,8 @@
 </tr>
 <tr class="odd">
 <td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>look for input file in path specified in .Rprofile. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -681,35 +873,43 @@
 </table></details><hr>
 </div>
 </div>
-<div id="module-4-cell-type-annotation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-4-cell-type-annotation" class="anchor"></a>Module 4: Cell-Type Annotation</h2>
-<div id="description-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-3" class="anchor"></a>Description</h3>
-<p>Annotation of cell populations identified by unsupervised clustering. Cell-type markers are scored using the Miko scoring pipeline.</p>
-<p>Prior to running this module, we recommend running the cluster optimization module to identify the appropriate resolution for clustering.</p>
+<div class="section level2">
+<h2 id="module-4-cell-type-annotation">Module 4: Cell-Type Annotation<a class="anchor" aria-label="anchor" href="#module-4-cell-type-annotation"></a>
+</h2>
+<div class="section level3">
+<h3 id="description-3">Description<a class="anchor" aria-label="anchor" href="#description-3"></a>
+</h3>
+<p>Annotation of cell populations identified by unsupervised clustering.
+Cell-type markers are scored using the Miko scoring pipeline.</p>
+<p>Prior to running this module, we recommend running the cluster
+optimization module to identify the appropriate resolution for
+clustering.</p>
 </div>
-<div id="example-reports-2" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-2" class="anchor"></a>Example Reports</h3>
+<div class="section level3">
+<h3 id="example-reports-2">Example Reports<a class="anchor" aria-label="anchor" href="#example-reports-2"></a>
+</h3>
 <ul>
-<li><a href="Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html">Cao
+2019: Murine organogenesis</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html">La
+Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html">Pijuan-Sala
+2019: Murine gastrulation</a></li>
+<li><a href="Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html">Zeisel
+2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs-2" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-2" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
+<div class="section level3">
+<h3 id="inputs-and-outputs-2">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs-2"></a>
+</h3>
+<details><summary><strong>show contents</strong>
+</summary><p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)
 <ul>
-<li>If an .RData file is provided, the seurat object must be named <code>so</code>.</li>
+<li>If an .RData file is provided, the seurat object must be named
+<code>so</code>.</li>
 </ul>
 </li>
 </ul>
@@ -719,11 +919,11 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-3" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters-3">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters-3"></a>
+</h3>
+<details><summary><strong>show table</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -743,26 +943,34 @@
 <tr class="even">
 <td><strong>external.markers</strong></td>
 <td>cell-type markers used for annotation</td>
-<td>named list; names are cell-types, entries are genes. <br>E.g., list(cell_A = c(“gene1”, “gene2”, “gene3”), cell_B = c(“gene4”, “gene5”, “gene6”))</td>
+<td>named list; names are cell-types, entries are genes. <br>E.g.,
+list(cell_A = c(“gene1”, “gene2”, “gene3”), cell_B = c(“gene4”, “gene5”,
+“gene6”))</td>
 </tr>
 <tr class="odd">
 <td><strong>internal.markers</strong></td>
-<td>name of scMiko internal gene set(s). Run <code><a href="https://rdrr.io/r/base/names.html">names(geneSets)</a></code> for list of available gene sets.</td>
+<td>name of scMiko internal gene set(s). Run
+<code>names(geneSets)</code> for list of available gene sets.</td>
 <td>character</td>
 </tr>
 <tr class="even">
 <td><strong>marker.filter</strong></td>
-<td>filter marker sets using <code>grepl</code> pattern matching. E.g., Manno2021 for all La Manno 2021 atlas-derived markers in <code>Cell_Catalogy</code> stored in scMiko <code>geneSets</code>.</td>
+<td>filter marker sets using <code>grepl</code> pattern matching. E.g.,
+Manno2021 for all La Manno 2021 atlas-derived markers in
+<code>Cell_Catalogy</code> stored in scMiko <code>geneSets</code>.</td>
 <td>character</td>
 </tr>
 <tr class="odd">
 <td><strong>coherence.threshold</strong></td>
-<td>value of minimum gene set coherence. Gene sets with coherence scores below this threshold are disqualified from consideration. Value must be between [0,1]. Default is 0.8.</td>
+<td>value of minimum gene set coherence. Gene sets with coherence scores
+below this threshold are disqualified from consideration. Value must be
+between [0,1]. Default is 0.8.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>p.threshold</strong></td>
-<td>p-value significance threshold. Value between [0,1]. Default is 0.05.</td>
+<td>p-value significance threshold. Value between [0,1]. Default is
+0.05.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
@@ -782,12 +990,17 @@
 </tr>
 <tr class="even">
 <td><strong>min.representation</strong></td>
-<td>minimum fraction of genes required for gene set consideration. If fraction of genes present in seurat object is below this threshold, gene set is disqualified. Value between [0,1]. Default is 0.5.</td>
+<td>minimum fraction of genes required for gene set consideration. If
+fraction of genes present in seurat object is below this threshold, gene
+set is disqualified. Value between [0,1]. Default is 0.5.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>cluster.resolution</strong></td>
-<td>value of the resolution parameter passed to <code><a href="https://satijalab.org/seurat/reference/FindClusters.html">Seurat::FindClusters(...)</a></code>. Use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities. Default is 1.</td>
+<td>value of the resolution parameter passed to
+<code>Seurat::FindClusters(...)</code>. Use a value above (below) 1.0 if
+you want to obtain a larger (smaller) number of communities. Default is
+1.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -797,17 +1010,20 @@
 </tr>
 <tr class="odd">
 <td><strong>clean.clusters</strong></td>
-<td>filter cells that exceed 3 median absolute deviations from cluster center in UMAP coordinate space. Default is FALSE.</td>
+<td>filter cells that exceed 3 median absolute deviations from cluster
+center in UMAP coordinate space. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>max.cells</strong></td>
-<td>max number of cells used in Miko scoring pipeline. Default is 20000.</td>
+<td>max number of cells used in Miko scoring pipeline. Default is
+20000.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>subsample_factor</strong></td>
-<td>value specifying fraction of cells to sub sample. Value between [0,1]</td>
+<td>value specifying fraction of cells to sub sample. Value between
+[0,1]</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -827,7 +1043,8 @@
 </tr>
 <tr class="odd">
 <td><strong>n.workers</strong></td>
-<td>number of workers used for parallel implementation. Default is <code><a href="https://rdrr.io/r/parallel/detectCores.html">parallel::detectCores()</a></code>.</td>
+<td>number of workers used for parallel implementation. Default is
+<code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code>.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -837,17 +1054,20 @@
 </tr>
 <tr class="odd">
 <td><strong>show.top.n.gene.panels</strong></td>
-<td>max number of gene sets per cluster to show in report. Default is 5</td>
+<td>max number of gene sets per cluster to show in report. Default is
+5</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>max.gene.panels.allowed</strong></td>
-<td>max number of overall gene sets to show in report. Default is 75</td>
+<td>max number of overall gene sets to show in report. Default is
+75</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -857,7 +1077,8 @@
 </tr>
 <tr class="odd">
 <td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>look for input file in path specified in .Rprofile. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -869,40 +1090,48 @@
 </table></details><hr>
 </div>
 </div>
-<div id="module-5-gene-program-discovery" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-5-gene-program-discovery" class="anchor"></a>Module 5: Gene Program Discovery</h2>
-<div id="description-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-4" class="anchor"></a>Description</h3>
-<p>Gene program/module identification. Three independent methods are implemented to identify gene programs based on gene co-expression profiles:</p>
+<div class="section level2">
+<h2 id="module-5-gene-program-discovery">Module 5: Gene Program Discovery<a class="anchor" aria-label="anchor" href="#module-5-gene-program-discovery"></a>
+</h2>
+<div class="section level3">
+<h3 id="description-4">Description<a class="anchor" aria-label="anchor" href="#description-4"></a>
+</h3>
+<p>Gene program/module identification. Three independent methods are
+implemented to identify gene programs based on gene co-expression
+profiles:</p>
 <ul>
 <li>Scale-free shared nearest neighbor network analysis (SSN)</li>
 <li>Independent component analysis (ICA)</li>
 <li>Non-negative matrix factorization (NMF)</li>
 </ul>
-<p>Gene set enrichment is performed on each gene program to facilitate functional annotation.</p>
+<p>Gene set enrichment is performed on each gene program to facilitate
+functional annotation.</p>
 </div>
-<div id="example-reports-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-3" class="anchor"></a>Example Reports</h3>
+<div class="section level3">
+<h3 id="example-reports-3">Example Reports<a class="anchor" aria-label="anchor" href="#example-reports-3"></a>
+</h3>
 <ul>
-<li><a href="Reports/M05_GeneProgramDiscovery_demo_cao2019_10000cells_250122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M05_GeneProgramDiscovery_demo_manno_10000cells_250122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M05_GeneProgramDiscovery_demo_ps_10000cells_250122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M05_GeneProgramDiscovery_demo_zeisel_10000cells_250122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_cao2019_10000cells_250122.html">Cao
+2019: Murine organogenesis</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_manno_10000cells_250122.html">La
+Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_ps_10000cells_250122.html">Pijuan-Sala
+2019: Murine gastrulation</a></li>
+<li><a href="Reports/M05_GeneProgramDiscovery_demo_zeisel_10000cells_250122.html">Zeisel
+2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs-3" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-3" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
+<div class="section level3">
+<h3 id="inputs-and-outputs-3">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs-3"></a>
+</h3>
+<details><summary><strong>show contents</strong>
+</summary><p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)
 <ul>
-<li>If an .RData file is provided, the seurat object must be named <code>so</code>.</li>
+<li>If an .RData file is provided, the seurat object must be named
+<code>so</code>.</li>
 </ul>
 </li>
 </ul>
@@ -912,11 +1141,11 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-4" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters-4">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters-4"></a>
+</h3>
+<details><summary><strong>show table</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -935,82 +1164,104 @@
 </tr>
 <tr class="even">
 <td><strong>cluster.resolution</strong></td>
-<td>Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities.</td>
+<td>Value of the resolution parameter, use a value above 1.0 if you want
+to obtain a larger number of communities.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>subsample_factor</strong></td>
-<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
+<td>Value between [0,1] specifying fraction of cells to subsample. Use 1
+for no subsampling.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>subsample_n</strong></td>
-<td>value specifying how many cells to sub sample. Set to NA if none.</td>
+<td>value specifying how many cells to sub sample. Set to NA if
+none.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>subset.data</strong></td>
-<td>Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as “no.subset” for not subsetting.</td>
-<td>data frame specifying which field (<code>df$field</code>) to subset on, and which field entries to retain (<code>df$subgroups</code>)</td>
+<td>Subset Seurat object according to specified meta data field. Only
+specified meta data entries are retained, while remaining of data is
+omitted. Set as “no.subset” for not subsetting.</td>
+<td>data frame specifying which field (<code>df$field</code>) to subset
+on, and which field entries to retain (<code>df$subgroups</code>)</td>
 </tr>
 <tr class="even">
 <td><strong>batch.feature</strong></td>
-<td>meta data field to use for batch correction (set to NA if unspecified)</td>
+<td>meta data field to use for batch correction (set to NA if
+unspecified)</td>
 <td>character</td>
 </tr>
 <tr class="odd">
 <td><strong>feature.selection.method</strong></td>
 <td>method used to select features for module detection analysis.</td>
-<td>- expr: expression-based criterion <br>- hvg: highly-variable genes <br>- deviance: deviance-based criterion</td>
+<td>- expr: expression-based criterion <br>- hvg: highly-variable genes
+<br>- deviance: deviance-based criterion</td>
 </tr>
 <tr class="even">
 <td><strong>max.features</strong></td>
-<td>max number of features to include in module detection analysis (NA if unspecified)</td>
+<td>max number of features to include in module detection analysis (NA
+if unspecified)</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td><strong>min.pct</strong></td>
-<td>minimal feature expression (applicable only if <code>select.method</code> = “expr”). Value between [0,1], use 0.1 for large network and 0.5 for small network.</td>
+<td>minimal feature expression (applicable only if
+<code>select.method</code> = “expr”). Value between [0,1], use 0.1 for
+large network and 0.5 for small network.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>data.type</strong></td>
 <td>Data representation used for module detection</td>
-<td>- pearson: based on SCTransform (recommended) <br>- deviance: based on multinomial null model</td>
+<td>- pearson: based on SCTransform (recommended) <br>- deviance: based
+on multinomial null model</td>
 </tr>
 <tr class="odd">
 <td><strong>purity.optimization.step.size</strong></td>
-<td>value of step size used for optimizing module purity. 0.5 recommended.</td>
+<td>value of step size used for optimizing module purity. 0.5
+recommended.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>filter.parameters</strong></td>
 <td>specify which clusters to include or omit</td>
-<td>named list with 2 sets of entries; ‘include’ entries specify which clusters to retain; ‘omit’ entries specify which clusters to omit. <br>E.g., list(include = c(0,1,2), omit = c(3,4,5))</td>
+<td>named list with 2 sets of entries; ‘include’ entries specify which
+clusters to retain; ‘omit’ entries specify which clusters to omit.
+<br>E.g., list(include = c(0,1,2), omit = c(3,4,5))</td>
 </tr>
 <tr class="odd">
 <td><strong>general.weight.by.var</strong></td>
-<td>Weight feature embeddings by the variance of each PC. Default is FALSE.</td>
+<td>Weight feature embeddings by the variance of each PC. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>general.pca.cum.sum</strong></td>
-<td>cumulative variance explained by PCs used for SSN analysis. Value between (0,1], 0.9 is recommended.</td>
+<td>cumulative variance explained by PCs used for SSN analysis. Value
+between (0,1], 0.9 is recommended.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>general.umap.knn</strong></td>
-<td>number of neighboring points used in local approximations of manifold structure. Larger values will result in more global structure being preserved at the loss of detailed local structure. In general this parameter should often be in the range 5 to 50.</td>
+<td>number of neighboring points used in local approximations of
+manifold structure. Larger values will result in more global structure
+being preserved at the loss of detailed local structure. In general this
+parameter should often be in the range 5 to 50.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>general.cluster.purity</strong></td>
-<td>target purity of network modules. Value between [0,1], 0.8 is recommended.</td>
+<td>target purity of network modules. Value between [0,1], 0.8 is
+recommended.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>general.scale.free.topology</strong></td>
-<td>apply scale-free transform to shared nearest neighbor graph. Default is TRUE.</td>
+<td>apply scale-free transform to shared nearest neighbor graph. Default
+is TRUE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -1025,12 +1276,14 @@
 </tr>
 <tr class="even">
 <td><strong>general.nmf.k</strong></td>
-<td>number of latent factors to compute with NMF. Can be a range of values (e.g., c(5, 10, 15))</td>
+<td>number of latent factors to compute with NMF. Can be a range of
+values (e.g., c(5, 10, 15))</td>
 <td>vector of numeric(s)</td>
 </tr>
 <tr class="odd">
 <td><strong>general.robust.pca</strong></td>
-<td>use robust PCA for dimensional reduction (<em>warning</em>: computationally intensive)</td>
+<td>use robust PCA for dimensional reduction (<em>warning</em>:
+computationally intensive)</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -1040,7 +1293,8 @@
 </tr>
 <tr class="odd">
 <td><strong>print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
@@ -1055,7 +1309,8 @@
 </tr>
 <tr class="even">
 <td><strong>rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>look for input file in path specified in .Rprofile. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -1068,34 +1323,40 @@
 <hr>
 </div>
 </div>
-<div id="module-6-gene-expression-and-associations" class="section level2">
-<h2 class="hasAnchor">
-<a href="#module-6-gene-expression-and-associations" class="anchor"></a>Module 6: Gene Expression and Associations</h2>
-<div id="description-5" class="section level3">
-<h3 class="hasAnchor">
-<a href="#description-5" class="anchor"></a>Description</h3>
-<p>Given a query gene or gene set, scRNAseq expression is evaluated and gene similarity metrics are computed to identify associated genes.</p>
+<div class="section level2">
+<h2 id="module-6-gene-expression-and-associations">Module 6: Gene Expression and Associations<a class="anchor" aria-label="anchor" href="#module-6-gene-expression-and-associations"></a>
+</h2>
+<div class="section level3">
+<h3 id="description-5">Description<a class="anchor" aria-label="anchor" href="#description-5"></a>
+</h3>
+<p>Given a query gene or gene set, scRNAseq expression is evaluated and
+gene similarity metrics are computed to identify associated genes.</p>
 </div>
-<div id="example-reports-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-reports-4" class="anchor"></a>Example Reports</h3>
+<div class="section level3">
+<h3 id="example-reports-4">Example Reports<a class="anchor" aria-label="anchor" href="#example-reports-4"></a>
+</h3>
 <ul>
-<li><a href="Reports/M06_GeneQuery_demo_cao2019_10000cells_260122.html">Cao 2019: Murine organogenesis</a></li>
-<li><a href="Reports/M06_GeneQuery_demo_manno_10000cells_260122.html">La Manno 2021: Developing murine brain</a></li>
-<li><a href="Reports/M06_GeneQuery_demo_ps_10000cells_260122.html">Pijuan-Sala 2019: Murine gastrulation</a></li>
-<li><a href="Reports/M06_GeneQuery_demo_zeisel_10000cells_260122.html">Zeisel 2018: Adolescent murine brain</a></li>
+<li><a href="Reports/M06_GeneQuery_demo_cao2019_10000cells_260122.html">Cao
+2019: Murine organogenesis</a></li>
+<li><a href="Reports/M06_GeneQuery_demo_manno_10000cells_260122.html">La
+Manno 2021: Developing murine brain</a></li>
+<li><a href="Reports/M06_GeneQuery_demo_ps_10000cells_260122.html">Pijuan-Sala
+2019: Murine gastrulation</a></li>
+<li><a href="Reports/M06_GeneQuery_demo_zeisel_10000cells_260122.html">Zeisel
+2018: Adolescent murine brain</a></li>
 </ul>
 </div>
-<div id="inputs-and-outputs-4" class="section level3">
-<h3 class="hasAnchor">
-<a href="#inputs-and-outputs-4" class="anchor"></a>Inputs and Outputs</h3>
-<details><p><summary><strong>show contents</strong></summary></p>
-<p><u>Inputs</u></p>
+<div class="section level3">
+<h3 id="inputs-and-outputs-4">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs-4"></a>
+</h3>
+<details><summary><strong>show contents</strong>
+</summary><p><u>Inputs</u></p>
 <ul>
 <li>
 <strong>Seurat object</strong> (.Rds or .RData file)
 <ul>
-<li>If an .RData file is provided, the seurat object must be named <code>so</code>.</li>
+<li>If an .RData file is provided, the seurat object must be named
+<code>so</code>.</li>
 </ul>
 </li>
 </ul>
@@ -1105,11 +1366,11 @@
 <strong>Analysis report</strong> (.HTML file)</li>
 </ul></details>
 </div>
-<div id="analysis-parameters-5" class="section level3">
-<h3 class="hasAnchor">
-<a href="#analysis-parameters-5" class="anchor"></a>Analysis Parameters</h3>
-<details><p><summary><strong>show table</strong></summary></p>
-<table class="table">
+<div class="section level3">
+<h3 id="analysis-parameters-5">Analysis Parameters<a class="anchor" aria-label="anchor" href="#analysis-parameters-5"></a>
+</h3>
+<details><summary><strong>show table</strong>
+</summary><table class="table">
 <colgroup>
 <col width="11%">
 <col width="55%">
@@ -1128,32 +1389,48 @@
 </tr>
 <tr class="even">
 <td><strong>features</strong></td>
-<td>features used for analysis. <br>If <code>feature.format</code> = 1, <code>features</code> must be vector of features present in seurat object (e.g., c(“PRRX1”, “TCF4”)). <br>If <code>feature.format</code> = 2, <code>features</code> must be name of column spreadsheet containing features (e.g., “HALLMARK_genes”). <br>If <code>feature.format</code> = 3, <code>features</code> argument is ignored.</td>
+<td>features used for analysis. <br>If <code>feature.format</code> = 1,
+<code>features</code> must be vector of features present in seurat
+object (e.g., c(“PRRX1”, “TCF4”)). <br>If <code>feature.format</code> =
+2, <code>features</code> must be name of column spreadsheet containing
+features (e.g., “HALLMARK_genes”). <br>If <code>feature.format</code> =
+3, <code>features</code> argument is ignored.</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td><strong>feature.format</strong></td>
 <td>format of features provided by user.</td>
-<td>- 0: user-provided genes <br>- 1: features are stored in spreadsheet. <br>- 2: discovery mode.</td>
+<td>- 0: user-provided genes <br>- 1: features are stored in
+spreadsheet. <br>- 2: discovery mode.</td>
 </tr>
 <tr class="even">
 <td><strong>feature.csv.path</strong></td>
-<td>Path to spreadsheet containing features. Required if using <code>feature.format</code> = 1. For intended use, features in spreadsheet must be organized in columns that can be referenced by the column header using the <code>features</code> argument.</td>
+<td>Path to spreadsheet containing features. Required if using
+<code>feature.format</code> = 1. For intended use, features in
+spreadsheet must be organized in columns that can be referenced by the
+column header using the <code>features</code> argument.</td>
 <td>character</td>
 </tr>
 <tr class="odd">
 <td><strong>discovery.method</strong></td>
-<td>Differential expression algorithm used in discovery mode (<code>feature.format</code> = 2)</td>
-<td>- Wilcoxon: Identifies DEGs using Wilcoxon Rank Sum test genes <br>- CDI: Identifies DEGs using co-dependency test <br>- Gini: Identifies group-specific features using gini inequality index</td>
+<td>Differential expression algorithm used in discovery mode
+(<code>feature.format</code> = 2)</td>
+<td>- Wilcoxon: Identifies DEGs using Wilcoxon Rank Sum test genes <br>-
+CDI: Identifies DEGs using co-dependency test <br>- Gini: Identifies
+group-specific features using gini inequality index</td>
 </tr>
 <tr class="even">
 <td><strong>discovery.pct.min</strong></td>
-<td>Features that are expressed below this value are omitted from differential expression analysis. Range between [0,1], 0.1 is recommended. Required only if <code>feature.format</code> = 2.</td>
+<td>Features that are expressed below this value are omitted from
+differential expression analysis. Range between [0,1], 0.1 is
+recommended. Required only if <code>feature.format</code> = 2.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>discovery.group.by</strong></td>
-<td>Name of object meta data field to group cells by when performing differential expression. E.g., “seurat_clusters”. Required only if <code>feature.format</code> = 2.</td>
+<td>Name of object meta data field to group cells by when performing
+differential expression. E.g., “seurat_clusters”. Required only if
+<code>feature.format</code> = 2.</td>
 <td>character</td>
 </tr>
 <tr class="even">
@@ -1163,7 +1440,9 @@
 </tr>
 <tr class="odd">
 <td><strong>discovery.max.n</strong></td>
-<td>minimum fraction of genes required for gene set consideration. If fraction of genes present in seurat object is below this threshold, gene set is disqualified. Value between [0,1]. Default is 0.5.</td>
+<td>minimum fraction of genes required for gene set consideration. If
+fraction of genes present in seurat object is below this threshold, gene
+set is disqualified. Value between [0,1]. Default is 0.5.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
@@ -1174,7 +1453,9 @@
 <tr class="odd">
 <td><strong>cor.method</strong></td>
 <td>feature association method</td>
-<td>- pearson: Pearson correlation <br>- spearman: Spearman correlation <br>- rho_p: Proportionality constant <br>- cdi: co-dependency index</td>
+<td>- pearson: Pearson correlation <br>- spearman: Spearman correlation
+<br>- rho_p: Proportionality constant <br>- cdi: co-dependency
+index</td>
 </tr>
 <tr class="even">
 <td><strong>cor.top.n</strong></td>
@@ -1183,32 +1464,41 @@
 </tr>
 <tr class="odd">
 <td><strong>cor.which.data</strong></td>
-<td>aslot to use for feature association analysis. “data” is recommended.</td>
+<td>aslot to use for feature association analysis. “data” is
+recommended.</td>
 <td>- data <br>- scale</td>
 </tr>
 <tr class="even">
 <td><strong>cor.min.expr</strong></td>
-<td>Features that are expressed below this value are omitted from feature association analysis. Range between [0,1], 0.025-0.1 is recommended.</td>
+<td>Features that are expressed below this value are omitted from
+feature association analysis. Range between [0,1], 0.025-0.1 is
+recommended.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>general.cluster.resolution</strong></td>
-<td>Value of the resolution parameter, use a value above 1.0 if you want to obtain a larger number of communities.</td>
+<td>Value of the resolution parameter, use a value above 1.0 if you want
+to obtain a larger number of communities.</td>
 <td>numeric</td>
 </tr>
 <tr class="even">
 <td><strong>general.subsample.factor</strong></td>
-<td>Value between [0,1] specifying fraction of cells to subsample. Use 1 for no subsampling.</td>
+<td>Value between [0,1] specifying fraction of cells to subsample. Use 1
+for no subsampling.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
 <td><strong>general.subset</strong></td>
-<td>Subset Seurat object according to specified meta data field. Only specified meta data entries are retained, while remaining of data is omitted. Set as “no.subset” for not subsetting.</td>
-<td>data frame specifying which field (<code>df$field</code>) to subset on, and which field entries to retain (<code>df$subgroups</code>)</td>
+<td>Subset Seurat object according to specified meta data field. Only
+specified meta data entries are retained, while remaining of data is
+omitted. Set as “no.subset” for not subsetting.</td>
+<td>data frame specifying which field (<code>df$field</code>) to subset
+on, and which field entries to retain (<code>df$subgroups</code>)</td>
 </tr>
 <tr class="even">
 <td><strong>general.clean.clusters</strong></td>
-<td>omit cells exceeding 3 median absolute deviations from cluster center in UMAP coordinate space.</td>
+<td>omit cells exceeding 3 median absolute deviations from cluster
+center in UMAP coordinate space.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
@@ -1218,18 +1508,24 @@
 </tr>
 <tr class="even">
 <td><strong>general.print.inline</strong></td>
-<td>print figures after each code chunk. Recommended if running script chunk-by-chunk. Default is FALSE.</td>
+<td>print figures after each code chunk. Recommended if running script
+chunk-by-chunk. Default is FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="odd">
 <td><strong>general.rprofile.dir</strong></td>
-<td>look for input file in path specified in .Rprofile. Default is FALSE.</td>
+<td>look for input file in path specified in .Rprofile. Default is
+FALSE.</td>
 <td>logical</td>
 </tr>
 <tr class="even">
 <td><strong>general.barcode.recode</strong></td>
-<td>Named list where names are new labels, and entries are old labels. If is provided for old labels, treated as wild card. e.g. list(in.vitro = c("invitro), in.vivo = NA). See <code>scMiko::recordBarcode(...)</code> for details.</td>
-<td>Named list where names are new labels, and entries are old labels.</td>
+<td>Named list where names are new labels, and entries are old labels.
+If is provided for old labels, treated as wild card. e.g. list(in.vitro
+= c(“invitro), in.vivo = NA). See
+<code>scMiko::recordBarcode(...)</code> for details.</td>
+<td>Named list where names are new labels, and entries are old
+labels.</td>
 </tr>
 <tr class="odd">
 <td><strong>expression.do.hex</strong></td>
@@ -1238,7 +1534,8 @@
 </tr>
 <tr class="even">
 <td><strong>n.workers</strong></td>
-<td>number of workers used for parallel implementation. Set to 1 for non-parallel run.</td>
+<td>number of workers used for parallel implementation. Set to 1 for
+non-parallel run.</td>
 <td>numeric</td>
 </tr>
 <tr class="odd">
@@ -1248,32 +1545,32 @@
 </tr>
 </tbody>
 </table></details><hr>
-<details><p><summary><strong>Session Info</strong></summary></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<pre><code>## R version 4.0.3 (2020-10-10)
-## Platform: x86_64-w64-mingw32/x64 (64-bit)
-## Running under: Windows 10 x64 (build 19041)
-## 
-## Matrix products: default
-## 
-## locale:
-## [1] LC_COLLATE=English_Canada.1252  LC_CTYPE=English_Canada.1252   
-## [3] LC_MONETARY=English_Canada.1252 LC_NUMERIC=C                   
-## [5] LC_TIME=English_Canada.1252    
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
-## 
-## loaded via a namespace (and not attached):
-##  [1] rprojroot_2.0.2   digest_0.6.27     crayon_1.4.1      R6_2.5.1         
-##  [5] jsonlite_1.7.2    formatR_1.11      magrittr_2.0.1    evaluate_0.14    
-##  [9] stringi_1.7.4     rlang_0.4.11      cachem_1.0.6      fs_1.5.0         
-## [13] jquerylib_0.1.4   bslib_0.3.0       ragg_1.1.3        rmarkdown_2.11   
-## [17] pkgdown_1.6.1     textshaping_0.3.5 desc_1.3.0        tools_4.0.3      
-## [21] stringr_1.4.0     yaml_2.2.1        xfun_0.26         fastmap_1.1.0    
-## [25] compiler_4.0.3    systemfonts_1.0.2 memoise_2.0.0     htmltools_0.5.2  
-## [29] knitr_1.36        sass_0.4.0</code></pre>
+<details><summary><strong>Session Info</strong>
+</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## R version 4.2.0 (2022-04-22 ucrt)</span>
+<span class="co">## Platform: x86_64-w64-mingw32/x64 (64-bit)</span>
+<span class="co">## Running under: Windows 10 x64 (build 19044)</span>
+<span class="co">## </span>
+<span class="co">## Matrix products: default</span>
+<span class="co">## </span>
+<span class="co">## locale:</span>
+<span class="co">## [1] LC_COLLATE=English_Canada.utf8  LC_CTYPE=English_Canada.utf8   </span>
+<span class="co">## [3] LC_MONETARY=English_Canada.utf8 LC_NUMERIC=C                   </span>
+<span class="co">## [5] LC_TIME=English_Canada.utf8    </span>
+<span class="co">## </span>
+<span class="co">## attached base packages:</span>
+<span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span>
+<span class="co">## </span>
+<span class="co">## loaded via a namespace (and not attached):</span>
+<span class="co">##  [1] rstudioapi_0.13   knitr_1.39        magrittr_2.0.3    R6_2.5.1         </span>
+<span class="co">##  [5] ragg_1.2.2        rlang_1.0.2       fastmap_1.1.0     stringr_1.4.0    </span>
+<span class="co">##  [9] tools_4.2.0       xfun_0.31         cli_3.3.0         jquerylib_0.1.4  </span>
+<span class="co">## [13] htmltools_0.5.2   systemfonts_1.0.4 yaml_2.3.5        digest_0.6.29    </span>
+<span class="co">## [17] rprojroot_2.0.3   pkgdown_2.0.3     textshaping_0.3.6 purrr_0.3.4      </span>
+<span class="co">## [21] formatR_1.12      sass_0.4.1        fs_1.5.2          memoise_2.0.1    </span>
+<span class="co">## [25] cachem_1.0.6      evaluate_0.15     rmarkdown_2.14    stringi_1.7.6    </span>
+<span class="co">## [29] compiler_4.2.0    bslib_0.3.1       desc_1.4.1        jsonlite_1.8.0</span></code></pre>
 </details>
 </div>
 </div>
@@ -1290,11 +1587,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=">Nicholas Mikolajewicz</a>.</p>
+  <p></p>
+<p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=" class="external-link">Nicholas Mikolajewicz</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -1302,6 +1601,8 @@
 
   
 
+
+  
 
   </body>
 </html>

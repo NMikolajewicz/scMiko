@@ -1,558 +1,786 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://github.com/NMikolajewicz//index.html</loc>
+    <loc>https://github.com/NMikolajewicz/404.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/addLogEntry.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Cell_Annotation.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/AddSModuleScore.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Cluster_Optimization.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/aggGroupExpression.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/DEG.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/annotationCloud.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/autoPointSize.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/install.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/avgGroupExpression.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Marker_Catalog.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/baderPathways.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Module_Detection.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/balanceMatrixSize.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M01_QC_demo_cao2019_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/balanceSamples.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M01_QC_demo_manno_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/barcodeLabels.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M01_QC_demo_ps_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/benchmarkCluster.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M01_QC_demo_zeisel_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/benchmarkScores.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_CellAnnotation_demo_cao2019_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/categoricalColPal.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_CellAnnotation_demo_manno_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/checkGeneRep.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_CellAnnotation_demo_ps_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/citationCheck.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_CellAnnotation_demo_zeisel_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/cleanCluster.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_GeneProgramDiscovery_demo_manno_10000cells_250122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/cleanFilterGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_GeneProgramDiscovery_demo_ps_10000cells_250122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/clearGlobalEnv.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M05_GeneProgramDiscovery_demo_zeisel_10000cells_250122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/cluster.UMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M06_GeneQuery_demo_cao2019_10000cells_260122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/clusterFilter.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M06_GeneQuery_demo_manno_10000cells_260122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/coherentFraction.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M06_GeneQuery_demo_ps_10000cells_.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/col2rowname.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M06_GeneQuery_demo_zeisel_10000cells_260122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/consolidateNMF.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M18_ClusterOptimization_cao2019_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/da_DEG.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M18_ClusterOptimization_manno_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/da_Run.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M18_ClusterOptimization_ps_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/detectSpecies.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/Reports/M18_ClusterOptimization_zeisel_10000cells_240122.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/dist2hclust.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/scPipeline_analysis_workflows.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/downsampleSeurat.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/scPipeline_getting_started.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/eigengene.html</loc>
+    <loc>https://github.com/NMikolajewicz/articles/scPipeline_module_overview.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/ens2sym.so.html</loc>
+    <loc>https://github.com/NMikolajewicz/authors.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/entrez2sym.html</loc>
+    <loc>https://github.com/NMikolajewicz/index.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/expression.Plot.html</loc>
+    <loc>https://github.com/NMikolajewicz/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/exprUMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/featureGradient.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/addLogEntry.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/filterSeurat.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/AddSModuleScore.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/findArtifactGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/aggGroupExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/findCDIMarkers.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/analysisParameters.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/findGiniMarkers.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/annotationCloud.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/findNetworkFeatures.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/autoPointSize.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/firstup.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/avgGroupExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/fixBarcodeLabel.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/BaCo.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/flex.asDT.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/baderPathways.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/flex.multiTabLogs.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/balanceMatrixSize.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/flex.multiTabPlot.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/balanceSamples.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/flex.multiTabPlotly.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/barcodeLabels.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/flex.multiTabTables.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/benchmarkCluster.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/geneRepCurve.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/benchmarkScores.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/geneSets.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/binMatrix.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/geom_split_violin.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/binVector.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getAnnotationPathways.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/categoricalColPal.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getClusterCenters.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/checkGeneRep.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getConnectivity.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/citationCheck.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getDEG.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/cleanCluster.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getDensity.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/cleanFilterGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getExpressedGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/clearGlobalEnv.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getExpressingCells.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/cluster.UMAP.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getExpressionMatrix.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/clusterFilter.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getICAGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/coherentFraction.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getJaccard.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/col2rowname.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getLoadPath.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/consolidateNMF.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getMitoContent.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/da_DEG.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getModuleGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/da_Run.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getModulePreservation.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/detectSpecies.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getNMFGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/discretePalette.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getNodesEdges.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/dist2hclust.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getOrderedGroups.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/downsampleSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getReductionGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/dpt_for_branch.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getSoftThreshold.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/eigengene.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getSoftThreshold2.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/enrichGO.fisher.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/getUMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/ens2sym.so.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/group2list.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/entrez2sym.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/highlightUMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/expression.Plot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/id2geneset.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/exprUMAP.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/id2term.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/featureGradient.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/inferSpecies.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/filterSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/inferState.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/FindAllMarkers.Parallel.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/initiateLog.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/findArtifactGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/jaccardSimilarityMatrix.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/findCDIMarkers.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/lintersect.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/findCorMarkers.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/loadCellRanger.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/findGiniMarkers.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/loadMat.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/findNetworkFeatures.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/loadMoffat.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/firstup.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/longDF2namedList.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/fixBarcodeLabel.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/LR.db.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/flex.asDT.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/mergeSeuratList.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/flex.multiTabLogs.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/mikoScore.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/flex.multiTabPlot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/miko_heatmap.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/flex.multiTabPlotly.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/miko_integrate.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/flex.multiTabTables.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/miko_message.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/generateHeat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/miko_volcano.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/geneRepCurve.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/multiCluster.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/geneSets.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/multiSilhouette.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/geom_split_violin.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/multiSpecificity.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getAnnotationPathways.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/namedList2longDF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getAvailableFiles.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/namedList2wideDF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getClusterCenters.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/neighborPurity.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getClusterRoot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/nullScore.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getConnectivity.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/optimalBinSize.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getDEG.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/optimalDS.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getDensity.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/orderedFactor.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getExpressedGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/parCor.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getExpressingCells.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/pcaElbow.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getExpressionMatrix.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/prepGeneList.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getHeat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/prepSeurat.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getICAGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/prepSeurat2.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getJaccard.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/projectReduction.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getLoadPath.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/propVarPCA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getMissingPackages.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/pruneSSN.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getMitoContent.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/pseudoReplicates.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getModuleGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/pseudotimeRF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getModulePreservation.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/QC.scatterPlot.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getNMFGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/QC.violinPlot.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getNodesEdges.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/qNorm.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getOrderedGroups.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/recodeBarcode.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getReductionGenes.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/rescaleValues.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getSoftThreshold.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/rmDuplicateGenes.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getSoftThreshold.v2.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/rmvCSVprefix.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getSoftThreshold2.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runAUC.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/getUMAP.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runAUGUR.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/group2list.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runBBKNN.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/highlightUMAP.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runGSEA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/id2geneset.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runHG.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/id2term.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runICA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/index.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runMS.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/inferInitialTrajectory.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runNMF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/inferInitialTrajectory.v2.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runRPCA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/inferSpecies.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runSSN.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/inferState.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/runWGCNA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/initiateLog.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/saveHTML.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/inititateLog.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/savePDF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/isGeneAvailable.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scaleFreeNet.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/jaccardSimilarityMatrix.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scaleTOM.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/lineageTrajectory.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scale_color_miko.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/lintersect.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scale_fill_miko.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/loadCellRanger.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scExpression.UMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/loadMat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scMikoUpdate.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/loadMoffat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scNormScale.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/longDF2namedList.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/scoreGBM.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/LR.db.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/searchAnnotations.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.analysisParameters.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/setResolution.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.barcodeLabels.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/signatureCoherence.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.filterSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sigScore.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.getMitoContent.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sim2adj.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.inferSpecies.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/snip.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.loadCellRanger.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sparse2dense.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.loadMoffat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sparse2df.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.loadTPM.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/speciesConvert.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m1.scNormScale.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/SSNConnectivity.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m23.binarizeExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/SSNExpression.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/m9.importMarkers.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/SSNResolution.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/mapSubsetSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/subsetDimRed.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/mergeSeuratList.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/subsetSeurat.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/mikoScore.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/summarizeHG.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/miko_heatmap.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/summarizeModules.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/miko_integrate.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sym2ens.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/miko_message.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/sym2entrez.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/miko_volcano.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/term2id.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/modulePackages.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/theme_miko.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/multiCluster.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/ulength.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/multiLevel.FindMarkers.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/uniqueFeatures.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/multiSilhouette.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/updateCentralLog.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/multiSpecificity.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/updateDimNames.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/namedList2longDF.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/updateGeneSets.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/namedList2wideDF.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/upset.Plot.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/neighborPurity.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/value2col.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/networkProperties.Plot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/varExpPCA.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/nullScore.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/variableGenes.Plot.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/optimalBinSize.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/vd_Formula.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/optimalDS.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/vd_Inputs.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/orderedFactor.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/vd_Run.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/p2z.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/vd_UMAP.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/PAGA.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/wgcna2graphDF.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/PAGAplot.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/wideDF2namedList.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/parCor.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/wnn_Components.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/pathActivity.Tempora.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//reference/wnn_Run.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/pcaElbow.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/Cell_Annotation.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/prepExpression.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/Cluster_Optimization.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/prepGeneList.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/DEG.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/prepSeurat.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/install.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/prepSeurat2.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/Marker_Catalog.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/projectReduction.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/Module_Detection.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/propVarPCA.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/scPipeline_analysis_workflows.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/pruneSSN.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/scPipeline_getting_started.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/pseudoReplicates.html</loc>
   </url>
   <url>
-    <loc>https://github.com/NMikolajewicz//articles/scPipeline_module_overview.html</loc>
+    <loc>https://github.com/NMikolajewicz/reference/pseudotime.UMAP.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/pseudotimeRF.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/QC.scatterPlot.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/QC.violinPlot.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/qNorm.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/recaleValues.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/recodeBarcode.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/rescaleValues.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/rmDuplicateGenes.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/rmvCSVprefix.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runAUC.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runAUGUR.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runBBKNN.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runEnrichment.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runGSEA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runHG.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runICA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runMS.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runNMF.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runRPCA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runScanorama.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runSSN.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/runWGCNA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/saveHTML.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/savePDF.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/savePlot.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scaleFreeNet.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scaleTOM.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scale_color_miko.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scale_fill_miko.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scExpression.UMAP.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scMikoReload.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scMikoUpdate.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scNormScale.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scoreGBM.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/scoreStem.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/searchAnnotations.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/setResolution.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/signatureCoherence.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sigScore.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sim2adj.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/snip.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/SNNExpression.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sparse2dense.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sparse2df.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/speciesConvert.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/SSNConnectivity.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/SSNExpression.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/SSNResolution.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/standardizeNonParametric.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/subsetDimRed.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/subsetSeurat.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/summarizeHG.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/summarizeModules.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sym2ens.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/sym2entrez.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/term2id.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/theme_miko.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/ulength.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/uniqueFeatures.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/updateCentralLog.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/updateDimNames.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/updateGeneSets.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/upset.Plot.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/value2col.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/varExpPCA.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/variableGenes.Plot.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/varyingPaths.Tempora.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/vd_Formula.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/vd_Inputs.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/vd_Run.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/vd_UMAP.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/wgcna2graphDF.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/wideDF2namedList.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/wnn_Components.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/wnn_Run.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/NMikolajewicz/reference/z2p.html</loc>
   </url>
 </urlset>

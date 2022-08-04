@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -38,7 +40,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Getting Started
      
     <span class="caret"></span>
@@ -54,7 +56,7 @@
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Vignettes
      
     <span class="caret"></span>
@@ -77,7 +79,8 @@
       <a href="../articles/Module_Detection.html">Gene program discovery using SSN analysis</a>
     </li>
     <li class="divider">
-    <li class="dropdown-header">scPipeline Dashboard Reports</li>
+    </li>
+<li class="dropdown-header">scPipeline Dashboard Reports</li>
     <li>
       <a href="../articles/scPipeline_module_overview.html">Overview of modules</a>
     </li>
@@ -104,12 +107,12 @@
 
       
 
-      </header><script src="Cluster_Optimization_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Cluster Optimization</h1>
             
-            <h4 class="date">Compiled: 2022-01-27</h4>
+            <h4 data-toc-skip class="date">Compiled: 2022-08-03</h4>
       
       
       <div class="hidden name"><code>Cluster_Optimization.Rmd</code></div>
@@ -118,27 +121,43 @@
 
     
     
-<p>ScRNAseq-based cell type identification relies on unsupervised clustering methods; however, resulting cell clusters can vary drastically depending at what resolution is used to perform clustering. The <strong>specificity-based resolution selection criterion</strong> described here identifies cluster configurations coinciding with maximal marker specificity. Data is first clustered over a range of candidate resolutions, and the top specific marker in each cluster at each resolution is identified using the co-dependency index (CDI) DE method. Subsequently, specificity curves are generated and used to obtain resolution-specific specificity metrics. The resolution at which maximal specificity is observed is taken as the optimal resolution</p>
-<p>For this tutorial we will analyze the Human Gastrulation dataset reported by Tyser 2021. The dataset consists of 1195 cells. We will identify the optimal clustering resolution using a specificity-based relution selection criterion.</p>
-<p>We start by reading in the data and visualizing the annotated population.</p>
+<p>ScRNAseq-based cell type identification relies on unsupervised
+clustering methods; however, resulting cell clusters can vary
+drastically depending at what resolution is used to perform clustering.
+The <strong>specificity-based resolution selection criterion</strong>
+described here identifies cluster configurations coinciding with maximal
+marker specificity. Data is first clustered over a range of candidate
+resolutions, and the top specific marker in each cluster at each
+resolution is identified using the co-dependency index (CDI) DE method.
+Subsequently, specificity curves are generated and used to obtain
+resolution-specific specificity metrics. The resolution at which maximal
+specificity is observed is taken as the optimal resolution</p>
+<p>For this tutorial we will analyze the Human Gastrulation dataset
+reported by Tyser 2021. The dataset consists of 1195 cells. We will
+identify the optimal clustering resolution using a specificity-based
+relution selection criterion.</p>
+<p>We start by reading in the data and visualizing the annotated
+population.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">scMiko</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">scMiko</span><span class="op">)</span>
 
 <span class="co"># load human gastrulation data</span>
-<span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">readRDS</a></span><span class="op">(</span><span class="st">"../data/so_tyser2021_220621.rds"</span><span class="op">)</span>
+<span class="va">so.query</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"../data/demo/so_tyser2021_220621.rds"</span><span class="op">)</span>
 
 <span class="co"># visualize clusters</span>
-<span class="fu"><a href="../reference/cluster.UMAP.html">cluster.UMAP</a></span><span class="op">(</span>so <span class="op">=</span> <span class="va">so.query</span>, group.by <span class="op">=</span> <span class="st">"sub_cluster"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">theme_void</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Tyser 2021"</span>,
+<span class="fu"><a href="../reference/cluster.UMAP.html">cluster.UMAP</a></span><span class="op">(</span>so <span class="op">=</span> <span class="va">so.query</span>, group.by <span class="op">=</span> <span class="st">"sub_cluster"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Tyser 2021"</span>,
     subtitle <span class="op">=</span> <span class="st">"Human Gastrulation"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/load%20data-1.png" width="672"></p>
-<div id="multi-resolution-clustering" class="section level2">
-<h2 class="hasAnchor">
-<a href="#multi-resolution-clustering" class="anchor"></a>Multi-Resolution Clustering</h2>
-<p>Next, we cluster the data across a range of candidate resolutions. Cluster configurations can be visually assessed, and compared to cell populations annotated by the authors <em>(above)</em>.</p>
+<div class="section level2">
+<h2 id="multi-resolution-clustering">Multi-Resolution Clustering<a class="anchor" aria-label="anchor" href="#multi-resolution-clustering"></a>
+</h2>
+<p>Next, we cluster the data across a range of candidate resolutions.
+Cluster configurations can be visually assessed, and compared to cell
+populations annotated by the authors <em>(above)</em>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># clustering data</span>
-<span class="va">mc.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiCluster.html">multiCluster</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, resolutions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>,
+<span class="va">mc.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiCluster.html">multiCluster</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, resolutions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>,
     <span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.5</span>, <span class="fl">1.75</span>, <span class="fl">2</span><span class="op">)</span>, assay <span class="op">=</span> <span class="cn">NULL</span>, nworkers <span class="op">=</span> <span class="fl">4</span>, pca_var <span class="op">=</span> <span class="fl">0.9</span>, group_singletons <span class="op">=</span> <span class="cn">F</span>, algorithm <span class="op">=</span> <span class="fl">1</span>,
     return_object <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>
 
@@ -150,18 +169,21 @@
 <span class="va">assay.pattern</span> <span class="op">&lt;-</span> <span class="va">mc.list</span><span class="op">$</span><span class="va">assay_pattern</span>
 
 <span class="co"># visualize cluster configurations</span>
-<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">plt.umap_by_cluster</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">x</span> <span class="op">+</span> <span class="fu">theme_void</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span> <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span>, plot.subtitle <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">plt.umap_by_cluster</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span>, plot.subtitle <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/cluster%20data-1.png" width="1536"></p>
 </div>
-<div id="specificity-based-resolution-selection-criterion" class="section level2">
-<h2 class="hasAnchor">
-<a href="#specificity-based-resolution-selection-criterion" class="anchor"></a>Specificity-Based Resolution Selection Criterion</h2>
-<p>Finally, for each cluster configuration, we compute a CDI-based specificity index. The optimal cluster resolution is determined based on the specificity profile. In this case we identify 0.5 as the optimal cluster resolution, yielding a specificity index of 0.614.</p>
+<div class="section level2">
+<h2 id="specificity-based-resolution-selection-criterion">Specificity-Based Resolution Selection Criterion<a class="anchor" aria-label="anchor" href="#specificity-based-resolution-selection-criterion"></a>
+</h2>
+<p>Finally, for each cluster configuration, we compute a CDI-based
+specificity index. The optimal cluster resolution is determined based on
+the specificity profile. In this case we identify 0.5 as the optimal
+cluster resolution, yielding a specificity index of 0.614.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ms.list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiSpecificity.html">multiSpecificity</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, cluster_names <span class="op">=</span> <span class="va">cluster.name</span>, features <span class="op">=</span> <span class="cn">NULL</span>, deg_prefilter <span class="op">=</span> <span class="cn">T</span>,
-    cdi_bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>, min.pct <span class="op">=</span> <span class="fl">0.1</span>, n.workers <span class="op">=</span> <span class="fl">16</span>, return_dotplot <span class="op">=</span> <span class="cn">T</span>, verbose <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>
+    cdi_bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>, min.pct <span class="op">=</span> <span class="fl">0.1</span>, n.workers <span class="op">=</span> <span class="fl">16</span>, return_dotplot <span class="op">=</span> <span class="cn">T</span>, verbose <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>
 
 <span class="va">df.summary</span> <span class="op">&lt;-</span> <span class="va">ms.list</span><span class="op">$</span><span class="va">specificity_summary</span>
 <span class="va">df.raw</span> <span class="op">&lt;-</span> <span class="va">ms.list</span><span class="op">$</span><span class="va">specificity_raw</span>
@@ -171,41 +193,48 @@
 <span class="va">plt.auc.dot</span> <span class="op">&lt;-</span> <span class="va">ms.list</span><span class="op">$</span><span class="va">dot_plot</span>
 
 
-<span class="va">max.auc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">df.summary</span><span class="op">$</span><span class="va">auc</span><span class="op">)</span>
-<span class="va">speak</span> <span class="op">&lt;-</span> <span class="va">df.summary</span><span class="op">$</span><span class="va">res</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">df.summary</span><span class="op">$</span><span class="va">auc</span><span class="op">)</span><span class="op">]</span>
+<span class="va">max.auc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">df.summary</span><span class="op">$</span><span class="va">auc</span><span class="op">)</span>
+<span class="va">speak</span> <span class="op">&lt;-</span> <span class="va">df.summary</span><span class="op">$</span><span class="va">res</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">df.summary</span><span class="op">$</span><span class="va">auc</span><span class="op">)</span><span class="op">]</span>
 
 
-<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html">plot_grid</a></span><span class="op">(</span><span class="va">plt.auc.spec</span> <span class="op">+</span> <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">max.auc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">speak</span><span class="op">)</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span>, <span class="va">plt.clust.spec</span>,
-    <span class="va">plt.auc.dot</span><span class="op">$</span><span class="va">`0.5`</span> <span class="op">+</span> <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>, axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>,
-        hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.25</span><span class="op">)</span>, labels <span class="op">=</span> <span class="st">"AUTO"</span><span class="op">)</span></code></pre></div>
+<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">plt.auc.spec</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">max.auc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">speak</span><span class="op">)</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span>, <span class="va">plt.clust.spec</span>,
+    <span class="va">plt.auc.dot</span><span class="op">$</span><span class="va">`0.5`</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>, axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>,
+        hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.25</span><span class="op">)</span>, labels <span class="op">=</span> <span class="st">"AUTO"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/evaluate%20specificity-1.png" width="1536"></p>
-<div id="multi-level-resolutions" class="section level3">
-<h3 class="hasAnchor">
-<a href="#multi-level-resolutions" class="anchor"></a>Multi-level resolutions</h3>
-<p>Acknowledging that there exist multiple levels of resolutions that are biologically relevant (e.g., cell types vs. cell subtypes), we can also specify valid cluster configurations at higher resolutions, as suggested by the “elbows” in the specificity plot. In the current dataset, we observe an “elbow” at a resolution of 1.0.</p>
+<div class="section level3">
+<h3 id="multi-level-resolutions">Multi-level resolutions<a class="anchor" aria-label="anchor" href="#multi-level-resolutions"></a>
+</h3>
+<p>Acknowledging that there exist multiple levels of resolutions that
+are biologically relevant (e.g., cell types vs. cell subtypes), we can
+also specify valid cluster configurations at higher resolutions, as
+suggested by the “elbows” in the specificity plot. In the current
+dataset, we observe an “elbow” at a resolution of 1.0.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plt.auc.dot$</span>
-<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html">plot_grid</a></span><span class="op">(</span><span class="va">plt.auc.spec</span> <span class="op">+</span> <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.544</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span> <span class="op">+</span>
-    <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span>, <span class="va">plt.auc.dot</span><span class="op">$</span><span class="va">`1`</span> <span class="op">+</span> <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>,
-    axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.25</span><span class="op">)</span>,
+<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">plt.auc.spec</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.544</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"tomato"</span><span class="op">)</span>, <span class="va">plt.auc.dot</span><span class="op">$</span><span class="va">`1`</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>,
+    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">1</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.25</span>, <span class="fl">1.25</span><span class="op">)</span>,
     labels <span class="op">=</span> <span class="st">"AUTO"</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/sub%20population-1.png" width="1152"></p>
 </div>
 </div>
-<div id="alternative-method-1-silhouette-width" class="section level2">
-<h2 class="hasAnchor">
-<a href="#alternative-method-1-silhouette-width" class="anchor"></a>Alternative Method 1: Silhouette Width</h2>
-<p>For comparison, we also evaluate each cluster resolution using silhouette widths.</p>
+<div class="section level2">
+<h2 id="alternative-method-1-silhouette-width">Alternative Method 1: Silhouette Width<a class="anchor" aria-label="anchor" href="#alternative-method-1-silhouette-width"></a>
+</h2>
+<p>For comparison, we also evaluate each cluster resolution using
+silhouette widths.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">msil_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multiSilhouette.html">multiSilhouette</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">so.query</span>, groups <span class="op">=</span> <span class="va">cluster.name</span>, assay_pattern <span class="op">=</span> <span class="va">assay.pattern</span>,
     verbose <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>
 
-<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">msil_list</span><span class="op">$</span><span class="va">silhouette_plots</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">x</span> <span class="op">+</span> <span class="fu">theme</span><span class="op">(</span>plot.subtitle <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
+<span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">msil_list</span><span class="op">$</span><span class="va">silhouette_plots</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>plot.subtitle <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/silhouette%20analyses-1.png" width="1920"></p>
-<p>However, we can see that the silhouette width-based approach tends to favor lower resolutions that amalgamate cell clusters into larger populations.</p>
+<p>However, we can see that the silhouette width-based approach tends to
+favor lower resolutions that amalgamate cell clusters into larger
+populations.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">msil_list</span><span class="op">$</span><span class="va">resolution_plot</span></code></pre></div>
 <p><img src="Cluster_Optimization_files/figure-html/sil%20resolution-1.png" width="508.8"></p>
@@ -223,11 +252,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=">Nicholas Mikolajewicz</a>.</p>
+  <p></p>
+<p>Developed by <a href="https://scholar.google.ca/scholar?hl=en&amp;as_sdt=0%2C5&amp;q=mikolajewicz+nicholas&amp;oq=" class="external-link">Nicholas Mikolajewicz</a>.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -235,6 +266,8 @@
 
   
 
+
+  
 
   </body>
 </html>
