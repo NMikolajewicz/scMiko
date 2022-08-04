@@ -143,3 +143,157 @@ cowplot::plot_grid(plt_sensitivity, plt_specificity)
 
 ```
 
+
+
+## Adjusting for batch effects
+
+In many instances, single-cell data from multiple independent biological replicates are pooled. To minimize batch effects and ensure the validity of the CDI across independent samples, we recommend one of two alternative approaches:
+
+- Depth-normalization (across samples)
+- Fisher's method (meta-analysis)
+
+We will use the Pijuan-Sala (2019) gastrulation data to demonstrate each approach. First we load in the count matrix, split it into component datasets and normalize each, and then merge the normalized data into a single Seurat object. Splitting the Seurat object into component data sets allows us to fit a SCT Model to each dataset. 
+
+```{r load PS data, fig.width=7, fig.height=5}
+
+# load murine gastrulation data
+ps.data <- readRDS("../data/demo/ps_count_matrix.rds")
+ps.meta <- readRDS("../data/demo/ps_meta_data.rds")
+
+# create seurat object
+so.ps <- CreateSeuratObject(counts = ps.data, meta.data = ps.meta)
+
+# split by sample
+so.ps.list <- SplitObject(object = so.ps, split.by = "sample")
+
+# sample-wise normalization of  data
+so.ps.list <- lapply(X = so.ps.list, FUN = SCTransform, method = "glmGamPoi", verbose = F, vst.flavor = "v2", variable.features.rv.th = 1.3)
+
+# merge normalized data
+so.ps <- merge(so.ps.list[[1]], so.ps.list[-1])
+
+```
+
+### Approach 1: Depth-normalization
+
+In the first approach, we will use the Seurat object with multiple independent samples and preprocess it using Seurat's PrepSCTFindMarkers() function which effectively downsamples the count matrix to ensure a homogeneous sequencing depth across all component datasets. The processed Seurat data will then be provided as input into findCDIMarkers():
+
+```{r batch correction approahc 1}
+
+# enforce homogeneous sequencing depth across all samples
+so.ps_homogenous <- PrepSCTFindMarkers(so.ps)
+
+# run CDI on heterogeneous sequencing depth data
+cdi.heterogenous <- findCDIMarkers(so.ps, features.x = "celltype", verbose = F)
+
+# run CDI on homogeneous sequencing depth data
+cdi.homogeneous <- findCDIMarkers(so.ps_homogenous, features.x = "celltype", verbose = F)
+
+# merge CDI results from both runs for comparison
+cdi.merge.approach1 <- merge(cdi.heterogenous, cdi.homogeneous, by = c("feature.x", "feature.y"))
+
+
+# plot CDI scores from depth-normalized run to visulaize how much results have changed
+r.val <- signif(cor(cdi.merge.approach1$ncdi.x, cdi.merge.approach1$ncdi.y), 3)
+plt.comparison.approach1 <- cdi.merge.approach1 %>%
+  ggplot(aes(x = ncdi.x, y = ncdi.y)) + 
+  geom_point() + 
+  labs(title = "Batch correction using Approach 1", x = "nCDI (using non-corrected counts)", y = "nCDI (using corrected counts)",
+       subtitle = paste0("Pearson's r = ", r.val)) + 
+  theme_miko(legend = T) + 
+  geom_abline(linetype = "dashed", color = "tomato")
+
+plt.comparison.approach1
+
+```
+
+
+
+### Approach 2: Fisher's Method
+
+In the second approach, we will apply a meta-analytic approach to pool CDI results from independent samples thereby finding markers that are conserved across samples. P values from independent sample-specific estimates are pooled using the Fisher's Method. 
+
+
+```{r batch correction approahc 2}
+
+# run CDI for each sample and pool the  sample-level statistics 
+cdi.conserved <- findConservedCDIMarkers(object = so.ps,features.x = "celltype", group.by = "sample", n.workers = 15, verbose = F)
+
+# merge CDI results from both runs for comparison
+cdi.merge.approach2 <- merge(cdi.heterogenous, cdi.conserved, by = c("feature.x", "feature.y"))
+
+# plot CDI scores from conserved CDI run to visulaize how much results have changed
+r.val.approach2 <- signif(cor(cdi.merge.approach2$ncdi, cdi.merge.approach2$ncdi_mean), 3)
+plt.comparison.approach2 <- cdi.merge.approach2 %>%
+  ggplot(aes(x = ncdi, y = ncdi_mean)) + 
+  geom_point() + 
+  labs(title = "Batch correction using Approach 2", x = "nCDI (using non-corrected counts)", y = "nCDI (averaged across samples)",
+       subtitle = paste0("Pearson's r = ", r.val.approach2)) + 
+  theme_miko(legend = T) + 
+  geom_abline(linetype = "dashed", color = "tomato")
+
+plt.comparison.approach2
+
+```
+
+### Comparison of batch-normalized CDI results
+
+Here we compare the batch-normalized CDI results (approach 1 and 2) with uncorrected CDI results. Using a 5% FDR threshold, the overlap in significant gene sets is found to vary depending on which approach is taken. Here we show that Approach 1 yielded more consistent results with the uncorrected CDI results, whereas Approach 2 yielded less consistent results. In the latter, the results suggest the presence of batch-specific artefacts that may have contributed to slightly different results in the uncorrected CDI analysis. Although Approach 2 is more computationally intensive, it is rooted in established meta-analytic theory and should be employed when evaluated independent experimental samples. 
+
+```{r compare batch-normalized CDI results}
+
+# get DEGs at 5% FDR
+DEG.uncorrected <- longDF2namedList(cdi.heterogenous %>% dplyr::filter(fdr < 0.05), group_by = "feature.x", values = "feature.y")
+DEG.approach1 <- longDF2namedList(cdi.homogeneous %>% dplyr::filter(fdr < 0.05), group_by = "feature.x", values = "feature.y")
+DEG.approach2 <- longDF2namedList(cdi.conserved %>% dplyr::filter(fdr < 0.05), group_by = "feature.x", values = "feature.y")
+
+# annotate method used
+names(DEG.uncorrected) <- paste0("uncorrected_", names(DEG.uncorrected))
+names(DEG.approach1) <- paste0("approach1_", names(DEG.approach1))
+names(DEG.approach2) <- paste0("approach2_", names(DEG.approach2))
+
+# combine DEG lists and compute jaccard similarities
+DEG.list <- c(DEG.uncorrected, DEG.approach1, DEG.approach2)
+jmat <- jaccardSimilarityMatrix(DEG.list)
+
+unc_a1 <- jmat[grepl("uncorrected", rownames(jmat)), grepl("approach1", rownames(jmat))]
+unc_a2 <- jmat[grepl("uncorrected", rownames(jmat)), grepl("approach2", rownames(jmat))]
+a1_a2 <- jmat[grepl("approach1", rownames(jmat)), grepl("approach2", rownames(jmat))]
+
+unc_a1.max <- apply(unc_a1, 1, max)
+unc_a2.max <- apply(unc_a2, 1, max)
+a1_a2.max <- apply(a1_a2, 1, max)
+
+# combine jaccard similarity profiles from each method comparison
+df.deg.overlap <- bind_rows(
+  data.frame(
+    Group_1 = "uncorrected",
+    Group_2 = "approach1",
+    DEG_overlap = unc_a1.max
+  ),
+  data.frame(
+    Group_1 = "uncorrected",
+    Group_2 = "approach2",
+    DEG_overlap = unc_a2.max
+  ),
+  data.frame(
+    Group_1 = "approach1",
+    Group_2 = "approach2",
+    DEG_overlap = a1_a2.max
+  )
+)
+
+# plot jaccard similarity profiles between batch corrected CDI methods
+plt.deg.overlap <- df.deg.overlap %>%
+  ggplot(aes(x = paste0(Group_1, "_vs_", Group_2), y = DEG_overlap)) + 
+  geom_boxplot(fill = "grey") + 
+  ggbeeswarm::geom_quasirandom() + 
+  theme_miko() + 
+  labs(title = "DEG Overlap", subtitle = "Jaccard Similarity of DEGs (per cluster)", y = "Jaccard Similarity", x = "")
+
+plt.deg.overlap
+
+```
+
+
+

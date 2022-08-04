@@ -108,7 +108,7 @@ so.gene <- runSSN(object = so.query ,
                   target_purity = 0.8, 
                   step_size =  0.05,
                   n_workers = parallel::detectCores(), 
-                  verbose = T)
+                  verbose = F)
 
 ```
 The resulting object contains a `cell x feature` Seurat object, with the scale-free nearest neighbor graph stored in `so.gene@graphs[["RNA_snn_power"]]` and the corresponding UMAP embedding in `so.gene@reductions[["umap"]]`. 
@@ -228,9 +228,3 @@ cowplot::plot_grid(
 )
 
 ```
-## Module Detection with ICA and NMF
-
-```{r}
-# TODO
-```
-

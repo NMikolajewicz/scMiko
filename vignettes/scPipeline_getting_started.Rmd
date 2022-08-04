@@ -86,7 +86,7 @@ Running scPipeline modules is like running any other Rmarkdown script:
         * Does not render an .HTML report. 
         * This option permit users to customize their analyses beyond what has been provided by us. 
         
-Please refer to these [tutorial slides for additional step-by-step instructions](Reports/Tutorial scPipeline_NM_v2.pptx) on how to get scPipeline running. 
+Please refer to these [tutorial slides for additional step-by-step instructions](Reports/Tutorial scPipeline_030822.pptx) on how to get scPipeline running. 
 
 ## scPipeline .HTML reports
 
