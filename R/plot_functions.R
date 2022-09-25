@@ -642,6 +642,10 @@ theme_miko <- function(style = "bw", legend = F, grid = F, bold.title = T, cente
     tm <- theme_bw()
   } else if (style == "classic"){
     tm <- theme_classic()
+  } else if (style == "void"){
+    tm <- theme_void()
+  } else {
+    tm <- theme_bw()
   }
 
   if (!legend) tm <- tm + theme(legend.position = "none")
