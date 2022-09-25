@@ -1359,22 +1359,22 @@ multiSilhouette <- function(object, groups, assay_pattern = NULL, assay = NULL, 
 #' @param group grouping vector. Default is NULL.
 #' @param diffvar specify whether data is heteroscedastic. Default is T.
 #' @param k Number of components to evaluate.
+#' @param min_k minimum number of components to evaluate. Default is 1.
 #' @param verbose Print progress. Default is TRUE.
 #' @name inferState
 #' @seealso \code{\link{Mclust}}
 #' @return list of results
 #' @examples
-inferState <- function(score, group = NULL, diffvar = TRUE, k = 5, verbose = T) {
+inferState <- function(score, group = NULL, diffvar = TRUE, k = 5, min_k = 1, verbose = T) {
 
   require(mclust, quietly = T)
 
-  # ccat.v <- potest.v
+  stopifnot(min_k <= k)
   miko_message("Fitting Gaussian Mixture Model to scores...", verbose = verbose)
-  # zccat.v <- log2((1 + ccat.v)/(1 - ccat.v))
   if (diffvar == TRUE) {
-    mcl.o <- Mclust(score, G = seq_len(k), verbose = verbose)
+    mcl.o <- Mclust(score, G = seq(from = min_k, to = k), verbose = verbose)
   } else {
-    mcl.o <- Mclust(score, G = seq_len(k), modelNames = c("E"), verbose = verbose)
+    mcl.o <- Mclust(score, G = seq(from = min_k, to = k), modelNames = c("E"), verbose = verbose)
   }
   mu.v <- mcl.o$param$mean
   sd.v <- sqrt(mcl.o$param$variance$sigmasq)
