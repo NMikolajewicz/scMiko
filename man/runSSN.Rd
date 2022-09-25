@@ -76,6 +76,68 @@ Cell x Gene Seurat object, with gene-centric UMAP embedding and associated gene 
 \description{
 Runs scale-free shared nearest neighbor network (SNN) analysis on subset of features specified in Seurat object.
 }
+\examples{
+
+# load human gastrulation data
+so.query <- readRDS("../data/demo/so_tyser2021_220621.rds")
+
+# Expression-based feature selection
+features_expr <- findNetworkFeatures(object = so.query, method = "expr",
+                                     min_pct = 0.5)
+
+# Highly-variable genes
+features_hvg <- findNetworkFeatures(object = so.query, method = "hvg",
+                                    n_features =  2000)
+
+# run SSN
+so.gene <- runSSN(object = so.query ,
+     features = unique(c(features_hvg, features_dev)),
+     scale_free = T,
+     robust_pca = F,
+     data_type = "pearson",
+     reprocess_sct = T,
+     slot = c("scale"),
+     batch_feature = NULL,
+     pca_var_explained = 0.9,
+     optimize_resolution = T,
+     target_purity = 0.8,
+     step_size =  0.05,
+     n_workers = parallel::detectCores(),
+     verbose = F)
+
+# get network connectivity plot
+plt_connectivity <- SSNConnectivity(so.gene, quantile_threshold = 0.85, raster_dpi = 500)
+
+# visualize
+plt_connectivity$plot_edge + labs(title = "Network Connectivity")
+
+
+# specify pruning threshold [0,1] (low values = less pruning, high values = more pruning)
+prune.threshold <- 0.1
+
+get feature-specific connectivities (wi)
+df.wi   <- pruneSSN(object = so.gene,
+                    graph = "RNA_snn_power",
+                    prune.threshold = prune.threshold,
+                    return.df = T)
+
+# visualize
+plt.prune <- df.wi \%>\%
+  ggplot(aes(x = wi_l2)) +
+  geom_histogram(bins = 30) +
+  geom_vline(xintercept = prune.threshold, linetype = "dashed", color = "tomato") +
+  labs(x = "Degree (L2 norm)", y = "Count",
+       title = "Network Pruning",
+       subtitle = paste0(signif(100*sum(df.wi$wi_l2 <=  prune.threshold)/nrow(df.wi), 3),
+                         "\% (", sum(df.wi$wi_l2 <=  prune.threshold), "/", nrow(df.wi), ") genes pruning" )) +
+  theme_miko(grid = T)
+
+print(plt.prune)
+
+# get (pruned) gene module list
+mod.list   <- pruneSSN(object = so.gene, graph = "RNA_snn_power", prune.threshold = prune.threshold)
+
+}
 \references{
 \url{https://nmikolajewicz.github.io/scMiko/articles/Module_Detection.html}
 }

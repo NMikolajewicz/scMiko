@@ -4,7 +4,7 @@
 \alias{inferState}
 \title{Infer activation state using Gaussian decomposition}
 \usage{
-inferState(score, group = NULL, diffvar = TRUE, k = 5, verbose = T)
+inferState(score, group = NULL, diffvar = TRUE, k = 5, min_k = 1, verbose = T)
 }
 \arguments{
 \item{score}{activity vector from which activation state will be inferred. Must be continuous data.}
@@ -14,6 +14,8 @@ inferState(score, group = NULL, diffvar = TRUE, k = 5, verbose = T)
 \item{diffvar}{specify whether data is heteroscedastic. Default is T.}
 
 \item{k}{Number of components to evaluate.}
+
+\item{min_k}{minimum number of components to evaluate. Default is 1.}
 
 \item{verbose}{Print progress. Default is TRUE.}
 }
