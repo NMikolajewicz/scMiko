@@ -4245,6 +4245,100 @@ runHG <- function(gene.list, gene.universe,species, pathway.db = "Bader", n.work
 
 }
 
+#' Construct functional enrichment network
+#'
+#' Construct functional enrichment network
+#'
+#' @param hg.res Output from runHG(...)
+#' @param gene.list Named list of genesets used in runHG(...).
+#' @param gene.universe Gene universe (symbol format). If not specified, uses all genes provided in gene.list.
+#' @param species Species. One of "Mm" (mouse) or "Hs" (human)
+#' @param fdr.filter Significance threshold. Default is 0.1.
+#' @param edge.threshold Edge threshold for visualization. Default is 0.25.
+#' @param cex_line Edge size. Default is 0.2.
+#' @param verbose Print progress. Default is TRUE.
+#' @return enrichment results
+#' @seealso \code{\link{runHG}}
+#' @author Nicholas Mikolajewicz
+#'
+netHG <- function(hg.res, gene.list, species, fdr.filter = 0.1, edge.threshold = 0.25, cex_line = 0.2, pie = "Count", gene.universe = NULL, verbose = T){
+
+  # note, requires that runHG() was run with e2s = T
+  require(clusterProfiler)
+  require(DOSE)
+  require(enrichplot)
+  require(ggnewscale)
+
+  if (species == "Hs"){
+    odb <- 'org.Hs.eg.db'
+  } else if (species == "Mm"){
+    odb <- 'org.Mm.eg.db'
+  }
+
+  miko_message("Consolidating results...", verbose = verbose)
+  hs.sum <- summarizeHG(hg.res, do.plot = F)
+  df.hg <- hs.sum[["results"]]
+
+  ccr <- data.frame(
+    Cluster = df.hg$geneset,
+    ID = df.hg$pathway,
+    Description = df.hg$pathway,
+    GeneRatio = df.hg$overlap,
+    BgRatio = df.hg$overlap,
+    pvalue = df.hg$pval,
+    p.adjust = df.hg$padj,
+    qvalue = df.hg$padj,
+    geneID = gsub(", ", "/", df.hg$overlapGenes),
+    Count = df.hg$overlap
+  )
+
+  miko_message("Retrieving significant enrichments...", verbose = verbose)
+  ccr <- ccr %>% dplyr::filter(p.adjust < fdr.filter)
+
+
+
+  miko_message("Generating enrichment profiles...", verbose = verbose)
+  if (!is.null(gene.universe)){
+    gu <- gene.universe
+  } else {
+    gu <-  unique(unlist(gene.list))
+  }
+  xx <- compareCluster(gene.list,
+                       fun=  "enrichGO", # customHG
+                       keyType = "SYMBOL",
+                       OrgDb = odb,
+                       universe = gu,
+                       minGSSize  = 2,
+                       ont = "BP",
+                       pvalueCutoff=fdr.filter
+  )
+
+  xx@compareClusterResult <- ccr
+
+  miko_message("Getting similarity matrix...", verbose = verbose)
+  xx2 <- pairwise_termsim(xx)
+  # edge.threshold <- 0.25
+
+  miko_message("Generating network plots...", verbose = verbose)
+  p4.label <- emapplot(xx2, pie=pie, cex_category=3, layout="kk", min_edge = edge.threshold, max.overlaps = Inf, node_label = "category", cex_line = cex_line)
+  p4 <- emapplot(xx2, pie=pie, cex_category=3, layout="kk", min_edge = edge.threshold, max.overlaps = Inf, node_label = "none", cex_line = cex_line)
+  col.pal <- categoricalColPal(labels = names(gene.list))
+  p4 <- p4 + scale_fill_manual(values = col.pal)
+  p4.label <- p4.label + scale_fill_manual(values = col.pal)
+
+  miko_message("Done!", verbose = verbose)
+
+  return(list(
+    xx = xx,
+    xx2 = xx2,
+    net.plot.nolabel = p4,
+    net.plot.label = p4.label,
+    color.pal = col.pal
+  ))
+
+}
+
+
 
 
 #' Convert gene ensembl to symbol
