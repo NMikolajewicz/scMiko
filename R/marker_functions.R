@@ -442,7 +442,7 @@ findConservedCDIMarkers <- function(object, features.x, features.y = rownames(ob
   } else {
     # cdi.list <- myloopfunc(X = object.list, FUN = findCDIMarkers, features.x = group.by, verbose = F)
     cdi.list <- myloopfunc(X = object.list, function(x){
-      findCDIMarkers(object = x, features.x = group.by, features.y = features.y, verbose = F, ...)
+      findCDIMarkers(object = x, features.x = features.x, features.y = features.y, verbose = F, ...)
     })
   }
 
