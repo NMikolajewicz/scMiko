@@ -4293,7 +4293,7 @@ netHG <- function(hg.res, gene.list, species, fdr.filter = 0.1, edge.threshold =
   )
 
   miko_message("Retrieving significant enrichments...", verbose = verbose)
-  ccr <- ccr %>% dplyr::filter(p.adjust < fdr.filter)
+  ccr <- ccr %>% dplyr::filter(p.adjust <= fdr.filter)
 
 
 
