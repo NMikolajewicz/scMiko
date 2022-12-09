@@ -18,4 +18,4 @@ scPipeline source code can be accessed at [https://github.com/NMikolajewicz/scPi
 
 ## Citation
 
-if using scPipeline or scMiko, please consider citing our work: [Mikolajewicz, et al., BioRxiv](https://www.biorxiv.org/content/10.1101/2022.03.13.484162v1)
+if using scPipeline or scMiko, please consider citing our work: [Mikolajewicz, N., Gacesa, R., Aguilera-Uribe, M., Brown, K. R., Moffat, J., & Han, H. (2022). Multi-level cellular and functional annotation of single-cell transcriptomes using scPipeline. Communications Biology, 5(1), 1-14.](https://www.nature.com/articles/s42003-022-04093-2)
