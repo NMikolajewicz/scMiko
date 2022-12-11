@@ -1954,6 +1954,7 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 #' @param knn k-nearest neighbors. Default is 5. If not specified, defaults to min_edge argument.
 #' @param min_edge similarity threshold used to display network edge
 #' @param node_label_size size of node labels. If not specified (i.e., node_label_size = NULL), no label is shown.
+#' @param seed number used to initialize pseudorandom number generator. Specify to ensure reproducible graphs. Default is 1023.
 #' @name springNet
 #' @author Nicholas Mikolajewicz
 #' @return ggplot
@@ -1965,10 +1966,12 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
                        knn = 5,
                        min_edge=quantile(smat, 0.95),
-                       node_label_size = NULL) {
+                       node_label_size = NULL,
+                       seed = 1023) {
 
   require(igraph)
 
+  if (!is.null(seed))   set.seed(seed)
   miko_graph_build <- function(smat, cex_line = 1, min_edge = quantile(smat, 0.95)) {
 
 

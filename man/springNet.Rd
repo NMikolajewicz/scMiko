@@ -10,7 +10,8 @@ springNet(
   cex_line = 0.1,
   knn = 5,
   min_edge = quantile(smat, 0.95),
-  node_label_size = NULL
+  node_label_size = NULL,
+  seed = 1023
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ springNet(
 \item{min_edge}{similarity threshold used to display network edge}
 
 \item{node_label_size}{size of node labels. If not specified (i.e., node_label_size = NULL), no label is shown.}
+
+\item{seed}{number used to initialize pseudorandom number generator. Specify to ensure reproducible graphs. Default is 1023.}
 }
 \value{
 ggplot
