@@ -1943,3 +1943,87 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
     )
   )
 }
+
+#' Generate spring-embedded network from similarity matrix
+#'
+#' Generate spring-embedded network from similarity matrix
+#'
+#' @param smat similarity matrix
+#' @param group_by group variable used to color network nodes
+#' @param cex_line edge width
+#' @param knn k-nearest neighbors. Default is 5. If not specified, defaults to min_edge argument.
+#' @param min_edge similarity threshold used to display network edge
+#' @param node_label_size size of node labels. If not specified (i.e., node_label_size = NULL), no label is shown.
+#' @name springNet
+#' @author Nicholas Mikolajewicz
+#' @return ggplot
+#' @examples
+#'
+#' smat <- cor(x)
+#' springNet(smat)
+#'
+springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
+                       knn = 5,
+                       min_edge=quantile(smat, 0.95),
+                       node_label_size = NULL) {
+
+  require(igraph)
+
+  miko_graph_build <- function(smat, cex_line = 1, min_edge = quantile(smat, 0.95)) {
+
+
+    w <- smat
+    wd <- reshape2::melt(w)
+    wd <- wd[wd[,1] != wd[,2],]
+    # remove NA
+    wd <- wd[!is.na(wd[,3]),]
+    g <- graph.data.frame(wd[, -3], directed=FALSE)
+    E(g)$width <- sqrt(wd[, 3] * 5) * cex_line
+
+    # Use similarity as the weight(length) of an edge
+    E(g)$weight <- wd[, 3]
+    g <- delete.edges(g, E(g)[wd[, 3] < min_edge])
+
+    return(g)
+  }
+
+  # if knn not specified, uses min_edge to specify edges. Otherwise uses knn.
+  if (!is.null(knn)){
+    smat <- apply(smat, 2, function(x){
+      lst <- sort(x, index.return=TRUE, decreasing=TRUE)
+      x[-(lst$ix[1:n.knn])] <- 0
+      x
+    })
+    min_edge <-  min(smat[smat != 0])/2
+  }
+
+
+  g <- miko_graph_build(smat = smat, min_edge = min_edge, cex_line = cex_line)
+
+  p <- ggraph::ggraph(g, layout=layout)
+
+
+  p <- p + ggraph::geom_edge_link(alpha=.8, aes_(width=~I(width)),
+                                  colour='darkgrey')
+
+
+  if (!is.null(node_label_size)){
+    p <- p + ggraph::geom_node_text(aes_(label=~name), repel=TRUE,
+                                    bg.color = "white", max.overlaps = Inf, size = node_label_size) + theme_void()
+  } else {
+    p <- p +  theme_void()
+  }
+
+  # pdat <- p$data
+
+
+  if (!is.null(group_by)){
+    p$data$group <- group_by
+    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y, color =~group))
+  } else {
+    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y))
+  }
+
+
+  p
+}
