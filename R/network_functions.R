@@ -1949,11 +1949,16 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 #' Generate spring-embedded network from similarity matrix
 #'
 #' @param smat similarity matrix
+#' @param layout layout used to embded network. Default is "nicely",
 #' @param group_by group variable used to color network nodes
 #' @param cex_line edge width
 #' @param knn k-nearest neighbors. Default is 5. If not specified, defaults to min_edge argument.
 #' @param min_edge similarity threshold used to display network edge
+#' @param dual_criteria if knn and min_edge are both specified, edges are included if either condition are met.
 #' @param node_label_size size of node labels. If not specified (i.e., node_label_size = NULL), no label is shown.
+#' @param node_size size of network nodes. Default is 1.
+#' @param label_as_node replace nodes with labels. Default is F.
+#' @param remove_unconnected_nodes remove unconnected nodes in graph. Default is F.
 #' @param seed number used to initialize pseudorandom number generator. Specify to ensure reproducible graphs. Default is 1023.
 #' @name springNet
 #' @author Nicholas Mikolajewicz
@@ -1963,10 +1968,14 @@ summarizeModules <- function(cell.object, gene.object, module.type = c("ssn", "i
 #' smat <- cor(x)
 #' springNet(smat)
 #'
-springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
+springNet  <- function(smat, layout = "nicely", group_by = NULL, cex_line = 0.1,
                        knn = 5,
                        min_edge=quantile(smat, 0.95),
+                       dual_criteria = F,
                        node_label_size = NULL,
+                       node_size = 1,
+                       label_as_node = F,
+                       remove_unconnected_nodes = F,
                        seed = 1023) {
 
   require(igraph)
@@ -1992,16 +2001,29 @@ springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
 
   # if knn not specified, uses min_edge to specify edges. Otherwise uses knn.
   if (!is.null(knn)){
+    smat.orig <- smat
     smat <- apply(smat, 2, function(x){
       lst <- sort(x, index.return=TRUE, decreasing=TRUE)
-      x[-(lst$ix[1:n.knn])] <- 0
+      x[-(lst$ix[1:knn])] <- 0
       x
     })
+
+    if (dual_criteria){
+      smat2 <- smat.orig
+      smat2[smat2 < min_edge] <- 0
+      smat <- pmax(smat, smat2)
+    }
+
     min_edge <-  min(smat[smat != 0])/2
   }
 
-
+suppressWarnings({
   g <- miko_graph_build(smat = smat, min_edge = min_edge, cex_line = cex_line)
+
+  if (remove_unconnected_nodes){
+    Isolated = which(degree(g)==0)
+    g = delete.vertices(g, Isolated)
+  }
 
   p <- ggraph::ggraph(g, layout=layout)
 
@@ -2009,10 +2031,24 @@ springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
   p <- p + ggraph::geom_edge_link(alpha=.8, aes_(width=~I(width)),
                                   colour='darkgrey')
 
+})
+
 
   if (!is.null(node_label_size)){
-    p <- p + ggraph::geom_node_text(aes_(label=~name), repel=TRUE,
-                                    bg.color = "white", max.overlaps = Inf, size = node_label_size) + theme_void()
+    if (label_as_node){
+      if (!is.null(group_by)){
+        p <- p + ggraph::geom_node_text(aes_(label=~name, color =~group), repel=F,
+                                         size = node_label_size) + theme_void()
+      } else {
+        p <- p + ggraph::geom_node_text(aes_(label=~name), repel=F,
+                                        size = node_label_size) + theme_void()
+      }
+
+    } else {
+      p <- p + ggraph::geom_node_text(aes_(label=~name), repel=TRUE,
+                                      bg.color = "white", max.overlaps = Inf, size = node_label_size) + theme_void()
+    }
+
   } else {
     p <- p +  theme_void()
   }
@@ -2020,12 +2056,14 @@ springNet  <- function(smat, group_by = NULL, cex_line = 0.1,
   # pdat <- p$data
 
 
+if (!label_as_node){
   if (!is.null(group_by)){
     p$data$group <- group_by
-    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y, color =~group))
+    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y, color =~group), size = node_size)
   } else {
-    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y))
+    p <- p + ggraph::geom_node_point(aes_(x=~x, y =~y), size = node_size)
   }
+}
 
 
   p

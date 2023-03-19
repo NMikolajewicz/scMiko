@@ -6,16 +6,23 @@
 \usage{
 springNet(
   smat,
+  layout = "nicely",
   group_by = NULL,
   cex_line = 0.1,
   knn = 5,
   min_edge = quantile(smat, 0.95),
+  dual_criteria = F,
   node_label_size = NULL,
+  node_size = 1,
+  label_as_node = F,
+  remove_unconnected_nodes = F,
   seed = 1023
 )
 }
 \arguments{
 \item{smat}{similarity matrix}
+
+\item{layout}{layout used to embded network. Default is "nicely",}
 
 \item{group_by}{group variable used to color network nodes}
 
@@ -25,7 +32,15 @@ springNet(
 
 \item{min_edge}{similarity threshold used to display network edge}
 
+\item{dual_criteria}{if knn and min_edge are both specified, edges are included if either condition are met.}
+
 \item{node_label_size}{size of node labels. If not specified (i.e., node_label_size = NULL), no label is shown.}
+
+\item{node_size}{size of network nodes. Default is 1.}
+
+\item{label_as_node}{replace nodes with labels. Default is F.}
+
+\item{remove_unconnected_nodes}{remove unconnected nodes in graph. Default is F.}
 
 \item{seed}{number used to initialize pseudorandom number generator. Specify to ensure reproducible graphs. Default is 1023.}
 }
