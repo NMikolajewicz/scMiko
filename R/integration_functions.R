@@ -26,18 +26,21 @@ runScanorama <- function(object, batch,  do.umap = F,  nfeatures = 2000, vars2re
   scanorama <- import('scanorama')
 
   if (!("SCT" %in% names(object@assays))){
-    object <- SCTransform(object, vars.to.regress = vars2regress, assay = "SCT", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
+    object <- getMitoContent(object)
+    object <- SCTransform(object, vars.to.regress = vars2regress, assay = "RNA", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
   }
 
   merge.exists <- F
   if ("Seurat" %in% class(object)){
+
+    object <- getMitoContent(object)
     so <- object;
 
     merge.exists <- T
 
     if (!("SCT" %in% names(so@assays))){
       miko_message("Running SCTransform...", verbose = verbose)
-      so <- SCTransform(so, vars.to.regress = vars2regress, assay = "SCT", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
+      so <- SCTransform(so, vars.to.regress = vars2regress, assay = "RNA", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
     }
 
 
@@ -45,10 +48,15 @@ runScanorama <- function(object, batch,  do.umap = F,  nfeatures = 2000, vars2re
 
   } else if ("list" %in% class(object)){
 
+    object <- pbapply::pblapply(X = object, FUN = function(x){
+      x <- getMitoContent(x)
+      return(x)
+    })
+
     for (i in 1:length(object)){
       if (!("SCT" %in% names(object[[i]]@assays))){
         miko_message(paste0("Running SCTransform for '", names(object)[i], "'..."), verbose = verbose)
-        object[[i]] <- SCTransform(object[[i]], vars.to.regress = vars2regress, assay = "SCT", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
+        object[[i]] <- SCTransform(object[[i]], vars.to.regress = vars2regress, assay = "RNA", method = "glmGamPoi", verbose = F, vst.flavor = "v2")
       }
     }
 
@@ -156,51 +164,64 @@ runScanorama <- function(object, batch,  do.umap = F,  nfeatures = 2000, vars2re
 #'  object <- runBBKNN(object, batch = "sample")
 #'
 runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(object), do.umap = T, verbose = T){
+
   require(reticulate, quietly = T)
   require(Matrix, quietly = T)
-
-
   miko_message("Checking inputs...", verbose = verbose)
   stopifnot("Seurat" %in% class(object))
   stopifnot(reduction %in% names(object@reductions))
   stopifnot(batch %in% colnames(object@meta.data))
-
-  # check that python modules are available
-  if (!py_module_available("anndata")){
+  if (!py_module_available("anndata")) {
     ad.success <- F
-    try({py_install("anndata"); ad.success <- T}, silent = T)
-    if (!(ad.success))  try({py_install("anndata", pip = T)}, silent = T)
+    try({
+      py_install("anndata")
+      ad.success <- T
+    }, silent = T)
+    if (!(ad.success))
+      try({
+        py_install("anndata", pip = T)
+      }, silent = T)
   }
-
-  if (!py_module_available("scanpy")){
+  if (!py_module_available("scanpy")) {
     sp.success <- F
-    try({py_install("scanpy"); sp.success <- T}, silent = T)
-    if (!(sp.success))  try({py_install("scanpy", pip = T)}, silent = T)
+    try({
+      py_install("scanpy")
+      sp.success <- T
+    }, silent = T)
+    if (!(sp.success))
+      try({
+        py_install("scanpy", pip = T)
+      }, silent = T)
   }
-
-  if (!py_module_available("bbknn")){
+  if (!py_module_available("bbknn")) {
     bk.success <- F
-    try({py_install("bbknn"); bk.success <- T}, silent = T)
-    if (!(bk.success))  try({py_install("bbknn", pip = T)}, silent = T)
+    try({
+      py_install("bbknn")
+      bk.success <- T
+    }, silent = T)
+    if (!(bk.success))
+      try({
+        py_install("bbknn", pip = T)
+      }, silent = T)
   }
-
-  if (!py_module_available("anndata")) stop("Python module 'anndata' is not available.")
-  if (!py_module_available("scanpy")) stop("Python module 'scanpy' is not available.")
-  if (!py_module_available("bbknn")) stop("Python module 'bbknn' is not available.")
-
-
-  if (ulength(object@meta.data[ ,batch ]) > 1){
-    # integrate data ########################################
+  if (!py_module_available("anndata"))
+    stop("Python module 'anndata' is not available.")
+  if (!py_module_available("scanpy"))
+    stop("Python module 'scanpy' is not available.")
+  if (!py_module_available("bbknn"))
+    stop("Python module 'bbknn' is not available.")
+  if (ulength(object@meta.data[, batch]) > 1) {
     miko_message("Running BBKNN...", verbose = verbose)
-    anndata = import("anndata",convert=FALSE)
-    bbknn = import("bbknn", convert=FALSE)
-    sc = import("scanpy",convert=FALSE)
-
-    adata = anndata$AnnData(X=object@reductions[[reduction]]@cell.embeddings, obs=object@meta.data[ ,batch ])
+    anndata = import("anndata", convert = FALSE)
+    bbknn = import("bbknn", convert = FALSE)
+    sc = import("scanpy", convert = FALSE)
+    adata = anndata$AnnData(X = object@reductions[[reduction]]@cell.embeddings,#dtype = "float64", #dtype = "float32",
+                            obs = object@meta.data[, batch])
     sc$tl$pca(adata)
     adata$obsm$X_pca = object@reductions[[reduction]]@cell.embeddings
-    bbknn$bbknn(adata,batch_key=0)
-
+    # adata$uns[["pca"]][["variance"]] = object@reductions[["pca"]]@stdev^2
+    # adata$uns[["pca"]][["variance_ratio"]] = object@reductions[["pca"]]@stdev^2/sum(object@reductions[["pca"]]@stdev^2)
+    bbknn$bbknn(adata, batch_key = 0, n_pcs  = 49L)
     miko_message("Getting BBKNN Graph...", verbose = verbose)
     snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
     rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
@@ -208,41 +229,132 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
     snn.matrix <- as.Graph(x = snn.matrix)
     slot(object = snn.matrix, name = "assay.used") <- assay
     object[["bbknn"]] <- snn.matrix
-
-    if (do.umap){
-
+    if (do.umap) {
       miko_message("Embedding UMAP...", verbose = verbose)
-      sc$tl$umap(adata)
+      sc$tl$umap(adata = adata)
+
       umap = py_to_r(adata$obsm[["X_umap"]])
 
-      #########################################################
 
-      object@meta.data$b1 <- umap[ ,1]
-      object@meta.data$b2 <- umap[ ,2]
+      # umap <- a@cell.embeddings
+      #
+      # py_help(bbknn$bbknn)
 
+      # nei <- py_to_r(adata$uns[["neighbors"]])
+      # con <- py_to_r(adata$obsm[["X_pca"]])
+      # pc = py_to_r(adata$uns[["neighbors"]])
+      # pc = py_to_r(adata$uns[["neighbors"]])
+
+      # umap <- RunUMAP(object@graphs[["bbknn"]])@cell.embeddings
+
+      object@meta.data$b1 <- umap[, 1]
+      object@meta.data$b2 <- umap[, 2]
       colnames(umap) <- c("b_1", "b_2")
       rownames(umap) <- colnames(object)
-
       miko_message("Storing results...", verbose = verbose)
       suppressMessages({
         suppressWarnings({
-          object[["b"]]  <- CreateDimReducObject(embeddings = as.matrix(umap),
-                                                 key = "B",
-                                                 global  = T,
-                                                 loading = new(Class = "matrix"),
-                                                 assay = assay)
+          object[["b"]] <- CreateDimReducObject(embeddings = as.matrix(umap),
+                                                key = "B", global = T, loading = new(Class = "matrix"),
+                                                assay = assay)
         })
       })
-
     }
     miko_message("Done.", verbose = verbose)
-  } else {
+  }
+  else {
     miko_message("Only one batch experiment provided. BBKNN was not run.")
   }
-
-
-
   return(object)
+
+  #
+  # require(reticulate, quietly = T)
+  # require(Matrix, quietly = T)
+  #
+  #
+  # miko_message("Checking inputs...", verbose = verbose)
+  # stopifnot("Seurat" %in% class(object))
+  # stopifnot(reduction %in% names(object@reductions))
+  # stopifnot(batch %in% colnames(object@meta.data))
+  #
+  # # check that python modules are available
+  # if (!py_module_available("anndata")){
+  #   ad.success <- F
+  #   try({py_install("anndata"); ad.success <- T}, silent = T)
+  #   if (!(ad.success))  try({py_install("anndata", pip = T)}, silent = T)
+  # }
+  #
+  # if (!py_module_available("scanpy")){
+  #   sp.success <- F
+  #   try({py_install("scanpy"); sp.success <- T}, silent = T)
+  #   if (!(sp.success))  try({py_install("scanpy", pip = T)}, silent = T)
+  # }
+  #
+  # if (!py_module_available("bbknn")){
+  #   bk.success <- F
+  #   try({py_install("bbknn"); bk.success <- T}, silent = T)
+  #   if (!(bk.success))  try({py_install("bbknn", pip = T)}, silent = T)
+  # }
+  #
+  # if (!py_module_available("anndata")) stop("Python module 'anndata' is not available.")
+  # if (!py_module_available("scanpy")) stop("Python module 'scanpy' is not available.")
+  # if (!py_module_available("bbknn")) stop("Python module 'bbknn' is not available.")
+  #
+  #
+  # if (ulength(object@meta.data[ ,batch ]) > 1){
+  #   # integrate data ########################################
+  #   miko_message("Running BBKNN...", verbose = verbose)
+  #   anndata = import("anndata",convert=FALSE)
+  #   bbknn = import("bbknn", convert=FALSE)
+  #   sc = import("scanpy",convert=FALSE)
+  #
+  #   adata = anndata$AnnData(X=object@reductions[[reduction]]@cell.embeddings, obs=object@meta.data[ ,batch ])
+  #   sc$tl$pca(adata)
+  #   adata$obsm$X_pca = object@reductions[[reduction]]@cell.embeddings
+  #   bbknn$bbknn(adata,batch_key=0)
+  #
+  #   miko_message("Getting BBKNN Graph...", verbose = verbose)
+  #   snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
+  #   rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
+  #   snn.matrix <- as(snn.matrix, "CsparseMatrix")
+  #   snn.matrix <- as.Graph(x = snn.matrix)
+  #   slot(object = snn.matrix, name = "assay.used") <- assay
+  #   object[["bbknn"]] <- snn.matrix
+  #
+  #   if (do.umap){
+  #
+  #     miko_message("Embedding UMAP...", verbose = verbose)
+  #     sc$tl$umap(adata)
+  #     umap = py_to_r(adata$obsm[["X_umap"]])
+  #
+  #     #########################################################
+  #
+  #     object@meta.data$b1 <- umap[ ,1]
+  #     object@meta.data$b2 <- umap[ ,2]
+  #
+  #     colnames(umap) <- c("b_1", "b_2")
+  #     rownames(umap) <- colnames(object)
+  #
+  #     miko_message("Storing results...", verbose = verbose)
+  #     suppressMessages({
+  #       suppressWarnings({
+  #         object[["b"]]  <- CreateDimReducObject(embeddings = as.matrix(umap),
+  #                                                key = "B",
+  #                                                global  = T,
+  #                                                loading = new(Class = "matrix"),
+  #                                                assay = assay)
+  #       })
+  #     })
+  #
+  #   }
+  #   miko_message("Done.", verbose = verbose)
+  # } else {
+  #   miko_message("Only one batch experiment provided. BBKNN was not run.")
+  # }
+  #
+  #
+  #
+  # return(object)
 
 }
 
