@@ -1117,13 +1117,14 @@ scale_fill_miko <- function(low = scales::muted("blue"), high = scales::muted("r
 #' @param group grouping variable in object's meta data.
 #' @param reduction reduction used to visualize cells. Default is "umap".
 #' @param highlight.color color of highlighted cells. Default is "tomato".
+#' @param raster Convert points to raster format, default is FALSE.
 #' @name highlightUMAP
 #' @return list of ggplot handles
 #' @examples
 #'
 #'  plot.highlight <-  highlightUMAP(object = so, group = "seurat_clusters")
 #'
-highlightUMAP <- function(object, group = "seurat_clusters", reduction = "umap", highlight.color = "tomato"){
+highlightUMAP <- function(object, group = "seurat_clusters", reduction = "umap", highlight.color = "tomato", raster = F, ...){
 
 
   df.red.group <- data.frame(object@reductions[[reduction]]@cell.embeddings)
@@ -1145,6 +1146,13 @@ highlightUMAP <- function(object, group = "seurat_clusters", reduction = "umap",
   }
 
 
+  if (raster){
+    geom_point_fun <- scattermore::geom_scattermore
+  } else {
+    geom_point_fun <- geom_point
+  }
+
+
   for (i in 1:length(u.clusters)){
 
     cluster.name <- u.clusters[i]
@@ -1158,7 +1166,7 @@ highlightUMAP <- function(object, group = "seurat_clusters", reduction = "umap",
 
     plt.cluster.umap[[paste0("group_", cluster.name)]] <- df.red.group %>%
       ggplot(aes(x = x, y = y)) +
-      geom_point(color = df.red.group$do.color, size = autoPointSize(nrow(df.red.group))) +
+      geom_point_fun(color = df.red.group$do.color, ...) +
       theme_miko() +
       theme_void() +
       xlab("UMAP 1") + ylab("UMAP 2") +

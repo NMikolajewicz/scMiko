@@ -8,7 +8,9 @@ highlightUMAP(
   object,
   group = "seurat_clusters",
   reduction = "umap",
-  highlight.color = "tomato"
+  highlight.color = "tomato",
+  raster = F,
+  ...
 )
 }
 \arguments{
@@ -19,6 +21,8 @@ highlightUMAP(
 \item{reduction}{reduction used to visualize cells. Default is "umap".}
 
 \item{highlight.color}{color of highlighted cells. Default is "tomato".}
+
+\item{raster}{Convert points to raster format, default is FALSE.}
 }
 \value{
 list of ggplot handles
