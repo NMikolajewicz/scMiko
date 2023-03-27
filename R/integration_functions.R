@@ -221,7 +221,7 @@ runBBKNN <- function(object, batch, reduction = "pca", assay  = DefaultAssay(obj
     adata$obsm$X_pca = object@reductions[[reduction]]@cell.embeddings
     # adata$uns[["pca"]][["variance"]] = object@reductions[["pca"]]@stdev^2
     # adata$uns[["pca"]][["variance_ratio"]] = object@reductions[["pca"]]@stdev^2/sum(object@reductions[["pca"]]@stdev^2)
-    bbknn$bbknn(adata, batch_key = 0, n_pcs  = 49L)
+    bbknn$bbknn(adata, batch_key = 0, n_pcs  = as.integer(dim(object@reductions[[reduction]]@cell.embeddings)[2]-1) )# 49L
     miko_message("Getting BBKNN Graph...", verbose = verbose)
     snn.matrix <- py_to_r(adata$obsp[["connectivities"]])
     rownames(x = snn.matrix) <- colnames(x = snn.matrix) <- Cells(x = object)
