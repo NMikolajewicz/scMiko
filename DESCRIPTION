@@ -33,7 +33,6 @@ Imports:
     ggrepel,
     scales,
     viridis,
-    presto,
     zoo
 Suggests:
   miloR,
