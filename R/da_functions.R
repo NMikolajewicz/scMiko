@@ -68,7 +68,16 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
         old.dist[i, i.knn] <- i.dists
         old.dist[i.knn, i] <- i.dists
       }
-      old.dist <- as(old.dist, "dgCMatrix")
+
+
+      old.dist <- as(old.dist, "CsparseMatrix")
+      # old.dist <- tryCatch({
+      #   as(old.dist, "dgCMatrix")
+      # },
+      # error = function(e){
+      #   return( as(old.dist, "CsparseMatrix"))
+      # })
+
       nhoodDistances(x) <- old.dist
       # sink(file = "/dev/null")
       # gc()
@@ -554,7 +563,9 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
 
   milo.object <- miloR::Milo(sce.object)
   milo.object <- miko_buildGraph(milo.object, k = 10, d = 30)
-  milo.object <- miloR::makeNhoods(milo.object, prop = 0.5, k = 10, d = 30, refined = TRUE)
+  # milo.object <- miloR::makeNhoods(milo.object, prop = 0.5, k = 10, d = 30, refined = TRUE)
+  milo.object <- miloR::makeNhoods(milo.object, prop = 0.5, k = 10, d = 30,
+                                   refined = TRUE, refinement_scheme = "graph") # 040623
 
   milo.object <- countCells(milo.object, meta.data = data.frame(colData(milo.object)), sample=sample.group)
 
@@ -562,7 +573,7 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
   milo_design <- dplyr::distinct(milo_design)
   rownames(milo_design) <-milo_design[ ,sample.group]
 
-  milo.object <- miko_calcNhoodDistance(x = milo.object, d=30, reduced.dim = "PCA")
+  # milo.object <- miko_calcNhoodDistance(x = milo.object, d=30, reduced.dim = "PCA") # 040623
 
 
   form.cur <- c()
@@ -584,7 +595,8 @@ da_Run <- function(object, condition.group, sample.group = NA, design.groups = c
     milo_design[,condition.group] <- factor(milo_design[,condition.group], levels = all.var)
   }
 
-  da.res <- testNhoods(milo.object, design = as.formula(form.cur) , design.df = milo_design)
+  da.res <- testNhoods(milo.object, design = as.formula(form.cur) , design.df = milo_design, fdr.weighting = "graph-overlap") # 040623
+  # da.res <- testNhoods(milo.object, design = as.formula(form.cur) , design.df = milo_design)
 
   if (!fdr.correction){
     da.res$SpatialFDR <- da.res$PValue
