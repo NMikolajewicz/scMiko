@@ -43,7 +43,26 @@ Suggests:
   ggformula,
   tidymodels,
   s2a,
-  glue
+  glue,
+  Augur,
+  R3port,
+  WGCNA,
+  flashClust,
+  future.apply,
+  magrittr,
+  msigdbr,
+  pbmcapply,
+  qlcMatrix,
+  randomForest,
+  ranger,
+  recipes,
+  rmarkdown,
+  rsample,
+  sparseMatrixStats,
+  tester,
+  tibble,
+  xml2,
+  yardstick
 RemoteType: github
 RemoteHost: api.github.com
 RemoteRepo: scMiko
